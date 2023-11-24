@@ -5,6 +5,8 @@
 #include <RobotecRecordingTools/RobotecRecordingToolsTypeIds.h>
 
 #include <Clients/RobotecRecordingToolsSystemComponent.h>
+#include <Cameras/SplineCameraAnimation.h>
+#include <Cameras/CameraJoystick.h>
 
 namespace RobotecRecordingTools
 {
@@ -21,6 +23,8 @@ namespace RobotecRecordingTools
         // This happens through the [MyComponent]::Reflect() function.
         m_descriptors.insert(m_descriptors.end(), {
             RobotecRecordingToolsSystemComponent::CreateDescriptor(),
+            ROS2::Demo::SplineCameraAnimation::CreateDescriptor(),
+            ROS2::Demo::CameraJoystick::CreateDescriptor(),
             });
     }
 

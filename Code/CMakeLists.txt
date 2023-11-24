@@ -48,6 +48,9 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
+            Gem::ImGui.imguilib
+            Gem::AtomLyIntegration_CommonFeatures.Public
+            Gem::ROS2.Static
             AZ::AzCore
             AZ::AzFramework
 )
@@ -120,6 +123,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
         BUILD_DEPENDENCIES
             PUBLIC
+                Gem::ImGui.imguilib
+                Gem::AtomLyIntegration_CommonFeatures.Public
+                Gem::ROS2.Static
                 AZ::AzToolsFramework
                 $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
     )
