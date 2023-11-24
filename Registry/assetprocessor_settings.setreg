@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder RobotecRecordingTools/Assets": {
+                    "watch": "@GEMROOT:RobotecRecordingTools@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder RobotecRecordingTools/Registry": {
+                    "watch": "@GEMROOT:RobotecRecordingTools@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
