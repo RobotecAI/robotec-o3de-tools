@@ -5,6 +5,7 @@
 #pragma once
 
 #include <imgui/imgui.h>
+#include <AzCore/std/string/string.h>
 
 namespace RobotecImGui
 {
