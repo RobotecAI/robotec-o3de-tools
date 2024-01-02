@@ -1,9 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project.
- * For complete copyright and license terms please see the LICENSE at the root of this distribution.
- *
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
+ * Copyright (c) Robotec.ai 2023. All rights reserved.
  */
 
 #include <RobotecImGui/ImGuiBase.h>
@@ -12,8 +8,12 @@
 
 namespace RobotecImGui
 {
-    class SensorImGui
-        : public RobotecImGui::ImGuiBase
+    //! Class responsible for drawing ImGui elements for ROS 2 sensors
+    //! Inherits from ImGuiBase and implements GetMessage method
+    //! Usage: Add this component to any entity with ROS 2 sensor components and it will draw ImGui elements for them
+    //! Functionality: disable/enable publishing from the sensor
+
+    class SensorImGui : public RobotecImGui::ImGuiBase
     {
     public:
         SensorImGui();
@@ -30,13 +30,10 @@ namespace RobotecImGui
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
     private:
         AZStd::vector<ImGuiElement> m_imGuiElements;
         AZ::Entity* entity;
-                
     };
 
 } // namespace RobotecImGui

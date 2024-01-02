@@ -1,23 +1,27 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project.
- * For complete copyright and license terms please see the LICENSE at the root of this distribution.
- *
- * SPDX-License-Identifier: Apache-2.0 OR MIT
- *
+ * Copyright (c) Robotec.ai 2023. All rights reserved.
  */
 
+#include "ImGuiUtilityBus.h"
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityId.h>
-#include "ImGuiUtilityBus.h"
+#include <ImGuiBus.h>
 #include <ROS2/Sensor/ROS2SensorComponentBase.h>
 #include <imgui/imgui.h>
-#include <unordered_map>
-#include <ImGuiBus.h>
 
 #pragma once
 
 namespace RobotecImGui
 {
+    //! Class ImGuiBase serves as a foundational component for integrating ImGui.
+    //! This class inherits from ImGuiUtilityRequestBus::Handler (custom interface for inheriting classes to implement specific behavior)
+    //! and ImGui::ImGuiUpdateListenerBus::Handler (for handling ImGui frame updates). Key Features:
+    //! - GetMessage: Virtual function to be implemented by derived classes for fetching ImGui elements.
+    //! - OnImGuiUpdate: Handles ImGui frame updates, drawing elements on the ImGui window.
+    //! - OnImGuiMainMenuUpdate: Integrates custom menu items into the ImGui main menu.
+    //! Usage: Extend this class to create custom ImGui interfaces for different component types, particularly for sensor data visualization
+    //! in a ROS2 environment.
+
     class ImGuiBase
         : public ImGuiUtilityRequestBus::Handler
         , public ImGui::ImGuiUpdateListenerBus::Handler

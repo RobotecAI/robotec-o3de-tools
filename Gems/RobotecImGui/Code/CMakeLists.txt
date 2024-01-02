@@ -61,7 +61,6 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::ImGui.imguilib
             Gem::${gem_name}.Static
 )
 
@@ -86,7 +85,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                Gem::ImGui.imguilib
                 Gem::${gem_name}.Static
     )
 
