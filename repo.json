@@ -34,6 +34,34 @@
             "compatible_engines": [],
             "engine_api_dependencies": [],
             "restricted": "RobotecRecordingTools"
+        },
+        {
+            "gem_name": "RobotecImGui",
+            "version": "1.0.0",
+            "platforms": [
+                "Linux"
+            ],
+            "license": "Apache-2.0",
+            "display_name": "Robotec ImGui",
+            "license_url": "https://opensource.org/licenses/Apache-2.0",
+            "origin": "RobotecAI",
+            "origin_url": "TODO",
+            "type": "Code",
+            "summary": "A set of tools to record data for the O3DE engine.",
+            "canonical_tags": [
+                "Gem"
+            ],
+            "user_tags": [
+                "RobotecImGui"
+            ],
+            "icon_path": "preview.png",
+            "requirements": "Requires ROS 2 installation (supported distributions: Humble). Source your workspace before building the Gem",
+            "documentation_url": "TODO",
+            "dependencies": [],
+            "repo_uri": "",
+            "compatible_engines": [],
+            "engine_api_dependencies": [],
+            "restricted": "RobotecImGui"
         }
     ]
 }
