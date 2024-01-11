@@ -66,14 +66,13 @@ namespace RobotecImGui
 
             auto buttonCallback = [sharedSensorComponentTickBased, sharedSensorComponentPhysicsBased, sensorConfiguration]() mutable
             {
-                sensorConfiguration.m_publishingEnabled = !sensorConfiguration.m_publishingEnabled;
                 if (sharedSensorComponentTickBased)
                 {
-                    sharedSensorComponentTickBased->SetSensorConfiguration(sensorConfiguration);
+                    sharedSensorComponentTickBased->EnablePublishing(!sensorConfiguration.m_publishingEnabled);
                 }
                 else if (sharedSensorComponentPhysicsBased)
                 {
-                    sharedSensorComponentPhysicsBased->SetSensorConfiguration(sensorConfiguration);
+                    sharedSensorComponentPhysicsBased->EnablePublishing(!sensorConfiguration.m_publishingEnabled);
                 }
             };
 
