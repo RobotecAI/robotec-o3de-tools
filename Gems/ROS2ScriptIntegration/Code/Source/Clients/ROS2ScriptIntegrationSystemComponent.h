@@ -11,6 +11,7 @@
 #include <ROS2/Utilities/ROS2Conversions.h>
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationBus.h>
 #include <ROS2ScriptIntegration/ROS2ScriptPublisherBus.h>
+#include <ROS2ScriptIntegration/ROS2ScriptSubscriberBus.h>
 
 namespace ROS2ScriptIntegration
 {
@@ -18,7 +19,8 @@ namespace ROS2ScriptIntegration
         : public AZ::Component
         , protected ROS2ScriptIntegrationRequestBus::Handler
         , protected PublisherRequestBus::Handler
-
+        , protected SubscriberRequestBus::Handler
+        , protected AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT_DECL(ROS2ScriptIntegrationSystemComponent);
@@ -26,35 +28,58 @@ namespace ROS2ScriptIntegration
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         ROS2ScriptIntegrationSystemComponent();
+
         ~ROS2ScriptIntegrationSystemComponent();
 
     protected:
+        // AZ::TickBus::Handler overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
         // ROS2ScriptIntegrationRequestBus::Handler overrides ...
-        void PublishStdMsgsString(const AZStd::string& topicName, const AZStd::string& value);
-        void PublishStdMsgEmpty(const AZStd::string& topicName);
-        void PublishStdMsgUInt32(const AZStd::string& topicName, const uint32_t value);
-        void PublishStdMsgInt32(const AZStd::string& topicName, const int32_t value);
-        void PublishStdMsgFloat32(const AZStd::string& topicName, const float value);
-        void PublishStdMsgBool(const AZStd::string& topicName, const bool value);
-        void PublishGeometryMsgsTwist(const AZStd::string& topicName, const AZ::Vector3& linear, const AZ::Vector3& angular);
-        void PublishGeometryMsgTransform(const AZStd::string& topicName, const AZ::Transform& transform);
-        void PublishGeometryMsgVector3(const AZStd::string& topicName, const AZ::Vector3& vector);
-        void PublishGeometryMsgQuaternion(const AZStd::string& topicName, const AZ::Quaternion& quaternion);
-        void PublishGeometryMsgPoint32(const AZStd::string& topicName, const AZ::Vector3& point);
+        void PublishStdMsgsString(const AZStd::string& topicName, const AZStd::string& value) override;
+        void PublishStdMsgEmpty(const AZStd::string& topicName) override;
+        void PublishStdMsgUInt32(const AZStd::string& topicName, const uint32_t value) override;
+        void PublishStdMsgInt32(const AZStd::string& topicName, const int32_t value) override;
+        void PublishStdMsgFloat32(const AZStd::string& topicName, const float value) override;
+        void PublishStdMsgBool(const AZStd::string& topicName, const bool value) override;
+        void PublishGeometryMsgsTwist(const AZStd::string& topicName, const AZ::Vector3& linear, const AZ::Vector3& angular) override;
+        void PublishGeometryMsgTransform(const AZStd::string& topicName, const AZ::Transform& transform) override;
+        void PublishGeometryMsgVector3(const AZStd::string& topicName, const AZ::Vector3& vector) override;
+        void PublishGeometryMsgQuaternion(const AZStd::string& topicName, const AZ::Quaternion& quaternion) override;
+        void PublishGeometryMsgPoint32(const AZStd::string& topicName, const AZ::Vector3& point) override;
+        void PublishGeometryMsgPoseStamped(
+            const AZStd::string& topicName, const AZStd::string& frame, const AZ::Transform& transform) override;
+
+        // SubscriberRequestBus overrides ...
+        void SubscribeToStdMsgBool(const AZStd::string& topicName) override;
+        void SubscribeToSensorMsgJoy(const AZStd::string& topicName) override;
+        void SubscribeToGeometryMsgPoseStamped(const AZStd::string& topicName) override;
+        void SubscribeToString(const AZStd::string& topicName) override;
+        void SubscribeToFloat32(const AZStd::string& topicName) override;
+        void SubscribeToUInt32(const AZStd::string& topicName) override;
+        void SubscribeToInt32(const AZStd::string& topicName) override;
 
         // AZ::Component overrides ...
         void Init() override;
+
         void Activate() override;
+
         void Deactivate() override;
 
     private:
         AZStd::mutex m_publisherMapMutex;
         AZStd::unordered_map<AZStd::string, std::shared_ptr<rclcpp::PublisherBase>> m_publishers;
+
+        AZStd::mutex m_subscribersMapMutex;
+        AZStd::unordered_map<AZStd::string, std::shared_ptr<rclcpp::SubscriptionBase>> m_subscribers;
 
         //! This function will return a publisher for a given topic name. If the publisher does not exist, it will be created.
         //! @tparam MessageType the type of message to publish

@@ -1,16 +1,18 @@
 
 #include "ROS2ScriptIntegrationSystemComponent.h"
-
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
+#include <ROS2ScriptIntegration/ROS2ScriptSubscriberBus.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <geometry_msgs/msg/point32.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
+#include <sensor_msgs/msg/joy.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
 #include <std_msgs/msg/float32.hpp>
@@ -25,44 +27,13 @@ namespace ROS2ScriptIntegration
 
     void ROS2ScriptIntegrationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        SubscriberNotificationHandler::Reflect(context);
+        SubscriberRequests::Reflect(context);
+        PublisherRequests::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ROS2ScriptIntegrationSystemComponent, AZ::Component>()->Version(0);
-        }
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<PublisherRequestBus>("PublisherRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, "ROS2")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Module, "ROS2")
-                ->Event(
-                    "PublishStdMsgsString", &PublisherRequestBus::Events::PublishStdMsgsString, { { { "Topic", "" }, { "Value", "" } } })
-                ->Event("PublishStdMsgEmpty", &PublisherRequestBus::Events::PublishStdMsgEmpty, { { { "Topic", "" } } })
-                ->Event("PublishStdMsgUInt32", &PublisherRequestBus::Events::PublishStdMsgUInt32, { { { "Topic", "" }, { "Value", "" } } })
-                ->Event("PublishStdMsgInt32", &PublisherRequestBus::Events::PublishStdMsgInt32, { { { "Topic", "" }, { "Value", "" } } })
-                ->Event(
-                    "PublishStdMsgFloat32", &PublisherRequestBus::Events::PublishStdMsgFloat32, { { { "Topic", "" }, { "Value", "" } } })
-                ->Event("PublishStdMsgBool", &PublisherRequestBus::Events::PublishStdMsgBool, { { { "Topic", "" }, { "Value", "" } } })
-                ->Event(
-                    "PublishGeometryMsgsTwist",
-                    &PublisherRequestBus::Events::PublishGeometryMsgsTwist,
-                    { { { "Topic", "" }, { "Linear", "" }, { "Angular", "" } } })
-                ->Event(
-                    "PublishGeometryMsgTransform",
-                    &PublisherRequestBus::Events::PublishGeometryMsgTransform,
-                    { { { "Topic", "" }, { "Transform", "" } } })
-                ->Event(
-                    "PublishGeometryMsgVector3",
-                    &PublisherRequestBus::Events::PublishGeometryMsgVector3,
-                    { { { "Topic", "" }, { "Vector", "" } } })
-                ->Event(
-                    "PublishGeometryMsgQuaternion",
-                    &PublisherRequestBus::Events::PublishGeometryMsgQuaternion,
-                    { { { "Topic", "" }, { "Quaternion", "" } } })
-                ->Event(
-                    "PublishGeometryMsgPoint32",
-                    &PublisherRequestBus::Events::PublishGeometryMsgPoint32,
-                    { { { "Topic", "" }, { "Point", "" } } });
         }
     }
 
@@ -116,16 +87,30 @@ namespace ROS2ScriptIntegration
 
     void ROS2ScriptIntegrationSystemComponent::Activate()
     {
+        AZ::TickBus::Handler::BusConnect();
         ROS2ScriptIntegrationRequestBus::Handler::BusConnect();
         PublisherRequestBus::Handler::BusConnect();
+        SubscriberRequestBus::Handler::BusConnect();
     }
 
     void ROS2ScriptIntegrationSystemComponent::Deactivate()
     {
+        std::lock_guard<AZStd::mutex> lock1(m_publisherMapMutex);
+        m_publishers.clear();
+        std::lock_guard<AZStd::mutex> lock2(m_subscribersMapMutex);
+        m_subscribers.clear();
+        SubscriberRequestBus::Handler::BusDisconnect();
         PublisherRequestBus::Handler::BusDisconnect();
         ROS2ScriptIntegrationRequestBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
+    void ROS2ScriptIntegrationSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgBool, "test");
+    }
+
+    // Publishers overrides ...
     void ROS2ScriptIntegrationSystemComponent::PublishStdMsgsString(const AZStd::string& topicName, const AZStd::string& value)
     {
         auto publisher = GetOrCreatePublisher<std_msgs::msg::String>(topicName);
@@ -288,10 +273,166 @@ namespace ROS2ScriptIntegration
         return;
     }
 
-    template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<MessageType>>
+    void ROS2ScriptIntegrationSystemComponent::PublishGeometryMsgPoseStamped(
+        const AZStd::string& topicName, const AZStd::string& frame, const AZ::Transform& transform)
+    {
+        auto publisher = GetOrCreatePublisher<geometry_msgs::msg::PoseStamped>(topicName);
+        if (publisher)
+        {
+            auto message = geometry_msgs::msg::PoseStamped();
+            message.header.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
+            message.header.frame_id = std::string(frame.c_str());
+            message.pose.position.x = transform.GetTranslation().GetX();
+            message.pose.position.y = transform.GetTranslation().GetY();
+            message.pose.position.z = transform.GetTranslation().GetZ();
+            message.pose.orientation.x = transform.GetRotation().GetX();
+            message.pose.orientation.y = transform.GetRotation().GetY();
+            message.pose.orientation.z = transform.GetRotation().GetZ();
+            message.pose.orientation.w = transform.GetRotation().GetW();
+            publisher->publish(message);
+        }
+    }
 
-    ROS2ScriptIntegrationSystemComponent::GetOrCreatePublisher(const AZStd::string& topicName)
+    // SubscriberRequests overrides ...
+    void ROS2ScriptIntegrationSystemComponent::SubscribeToStdMsgBool(const AZStd::string& topicName)
+    {
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        if (ros2Node)
+        {
+            auto subscriber = ros2Node->create_subscription<std_msgs::msg::Bool>(
+                std::string(topicName.c_str()),
+                10,
+                [](const std_msgs::msg::Bool::SharedPtr msg)
+                {
+                    SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgBool, msg->data);
+                });
+            std::lock_guard<AZStd::mutex> lock(m_subscribersMapMutex);
+            m_subscribers[topicName] = subscriber;
+        }
+    }
+
+    void ROS2ScriptIntegrationSystemComponent::SubscribeToSensorMsgJoy(const AZStd::string& topicName)
+    {
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        if (ros2Node)
+        {
+            auto subscriber = ros2Node->create_subscription<sensor_msgs::msg::Joy>(
+                std::string(topicName.c_str()),
+                10,
+                [](sensor_msgs::msg::Joy::SharedPtr msg)
+                {
+                    msg->buttons.resize(4);
+                    msg->axes.resize(4);
+                    SubscriberNotificationsBus::Broadcast(
+                        &SubscriberNotificationsBus::Events::OnSensorMsgJoy,
+                        msg->buttons[0],
+                        msg->buttons[1],
+                        msg->buttons[2],
+                        msg->buttons[3],
+                        msg->axes[0],
+                        msg->axes[1],
+                        msg->axes[2],
+                        msg->axes[3]);
+                });
+            std::lock_guard<AZStd::mutex> lock(m_subscribersMapMutex);
+            m_subscribers[topicName] = subscriber;
+        }
+    }
+
+    void ROS2ScriptIntegrationSystemComponent::SubscribeToGeometryMsgPoseStamped(const AZStd::string& topicName)
+    {
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        if (ros2Node)
+        {
+            auto subscriber = ros2Node->create_subscription<geometry_msgs::msg::PoseStamped>(
+                std::string(topicName.c_str()),
+                10,
+                [](geometry_msgs::msg::PoseStamped::SharedPtr msg)
+                {
+                    SubscriberNotificationsBus::Broadcast(
+                        &SubscriberNotificationsBus::Events::OnGeometryMsgPoseStamped,
+                        AZStd::string(msg->header.frame_id.c_str()),
+                        AZ::Transform::CreateFromQuaternionAndTranslation(
+                            AZ::Quaternion(
+                                msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w),
+                            AZ::Vector3(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z)));
+                });
+            std::lock_guard<AZStd::mutex> lock(m_subscribersMapMutex);
+            m_subscribers[topicName] = subscriber;
+        }
+    }
+
+    void ROS2ScriptIntegrationSystemComponent::SubscribeToString(const AZStd::string& topicName)
+    {
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        if (ros2Node)
+        {
+            auto subscriber = ros2Node->create_subscription<std_msgs::msg::String>(
+                std::string(topicName.c_str()),
+                10,
+                [](std_msgs::msg::String::SharedPtr msg)
+                {
+                    SubscriberNotificationsBus::Broadcast(
+                        &SubscriberNotificationsBus::Events::OnStdMsgString, AZStd::string(msg->data.c_str()));
+                });
+            std::lock_guard<AZStd::mutex> lock(m_subscribersMapMutex);
+            m_subscribers[topicName] = subscriber;
+        }
+    }
+    void ROS2ScriptIntegrationSystemComponent::SubscribeToFloat32(const AZStd::string& topicName)
+    {
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        if (ros2Node)
+        {
+            auto subscriber = ros2Node->create_subscription<std_msgs::msg::Float32>(
+                std::string(topicName.c_str()),
+                10,
+                [](std_msgs::msg::Float32::SharedPtr msg)
+                {
+                    SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgFloat32, msg->data);
+                });
+            std::lock_guard<AZStd::mutex> lock(m_subscribersMapMutex);
+            m_subscribers[topicName] = subscriber;
+        }
+    }
+
+    void ROS2ScriptIntegrationSystemComponent::SubscribeToUInt32(const AZStd::string& topicName)
+    {
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        if (ros2Node)
+        {
+            auto subscriber = ros2Node->create_subscription<std_msgs::msg::UInt32>(
+                std::string(topicName.c_str()),
+                10,
+                [](std_msgs::msg::UInt32::SharedPtr msg)
+                {
+                    SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgUInt32, msg->data);
+                });
+            std::lock_guard<AZStd::mutex> lock(m_subscribersMapMutex);
+            m_subscribers[topicName] = subscriber;
+        }
+    };
+
+    void ROS2ScriptIntegrationSystemComponent::SubscribeToInt32(const AZStd::string& topicName)
+    {
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        if (ros2Node)
+        {
+            auto subscriber = ros2Node->create_subscription<std_msgs::msg::Int32>(
+                std::string(topicName.c_str()),
+                10,
+                [](std_msgs::msg::Int32::SharedPtr msg)
+                {
+                    SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgInt32, msg->data);
+                });
+            std::lock_guard<AZStd::mutex> lock(m_subscribersMapMutex);
+            m_subscribers[topicName] = subscriber;
+        }
+    };
+
+    template<typename MessageType>
+    std::shared_ptr<rclcpp::Publisher<MessageType>> ROS2ScriptIntegrationSystemComponent::GetOrCreatePublisher(
+        const AZStd::string& topicName)
     {
         std::lock_guard<AZStd::mutex> lock(m_publisherMapMutex);
         auto it = m_publishers.find(topicName);
@@ -311,60 +452,30 @@ namespace ROS2ScriptIntegration
         return nullptr;
     }
 
-    // Explicit template instantiation for all message types
+    // Explicit template instantiation for all message types (Publishers)
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Empty>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Float32>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Int32>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::UInt32>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<std_msgs::msg::UInt32>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Point32>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Point32>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Quaternion>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Quaternion>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Transform>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Transform>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Twist>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
-
+    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Twist>> GetOrCreatePublisher(const AZStd::string& topicName);
     template<typename MessageType>
-    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Vector3>>
-
-    GetOrCreatePublisher(const AZStd::string& topicName);
+    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::Vector3>> GetOrCreatePublisher(const AZStd::string& topicName);
+    template<typename MessageType>
+    std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>> GetOrCreatePublisher(const AZStd::string& topicName);
 
 } // namespace ROS2ScriptIntegration

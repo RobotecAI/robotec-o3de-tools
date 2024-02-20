@@ -73,7 +73,7 @@ ly_add_target(
             Gem::${gem_name}.Private.Object
 )
 
-target_depends_on_ros2_packages( ${gem_name}.Private.Object rclcpp builtin_interfaces std_msgs)
+target_depends_on_ros2_packages( ${gem_name}.Private.Object rclcpp builtin_interfaces std_msgs geometry_msgs sensor_msgs)
 
 # By default, we will specify that the above target ${gem_name} would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
