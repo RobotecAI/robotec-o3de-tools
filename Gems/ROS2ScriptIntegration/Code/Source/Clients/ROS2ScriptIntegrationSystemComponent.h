@@ -5,7 +5,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <ROS2/ROS2Bus.h>
 #include <ROS2/ROS2GemUtilities.h>
 #include <ROS2/Utilities/ROS2Conversions.h>
@@ -20,7 +20,6 @@ namespace ROS2ScriptIntegration
         , protected ROS2ScriptIntegrationRequestBus::Handler
         , protected PublisherRequestBus::Handler
         , protected SubscriberRequestBus::Handler
-        , protected AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT_DECL(ROS2ScriptIntegrationSystemComponent);
@@ -40,9 +39,6 @@ namespace ROS2ScriptIntegration
         ~ROS2ScriptIntegrationSystemComponent();
 
     protected:
-        // AZ::TickBus::Handler overrides ...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
         // ROS2ScriptIntegrationRequestBus::Handler overrides ...
         void PublishStdMsgsString(const AZStd::string& topicName, const AZStd::string& value) override;
         void PublishStdMsgEmpty(const AZStd::string& topicName) override;
@@ -75,16 +71,16 @@ namespace ROS2ScriptIntegration
         void Deactivate() override;
 
     private:
-        AZStd::mutex m_publisherMapMutex;
+        AZStd::shared_mutex m_publisherMapMutex;
         AZStd::unordered_map<AZStd::string, std::shared_ptr<rclcpp::PublisherBase>> m_publishers;
 
-        AZStd::mutex m_subscribersMapMutex;
+        AZStd::shared_mutex m_subscribersMapMutex;
         AZStd::unordered_map<AZStd::string, std::shared_ptr<rclcpp::SubscriptionBase>> m_subscribers;
 
         //! This function will return a publisher for a given topic name. If the publisher does not exist, it will be created.
         //! @tparam MessageType the type of message to publish
         //! @param topicName the name of the topic to publish to
-        //! @return a publisher for the given topic name
+        //! @return a publisher for the given topic name, nullptr is returned if the publisher could not be created
         template<typename MessageType>
         std::shared_ptr<rclcpp::Publisher<MessageType>> GetOrCreatePublisher(const AZStd::string& topicName);
     };

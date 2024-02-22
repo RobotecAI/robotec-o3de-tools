@@ -30,6 +30,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
+           Gem::ROS2.API
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -50,7 +51,8 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::ROS2.Static
+            Gem::ROS2.API
+
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -68,7 +70,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::${gem_name}.API
-            Gem::ROS2.Static
         PRIVATE
             Gem::${gem_name}.Private.Object
 )
