@@ -41,6 +41,8 @@ ly_add_target(
     FILES_CMAKE
         ros2scriptintegration_private_files.cmake
         ${pal_dir}/ros2scriptintegration_private_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/Platform/Common/${PAL_TRAIT_COMPILER_ID}/ros2scriptintegration_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES

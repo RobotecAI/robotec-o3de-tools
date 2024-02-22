@@ -56,6 +56,13 @@ namespace ROS2ScriptIntegration
     private:
         AZStd::shared_mutex m_subscribersMapMutex;
         AZStd::unordered_map<AZStd::string, std::shared_ptr<rclcpp::SubscriptionBase>> m_subscribers;
+
+        //! Helper function to subscribe to a topic and store the subscription in the subscribers map
+        //! @tparam MessageType The type of message to subscribe to
+        //! @param topicName The name of the topic to subscribe to
+        //! @param callback The callback to call when a message is received
+        template<typename MessageType>
+        void SubscribeToTopic(const AZStd::string& topicName, const std::function<void(const MessageType&)>& callback);
     };
 
 } // namespace ROS2ScriptIntegration

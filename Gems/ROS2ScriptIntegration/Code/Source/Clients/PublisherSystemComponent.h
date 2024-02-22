@@ -80,6 +80,9 @@ namespace ROS2ScriptIntegration
         //! @return a publisher for the given topic name, nullptr is returned if the publisher could not be created
         template<typename MessageType>
         std::shared_ptr<rclcpp::Publisher<MessageType>> GetOrCreatePublisher(const AZStd::string& topicName);
+
+        template<typename MessageType>
+        void PublishMessage(AZStd::string topicName, const MessageType& message);
     };
 
 } // namespace ROS2ScriptIntegration
