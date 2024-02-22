@@ -1,20 +1,22 @@
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include "ROS2ScriptIntegrationEditorSystemComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
 
 namespace ROS2ScriptIntegration
 {
-    AZ_COMPONENT_IMPL(ROS2ScriptIntegrationEditorSystemComponent, "ROS2ScriptIntegrationEditorSystemComponent",
-        ROS2ScriptIntegrationEditorSystemComponentTypeId, BaseSystemComponent);
+    AZ_COMPONENT_IMPL(
+        ROS2ScriptIntegrationEditorSystemComponent,
+        "ROS2ScriptIntegrationEditorSystemComponent",
+        ROS2ScriptIntegrationEditorSystemComponentTypeId,
+        BaseSystemComponent);
 
     void ROS2ScriptIntegrationEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ROS2ScriptIntegrationEditorSystemComponent, ROS2ScriptIntegrationSystemComponent>()
-                ->Version(0);
+            serializeContext->Class<ROS2ScriptIntegrationEditorSystemComponent, ROS2ScriptIntegrationSystemComponent>()->Version(0);
         }
     }
 
@@ -34,12 +36,16 @@ namespace ROS2ScriptIntegration
         incompatible.push_back(AZ_CRC_CE("ROS2ScriptIntegrationEditorService"));
     }
 
-    void ROS2ScriptIntegrationEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    void ROS2ScriptIntegrationEditorSystemComponent::GetRequiredServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         BaseSystemComponent::GetRequiredServices(required);
+        required.push_back(AZ_CRC_CE("PublisherEditorService"));
+        required.push_back(AZ_CRC_CE("SubscriberEditorService"));
     }
 
-    void ROS2ScriptIntegrationEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void ROS2ScriptIntegrationEditorSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         BaseSystemComponent::GetDependentServices(dependent);
     }
@@ -47,6 +53,7 @@ namespace ROS2ScriptIntegration
     void ROS2ScriptIntegrationEditorSystemComponent::Activate()
     {
         ROS2ScriptIntegrationSystemComponent::Activate();
+
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 

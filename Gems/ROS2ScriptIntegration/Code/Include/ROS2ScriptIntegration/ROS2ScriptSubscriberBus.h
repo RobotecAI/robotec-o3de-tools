@@ -43,6 +43,7 @@ namespace ROS2ScriptIntegration
     };
 
     using SubscriberRequestBus = AZ::EBus<SubscriberRequests>;
+    using SubscriberInterface = AZ::Interface<SubscriberRequests>;
 
     class SubscriberNotifications : public AZ::EBusTraits
     {
@@ -62,7 +63,6 @@ namespace ROS2ScriptIntegration
     };
 
     using SubscriberNotificationsBus = AZ::EBus<SubscriberNotifications>;
-
     //! This simple handler can be used for prototyping using LUA scripting
     class SubscriberNotificationHandler
         : public SubscriberNotificationsBus::Handler

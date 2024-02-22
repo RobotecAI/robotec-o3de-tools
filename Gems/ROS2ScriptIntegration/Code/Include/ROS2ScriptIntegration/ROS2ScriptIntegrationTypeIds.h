@@ -14,6 +14,12 @@ namespace ROS2ScriptIntegration
     // so they use the Same TypeId
     inline constexpr const char* ROS2ScriptIntegrationEditorModuleTypeId = ROS2ScriptIntegrationModuleTypeId;
 
+    inline constexpr const char* PublisherSystemComponentTypeId = "{6ee12dfa-5a6c-4223-b067-f798d9127840}";
+    inline constexpr const char* SubscriberSystemComponentTypeId = "{a30c445b-9a51-4036-871d-9f3b2917de58}";
+    inline constexpr const char* PublisherEditorSystemComponentTypeId = "{e31ac401-f40e-442a-8072-19d6c1f523f2}";
+    inline constexpr const char* SubscriberEditorSystemComponentTypeId = "{f4dba5a4-23da-463a-8d20-5866e897366f}";
+
     // Interface TypeIds
     inline constexpr const char* ROS2ScriptIntegrationRequestsTypeId = "{BF116726-F2D1-44A2-ADE9-FB0047E6749D}";
+
 } // namespace ROS2ScriptIntegration

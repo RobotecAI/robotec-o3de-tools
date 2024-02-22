@@ -15,12 +15,12 @@
 
 namespace ROS2ScriptIntegration
 {
-    class ROS2ScriptIntegrationSystemComponent
+    class SubscriberSystemComponent
         : public AZ::Component
-        , protected ROS2ScriptIntegrationRequestBus::Handler
+        , protected SubscriberRequestBus::Handler
     {
     public:
-        AZ_COMPONENT_DECL(ROS2ScriptIntegrationSystemComponent);
+        AZ_COMPONENT_DECL(SubscriberSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -32,17 +32,30 @@ namespace ROS2ScriptIntegration
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        ROS2ScriptIntegrationSystemComponent();
+        SubscriberSystemComponent();
 
-        ~ROS2ScriptIntegrationSystemComponent();
+        ~SubscriberSystemComponent();
 
     protected:
+        // SubscriberRequestBus overrides ...
+        void SubscribeToStdMsgBool(const AZStd::string& topicName) override;
+        void SubscribeToSensorMsgJoy(const AZStd::string& topicName) override;
+        void SubscribeToGeometryMsgPoseStamped(const AZStd::string& topicName) override;
+        void SubscribeToString(const AZStd::string& topicName) override;
+        void SubscribeToFloat32(const AZStd::string& topicName) override;
+        void SubscribeToUInt32(const AZStd::string& topicName) override;
+        void SubscribeToInt32(const AZStd::string& topicName) override;
+
         // AZ::Component overrides ...
         void Init() override;
 
         void Activate() override;
 
         void Deactivate() override;
+
+    private:
+        AZStd::shared_mutex m_subscribersMapMutex;
+        AZStd::unordered_map<AZStd::string, std::shared_ptr<rclcpp::SubscriptionBase>> m_subscribers;
     };
 
 } // namespace ROS2ScriptIntegration
