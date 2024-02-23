@@ -63,6 +63,10 @@ namespace ROS2ScriptIntegration
         void PublishGeometryMsgPoseStamped(
             const AZStd::string& topicName, const AZStd::string& frame, const AZ::Transform& transform) override;
 
+        void PublishAckermannDriveMsg(
+            const AZStd::string& topicName, float steeringAngle, float steeringVelocity, float speed, float acceleration, float jerk)
+            override;
+
         // AZ::Component overrides ...
         void Init() override;
 

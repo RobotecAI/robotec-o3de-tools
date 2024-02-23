@@ -45,7 +45,16 @@ namespace ROS2ScriptIntegration
                 ->Event(
                     "PublishGeometryMsgPoseStamped",
                     &PublisherRequestBus::Events::PublishGeometryMsgPoseStamped,
-                    { { { "Topic", "" }, { "Frame", "" }, { "Transform", "" } } });
+                    { { { "Topic", "" }, { "Frame", "" }, { "Transform", "" } } })
+                ->Event(
+                    "PublishAckermannDriveMsg",
+                    &PublisherRequestBus::Events::PublishAckermannDriveMsg,
+                    { { { "Topic", "" },
+                        { "SteeringAngle", "" },
+                        { "SteeringVelocity", "" },
+                        { "Speed", "" },
+                        { "Acceleration", "" },
+                        { "Jerk", "" } } });
         }
     }
 } // namespace ROS2ScriptIntegration

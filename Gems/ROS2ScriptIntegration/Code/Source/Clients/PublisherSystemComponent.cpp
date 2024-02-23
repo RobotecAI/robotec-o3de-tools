@@ -5,6 +5,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <ackermann_msgs/msg/ackermann_drive.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
@@ -192,6 +193,18 @@ namespace ROS2ScriptIntegration
         message.pose.orientation.y = transform.GetRotation().GetY();
         message.pose.orientation.z = transform.GetRotation().GetZ();
         message.pose.orientation.w = transform.GetRotation().GetW();
+        PublishMessage(topicName, message);
+    }
+
+    void PublisherSystemComponent::PublishAckermannDriveMsg(
+        const AZStd::string& topicName, float steeringAngle, float steeringVelocity, float speed, float acceleration, float jerk)
+    {
+        ackermann_msgs::msg::AckermannDrive message;
+        message.steering_angle = steeringAngle;
+        message.steering_angle_velocity = steeringVelocity;
+        message.speed = speed;
+        message.acceleration = acceleration;
+        message.jerk = jerk;
         PublishMessage(topicName, message);
     }
 
