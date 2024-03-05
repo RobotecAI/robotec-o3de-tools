@@ -38,7 +38,7 @@ namespace RobotecRecordingTools
                         AZ::Edit::UIHandlers::Default,
                         &ScreenRecorderComponent::m_captureFramerate,
                         "Capture framerate",
-                        "Limit of capture framerate. This framerate coresponds simulation time, which can be scaled using \"Tick scale\" parameter. If this framerate if lower or equal zero, frames will be captured without limit.")
+                        "Limit of capture framerate. This framerate corresponds to simulation time, which can be scaled using \"Tick scale\" parameter. If this framerate is lower or equal to zero, frames will be captured without limit.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ScreenRecorderComponent::m_tickScale,
