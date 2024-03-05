@@ -8,4 +8,6 @@ set(FILES
     Source/Cameras/CameraJoystick.h
     Source/Cameras/SplineCameraAnimation.cpp
     Source/Cameras/SplineCameraAnimation.h
+    Source/ScreenRecorder/ScreenRecorderComponent.h
+    Source/ScreenRecorder/ScreenRecorderComponent.cpp    
 )
