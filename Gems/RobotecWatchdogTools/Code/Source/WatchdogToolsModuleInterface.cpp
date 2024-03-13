@@ -6,14 +6,10 @@
  *
  */
 
-#pragma once
-
 #include "WatchdogToolsModuleInterface.h"
 #include <AzCore/Memory/Memory.h>
-
-#include <WatchdogTools/WatchdogToolsTypeIds.h>
-
 #include <Clients/WatchdogToolsSystemComponent.h>
+#include <WatchdogTools/WatchdogToolsTypeIds.h>
 
 namespace WatchdogTools
 {

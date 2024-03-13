@@ -8,7 +8,6 @@
 
 #include "WatchdogToolsEditorSystemComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
-
 #include <WatchdogTools/WatchdogToolsTypeIds.h>
 
 namespace WatchdogTools
@@ -41,16 +40,6 @@ namespace WatchdogTools
     {
         BaseSystemComponent::GetIncompatibleServices(incompatible);
         incompatible.push_back(AZ_CRC_CE("WatchdogToolsEditorService"));
-    }
-
-    void WatchdogToolsEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-        BaseSystemComponent::GetRequiredServices(required);
-    }
-
-    void WatchdogToolsEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-        BaseSystemComponent::GetDependentServices(dependent);
     }
 
     void WatchdogToolsEditorSystemComponent::Activate()

@@ -10,12 +10,10 @@
 
 #include "AzCore/Module/DynamicModuleHandle.h"
 #include "AzCore/Module/ModuleManagerBus.h"
-
-#include <Clients/WatchdogToolsSettings.h>
-#include <WatchdogTools/WatchdogToolsTypeIds.h>
-
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Clients/WatchdogToolsSettings.h>
+#include <WatchdogTools/WatchdogToolsTypeIds.h>
 
 namespace WatchdogTools
 {

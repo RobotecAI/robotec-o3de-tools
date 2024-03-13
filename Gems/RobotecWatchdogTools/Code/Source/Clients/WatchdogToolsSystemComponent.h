@@ -32,8 +32,6 @@ namespace WatchdogTools
 
     protected:
         // AZ::Component overrides ...
-        // void Init() override;
-
         void Activate() override;
 
         void Deactivate() override;

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Settings/SettingsRegistry.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace WatchdogTools
 {
