@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2024 Robotec.ai
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
 
 #include <AzCore/Memory/Memory_fwd.h>
 #include <AzCore/Module/Module.h>
@@ -6,8 +15,7 @@
 
 namespace WatchdogTools
 {
-    class WatchdogToolsModuleInterface
-        : public AZ::Module
+    class WatchdogToolsModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(WatchdogToolsModuleInterface)
@@ -21,4 +29,4 @@ namespace WatchdogTools
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace WatchdogTools
+} // namespace WatchdogTools

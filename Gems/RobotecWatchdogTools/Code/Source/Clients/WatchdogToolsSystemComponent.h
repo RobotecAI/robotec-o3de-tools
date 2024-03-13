@@ -1,14 +1,14 @@
+/*
+ * Copyright (c) 2024 Robotec.ai
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
-#include "rclcpp/publisher.hpp"
-#include "rclcpp/rclcpp.hpp"
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/std/parallel/shared_mutex.h>
-#include <ROS2/ROS2Bus.h>
-#include <ROS2/ROS2GemUtilities.h>
-#include <ROS2/Utilities/ROS2Conversions.h>
 #include <WatchdogTools/WatchdogToolsBus.h>
 
 namespace WatchdogTools
@@ -26,17 +26,13 @@ namespace WatchdogTools
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
-
         WatchdogToolsSystemComponent();
 
         ~WatchdogToolsSystemComponent();
 
     protected:
         // AZ::Component overrides ...
-        void Init() override;
+        // void Init() override;
 
         void Activate() override;
 

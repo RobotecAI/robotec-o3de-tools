@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project.
+ * Copyright (c) 2024 Robotec.ai
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -78,7 +78,7 @@ namespace WatchdogTools
         if (settingsRegistry == nullptr)
         {
             AZ_Warning("WatchdogSettings", false, "No settings registry provided, default settings will be used.");
-            return ;
+            return;
         }
 
         // Callback is needed for visiting array elements.
@@ -98,8 +98,8 @@ namespace WatchdogTools
             }
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
-        bool result = AZ::SettingsRegistryVisitorUtils::VisitArray(
-            *settingsRegistry, CollectRequiredModules, WatchdogRequiredModulesRegistryKey);
+        bool result =
+            AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, CollectRequiredModules, WatchdogRequiredModulesRegistryKey);
         AZ_Warning("WatchdogSettings", result, "Required modules not read. Use defaults");
     }
 } // namespace WatchdogTools

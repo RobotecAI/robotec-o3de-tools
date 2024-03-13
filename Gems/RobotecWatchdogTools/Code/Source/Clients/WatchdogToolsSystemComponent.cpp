@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2024 Robotec.ai
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "WatchdogToolsSystemComponent.h"
 
@@ -33,15 +40,6 @@ namespace WatchdogTools
         incompatible.push_back(AZ_CRC_CE("WatchdogToolsService"));
     }
 
-    void WatchdogToolsSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-    }
-
-    void WatchdogToolsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-        dependent.push_back(AZ_CRC_CE("ROS2Service"));
-    }
-
     WatchdogToolsSystemComponent::WatchdogToolsSystemComponent()
     {
         if (WatchdogToolsInterface::Get() == nullptr)
@@ -56,10 +54,6 @@ namespace WatchdogTools
         {
             WatchdogToolsInterface::Unregister(this);
         }
-    }
-
-    void WatchdogToolsSystemComponent::Init()
-    {
     }
 
     void WatchdogToolsSystemComponent::Activate()
