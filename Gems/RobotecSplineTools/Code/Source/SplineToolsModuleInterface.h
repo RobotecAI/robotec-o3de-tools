@@ -4,21 +4,21 @@
 #include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
-namespace RobotecSplineTools
+namespace SplineTools
 {
-    class RobotecSplineToolsModuleInterface
+    class SplineToolsModuleInterface
         : public AZ::Module
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(RobotecSplineToolsModuleInterface)
+        AZ_TYPE_INFO_WITH_NAME_DECL(SplineToolsModuleInterface)
         AZ_RTTI_NO_TYPE_INFO_DECL()
         AZ_CLASS_ALLOCATOR_DECL
 
-        RobotecSplineToolsModuleInterface();
+        SplineToolsModuleInterface();
 
         /**
          * Add required SystemComponents to the SystemEntity.
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace RobotecSplineTools
+}// namespace SplineTools

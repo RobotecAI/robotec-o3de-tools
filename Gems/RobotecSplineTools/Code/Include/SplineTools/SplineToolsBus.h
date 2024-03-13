@@ -1,22 +1,22 @@
 
 #pragma once
 
-#include <RobotecSplineTools/RobotecSplineToolsTypeIds.h>
+#include <SplineTools/SplineToolsTypeIds.h>
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
-namespace RobotecSplineTools
+namespace SplineTools
 {
-    class RobotecSplineToolsRequests
+    class SplineToolsRequests
     {
     public:
-        AZ_RTTI(RobotecSplineToolsRequests, RobotecSplineToolsRequestsTypeId);
-        virtual ~RobotecSplineToolsRequests() = default;
+        AZ_RTTI(SplineToolsRequests, SplineToolsRequestsTypeId);
+        virtual ~SplineToolsRequests() = default;
         // Put your public methods here
     };
 
-    class RobotecSplineToolsBusTraits
+    class SplineToolsBusTraits
         : public AZ::EBusTraits
     {
     public:
@@ -27,7 +27,7 @@ namespace RobotecSplineTools
         //////////////////////////////////////////////////////////////////////////
     };
 
-    using RobotecSplineToolsRequestBus = AZ::EBus<RobotecSplineToolsRequests, RobotecSplineToolsBusTraits>;
-    using RobotecSplineToolsInterface = AZ::Interface<RobotecSplineToolsRequests>;
+    using SplineToolsRequestBus = AZ::EBus<SplineToolsRequests, SplineToolsBusTraits>;
+    using SplineToolsInterface = AZ::Interface<SplineToolsRequests>;
 
-} // namespace RobotecSplineTools
+} // namespace SplineTools

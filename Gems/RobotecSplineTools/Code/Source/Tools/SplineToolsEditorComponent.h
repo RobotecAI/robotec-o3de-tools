@@ -7,7 +7,7 @@
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-namespace RobotecSplineTools
+namespace SplineTools
 {
     //! Editor component that allows to set Spline points from a CSV file
     //! The CSV file must have columns named x, y, z or lat, lon, alt
@@ -44,4 +44,4 @@ namespace RobotecSplineTools
         void ReloadCSVAsset();
         AZStd::vector<AZ::Vector3> GetSplinePointsFromCsv(const AZStd::string& csvFilePath);
     };
-} // namespace RobotecSplineTools
+} // namespace SplineTools

@@ -3,23 +3,23 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <Clients/RobotecSplineToolsSystemComponent.h>
+#include <Clients/SplineToolsSystemComponent.h>
 
-namespace RobotecSplineTools
+namespace SplineTools
 {
-    /// System component for RobotecSplineTools editor
-    class RobotecSplineToolsEditorSystemComponent
-        : public RobotecSplineToolsSystemComponent
+    /// System component for SplineTools editor
+    class SplineToolsEditorSystemComponent
+        : public SplineToolsSystemComponent
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
-        using BaseSystemComponent = RobotecSplineToolsSystemComponent;
+        using BaseSystemComponent = SplineToolsSystemComponent;
     public:
-        AZ_COMPONENT_DECL(RobotecSplineToolsEditorSystemComponent);
+        AZ_COMPONENT_DECL(SplineToolsEditorSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        RobotecSplineToolsEditorSystemComponent();
-        ~RobotecSplineToolsEditorSystemComponent();
+        SplineToolsEditorSystemComponent();
+        ~SplineToolsEditorSystemComponent();
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -31,4 +31,4 @@ namespace RobotecSplineTools
         void Activate() override;
         void Deactivate() override;
     };
-} // namespace RobotecSplineTools
+} // namespace SplineTools

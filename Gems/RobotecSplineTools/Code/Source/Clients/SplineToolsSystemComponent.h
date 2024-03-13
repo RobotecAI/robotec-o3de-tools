@@ -3,17 +3,17 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <RobotecSplineTools/RobotecSplineToolsBus.h>
+#include <SplineTools/SplineToolsBus.h>
 
-namespace RobotecSplineTools
+namespace SplineTools
 {
-    class RobotecSplineToolsSystemComponent
+    class SplineToolsSystemComponent
         : public AZ::Component
-        , protected RobotecSplineToolsRequestBus::Handler
+        , protected SplineToolsRequestBus::Handler
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT_DECL(RobotecSplineToolsSystemComponent);
+        AZ_COMPONENT_DECL(SplineToolsSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -22,12 +22,12 @@ namespace RobotecSplineTools
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        RobotecSplineToolsSystemComponent();
-        ~RobotecSplineToolsSystemComponent();
+        SplineToolsSystemComponent();
+        ~SplineToolsSystemComponent();
 
     protected:
         ////////////////////////////////////////////////////////////////////////
-        // RobotecSplineToolsRequestBus interface implementation
+        // SplineToolsRequestBus interface implementation
 
         ////////////////////////////////////////////////////////////////////////
 
@@ -44,4 +44,4 @@ namespace RobotecSplineTools
         ////////////////////////////////////////////////////////////////////////
     };
 
-} // namespace RobotecSplineTools
+} // namespace SplineTools

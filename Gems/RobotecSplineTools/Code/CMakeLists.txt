@@ -3,8 +3,8 @@
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
 # Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
 #       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here in our gem : Gems/RobotecSplineTools/Code/Platform/<platorm_name>  or
-#            <restricted_folder>/<platform_name>/Gems/RobotecSplineTools/Code
+#       i.e. It could here in our gem : Gems/SplineTools/Code/Platform/<platorm_name>  or
+#            <restricted_folder>/<platform_name>/Gems/SplineTools/Code
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
@@ -22,8 +22,8 @@ ly_add_target(
     NAME ${gem_name}.API INTERFACE
     NAMESPACE Gem
     FILES_CMAKE
-        robotecsplinetools_api_files.cmake
-        ${pal_dir}/robotecsplinetools_api_files.cmake
+        splinetools_api_files.cmake
+        ${pal_dir}/splinetools_api_files.cmake
     INCLUDE_DIRECTORIES
         INTERFACE
             Include
@@ -38,8 +38,8 @@ ly_add_target(
     NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        robotecsplinetools_private_files.cmake
-        ${pal_dir}/robotecsplinetools_private_files.cmake
+        splinetools_private_files.cmake
+        ${pal_dir}/splinetools_private_files.cmake
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
@@ -57,8 +57,8 @@ ly_add_target(
     NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
-        robotecsplinetools_shared_files.cmake
-        ${pal_dir}/robotecsplinetools_shared_files.cmake
+        splinetools_shared_files.cmake
+        ${pal_dir}/splinetools_shared_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -94,8 +94,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${gem_name}.Editor.API INTERFACE
         NAMESPACE Gem
         FILES_CMAKE
-            robotecsplinetools_editor_api_files.cmake
-            ${pal_dir}/robotecsplinetools_editor_api_files.cmake
+            splinetools_editor_api_files.cmake
+            ${pal_dir}/splinetools_editor_api_files.cmake
         INCLUDE_DIRECTORIES
             INTERFACE
                 Include
@@ -113,7 +113,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         PLATFORM_INCLUDE_FILES
             ${CMAKE_CURRENT_LIST_DIR}/Platform/Common/${PAL_TRAIT_COMPILER_ID}/splinetools_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         FILES_CMAKE
-            robotecsplinetools_editor_private_files.cmake
+            splinetools_editor_private_files.cmake
         TARGET_PROPERTIES
             O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
@@ -133,7 +133,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
-            robotecsplinetools_editor_shared_files.cmake
+            splinetools_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -173,7 +173,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
-                robotecsplinetools_tests_files.cmake
+                splinetools_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -202,7 +202,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
                 NAMESPACE Gem
                 FILES_CMAKE
-                    robotecsplinetools_editor_tests_files.cmake
+                    splinetools_editor_tests_files.cmake
                 INCLUDE_DIRECTORIES
                     PRIVATE
                         Tests

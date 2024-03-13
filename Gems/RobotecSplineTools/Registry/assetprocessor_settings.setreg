@@ -2,13 +2,13 @@
     "Amazon": {
         "AssetProcessor": {
             "Settings": {
-                "ScanFolder RobotecSplineTools/Assets": {
-                    "watch": "@GEMROOT:RobotecSplineTools@/Assets",
+                "ScanFolder SplineTools/Assets": {
+                    "watch": "@GEMROOT:SplineTools@/Assets",
                     "recursive": 1,
                     "order": 101
                 },
-                "ScanFolder RobotecSplineTools/Registry": {
-                    "watch": "@GEMROOT:RobotecSplineTools@/Registry",
+                "ScanFolder SplineTools/Registry": {
+                    "watch": "@GEMROOT:SplineTools@/Registry",
                     "recursive": 1,
                     "order": 102
                 }

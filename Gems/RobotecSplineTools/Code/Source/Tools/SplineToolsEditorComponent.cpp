@@ -8,7 +8,7 @@
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 #include <csv/csv.hpp>
 
-namespace RobotecSplineTools
+namespace SplineTools
 {
 
     void SplineToolsEditorComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -142,4 +142,4 @@ namespace RobotecSplineTools
         return {};
     }
 
-} // namespace RobotecSplineTools
+} // namespace SplineTools

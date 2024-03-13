@@ -7,7 +7,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 # RobotecRecordingTools
 Toolset for joystick-controlled cameras and spline animation tools.
 
-# RobotecSplineTools
+# SplineTools
 The tools for expanding the usability of the Spline component in O3DE. 
 It allows to:
 ## Load spline from CSV file

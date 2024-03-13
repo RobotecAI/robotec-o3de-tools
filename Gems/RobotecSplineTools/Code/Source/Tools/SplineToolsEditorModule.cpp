@@ -1,18 +1,18 @@
 
-#include "RobotecSplineToolsEditorSystemComponent.h"
+#include "SplineToolsEditorSystemComponent.h"
 #include "SplineToolsEditorComponent.h"
-#include <RobotecSplineTools/RobotecSplineToolsTypeIds.h>
-#include <RobotecSplineToolsModuleInterface.h>
+#include <SplineTools/SplineToolsTypeIds.h>
+#include <SplineToolsModuleInterface.h>
 
-namespace RobotecSplineTools
+namespace SplineTools
 {
-    class RobotecSplineToolsEditorModule : public RobotecSplineToolsModuleInterface
+    class SplineToolsEditorModule : public SplineToolsModuleInterface
     {
     public:
-        AZ_RTTI(RobotecSplineToolsEditorModule, RobotecSplineToolsEditorModuleTypeId, RobotecSplineToolsModuleInterface);
-        AZ_CLASS_ALLOCATOR(RobotecSplineToolsEditorModule, AZ::SystemAllocator);
+        AZ_RTTI(SplineToolsEditorModule, SplineToolsEditorModuleTypeId, SplineToolsModuleInterface);
+        AZ_CLASS_ALLOCATOR(SplineToolsEditorModule, AZ::SystemAllocator);
 
-        RobotecSplineToolsEditorModule()
+        SplineToolsEditorModule()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
@@ -21,7 +21,7 @@ namespace RobotecSplineTools
             m_descriptors.insert(
                 m_descriptors.end(),
                 {
-                    RobotecSplineToolsEditorSystemComponent::CreateDescriptor(),
+                    SplineToolsEditorSystemComponent::CreateDescriptor(),
                     SplineToolsEditorComponent::CreateDescriptor(),
                 });
         }
@@ -33,10 +33,10 @@ namespace RobotecSplineTools
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<RobotecSplineToolsEditorSystemComponent>(),
+                azrtti_typeid<SplineToolsEditorSystemComponent>(),
             };
         }
     };
-} // namespace RobotecSplineTools
+} // namespace SplineTools
 
-AZ_DECLARE_MODULE_CLASS(Gem_RobotecSplineTools, RobotecSplineTools::RobotecSplineToolsEditorModule)
+AZ_DECLARE_MODULE_CLASS(Gem_SplineTools, SplineTools::SplineToolsEditorModule)
