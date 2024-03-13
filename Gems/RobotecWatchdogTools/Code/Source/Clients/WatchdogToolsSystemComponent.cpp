@@ -57,15 +57,22 @@ namespace WatchdogTools
     void WatchdogToolsSystemComponent::Activate()
     {
         WatchdogToolsRequestBus::Handler::BusConnect();
-        AZ_Trace("Watchdog", "WatchdogTools Component is being activated");
+        CheckRequiredModules();
+    }
 
+    void WatchdogToolsSystemComponent::Deactivate()
+    {
+        WatchdogToolsRequestBus::Handler::BusDisconnect();
+    }
+
+    void WatchdogToolsSystemComponent::CheckRequiredModules()
+    {
         AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         AZ_Assert(settingsRegistry, "Settings Registry Interface not available");
         WatchdogSettings watchdogSettings;
         watchdogSettings.LoadSettings(settingsRegistry);
-        AZStd::set<AZStd::string> requiredComponents = {};
+        AZStd::set<AZStd::string_view> requiredComponents = {};
         requiredComponents.insert(watchdogSettings.m_requiredModules.begin(), watchdogSettings.m_requiredModules.end());
-        AZ_Trace("Watchdog", "Count of required modules: %zu", requiredComponents.size());
         AZ::ModuleManagerRequestBus::Broadcast(
             &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
             [&requiredComponents](const AZ::ModuleData& moduleData)
@@ -82,20 +89,15 @@ namespace WatchdogTools
                     AZ_Warning("Watchdog", false, "Module %s is NOT loaded ", moduleData.GetDebugName());
                     return false;
                 }
-                else
-                {
-                    AZStd::string moduleName = moduleData.GetDebugName();
+                AZStd::string_view moduleName = moduleData.GetDebugName();
 
-                    for (auto& r : requiredComponents)
+                for (auto r : requiredComponents)
+                {
+                    if (moduleName.starts_with(r))
                     {
-                        if (moduleName.starts_with(r))
-                        {
-                            requiredComponents.erase(r);
-                            break;
-                        }
+                        requiredComponents.erase(r);
+                        break;
                     }
-                    // AZ_Info("Watchdog", "Module %s is loaded ", moduleData.GetDebugName());
-                    return true;
                 }
 
                 return true;
@@ -103,15 +105,14 @@ namespace WatchdogTools
 
         if (!requiredComponents.empty())
         {
-            AZ_Fatal("Watchdog", "Some required components were not loaded. Check the console output for errors");
-            std::terminate();
-            // AZ_Crash();
-        }
-    }
+            for (auto nonLoadedModule : requiredComponents)
+            {
+                AZ_Printf("Watchdog", "Failed to load module: " AZ_STRING_FORMAT "\n", AZ_STRING_ARG(nonLoadedModule));
+            }
+            AZ_Fatal("Watchdog", "Some required modules were not loaded. Check the console output for errors");
 
-    void WatchdogToolsSystemComponent::Deactivate()
-    {
-        WatchdogToolsRequestBus::Handler::BusDisconnect();
+            std::terminate();
+        }
     }
 
 } // namespace WatchdogTools

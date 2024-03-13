@@ -35,6 +35,9 @@ namespace WatchdogTools
         void Activate() override;
 
         void Deactivate() override;
+
+    private:
+        void CheckRequiredModules();
     };
 
 } // namespace WatchdogTools

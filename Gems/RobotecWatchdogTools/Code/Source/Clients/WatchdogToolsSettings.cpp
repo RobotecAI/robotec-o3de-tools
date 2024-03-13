@@ -61,7 +61,7 @@ namespace WatchdogTools
 
             if (auto editContext = serializeContext->GetEditContext(); editContext != nullptr)
             {
-                editContext->Class<WatchdogSettings>("Watchdog Tools Settings", "Exposes settings which alters watchdog behavior.")
+                editContext->Class<WatchdogSettings>("Watchdog Settings", "Exposes settings which alters watchdog behavior.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
@@ -84,7 +84,6 @@ namespace WatchdogTools
         // Callback is needed for visiting array elements.
         auto CollectRequiredModules = [&settingsRegistry, this](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
-            AZ_Trace("WatchdogSettings", "Visiting: " AZ_STRING_FORMAT, AZ_STRING_ARG(visitArgs.m_jsonKeyPath));
             if (AZ::SettingsRegistryInterface::FixedValueString value; settingsRegistry->Get(value, visitArgs.m_jsonKeyPath))
             {
                 // Ignore empty entries.
@@ -93,7 +92,6 @@ namespace WatchdogTools
                     return AZ::SettingsRegistryInterface::VisitResponse::Continue;
                 }
 
-                AZ_Trace("WatchdogSettings", "Value added to list of required modules: %s", value.c_str());
                 m_requiredModules.push_back(value.c_str());
             }
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
