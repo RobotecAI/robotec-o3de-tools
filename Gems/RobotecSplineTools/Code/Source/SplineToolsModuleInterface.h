@@ -6,8 +6,7 @@
 
 namespace SplineTools
 {
-    class SplineToolsModuleInterface
-        : public AZ::Module
+    class SplineToolsModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(SplineToolsModuleInterface)
@@ -21,4 +20,4 @@ namespace SplineTools
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace SplineTools
+} // namespace SplineTools

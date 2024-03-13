@@ -1,6 +1,6 @@
 
-#include "SplineToolsEditorSystemComponent.h"
 #include "SplineToolsEditorComponent.h"
+#include "SplineToolsEditorSystemComponent.h"
 #include <SplineTools/SplineToolsTypeIds.h>
 #include <SplineToolsModuleInterface.h>
 

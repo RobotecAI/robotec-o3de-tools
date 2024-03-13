@@ -81,7 +81,7 @@ namespace SplineTools
 
         if (points.empty())
         {
-            AZ_Error("TreeSpawnerEditorComponent", false, "No points found in CSV file");
+            AZ_Error("SplineToolsEditorComponent", false, "No points found in CSV file");
             return;
         }
 
@@ -94,11 +94,16 @@ namespace SplineTools
         LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::ClearVertices);
         AZ_Printf("SplineToolsEditorComponent", "CSV file has %d points", points.size());
 
-        for (auto p : points)
-        {
-            p = worldTM.TransformPoint(p);
-            LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::AddVertex, p);
-        }
+        AZStd::transform(
+            points.begin(),
+            points.end(),
+            points.begin(),
+            [&worldTM](AZ::Vector3& p)
+            {
+                return worldTM.TransformPoint(p);
+            });
+
+        LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::SetVertices, points);
     }
 
     AZStd::vector<AZ::Vector3> SplineToolsEditorComponent::GetSplinePointsFromCsv(const AZStd::string& csvFilePath)
@@ -117,7 +122,7 @@ namespace SplineTools
             const bool isCoordinateCorrect = !(index_X < 0 || index_Y < 0);
             if (!isCoordinateCorrect)
             {
-                AZ_Error("TreeSpawnerEditorComponent", false, "CSV file must have columns named x, y");
+                AZ_Error("SplineToolsEditorComponent", false, "CSV file must have columns named x, y");
                 return {};
             }
 
@@ -137,7 +142,7 @@ namespace SplineTools
             return ret;
         } catch (std::runtime_error& exception)
         {
-            AZ_Error("TreeSpawnerEditorComponent", false, "Error parsing CSV file: %s", exception.what());
+            AZ_Error("SplineToolsEditorComponent", false, "Error parsing CSV file: %s", exception.what());
         }
         return {};
     }
