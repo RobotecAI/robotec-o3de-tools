@@ -189,6 +189,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzFramework
                     Gem::${gem_name}.Private.Object
+            RUNTIME_DEPENDENCIES
+                AZ::AzCoreTestDLL
         )
 
         # Add ${gem_name}.Tests to googletest

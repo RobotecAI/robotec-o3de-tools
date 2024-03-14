@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <WatchdogTools/WatchdogToolsBus.h>
+#include <AzCore/std/containers/set.h>
 
 namespace WatchdogTools
 {
@@ -30,6 +31,7 @@ namespace WatchdogTools
 
         ~WatchdogToolsSystemComponent();
 
+        void CheckRequiredModules();
     protected:
         // AZ::Component overrides ...
         void Activate() override;
@@ -37,7 +39,7 @@ namespace WatchdogTools
         void Deactivate() override;
 
     private:
-        void CheckRequiredModules();
+        AZStd::set<AZStd::string> GatherDynamicModules(const AZStd::vector<AZStd::string>& modules);
     };
 
 } // namespace WatchdogTools

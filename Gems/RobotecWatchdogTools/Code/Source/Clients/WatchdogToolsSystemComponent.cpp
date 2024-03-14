@@ -71,11 +71,10 @@ namespace WatchdogTools
         AZ_Assert(settingsRegistry, "Settings Registry Interface not available");
         WatchdogSettings watchdogSettings;
         watchdogSettings.LoadSettings(settingsRegistry);
-        AZStd::set<AZStd::string_view> requiredComponents = {};
-        requiredComponents.insert(watchdogSettings.m_requiredModules.begin(), watchdogSettings.m_requiredModules.end());
+        AZStd::set<AZStd::string> requiredDynamicModules = GatherDynamicModules(watchdogSettings.m_requiredModules);
         AZ::ModuleManagerRequestBus::Broadcast(
             &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
-            [&requiredComponents](const AZ::ModuleData& moduleData)
+            [&requiredDynamicModules](const AZ::ModuleData& moduleData)
             {
                 // // We can only enumerate shared libs, static libs are invisible to us
                 auto handle = moduleData.GetDynamicModuleHandle();
@@ -91,21 +90,14 @@ namespace WatchdogTools
                 }
                 AZStd::string_view moduleName = moduleData.GetDebugName();
 
-                for (auto r : requiredComponents)
-                {
-                    if (moduleName.starts_with(r))
-                    {
-                        requiredComponents.erase(r);
-                        break;
-                    }
-                }
+                requiredDynamicModules.erase(moduleName);
 
                 return true;
             });
 
-        if (!requiredComponents.empty())
+        if (!requiredDynamicModules.empty())
         {
-            for (auto nonLoadedModule : requiredComponents)
+            for (auto nonLoadedModule : requiredDynamicModules)
             {
                 AZ_Printf("Watchdog", "Failed to load module: " AZ_STRING_FORMAT "\n", AZ_STRING_ARG(nonLoadedModule));
             }
@@ -115,4 +107,24 @@ namespace WatchdogTools
         }
     }
 
+    AZStd::set<AZStd::string> WatchdogToolsSystemComponent::GatherDynamicModules(const AZStd::vector<AZStd::string>& modules)
+    {
+        AZStd::set<AZStd::string> results;
+        for (auto module : modules)
+        {
+            auto fileName{ module };
+            if (!fileName.starts_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
+            {
+                fileName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + fileName;
+            }
+
+            if (!fileName.ends_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
+            {
+                fileName += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+            }
+
+            results.insert(fileName);
+        }
+        return results;
+    }
 } // namespace WatchdogTools
