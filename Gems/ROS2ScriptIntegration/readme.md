@@ -23,7 +23,7 @@ Finally, pulse cause the publication message by node "PublishStdMsgsString".
 
 **Note** that the publisher is initialized on the first pulse.
 To see your messages, start the simulation and type in the terminal:
-```
+```bash
 ros2 topic echo /hello
 ```
 You should new messages coming with a frequency of 10 Hertz.

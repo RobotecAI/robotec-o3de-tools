@@ -1,0 +1,28 @@
+{
+    "gem_name": "SplineTools",
+    "version": "1.0.0",
+    "display_name": "SplineTools",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "RobotecAI",
+    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "type": "Code",
+    "summary": "A swiss army knife of splines for O3DE",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "SplineTools"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "No requirements",
+    "documentation_url": "",
+    "dependencies": [],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "SplineTools"
+}
