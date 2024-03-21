@@ -1,5 +1,6 @@
 #include "SplineToolsEditorComponent.h"
 #include "AzCore/Debug/Trace.h"
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -45,6 +46,10 @@ namespace SplineTools
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Reload spline", "Reload spline")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Load")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SplineToolsEditorComponent::ReloadCSVAsset)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "Save spline", "Save spline")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Save")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SplineToolsEditorComponent::SaveCsvAsset)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "");
             }
         }
@@ -61,6 +66,40 @@ namespace SplineTools
     void SplineToolsEditorComponent::BuildGameEntity([[maybe_unused]] AZ::Entity* gameEntity)
     {
         ReloadCSVAsset();
+    }
+
+    void SplineToolsEditorComponent::SaveCsvAsset()
+    {
+        AZ::SplinePtr splinePtr;
+        LmbrCentral::SplineComponentRequestBus::EventResult(
+            splinePtr, GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::GetSpline);
+        auto vertices = splinePtr->GetVertices();
+        using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
+        AZ::Data::AssetInfo sourceAssetInfo;
+        bool ok{ false };
+        AZStd::string watchFolder;
+        AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
+
+        AssetSysReqBus::BroadcastResult(
+            ok, &AssetSysReqBus::Events::GetSourceInfoBySourceUUID, m_csvAssetId.m_guid, sourceAssetInfo, watchFolder);
+        const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
+
+        AZ_Printf("SplineToolsEditorComponent", "Save csv asset to %s", sourcePath.c_str());
+
+        bool result = SetSplinePointsToCsv(sourcePath.c_str(), vertices);
+        if (!result)
+        {
+            AZ_Error("SplineToolsEditorComponent", false, "Vertices not saved");
+            return;
+        }
+
+        AZ::Transform worldTM(AZ::Transform::Identity());
+        if (!m_isLocalCoordinates)
+        {
+            AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        }
+
+        AZ_Printf("SplineToolsEditorComponent", "%d points saved to file", vertices.size());
     }
 
     void SplineToolsEditorComponent::ReloadCSVAsset()
@@ -104,6 +143,34 @@ namespace SplineTools
             });
 
         LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::SetVertices, points);
+    }
+
+    bool SplineToolsEditorComponent::SetSplinePointsToCsv(const AZStd::string& csvFilePath, const AZStd::vector<AZ::Vector3>& vertices)
+    {
+        try
+        {
+            auto fileStream = std::fstream(csvFilePath.c_str());
+
+            if (!fileStream.is_open())
+            {
+                AZ_Warning("SplineToolsEditorComponent", false, "Could not open file for writing - (%s).", csvFilePath.c_str());
+                return false;
+            }
+            auto writer = csv::make_csv_writer(fileStream);
+            writer << std::make_tuple("x", "y", "z");
+            for (auto& vertex : vertices)
+            {
+                writer << std::make_tuple(vertex.GetX(), vertex.GetY(), vertex.GetZ());
+            }
+            writer.flush();
+            AZ_Info("SplineToolsEditorComponent", "Saved %zu points to file %s", vertices.size(), csvFilePath.c_str());
+            return true;
+
+        } catch (std::runtime_error& exception)
+        {
+            AZ_Error("SplineToolsEditorComponent", false, "Error parsing CSV file: %s", exception.what());
+        }
+        return {};
     }
 
     AZStd::vector<AZ::Vector3> SplineToolsEditorComponent::GetSplinePointsFromCsv(const AZStd::string& csvFilePath)
