@@ -57,7 +57,9 @@ namespace WatchdogTools
     void WatchdogToolsSystemComponent::Activate()
     {
         WatchdogToolsRequestBus::Handler::BusConnect();
+#if !defined(AZ_MONOLITHIC_BUILD)
         CheckRequiredModules();
+#endif
     }
 
     void WatchdogToolsSystemComponent::Deactivate()
