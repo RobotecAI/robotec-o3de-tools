@@ -1,0 +1,28 @@
+{
+    "gem_name": "WatchdogTools",
+    "version": "1.0.0",
+    "display_name": "Watchdog Tools",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.AI",
+    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "type": "Code",
+    "summary": "It monitors if system requirements are met, logs warnings and shortens the feedback loop in case of errors",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "WatchdogTools"
+    ],
+    "platforms": [
+        "Linux"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "The Gem does not have dependencies to minimize chance that it fails to load",
+    "documentation_url": "",
+    "dependencies": [],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "WatchdogTools"
+}
