@@ -168,7 +168,7 @@ namespace SplineTools
 
         } catch (std::runtime_error& exception)
         {
-            AZ_Error("SplineToolsEditorComponent", false, "Error parsing CSV file: %s", exception.what());
+            AZ_Error("SplineToolsEditorComponent", false, "Error saving CSV file: %s", exception.what());
         }
         return {};
     }
