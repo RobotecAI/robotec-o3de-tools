@@ -86,7 +86,7 @@ namespace SplineTools
 
         AZ_Printf("SplineToolsEditorComponent", "Save csv asset to %s", sourcePath.c_str());
 
-        bool result = SetSplinePointsToCsv(sourcePath.c_str(), vertices);
+        const bool result = SetSplinePointsToCsv(sourcePath.c_str(), vertices);
         if (!result)
         {
             AZ_Error("SplineToolsEditorComponent", false, "Vertices not saved");
