@@ -91,17 +91,16 @@ namespace SplineTools
 
         if (!m_isLocalCoordinates)
         {
-            auto worldInvTm{ AZ::Transform::Identity() };
+            auto worldTm{ AZ::Transform::Identity() };
 
-            AZ::TransformBus::EventResult(worldInvTm, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-            worldInvTm.Invert();
+            AZ::TransformBus::EventResult(worldTm, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
             AZStd::transform(
                 vertices.begin(),
                 vertices.end(),
                 vertices.begin(),
-                [worldInvTm](auto point)
+                [worldTm](auto point)
                 {
-                    return worldInvTm.TransformPoint(point);
+                    return worldTm.TransformPoint(point);
                 });
         }
         AZ_Printf("SplineToolsEditorComponent", "Save CSV asset to %s", sourceAssetInfo.m_relativePath.c_str());
@@ -130,10 +129,11 @@ namespace SplineTools
             return;
         }
 
-        AZ::Transform worldTM(AZ::Transform::Identity());
+        AZ::Transform worldInvTm(AZ::Transform::Identity());
         if (!m_isLocalCoordinates)
         {
-            AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+            AZ::TransformBus::EventResult(worldInvTm, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+            worldInvTm.Invert();
         }
 
         LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::ClearVertices);
@@ -143,9 +143,9 @@ namespace SplineTools
             points.begin(),
             points.end(),
             points.begin(),
-            [&worldTM](AZ::Vector3& p)
+            [&worldInvTm](AZ::Vector3& p)
             {
-                return worldTM.TransformPoint(p);
+                return worldInvTm.TransformPoint(p);
             });
 
         LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::SetVertices, points);
@@ -155,7 +155,7 @@ namespace SplineTools
     {
         try
         {
-            auto fileStream = std::fstream(csvFilePath.c_str());
+            auto fileStream = std::ofstream(csvFilePath.c_str());
 
             if (!fileStream.is_open())
             {
