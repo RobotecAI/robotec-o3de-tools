@@ -82,24 +82,30 @@ namespace SplineTools
 
         AssetSysReqBus::BroadcastResult(
             ok, &AssetSysReqBus::Events::GetSourceInfoBySourceUUID, m_csvAssetId.m_guid, sourceAssetInfo, watchFolder);
-        const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
-
-        AZ_Printf("SplineToolsEditorComponent", "Save csv asset to %s", sourcePath.c_str());
-
-        const bool result = SetSplinePointsToCsv(sourcePath.c_str(), vertices);
-        if (!result)
+        if (!ok)
         {
-            AZ_Error("SplineToolsEditorComponent", false, "Vertices not saved");
+            AZ_Error("SplineToolsEditorComponent", false, "Failed to get source info for referenced CSV asset. Saving aborted");
             return;
         }
+        const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
 
-        AZ::Transform worldTM(AZ::Transform::Identity());
         if (!m_isLocalCoordinates)
         {
-            AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        }
+            auto worldInvTm{ AZ::Transform::Identity() };
 
-        AZ_Printf("SplineToolsEditorComponent", "%d points saved to file", vertices.size());
+            AZ::TransformBus::EventResult(worldInvTm, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+            worldInvTm.Invert();
+            AZStd::transform(
+                vertices.begin(),
+                vertices.end(),
+                vertices.begin(),
+                [worldInvTm](auto point)
+                {
+                    return worldInvTm.TransformPoint(point);
+                });
+        }
+        AZ_Printf("SplineToolsEditorComponent", "Save CSV asset to %s", sourceAssetInfo.m_relativePath.c_str());
+        SavePointsToCsv(sourcePath.c_str(), vertices);
     }
 
     void SplineToolsEditorComponent::ReloadCSVAsset()
@@ -145,7 +151,7 @@ namespace SplineTools
         LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::SetVertices, points);
     }
 
-    bool SplineToolsEditorComponent::SetSplinePointsToCsv(const AZStd::string& csvFilePath, const AZStd::vector<AZ::Vector3>& vertices)
+    void SplineToolsEditorComponent::SavePointsToCsv(const AZStd::string& csvFilePath, const AZStd::vector<AZ::Vector3>& vertices)
     {
         try
         {
@@ -153,8 +159,8 @@ namespace SplineTools
 
             if (!fileStream.is_open())
             {
-                AZ_Warning("SplineToolsEditorComponent", false, "Could not open file for writing - (%s).", csvFilePath.c_str());
-                return false;
+                AZ_Error("SplineToolsEditorComponent", false, "Could not open file for writing - (%s).", csvFilePath.c_str());
+                return;
             }
             auto writer = csv::make_csv_writer(fileStream);
             writer << std::make_tuple("x", "y", "z");
@@ -163,14 +169,11 @@ namespace SplineTools
                 writer << std::make_tuple(vertex.GetX(), vertex.GetY(), vertex.GetZ());
             }
             writer.flush();
-            AZ_Info("SplineToolsEditorComponent", "Saved %zu points to file %s", vertices.size(), csvFilePath.c_str());
-            return true;
-
+            AZ_Info("SplineToolsEditorComponent", "Saved %zu points to CSV file", vertices.size());
         } catch (std::runtime_error& exception)
         {
             AZ_Error("SplineToolsEditorComponent", false, "Error saving CSV file: %s", exception.what());
         }
-        return {};
     }
 
     AZStd::vector<AZ::Vector3> SplineToolsEditorComponent::GetSplinePointsFromCsv(const AZStd::string& csvFilePath)
