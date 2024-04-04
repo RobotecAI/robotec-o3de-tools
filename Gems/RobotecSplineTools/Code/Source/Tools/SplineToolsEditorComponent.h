@@ -44,6 +44,6 @@ namespace SplineTools
         void ReloadCSVAsset();
         AZStd::vector<AZ::Vector3> GetSplinePointsFromCsv(const AZStd::string& csvFilePath);
         void SaveCsvAsset();
-        bool SetSplinePointsToCsv(const AZStd::string& csvFilePath, const AZStd::vector<AZ::Vector3>& vertices);
+        void SavePointsToCsv(const AZStd::string& csvFilePath, const AZStd::vector<AZ::Vector3>& vertices);
     };
 } // namespace SplineTools
