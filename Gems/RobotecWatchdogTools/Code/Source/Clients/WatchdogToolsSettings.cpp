@@ -39,7 +39,7 @@ namespace WatchdogTools
                 return settingsKey;
             }
 
-            constexpr operator AZStd::string_view() const
+            constexpr explicit operator AZStd::string_view() const
             {
                 return SettingsPrefix;
             }
@@ -55,11 +55,11 @@ namespace WatchdogTools
 
     void WatchdogSettings::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<WatchdogSettings>()->Version(0)->Field("RequiredModules", &WatchdogSettings::m_requiredModules);
 
-            if (auto editContext = serializeContext->GetEditContext(); editContext != nullptr)
+            if (auto* editContext = serializeContext->GetEditContext(); editContext != nullptr)
             {
                 editContext->Class<WatchdogSettings>("Watchdog Settings", "Exposes settings which alters watchdog behavior.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -96,7 +96,7 @@ namespace WatchdogTools
             }
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
-        bool result =
+        [[maybe_unused]] bool result =
             AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, CollectRequiredModules, WatchdogRequiredModulesRegistryKey);
         AZ_Warning("WatchdogSettings", result, "Required modules not read. Use defaults");
     }
