@@ -18,8 +18,10 @@ namespace LevelModificationTools
                 ->Attribute(AZ::Script::Attributes::Category, "LevelModificationTools")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "LevelModificationTools")
-                ->Event("SetPrefabVariant", &LevelModificationToolsRequestBus::Events::SetPrefabVariant,
-                                            {{{"Variant", "Number of variant to load, or -1 to clear"}}});
+                ->Event(
+                    "SetPrefabVariant",
+                    &LevelModificationToolsRequestBus::Events::SetPrefabVariant,
+                    { { { "Variant", "Number of variant to load, or -1 to clear" } } });
         }
     }
 } // namespace LevelModificationTools

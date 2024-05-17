@@ -5,4 +5,6 @@
 #
 
 set(FILES
+    Source/Tools/PrefabVariantEditorComponent.cpp
+    Source/Tools/PrefabVariantEditorComponent.h
 )

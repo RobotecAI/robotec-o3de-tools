@@ -11,4 +11,6 @@ set(FILES
     Source/Clients/PrefabVariantComponent.h
     Source/Clients/LevelModificationToolsBus.cpp
     Source/Clients/PrefabVariantConfig.cpp
+    Source/Clients/SpawnPrefab.cpp
+    Source/Clients/SpawnPrefab.h
 )

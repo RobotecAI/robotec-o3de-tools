@@ -7,9 +7,9 @@
  */
 
 #include "PrefabVariantConfig.h"
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <LevelModificationTools/LevelModificationToolsTypeIds.h>
-#include <AzCore/Asset/AssetSerializer.h>
 
 namespace LevelModificationTools
 {

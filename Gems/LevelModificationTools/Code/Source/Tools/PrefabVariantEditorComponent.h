@@ -8,37 +8,42 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-#include "PrefabVariantConfig.h"
+#include <Clients/PrefabVariantConfig.h>
 #include <LevelModificationTools/LevelModificationToolsBus.h>
 #include <LevelModificationTools/LevelModificationToolsTypeIds.h>
 
 namespace LevelModificationTools
 {
-    class PrefabVariantComponent
-        : public AZ::Component
+    class PrefabVariantEditorComponent
+        : public AzToolsFramework::Components::EditorComponentBase
         , private LevelModificationToolsRequestBus::Handler
     {
     public:
-        AZ_COMPONENT(PrefabVariantComponent, "{018f8611-85fc-7e0f-a879-b3a0ff793535}", AZ::Component);
-        PrefabVariantComponent() = default;
-        PrefabVariantComponent(const PrefabVariantConfig& config);
-        ~PrefabVariantComponent() override = default;
+        AZ_EDITOR_COMPONENT(PrefabVariantEditorComponent, "{018f8675-2a33-7855-a242-a45e6ec7fd4b}");
+        PrefabVariantEditorComponent() = default;
+        ~PrefabVariantEditorComponent() override = default;
 
         // Component overrides
         void Activate() override;
         void Deactivate() override;
 
+        // AzToolsFramework::Components::EditorComponentBase overrides
+        void BuildGameEntity(AZ::Entity* gameEntity) override;
+
         static void Reflect(AZ::ReflectContext* context);
 
     private:
+        AZ::Crc32 OnConfigChanged();
+        AZ::Crc32 TestSpawn();
         // LevelModificationToolsRequestBus::Handler overrides
         void SetPrefabVariant(AZ::s32 variantId) override;
 
         AzFramework::EntitySpawnTicket m_spawnTicket; //! Currently spawned ticket
         PrefabVariantConfig m_config; //! Configuration for the component
+        AZ::s32 m_variantToPeek = 0; //! The group id of the to take a peek at in the editor
     };
 } // namespace LevelModificationTools

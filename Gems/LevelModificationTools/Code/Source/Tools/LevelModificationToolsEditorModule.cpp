@@ -6,13 +6,12 @@
  *
  */
 
+#include "PrefabVariantEditorComponent.h"
 #include <LevelModificationTools/LevelModificationToolsTypeIds.h>
 #include <LevelModificationToolsModuleInterface.h>
-
 namespace LevelModificationTools
 {
-    class LevelModificationToolsEditorModule
-        : public LevelModificationToolsModuleInterface
+    class LevelModificationToolsEditorModule : public LevelModificationToolsModuleInterface
     {
     public:
         AZ_RTTI(LevelModificationToolsEditorModule, LevelModificationToolsEditorModuleTypeId, LevelModificationToolsModuleInterface);
@@ -22,10 +21,13 @@ namespace LevelModificationTools
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
-            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
-            // This happens through the [MyComponent]::Reflect() function.
-            m_descriptors.insert(m_descriptors.end(), {
-            });
+            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and
+            // EditContext. This happens through the [MyComponent]::Reflect() function.
+            m_descriptors.insert(
+                m_descriptors.end(),
+                {
+                    PrefabVariantEditorComponent::CreateDescriptor(),
+                });
         }
 
         /**
@@ -34,10 +36,9 @@ namespace LevelModificationTools
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList {
-            };
+            return AZ::ComponentTypeList{};
         }
     };
-}// namespace LevelModificationTools
+} // namespace LevelModificationTools
 
 AZ_DECLARE_MODULE_CLASS(Gem_LevelModificationTools, LevelModificationTools::LevelModificationToolsEditorModule)
