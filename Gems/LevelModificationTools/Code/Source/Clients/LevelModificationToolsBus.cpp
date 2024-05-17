@@ -6,21 +6,21 @@
  *
  */
 
-#include <LevelModificationTools/LevelModificationToolsBus.h>
+#include <LevelModificationTools/PrefabVariantRequestsBus.h>
 
 namespace LevelModificationTools
 {
-    void LevelModificationToolsRequests::Reflect(AZ::ReflectContext* context)
+    void PrefabVariantRequests::Reflect(AZ::ReflectContext* context)
     {
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<LevelModificationToolsRequestBus>("LevelModificationToolsRequestBus")
+            behaviorContext->EBus<PrefabVariantRequestsBus>("PrefabVariantRequestsBus")
                 ->Attribute(AZ::Script::Attributes::Category, "LevelModificationTools")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "LevelModificationTools")
                 ->Event(
                     "SetPrefabVariant",
-                    &LevelModificationToolsRequestBus::Events::SetPrefabVariant,
+                    &PrefabVariantRequestsBus::Events::SetPrefabVariant,
                     { { { "Variant", "Number of variant to load, or -1 to clear" } } });
         }
     }

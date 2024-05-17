@@ -13,19 +13,19 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "PrefabVariantConfig.h"
-#include <LevelModificationTools/LevelModificationToolsBus.h>
 #include <LevelModificationTools/LevelModificationToolsTypeIds.h>
+#include <LevelModificationTools/PrefabVariantRequestsBus.h>
 
 namespace LevelModificationTools
 {
     class PrefabVariantComponent
         : public AZ::Component
-        , private LevelModificationToolsRequestBus::Handler
+        , private PrefabVariantRequestsBus::Handler
     {
     public:
         AZ_COMPONENT(PrefabVariantComponent, "{018f8611-85fc-7e0f-a879-b3a0ff793535}", AZ::Component);
         PrefabVariantComponent() = default;
-        PrefabVariantComponent(const PrefabVariantConfig& config);
+        explicit PrefabVariantComponent(PrefabVariantConfig  config);
         ~PrefabVariantComponent() override = default;
 
         // Component overrides
@@ -35,7 +35,7 @@ namespace LevelModificationTools
         static void Reflect(AZ::ReflectContext* context);
 
     private:
-        // LevelModificationToolsRequestBus::Handler overrides
+        // PrefabVariantRequestsBus::Handler overrides
         void SetPrefabVariant(AZ::s32 variantId) override;
 
         AzFramework::EntitySpawnTicket m_spawnTicket; //! Currently spawned ticket

@@ -13,14 +13,14 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 #include <Clients/PrefabVariantConfig.h>
-#include <LevelModificationTools/LevelModificationToolsBus.h>
 #include <LevelModificationTools/LevelModificationToolsTypeIds.h>
+#include <LevelModificationTools/PrefabVariantRequestsBus.h>
 
 namespace LevelModificationTools
 {
     class PrefabVariantEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
-        , private LevelModificationToolsRequestBus::Handler
+        , private PrefabVariantRequestsBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(PrefabVariantEditorComponent, "{018f8675-2a33-7855-a242-a45e6ec7fd4b}");

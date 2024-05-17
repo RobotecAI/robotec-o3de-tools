@@ -15,16 +15,16 @@
 
 namespace LevelModificationTools
 {
-    class LevelModificationToolsRequests : public AZ::EBusTraits
+    class PrefabVariantRequests : public AZ::EBusTraits
     {
     public:
-        AZ_RTTI(LevelModificationToolsRequests, LevelModificationToolsRequestsTypeId);
+        AZ_RTTI(PrefabVariantRequests, PrefabVariantRequestsTypeId);
 
         using BusIdType = AZ::s32;
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
 
-        virtual ~LevelModificationToolsRequests() = default;
+        virtual ~PrefabVariantRequests() = default;
 
         //! Loads a prefab variant.
         //! @param variantId The id of the prefab variant to load, or -1 to empty.
@@ -33,6 +33,6 @@ namespace LevelModificationTools
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    using LevelModificationToolsRequestBus = AZ::EBus<LevelModificationToolsRequests>;
+    using PrefabVariantRequestsBus = AZ::EBus<PrefabVariantRequests>;
 
 } // namespace LevelModificationTools

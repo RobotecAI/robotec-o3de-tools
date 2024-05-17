@@ -5,6 +5,6 @@
 #
 
 set(FILES
-    Include/LevelModificationTools/LevelModificationToolsBus.h
+    Include/LevelModificationTools/PrefabVariantRequestsBus.h
     Include/LevelModificationTools/LevelModificationToolsTypeIds.h
 )

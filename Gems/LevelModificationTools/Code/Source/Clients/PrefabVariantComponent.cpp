@@ -11,12 +11,14 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include "SpawnPrefab.h"
-#include <LevelModificationTools/LevelModificationToolsBus.h>
+#include <LevelModificationTools/PrefabVariantRequestsBus.h>
+
+#include <utility>
 
 namespace LevelModificationTools
 {
-    PrefabVariantComponent::PrefabVariantComponent(const LevelModificationTools::PrefabVariantConfig& config)
-        : m_config(config)
+    PrefabVariantComponent::PrefabVariantComponent(PrefabVariantConfig config)
+        : m_config(std::move(config))
     {
     }
     void PrefabVariantComponent::Activate()
@@ -25,12 +27,12 @@ namespace LevelModificationTools
         {
             m_spawnTicket = SpawnPrefab(m_config.m_defaultPrefabVariant, GetEntityId());
         }
-        LevelModificationToolsRequestBus::Handler::BusConnect(m_config.m_groupId);
+        PrefabVariantRequestsBus::Handler::BusConnect(m_config.m_groupId);
     }
 
     void PrefabVariantComponent::Deactivate()
     {
-        LevelModificationToolsRequestBus::Handler::BusDisconnect();
+        PrefabVariantRequestsBus::Handler::BusDisconnect();
     }
 
     void PrefabVariantComponent::SetPrefabVariant(AZ::s32 variantId)
@@ -51,7 +53,7 @@ namespace LevelModificationTools
 
     void PrefabVariantComponent::Reflect(AZ::ReflectContext* context)
     {
-        LevelModificationToolsRequests::Reflect(context);
+        PrefabVariantRequests::Reflect(context);
         PrefabVariantConfig::Reflect(context);
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {

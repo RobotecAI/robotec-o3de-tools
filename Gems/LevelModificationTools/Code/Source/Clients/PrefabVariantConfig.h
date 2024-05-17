@@ -15,8 +15,8 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
-#include <LevelModificationTools/LevelModificationToolsBus.h>
 #include <LevelModificationTools/LevelModificationToolsTypeIds.h>
+#include <LevelModificationTools/PrefabVariantRequestsBus.h>
 
 namespace LevelModificationTools
 {

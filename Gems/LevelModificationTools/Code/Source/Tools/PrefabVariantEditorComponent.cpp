@@ -50,7 +50,7 @@ namespace LevelModificationTools
 
     void PrefabVariantEditorComponent::Activate()
     {
-        LevelModificationToolsRequestBus::Handler::BusConnect(m_config.m_groupId);
+        PrefabVariantRequestsBus::Handler::BusConnect(m_config.m_groupId);
         if (m_config.m_defaultPrefabVariant)
         {
             m_config.m_defaultPrefabVariant.QueueLoad();
@@ -60,7 +60,7 @@ namespace LevelModificationTools
 
     void PrefabVariantEditorComponent::Deactivate()
     {
-        LevelModificationToolsRequestBus::Handler::BusDisconnect();
+        PrefabVariantRequestsBus::Handler::BusDisconnect();
     }
 
     void PrefabVariantEditorComponent::BuildGameEntity(AZ::Entity* gameEntity)
@@ -76,17 +76,17 @@ namespace LevelModificationTools
             m_config.m_defaultPrefabVariant.QueueLoad();
             m_spawnTicket = SpawnPrefab(m_config.m_defaultPrefabVariant, GetEntityId());
         }
-        if (LevelModificationToolsRequestBus::Handler::BusIsConnected())
+        if (PrefabVariantRequestsBus::Handler::BusIsConnected())
         {
-            LevelModificationToolsRequestBus::Handler::BusDisconnect();
-            LevelModificationToolsRequestBus::Handler::BusConnect(m_config.m_groupId);
+            PrefabVariantRequestsBus::Handler::BusDisconnect();
+            PrefabVariantRequestsBus::Handler::BusConnect(m_config.m_groupId);
         }
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
     AZ::Crc32 PrefabVariantEditorComponent::TestSpawn()
     {
-        LevelModificationToolsRequestBus::Event(m_config.m_groupId, &LevelModificationToolsRequests::SetPrefabVariant, m_variantToPeek);
+        PrefabVariantRequestsBus::Event(m_config.m_groupId, &PrefabVariantRequests::SetPrefabVariant, m_variantToPeek);
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
