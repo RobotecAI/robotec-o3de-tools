@@ -8,33 +8,31 @@
 
 #pragma once
 
-#include <LevelModificationTools/LevelModificationToolsTypeIds.h>
-
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <LevelModificationTools/LevelModificationToolsTypeIds.h>
 
 namespace LevelModificationTools
 {
-    class LevelModificationToolsRequests
+    class LevelModificationToolsRequests : public AZ::EBusTraits
     {
     public:
         AZ_RTTI(LevelModificationToolsRequests, LevelModificationToolsRequestsTypeId);
+
+        using BusIdType = AZ::s32;
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+
         virtual ~LevelModificationToolsRequests() = default;
-        // Put your public methods here
+
+        //! Loads a prefab variant.
+        //! @param variantId The id of the prefab variant to load, or -1 to empty.
+        virtual void SetPrefabVariant(AZ::s32 variantId) = 0;
+
+        static void Reflect(AZ::ReflectContext* context);
     };
 
-    class LevelModificationToolsBusTraits
-        : public AZ::EBusTraits
-    {
-    public:
-        //////////////////////////////////////////////////////////////////////////
-        // EBusTraits overrides
-        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        //////////////////////////////////////////////////////////////////////////
-    };
-
-    using LevelModificationToolsRequestBus = AZ::EBus<LevelModificationToolsRequests, LevelModificationToolsBusTraits>;
-    using LevelModificationToolsInterface = AZ::Interface<LevelModificationToolsRequests>;
+    using LevelModificationToolsRequestBus = AZ::EBus<LevelModificationToolsRequests>;
 
 } // namespace LevelModificationTools

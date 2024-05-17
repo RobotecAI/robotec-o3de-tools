@@ -23,4 +23,6 @@ namespace LevelModificationTools
 
     // Interface TypeIds
     inline constexpr const char* LevelModificationToolsRequestsTypeId = "{7FFB3A2A-B9D6-4B5E-9B86-0105A7DDDC25}";
+
+    inline constexpr const char* PrefabVariantConfigTypeId = "{018f864b-d24e-79eb-b584-b445aae95dda}";
 } // namespace LevelModificationTools
