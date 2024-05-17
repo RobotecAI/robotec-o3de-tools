@@ -7,7 +7,7 @@
     "origin": "Robotec AI",
     "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
     "type": "Code",
-    "summary": "Handy interface to replace / modify level in runtime.",
+    "summary": "Handy interface to replace / modify entities in runtime.",
     "canonical_tags": [
         "Gem"
     ],
