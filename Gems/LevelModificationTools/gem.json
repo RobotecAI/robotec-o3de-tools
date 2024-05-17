@@ -1,0 +1,28 @@
+{
+    "gem_name": "LevelModificationTools",
+    "version": "1.0.0",
+    "display_name": "LevelModificationTools",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec AI",
+    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "type": "Code",
+    "summary": "Handy interface to replace / modify level in runtime.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "LevelModificationTools"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "Nothing",
+    "documentation_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "dependencies": [],
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "LevelModificationTools"
+}
