@@ -38,7 +38,7 @@ namespace SplineTools
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
-        AZ::Data::AssetId m_csvAssetId; //!< Asset ID of the CSV
+        AZ::IO::Path m_csvAssetPath; //!< Asset path of the CSV
         bool m_isLocalCoordinates = true;
 
         void ReloadCSVAsset();

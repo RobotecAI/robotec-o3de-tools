@@ -25,7 +25,7 @@ namespace SplineTools
         {
             serializeContext->Class<SplineToolsEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Version(2)
-                ->Field("CsvAssetId", &SplineToolsEditorComponent::m_csvAssetId)
+                ->Field("CsvAssetId", &SplineToolsEditorComponent::m_csvAssetPath)
                 ->Field("IsLocalCoordinates", &SplineToolsEditorComponent::m_isLocalCoordinates);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -41,7 +41,7 @@ namespace SplineTools
                         &SplineToolsEditorComponent::m_isLocalCoordinates,
                         "Local coordinates",
                         "Local coordinates")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SplineToolsEditorComponent::m_csvAssetId, "CSV Asset", "CSV asset")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SplineToolsEditorComponent::m_csvAssetPath, "CSV Asset", "CSV asset")
                     ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.csv")
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Reload spline", "Reload spline")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Load")
@@ -78,10 +78,9 @@ namespace SplineTools
         AZ::Data::AssetInfo sourceAssetInfo;
         bool ok{ false };
         AZStd::string watchFolder;
-        AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
-
         AssetSysReqBus::BroadcastResult(
-            ok, &AssetSysReqBus::Events::GetSourceInfoBySourceUUID, m_csvAssetId.m_guid, sourceAssetInfo, watchFolder);
+            ok, &AssetSysReqBus::Events::GetSourceInfoBySourcePath, m_csvAssetPath.RelativePath().String().c_str(), sourceAssetInfo, watchFolder);
+
         if (!ok)
         {
             AZ_Error("SplineToolsEditorComponent", false, "Failed to get source info for referenced CSV asset. Saving aborted");
@@ -113,10 +112,14 @@ namespace SplineTools
         AZ::Data::AssetInfo sourceAssetInfo;
         bool ok{ false };
         AZStd::string watchFolder;
-        AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
-
         AssetSysReqBus::BroadcastResult(
-            ok, &AssetSysReqBus::Events::GetSourceInfoBySourceUUID, m_csvAssetId.m_guid, sourceAssetInfo, watchFolder);
+            ok, &AssetSysReqBus::Events::GetSourceInfoBySourcePath, m_csvAssetPath.RelativePath().String().c_str(), sourceAssetInfo, watchFolder);
+
+        if (!ok)
+        {
+            AZ_Error("SplineToolsEditorComponent", false, "Failed to get source info for referenced CSV asset. Loading aborted");
+            return;
+        }
         const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
 
         AZ_Printf("SplineToolsEditorComponent", "Reload csv asset from %s", sourcePath.c_str());
