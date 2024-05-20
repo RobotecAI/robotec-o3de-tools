@@ -38,7 +38,7 @@ namespace LevelModificationTools
 
     private:
         AZ::Crc32 OnConfigChanged();
-        AZ::Crc32 TestSpawn();
+        AZ::Crc32 PreviewVariant();
         // LevelModificationToolsRequestBus::Handler overrides
         void SetPrefabVariant(AZ::s32 variantId) override;
 

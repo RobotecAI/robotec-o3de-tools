@@ -43,7 +43,7 @@ namespace LevelModificationTools
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Peek", "Peek")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Peek")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PrefabVariantEditorComponent::TestSpawn);
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PrefabVariantEditorComponent::PreviewVariant);
             }
         }
     }
@@ -84,7 +84,7 @@ namespace LevelModificationTools
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
-    AZ::Crc32 PrefabVariantEditorComponent::TestSpawn()
+    AZ::Crc32 PrefabVariantEditorComponent::PreviewVariant()
     {
         PrefabVariantRequestsBus::Event(m_config.m_groupId, &PrefabVariantRequests::SetPrefabVariant, m_variantToPeek);
         return AZ::Edit::PropertyRefreshLevels::None;
