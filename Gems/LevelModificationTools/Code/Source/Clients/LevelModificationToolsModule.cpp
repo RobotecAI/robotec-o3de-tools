@@ -11,13 +11,12 @@
 
 namespace LevelModificationTools
 {
-    class LevelModificationToolsModule
-        : public LevelModificationToolsModuleInterface
+    class LevelModificationToolsModule : public LevelModificationToolsModuleInterface
     {
     public:
         AZ_RTTI(LevelModificationToolsModule, LevelModificationToolsModuleTypeId, LevelModificationToolsModuleInterface);
         AZ_CLASS_ALLOCATOR(LevelModificationToolsModule, AZ::SystemAllocator);
     };
-}// namespace LevelModificationTools
+} // namespace LevelModificationTools
 
 AZ_DECLARE_MODULE_CLASS(Gem_LevelModificationTools, LevelModificationTools::LevelModificationToolsModule)

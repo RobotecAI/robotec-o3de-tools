@@ -7,4 +7,10 @@
 set(FILES
     Source/LevelModificationToolsModuleInterface.cpp
     Source/LevelModificationToolsModuleInterface.h
+    Source/Clients/PrefabVariantComponent.cpp
+    Source/Clients/PrefabVariantComponent.h
+    Source/Clients/LevelModificationToolsBus.cpp
+    Source/Clients/PrefabVariantConfig.cpp
+    Source/Clients/SpawnPrefab.cpp
+    Source/Clients/SpawnPrefab.h
 )

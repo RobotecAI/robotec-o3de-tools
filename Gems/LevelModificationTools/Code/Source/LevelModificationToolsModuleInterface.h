@@ -13,8 +13,7 @@
 
 namespace LevelModificationTools
 {
-    class LevelModificationToolsModuleInterface
-        : public AZ::Module
+    class LevelModificationToolsModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(LevelModificationToolsModuleInterface)
@@ -28,4 +27,4 @@ namespace LevelModificationTools
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace LevelModificationTools
+} // namespace LevelModificationTools

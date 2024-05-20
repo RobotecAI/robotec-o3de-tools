@@ -9,12 +9,12 @@
 #include "LevelModificationToolsModuleInterface.h"
 #include <AzCore/Memory/Memory.h>
 
+#include <Clients/PrefabVariantComponent.h>
 #include <LevelModificationTools/LevelModificationToolsTypeIds.h>
-
 namespace LevelModificationTools
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(LevelModificationToolsModuleInterface,
-        "LevelModificationToolsModuleInterface", LevelModificationToolsModuleInterfaceTypeId);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(
+        LevelModificationToolsModuleInterface, "LevelModificationToolsModuleInterface", LevelModificationToolsModuleInterfaceTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL(LevelModificationToolsModuleInterface, AZ::Module);
     AZ_CLASS_ALLOCATOR_IMPL(LevelModificationToolsModuleInterface, AZ::SystemAllocator);
 
@@ -24,13 +24,15 @@ namespace LevelModificationTools
         // Add ALL components descriptors associated with this gem to m_descriptors.
         // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
         // This happens through the [MyComponent]::Reflect() function.
-        m_descriptors.insert(m_descriptors.end(), {
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                PrefabVariantComponent::CreateDescriptor(),
             });
     }
 
     AZ::ComponentTypeList LevelModificationToolsModuleInterface::GetRequiredSystemComponents() const
     {
-        return AZ::ComponentTypeList{
-        };
+        return AZ::ComponentTypeList{};
     }
 } // namespace LevelModificationTools
