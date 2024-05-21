@@ -72,7 +72,7 @@ Similar to _ScriptCanvas_ example, receiving a message via ROS 2 topic requires 
 Please find the code snippet below, in which the subscription happens in the class activation and the handler is implemented as a method override.
 ```lua
 function myscript:OnActivate()
-	self.ros2BusHandler = SubscriberNotificationsBus.Connect(self, 0)
+	self.ros2BusHandler = SubscriberNotificationsBus.Connect(self, /input)
 	SubscriberRequestBus.Broadcast.SubscribeToString("/input")
 end
 
