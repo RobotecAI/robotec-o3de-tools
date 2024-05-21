@@ -12,7 +12,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <LevelModificationTools/LevelModificationToolsTypeIds.h>
@@ -26,7 +26,7 @@ namespace LevelModificationTools
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::s32 m_groupId = 0; //! Region id for the spawned entities
-        AZStd::unordered_map<AZ::s32, AZ::Data::Asset<AzFramework::Spawnable>> m_prefabVariants;
+        AZStd::vector<AZ::Data::Asset<AzFramework::Spawnable>> m_prefabVariants;
         AZ::Data::Asset<AzFramework::Spawnable> m_defaultPrefabVariant;
     };
 } // namespace LevelModificationTools
