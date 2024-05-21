@@ -91,9 +91,9 @@ namespace ROS2ScriptIntegration
         using TypeName = std_msgs::msg::Bool;
         SubscribeToTopic<TypeName>(
             topicName,
-            [](const TypeName& msg)
+            [topicName](const TypeName& msg)
             {
-                SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgBool, msg.data);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnStdMsgBool, msg.data);
             });
     }
 
@@ -102,12 +102,13 @@ namespace ROS2ScriptIntegration
         using TypeName = sensor_msgs::msg::Joy;
         SubscribeToTopic<TypeName>(
             topicName,
-            [](const TypeName& msg)
+            [topicName](const TypeName& msg)
             {
                 TypeName cmsg{ msg };
                 cmsg.buttons.resize(4);
                 cmsg.axes.resize(4);
-                SubscriberNotificationsBus::Broadcast(
+                SubscriberNotificationsBus::Event(
+                    topicName,
                     &SubscriberNotificationsBus::Events::OnSensorMsgJoy,
                     cmsg.buttons[0],
                     cmsg.buttons[1],
@@ -125,7 +126,7 @@ namespace ROS2ScriptIntegration
         using TypeName = geometry_msgs::msg::PoseStamped;
         SubscribeToTopic<TypeName>(
             topicName,
-            [](const TypeName& msg)
+            [topicName](const TypeName& msg)
             {
                 const auto& position = msg.pose.position;
                 const auto& orientation = msg.pose.orientation;
@@ -133,7 +134,8 @@ namespace ROS2ScriptIntegration
                     AZ::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w),
                     AZ::Vector3(position.x, position.y, position.z));
                 const AZStd::string frameId(msg.header.frame_id.c_str());
-                SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnGeometryMsgPoseStamped, frameId, transform);
+                SubscriberNotificationsBus::Event(
+                    topicName, &SubscriberNotificationsBus::Events::OnGeometryMsgPoseStamped, frameId, transform);
             });
     }
 
@@ -142,10 +144,10 @@ namespace ROS2ScriptIntegration
         using TypeName = std_msgs::msg::String;
         SubscribeToTopic<TypeName>(
             topicName,
-            [](const TypeName& msg)
+            [topicName](const TypeName& msg)
             {
                 const AZStd::string str(msg.data.c_str());
-                SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgString, str);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnStdMsgString, str);
             });
     }
 
@@ -154,9 +156,9 @@ namespace ROS2ScriptIntegration
         using TypeName = std_msgs::msg::Float32;
         SubscribeToTopic<TypeName>(
             topicName,
-            [](const TypeName& msg)
+            [topicName](const TypeName& msg)
             {
-                SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgFloat32, msg.data);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnStdMsgFloat32, msg.data);
             });
     }
 
@@ -165,9 +167,9 @@ namespace ROS2ScriptIntegration
         using TypeName = std_msgs::msg::UInt32;
         SubscribeToTopic<TypeName>(
             topicName,
-            [](const TypeName& msg)
+            [topicName](const TypeName& msg)
             {
-                SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgInt32, msg.data);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnStdMsgInt32, msg.data);
             });
     };
 
@@ -176,9 +178,9 @@ namespace ROS2ScriptIntegration
         using TypeName = std_msgs::msg::Int32;
         SubscribeToTopic<TypeName>(
             topicName,
-            [](const TypeName& msg)
+            [topicName](const TypeName& msg)
             {
-                SubscriberNotificationsBus::Broadcast(&SubscriberNotificationsBus::Events::OnStdMsgInt32, msg.data);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnStdMsgInt32, msg.data);
             });
     };
 
