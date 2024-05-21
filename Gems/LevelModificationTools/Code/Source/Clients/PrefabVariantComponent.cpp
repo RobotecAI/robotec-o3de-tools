@@ -37,17 +37,18 @@ namespace LevelModificationTools
 
     void PrefabVariantComponent::SetPrefabVariant(AZ::s32 variantId)
     {
-        if (variantId < 0)
+        if (variantId < 0 && variantId >= m_config.m_prefabVariants.size())
         {
             m_spawnTicket = AzFramework::EntitySpawnTicket();
+            return;
         }
 
-        const auto assetIter = m_config.m_prefabVariants.find(variantId);
+        const auto assetIter = m_config.m_prefabVariants.begin()+variantId;
         AZ_Warning(
             "PrefabVariantComponent", assetIter != m_config.m_prefabVariants.end(), "Prefab variant with id %d not found.", variantId);
         if (assetIter != m_config.m_prefabVariants.end())
         {
-            m_spawnTicket = SpawnPrefab(assetIter->second, GetEntityId());
+            m_spawnTicket = SpawnPrefab(*assetIter, GetEntityId());
         }
     }
 

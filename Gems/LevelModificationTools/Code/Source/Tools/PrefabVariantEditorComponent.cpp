@@ -38,11 +38,11 @@ namespace LevelModificationTools
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PrefabVariantEditorComponent::m_variantToPeek,
-                        "Show variant in the Editor",
+                        "Variant ID to preview in the Editor",
                         "The group id of the to take a peek at in the editor.")
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Peek", "Peek")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "Preview variant", "Preview the given variant.")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Peek")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Preview variant")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PrefabVariantEditorComponent::PreviewVariant);
             }
         }
@@ -93,14 +93,13 @@ namespace LevelModificationTools
     // LevelModificationToolsRequestBus::Handler overrides
     void PrefabVariantEditorComponent::SetPrefabVariant(AZ::s32 variantId)
     {
-        const auto assetIter = m_config.m_prefabVariants.find(variantId);
-        AZ_Warning(
-            "PrefabVariantComponent", assetIter != m_config.m_prefabVariants.end(), "Prefab variant with id %d not found.", variantId);
-        if (assetIter != m_config.m_prefabVariants.end())
+        if (variantId >= 0 && variantId < m_config.m_prefabVariants.size())
         {
-            assetIter->second.QueueLoad();
-            m_spawnTicket = SpawnPrefab(assetIter->second, GetEntityId());
+            m_config.m_prefabVariants[variantId].QueueLoad();
+            m_spawnTicket = SpawnPrefab(m_config.m_prefabVariants[variantId], GetEntityId());
+            return;
         }
+        m_spawnTicket = AzFramework::EntitySpawnTicket();
     }
 
 } // namespace LevelModificationTools
