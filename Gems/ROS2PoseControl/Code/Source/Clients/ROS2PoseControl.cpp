@@ -35,7 +35,18 @@ namespace ROS2PoseControl {
     }
 
     void ROS2PoseControl::Activate() {
-        OnTrackingModeChanged();
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2) {
+            m_poseSubscription.reset();
+            m_tf_buffer = std::make_unique<tf2_ros::Buffer>(ros2Node->get_clock());
+            m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
+            AZ::TickBus::Handler::BusConnect();
+        } else if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::PoseMessages) {
+            m_tf_buffer.reset();
+            m_tf_listener.reset();
+            AZ::TickBus::Handler::BusDisconnect();
+            OnTopicConfigurationChanged();
+        }
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
     }
 
@@ -109,38 +120,11 @@ namespace ROS2PoseControl {
         }
     }
 
-    void ROS2PoseControl::OnTrackingModeChanged() {
-        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
-        if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2) {
-            m_poseSubscription.reset();
-            m_tf_buffer = std::make_unique<tf2_ros::Buffer>(ros2Node->get_clock());
-            m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
-            AZ::TickBus::Handler::BusConnect();
-        } else if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::PoseMessages) {
-            m_tf_buffer.reset();
-            m_tf_listener.reset();
-            AZ::TickBus::Handler::BusDisconnect();
-            OnTopicConfigurationChanged();
-        }
-    }
-
     void ROS2PoseControl::SetIsTracking(const bool isTracking) {
         m_isTracking = isTracking;
         OnIsTrackingChanged();
     }
 
-    void ROS2PoseControl::SwitchToPoseMessages(ROS2::TopicConfiguration topicConfiguration) {
-        m_configuration.m_poseTopicConfiguration = AZStd::move(topicConfiguration);
-        m_configuration.m_tracking_mode = ROS2PoseControlConfiguration::TrackingMode::PoseMessages;
-        OnTrackingModeChanged();
-    }
-
-    void ROS2PoseControl::SwitchToTF2(AZStd::string targetFrame, AZStd::string referenceFrame) {
-        m_configuration.m_targetFrame = AZStd::move(targetFrame);
-        m_configuration.m_referenceFrame = AZStd::move(referenceFrame);
-        m_configuration.m_tracking_mode = ROS2PoseControlConfiguration::TrackingMode::TF2;
-        OnTrackingModeChanged();
-    }
 
 
     void ROS2PoseControl::Reflect(AZ::ReflectContext *context) {
@@ -172,10 +156,8 @@ namespace ROS2PoseControl {
         if (ImGui::Checkbox("Is Tracking", &m_isTracking)) {
             OnIsTrackingChanged();
         }
-        if (ImGui::Combo("Tracking Mode", reinterpret_cast<int *>(&m_configuration.m_tracking_mode),
-                         "Position Messages\0TF2\0")) {
-            OnTrackingModeChanged();
-        }
+        ImGui::Text("Tracking Mode: %s", m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2
+                                           ? "TF2" : "Pose Messages");
 
         ImGui::Text("Position %f %f %f", GetEntity()->GetTransform()->GetWorldTranslation().GetX(),
                     GetEntity()->GetTransform()->GetWorldTranslation().GetY(),

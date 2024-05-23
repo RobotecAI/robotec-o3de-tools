@@ -3,13 +3,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <ROS2PoseControl/ROS2PoseControlBus.h>
 
 namespace ROS2PoseControl
 {
     class ROS2PoseControlSystemComponent
         : public AZ::Component
-        , protected ROS2PoseControlRequestBus::Handler
         , public AZ::TickBus::Handler
     {
     public:

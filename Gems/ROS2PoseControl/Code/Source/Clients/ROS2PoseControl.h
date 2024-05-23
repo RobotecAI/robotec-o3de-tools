@@ -46,10 +46,6 @@ namespace ROS2PoseControl {
 
         void SetIsTracking(bool isTracking);
 
-        void SwitchToPoseMessages(ROS2::TopicConfiguration topicConfiguration);
-
-        void SwitchToTF2(AZStd::string targetFrame, AZStd::string referenceFrame);
-
     private:
         void OnImGuiUpdate() override;
 
@@ -58,9 +54,7 @@ namespace ROS2PoseControl {
         void OnTopicConfigurationChanged();
 
         void OnIsTrackingChanged();
-
-        void OnTrackingModeChanged();
-
+        
         bool m_isTracking = false;
         ROS2PoseControlConfiguration m_configuration;
 

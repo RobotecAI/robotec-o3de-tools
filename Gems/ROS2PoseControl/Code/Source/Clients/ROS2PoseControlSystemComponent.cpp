@@ -42,18 +42,10 @@ namespace ROS2PoseControl
 
     ROS2PoseControlSystemComponent::ROS2PoseControlSystemComponent()
     {
-        if (ROS2PoseControlInterface::Get() == nullptr)
-        {
-            ROS2PoseControlInterface::Register(this);
-        }
     }
 
     ROS2PoseControlSystemComponent::~ROS2PoseControlSystemComponent()
     {
-        if (ROS2PoseControlInterface::Get() == this)
-        {
-            ROS2PoseControlInterface::Unregister(this);
-        }
     }
 
     void ROS2PoseControlSystemComponent::Init()
@@ -62,14 +54,12 @@ namespace ROS2PoseControl
 
     void ROS2PoseControlSystemComponent::Activate()
     {
-        ROS2PoseControlRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
     }
 
     void ROS2PoseControlSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        ROS2PoseControlRequestBus::Handler::BusDisconnect();
     }
 
     void ROS2PoseControlSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
