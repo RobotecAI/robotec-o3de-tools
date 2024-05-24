@@ -54,16 +54,11 @@ namespace ROS2PoseControl
 
     void ROS2PoseControlSystemComponent::Activate()
     {
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void ROS2PoseControlSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
     }
 
-    void ROS2PoseControlSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-    }
 
 } // namespace ROS2PoseControl

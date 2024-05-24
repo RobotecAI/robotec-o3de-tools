@@ -37,14 +37,10 @@ namespace ROS2PoseControl {
     void ROS2PoseControl::Activate() {
         auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2) {
-            m_poseSubscription.reset();
             m_tf_buffer = std::make_unique<tf2_ros::Buffer>(ros2Node->get_clock());
             m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
             AZ::TickBus::Handler::BusConnect();
         } else if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::PoseMessages) {
-            m_tf_buffer.reset();
-            m_tf_listener.reset();
-            AZ::TickBus::Handler::BusDisconnect();
             OnTopicConfigurationChanged();
         }
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
@@ -139,7 +135,7 @@ namespace ROS2PoseControl {
                                            "A component that controls the pose of the entity based on ROS 2 data.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "ROS2PoseControl")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
-                        ->Attribute(AZ::Edit::Attributes::Category, "Perception Simulation")
+                        ->Attribute(AZ::Edit::Attributes::Category, "ROS2")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControl::m_isTracking, "Is Tracking",
                                       "Turn the tracking on or off")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControl::m_configuration, "Configuration",
@@ -167,4 +163,4 @@ namespace ROS2PoseControl {
                     GetEntity()->GetTransform()->GetWorldRotation().GetZ());
         ImGui::End();
     }
-} // namespace PerceptionSimulation
+} // namespace ROS2PoseControl

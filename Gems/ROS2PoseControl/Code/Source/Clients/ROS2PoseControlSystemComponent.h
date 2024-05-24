@@ -8,7 +8,6 @@ namespace ROS2PoseControl
 {
     class ROS2PoseControlSystemComponent
         : public AZ::Component
-        , public AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT_DECL(ROS2PoseControlSystemComponent);
@@ -34,11 +33,6 @@ namespace ROS2PoseControl
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AZTickBus interface implementation
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
     };
 
