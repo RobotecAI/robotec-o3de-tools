@@ -1,12 +1,13 @@
 #include "SplineToolsEditorComponent.h"
-#include "AzCore/Debug/Trace.h"
 
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <ROS2/Georeference/GeoreferenceBus.h>
+#include <ROS2/Georeference/GeoreferenceStructures.h>
 #include <csv/csv.hpp>
 
 namespace SplineTools
@@ -23,10 +24,8 @@ namespace SplineTools
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<SplineToolsEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
-                ->Version(2)
-                ->Field("CsvAssetId", &SplineToolsEditorComponent::m_csvAssetId)
-                ->Field("IsLocalCoordinates", &SplineToolsEditorComponent::m_isLocalCoordinates);
+            serializeContext->Class<SplineToolsEditorComponent, AzToolsFramework::Components::EditorComponentBase>()->Version(2)->Field(
+                "IsLocalCoordinates", &SplineToolsEditorComponent::m_isLocalCoordinates);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
@@ -41,9 +40,7 @@ namespace SplineTools
                         &SplineToolsEditorComponent::m_isLocalCoordinates,
                         "Local coordinates",
                         "Local coordinates")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SplineToolsEditorComponent::m_csvAssetId, "CSV Asset", "CSV asset")
-                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.csv")
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Reload spline", "Reload spline")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "Load spline", "Load spline")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Load")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SplineToolsEditorComponent::ReloadCSVAsset)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -74,20 +71,16 @@ namespace SplineTools
         LmbrCentral::SplineComponentRequestBus::EventResult(
             splinePtr, GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::GetSpline);
         auto vertices = splinePtr->GetVertices();
-        using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
-        AZ::Data::AssetInfo sourceAssetInfo;
-        bool ok{ false };
-        AZStd::string watchFolder;
-        AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
 
-        AssetSysReqBus::BroadcastResult(
-            ok, &AssetSysReqBus::Events::GetSourceInfoBySourceUUID, m_csvAssetId.m_guid, sourceAssetInfo, watchFolder);
-        if (!ok)
+        QString fileName = QFileDialog::getSaveFileName(AzToolsFramework::GetActiveWindow(), "Open CSV File", "", "CSV Files (*.csv)");
+
+        if (fileName.isEmpty())
         {
-            AZ_Error("SplineToolsEditorComponent", false, "Failed to get source info for referenced CSV asset. Saving aborted");
+            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", "Please specify file", QMessageBox::Ok);
             return;
         }
-        const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
+
+        const AZ::IO::Path sourcePath = AZ::IO::Path(fileName.toUtf8().constData());
 
         if (!m_isLocalCoordinates)
         {
@@ -103,22 +96,20 @@ namespace SplineTools
                     return worldTm.TransformPoint(point);
                 });
         }
-        AZ_Printf("SplineToolsEditorComponent", "Save CSV asset to %s", sourceAssetInfo.m_relativePath.c_str());
+        AZ_Printf("SplineToolsEditorComponent", "Save CSV asset to %s", sourcePath.c_str());
         SavePointsToCsv(sourcePath.c_str(), vertices);
     }
 
     void SplineToolsEditorComponent::ReloadCSVAsset()
     {
-        using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
-        AZ::Data::AssetInfo sourceAssetInfo;
-        bool ok{ false };
-        AZStd::string watchFolder;
-        AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
+        QString fileName = QFileDialog::getOpenFileName(AzToolsFramework::GetActiveWindow(), "Open CSV File", "", "CSV Files (*.csv)");
 
-        AssetSysReqBus::BroadcastResult(
-            ok, &AssetSysReqBus::Events::GetSourceInfoBySourceUUID, m_csvAssetId.m_guid, sourceAssetInfo, watchFolder);
-        const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
-
+        if (fileName.isEmpty())
+        {
+            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", "Please specify file", QMessageBox::Ok);
+            return;
+        }
+        AZStd::string sourcePath = AZStd::string(fileName.toUtf8().constData());
         AZ_Printf("SplineToolsEditorComponent", "Reload csv asset from %s", sourcePath.c_str());
 
         auto points = GetSplinePointsFromCsv(sourcePath.c_str());
@@ -126,10 +117,19 @@ namespace SplineTools
         if (points.empty())
         {
             AZ_Error("SplineToolsEditorComponent", false, "No points found in CSV file");
+            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", "No points found in CSV file", QMessageBox::Ok);
             return;
         }
 
         AZ::Transform worldInvTm(AZ::Transform::Identity());
+        if (m_isLocalCoordinates && m_isLatLonAlt)
+        {
+            AZ_Error("SplineToolsEditorComponent", false, "Cannot use lat, lon, alt coordinates in local coordinates");
+            QMessageBox::warning(
+                AzToolsFramework::GetActiveWindow(), "Error", "Cannot use lat, lon, alt coordinates in local coordinates", QMessageBox::Ok);
+            return;
+        }
+
         if (!m_isLocalCoordinates)
         {
             AZ::TransformBus::EventResult(worldInvTm, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -189,30 +189,61 @@ namespace SplineTools
             const int index_Y = reader.index_of("y");
             const int index_Z = reader.index_of("z");
 
-            const bool isCoordinateCorrect = !(index_X < 0 || index_Y < 0);
+            const int index_Lat = reader.index_of("lat");
+            const int index_Lon = reader.index_of("lon");
+            const int index_Alt = reader.index_of("alt");
+
+            const bool isCoordinateXY = !(index_X < 0 || index_Y < 0);
+            const bool isCoordinateLatLon = !(index_Lat < 0 || index_Lon < 0 || index_Alt < 0);
+            const bool isCoordinateCorrect = isCoordinateXY || isCoordinateLatLon;
+
             if (!isCoordinateCorrect)
             {
-                AZ_Error("SplineToolsEditorComponent", false, "CSV file must have columns named x, y");
+                AZ_Error("SplineToolsEditorComponent", false, "CSV file must have columns named x, y or lat, lon");
+                QMessageBox::warning(
+                    AzToolsFramework::GetActiveWindow(), "Error", "CSV file must have columns named x, y or lat, lon", QMessageBox::Ok);
                 return {};
             }
 
-            for (csv::CSVRow& row : reader)
+            if (isCoordinateXY)
             {
-                AZ::Vector3 point = AZ::Vector3(row[index_X].get<float>(), row[index_Y].get<float>(), 0);
-
-                // handle Z column
-                if (index_Z > 0)
+                m_isLatLonAlt = false;
+                for (csv::CSVRow& row : reader)
                 {
-                    point.SetZ(row[index_Z].get<float>());
-                }
+                    AZ::Vector3 point = AZ::Vector3(row[index_X].get<float>(), row[index_Y].get<float>(), 0);
 
-                ret.emplace_back(AZStd::move(point));
+                    // handle Z column
+                    if (index_Z > 0)
+                    {
+                        point.SetZ(row[index_Z].get<float>());
+                    }
+
+                    ret.emplace_back(AZStd::move(point));
+                }
+            }
+            else if (isCoordinateLatLon)
+            {
+                m_isLatLonAlt = true;
+                for (csv::CSVRow& row : reader)
+                {
+                    ROS2::WGS::WGS84Coordinate coordinate;
+                    coordinate.m_latitude = row[index_Lat].get<double>();
+                    coordinate.m_longitude = row[index_Lon].get<double>();
+                    coordinate.m_altitude = row[index_Alt].get<float>();
+                    AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
+                    ROS2::GeoreferenceRequestsBus::BroadcastResult(
+                        coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWSG84ToLevel, coordinate);
+
+                    ret.emplace_back(AZStd::move(coordinateInLevel));
+                }
             }
 
             return ret;
         } catch (std::runtime_error& exception)
         {
-            AZ_Error("SplineToolsEditorComponent", false, "Error parsing CSV file: %s", exception.what());
+            AZStd::string error = AZStd::string::format("Error parsing CSV file: %s", exception.what());
+            AZ_Error("SplineToolsEditorComponent", false, error.c_str());
+            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", error.c_str(), QMessageBox::Ok);
         }
         return {};
     }
