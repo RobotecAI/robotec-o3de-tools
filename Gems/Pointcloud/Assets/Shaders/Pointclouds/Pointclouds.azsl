@@ -50,7 +50,7 @@ VSOutput MainVS(VSInput IN)
 
 struct PSOutput
 {
-    float4 m_diffuse : SV_Target0;
+    float4 m_diffuse : SV_Target;
 
 };
 
@@ -59,7 +59,6 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     OUT.m_diffuse = IN.m_color;
-    //OUT.m_diffuse[1] = 1.0f;
 
     return OUT;
 }; 

@@ -11,10 +11,6 @@ set(FILES
     Source/PointcloudModuleInterface.h
     Source/Clients/PointcloudSystemComponent.cpp
     Source/Clients/PointcloudSystemComponent.h
-    Source/Components/PointcloudComponent.h
-    Source/Components/PointcloudComponent.cpp
-    Source/Components/PointcloudComponentController.h
-    Source/Components/PointcloudComponentController.cpp
     Source/Render/PointcloudFeatureProcessor.h
     Source/Render/PointcloudFeatureProcessor.cpp
 )
