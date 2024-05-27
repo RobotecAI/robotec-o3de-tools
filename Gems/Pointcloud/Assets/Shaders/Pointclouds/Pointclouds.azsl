@@ -59,7 +59,6 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     OUT.m_diffuse = IN.m_color;
-    OUT.m_diffuse[1] = 1.0f;
 
     return OUT;
 }; 
