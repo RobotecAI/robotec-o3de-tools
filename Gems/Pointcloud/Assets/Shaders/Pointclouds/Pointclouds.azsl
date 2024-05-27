@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+ShaderResourceGroup PerDrawSrg : SRG_PerDraw
+{
+    float m_pointSize;
+    float4x4 m_modelMatrix;
+
+}
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float4 m_color : COLOR0;
+
+    uint m_vertexID : SV_VertexID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float4 m_color : COLOR0;
+    [[vk::builtin("PointSize")]]
+    float PointSize		: PSIZE;
+};
+
+VSOutput MainVS(VSInput IN)
+{
+    VSOutput OUT;
+
+
+    // Set the w component to 0 in order to project the stars out to infinity.
+    const float4 pos = float4(IN.m_position, 1.0);
+    const float4 pos2 = mul(PerDrawSrg::m_modelMatrix, pos);
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, pos2);
+    OUT.m_color =  IN.m_color;
+    OUT.PointSize = PerDrawSrg::m_pointSize;
+    return OUT;
+};
+
+struct PSOutput
+{
+    float4 m_diffuse : SV_Target0;
+
+};
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    OUT.m_diffuse = IN.m_color;
+    //OUT.m_diffuse[1] = 1.0f;
+
+    return OUT;
+}; 

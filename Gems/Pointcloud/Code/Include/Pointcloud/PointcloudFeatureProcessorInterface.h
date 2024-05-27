@@ -10,7 +10,8 @@
 
 #include <AzCore/base.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
-
+#include <AzCore/Component/Component.h>
+#include <AzCore/Math/Transform.h>
 namespace Pointcloud
 {
     class Pointcloud;
@@ -22,7 +23,16 @@ namespace Pointcloud
         : public AZ::RPI::FeatureProcessor
     {
     public:
-        AZ_RTTI(PointcloudFeatureProcessorInterface, "{B44ECAE2-F2E3-4C9D-BB6C-0C5E3ACF0FD6}", AZ::RPI::FeatureProcessor);
+        AZ_RTTI(PointcloudFeatureProcessorInterface, "{8597AF27-EB4E-4363-8889-3BFC2AF5D2EC}", AZ::RPI::FeatureProcessor);
+        struct CloudVertex
+        {
+            AZStd::array<float, 3> m_position;
+            //AZStd::array<float, 3> m_normal;
+            uint32_t m_color;
+        };
+
+        virtual void SetTransform(const AZ::Transform &transform)= 0;
+        virtual void SetPointSize(float pointSize)= 0;
 
     };
 }

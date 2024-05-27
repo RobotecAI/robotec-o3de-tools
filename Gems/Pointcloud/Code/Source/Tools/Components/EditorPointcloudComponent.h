@@ -21,7 +21,7 @@
 
 namespace Pointcloud
 {
-    inline constexpr AZ::TypeId EditorComponentTypeId { "{2F9DD96F-7948-43B6-9E63-6F2267E7B880}" };
+    inline constexpr AZ::TypeId EditorComponentTypeId { "{4D12777B-E833-4655-8F7B-4024E6E15995}" };
 
     class EditorPointcloudComponent final
         : public AZ::Render::EditorRenderComponentAdapter<PointcloudComponentController, PointcloudComponent, PointcloudComponentConfig>
@@ -42,6 +42,10 @@ namespace Pointcloud
         // AZ::Component overrides
         void Activate() override;
         void Deactivate() override;
+
+    protected:
+
+        void OnEntityVisibilityChanged(bool visibility) override;
 
     private:
 
