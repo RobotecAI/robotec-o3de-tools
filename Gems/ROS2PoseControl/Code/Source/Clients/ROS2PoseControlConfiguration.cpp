@@ -14,6 +14,11 @@ namespace ROS2PoseControl {
                    : AZ::Edit::PropertyVisibility::Hide;
     }
 
+    AZ::Crc32 ROS2PoseControlConfiguration::isGroudOffsetVisible()  const {
+        return m_clampToGround ? AZ::Edit::PropertyVisibility::Show
+            : AZ::Edit::PropertyVisibility::Hide;
+    }
+
     void ROS2PoseControlConfiguration::Reflect(AZ::ReflectContext *context) {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext *>(context)) {
             serializeContext->Class<ROS2PoseControlConfiguration>()
@@ -21,7 +26,11 @@ namespace ROS2PoseControl {
                     ->Field("m_tracking_mode", &ROS2PoseControlConfiguration::m_tracking_mode)
                     ->Field("m_poseTopicConfiguration", &ROS2PoseControlConfiguration::m_poseTopicConfiguration)
                     ->Field("m_targetFrame", &ROS2PoseControlConfiguration::m_targetFrame)
-                    ->Field("m_referenceFrame", &ROS2PoseControlConfiguration::m_referenceFrame);
+                    ->Field("m_referenceFrame", &ROS2PoseControlConfiguration::m_referenceFrame)
+                    ->Field("lockZAxis", &ROS2PoseControlConfiguration::m_lockZAxis)
+                    ->Field("startOffset", &ROS2PoseControlConfiguration::m_startOffset)
+                    ->Field("m_clampToGround", &ROS2PoseControlConfiguration::m_clampToGround)
+                    ->Field("m_groundOffset", &ROS2PoseControlConfiguration::m_groundOffset);
 
             if (AZ::EditContext *ec = serializeContext->GetEditContext()) {
                 ec->Class<ROS2PoseControlConfiguration>("ROS2PoseControlConfiguration",
@@ -49,7 +58,16 @@ namespace ROS2PoseControl {
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_referenceFrame,
                                       "Reference Frame", "Reference frame eg. map")
                         ->Attribute(AZ::Edit::Attributes::Visibility,
-                                    &ROS2PoseControlConfiguration::isTrackingModeTF2Visibility);
+                                    &ROS2PoseControlConfiguration::isTrackingModeTF2Visibility)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_lockZAxis,
+                                    "Lock Z Axis", "Lock Z axis")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_startOffset,
+                                "StartOffset", "Coordinate system offset for the start position of the robot")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_clampToGround,
+                                      "Clamp to Ground", "Clamp to ground")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_groundOffset, "Ground Offset",
+                                      "Offset from the ground")
+                        ->Attribute(AZ::Edit::Attributes::Visibility,   &ROS2PoseControlConfiguration::isGroudOffsetVisible);
             }
         }
     };
