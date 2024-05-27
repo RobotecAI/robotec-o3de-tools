@@ -121,6 +121,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
+        PLATFORM_INCLUDE_FILES
+            ${CMAKE_CURRENT_LIST_DIR}/Platform/Common/${PAL_TRAIT_COMPILER_ID}/pointcloud_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         FILES_CMAKE
             pointcloud_editor_private_files.cmake
         TARGET_PROPERTIES

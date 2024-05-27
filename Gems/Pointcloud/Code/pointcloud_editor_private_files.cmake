@@ -9,6 +9,6 @@
 set(FILES
     Source/Tools/PointcloudEditorSystemComponent.cpp
     Source/Tools/PointcloudEditorSystemComponent.h
-    Source/Tools/Components/EditorPointcloudComponent.h
-    Source/Tools/Components/EditorPointcloudComponent.cpp
+    Source/Tools/Components/PointcloudEditorComponent.cpp
+    Source/Tools/Components/PointcloudEditorComponent.h
 )

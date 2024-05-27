@@ -9,7 +9,7 @@
 #include <Pointcloud/PointcloudTypeIds.h>
 #include <PointcloudModuleInterface.h>
 #include "PointcloudEditorSystemComponent.h"
-#include "Components/EditorPointcloudComponent.h"
+#include "Components/PointcloudEditorComponent.h"
 
 namespace Pointcloud
 {
@@ -28,8 +28,7 @@ namespace Pointcloud
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
                 PointcloudEditorSystemComponent::CreateDescriptor(),
-                PointcloudComponent::CreateDescriptor(),
-                EditorPointcloudComponent::CreateDescriptor(),
+                PointcloudEditorComponent::CreateDescriptor(),
             });
         }
 

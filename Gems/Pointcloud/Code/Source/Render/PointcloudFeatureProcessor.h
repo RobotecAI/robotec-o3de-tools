@@ -34,14 +34,14 @@ namespace Pointcloud
         // PointcloudFeatureProcessorInterface
         void SetTransform(const AZ::Transform& transform) override;
         void SetPointSize(float pointSize) override;
+        void SetCloud(const AZStd::vector<CloudVertex>& cloudVertexData) override;
+
     protected:
-        //! RPI::SceneNotificationBus
+        // RPI::SceneNotificationBus overrides
         void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
-        //! Data::AssetBus
+        // Data::AssetBus overrides
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
-        void SetCloud(const AZStd::vector<CloudVertex>& cloudVertexData);
 
     private:
 
