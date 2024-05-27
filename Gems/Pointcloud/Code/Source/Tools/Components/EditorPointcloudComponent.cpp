@@ -86,4 +86,8 @@ namespace Pointcloud
         }
     }
 
+    void EditorPointcloudComponent::OnEntityVisibilityChanged(bool visibility)
+    {
+
+    }
 }

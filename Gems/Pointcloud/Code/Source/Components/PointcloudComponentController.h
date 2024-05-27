@@ -20,10 +20,11 @@ namespace Pointcloud
         : public AZ::ComponentConfig
     {
     public:
-        AZ_RTTI(PointcloudComponentConfig, "{428942E6-F8D3-455E-992B-EF71C0BC52B5}", ComponentConfig);
+        AZ_RTTI(PointcloudComponentConfig, "{8E9D09CB-1A73-41D1-A55F-FAD302BD49D0}", ComponentConfig);
         AZ_CLASS_ALLOCATOR(PointcloudComponentConfig, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
-
+        float m_pointSize = 1.0f;
+        AZStd::string m_plyFilePath;
         PointcloudComponentConfig() = default;
 
         AZ::u64 m_entityId{ AZ::EntityId::InvalidEntityId };
@@ -36,7 +37,7 @@ namespace Pointcloud
     public:
         friend class EditorPointcloudComponent;
 
-        AZ_RTTI(PointcloudComponentController, "{17E33E76-A6B8-4B13-8BD5-A795C800B2A7}");
+        AZ_RTTI(PointcloudComponentController, "{37F67BFB-D71C-483C-A6E5-12E1AF3CE123}");
         AZ_CLASS_ALLOCATOR(PointcloudComponentController, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -54,7 +55,8 @@ namespace Pointcloud
         const PointcloudComponentConfig& GetConfiguration() const;
 
     private:
-
+        AZ::Crc32 OnConfigurationChanged();
+        AZ::Crc32 OnLoadButton();
         AZ_DISABLE_COPY(PointcloudComponentController);
 
         // TransformNotificationBus overrides
@@ -68,6 +70,7 @@ namespace Pointcloud
         AZ::EntityId m_entityId;
         
         PointcloudComponentConfig m_configuration;
+        AZ::RPI::Scene* m_scene;
 
     };
 }
