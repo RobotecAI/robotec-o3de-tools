@@ -6,12 +6,12 @@
       "CompareFunc": "GreaterEqual"
     }
   },
-  "GlobalTargetBlendState" : {
-      "Enable" : true,
-      "BlendSource" : "AlphaSource",
-      "BlendDest" : "One",
-      "BlendOp" : "Add"
-  },
+//   "GlobalTargetBlendState" : {
+//       "Enable" : true,
+//       "BlendSource" : "AlphaSource",
+//       "BlendDest" : "One",
+//       "BlendOp" : "Add"
+//   },
   "DrawList": "forward",
   "ProgramSettings": {
     "EntryPoints": [
