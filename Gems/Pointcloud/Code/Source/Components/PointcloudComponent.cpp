@@ -8,6 +8,7 @@
 
 #include <Components/PointcloudComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Pointcloud
 {

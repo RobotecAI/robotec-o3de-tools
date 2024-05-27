@@ -76,13 +76,10 @@ namespace Pointcloud
     {
         PointcloudRequestBus::Handler::BusConnect();
 
-        AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<PointcloudFeatureProcessor>();
     }
 
     void PointcloudSystemComponent::Deactivate()
     {
-        AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<PointcloudFeatureProcessor>();
-
         PointcloudRequestBus::Handler::BusDisconnect();
     }
 

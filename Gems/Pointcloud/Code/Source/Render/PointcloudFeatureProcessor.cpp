@@ -7,31 +7,223 @@
  */
 
 #include "PointcloudFeatureProcessor.h"
+#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <fstream>
 
-namespace Pointcloud
-{
-    void PointcloudFeatureProcessor::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
+namespace Pointcloud {
+    void PointcloudFeatureProcessor::Reflect(AZ::ReflectContext *context) {
+        if (auto *serializeContext = azrtti_cast<AZ::SerializeContext *>(context)) {
             serializeContext
-                ->Class<PointcloudFeatureProcessor, FeatureProcessor>()
-                ;
+                    ->Class<PointcloudFeatureProcessor, FeatureProcessor>();
         }
     }
 
-    void PointcloudFeatureProcessor::Activate()
-    {
+    void PointcloudFeatureProcessor::Activate() {
+        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Activated");
+        const char *shaderFilePath = "Shaders/Pointclouds/Pointclouds.azshader";
+        m_shader = AZ::RPI::LoadCriticalShader(shaderFilePath);
+
+        if (!m_shader) {
+            AZ_Error("PointcloudFeatureProcessor", false, "Failed to load required stars shader.");
+            return;
+        }
+        AZ::Data::AssetBus::Handler::BusConnect(m_shader->GetAssetId());
+
+        auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
+        AZ_Error("PointcloudFeatureProcessor", drawSrgLayout,
+                 "Failed to get the draw shader resource group layout for the pointcloud shader.");
+        if (drawSrgLayout) {
+            m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(),
+                                                             drawSrgLayout->GetName());
+            m_pointSizeIndex.Reset();
+            m_modelMatrixIndex.Reset();
+
+        }
+
+        m_drawListTag = m_shader->GetDrawListTag();
+
+
+        auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        AZ_Assert(viewportContextInterface, "PointcloudFeatureProcessor requires the ViewportContextRequestsInterface.");
+        auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
+        AZ_Assert(viewportContext, "PointcloudFeatureProcessor requires a valid ViewportContext.");
+        m_viewportSize = viewportContext->GetViewportSize();
+
+        EnableSceneNotification();
+
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
+
+
+//        AZStd::vector<CloudVertex> data;
+//        std::ifstream file("/home/michalpelka/cloud3.txt");
+//        while (!file.eof()) {
+//            CloudVertex star;
+//            file >> star.m_position[0] >> star.m_position[1] >> star.m_position[2];
+//            float intensity;
+//            file >> intensity;
+//            uint8_t intensity8 = static_cast<uint8_t>(intensity);
+//            star.m_color = intensity8 | (intensity8 << 8) | (intensity8 << 16) | 0xFF000000;
+//            data.push_back(star);
+//        }
+//
+//        SetCloud(data);
+    }
+
+    void PointcloudFeatureProcessor::SetCloud(const AZStd::vector<CloudVertex> &cloudVertexData) {
+        const uint32_t elementCount = static_cast<uint32_t>(cloudVertexData.size());
+        const uint32_t elementSize = sizeof(cloudVertexData);
+        const uint32_t bufferSize = elementCount * elementSize; // bytecount
+        m_starsMeshData = cloudVertexData;
+        m_numStarsVertices = elementCount;
+
+        if (!m_cloudVertexBuffer) {
+            AZ::RPI::CommonBufferDescriptor desc;
+            desc.m_poolType = AZ::RPI::CommonBufferPoolType::StaticInputAssembly;
+            desc.m_bufferName = "PointcloudFeatureProcessor";
+            desc.m_byteCount = bufferSize;
+            desc.m_elementSize = elementSize;
+            desc.m_bufferData = m_starsMeshData.data();
+            m_cloudVertexBuffer = AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+        } else {
+            if (m_cloudVertexBuffer->GetBufferSize() != bufferSize) {
+                m_cloudVertexBuffer->Resize(bufferSize);
+            }
+
+            m_cloudVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
+        }
+
+        m_meshStreamBufferViews.front() = AZ::RHI::StreamBufferView(*m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize,
+                                                                    elementSize);
+        UpdateDrawPacket();
+        m_updateShaderConstants = true;
+    }
+
+    void PointcloudFeatureProcessor::UpdateDrawPacket() {
+        if (m_meshPipelineState && m_drawSrg && m_meshStreamBufferViews.front().GetByteCount() != 0) {
+            m_drawPacket = BuildDrawPacket(m_drawSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews,
+                                           m_numStarsVertices);
+        }
+    }
+
+    void PointcloudFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) {
+        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor OnAssetReloaded");
+    }
+
+    void PointcloudFeatureProcessor::Deactivate() {
+        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Deactivated");
+        AZ::Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
+    }
+
+    void PointcloudFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket &packet) {
+        if (m_updateShaderConstants)
+        {
+            m_updateShaderConstants = false;
+            UpdateShaderConstants();
+        }
 
     }
 
-    void PointcloudFeatureProcessor::Deactivate()
-    {
-        
+    void PointcloudFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket &packet) {
+
+
+        AZ_PROFILE_FUNCTION(AzRender);
+
+        if (m_drawPacket) {
+            for (auto &view: packet.m_views) {
+                if (!view->HasDrawListTag(m_drawListTag)) {
+                    continue;
+                }
+
+                constexpr float depth = 0.f;
+                view->AddDrawPacket(m_drawPacket.get(), depth);
+            }
+        }
+
+
     }
 
-    void PointcloudFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
+    AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> PointcloudFeatureProcessor::BuildDrawPacket(
+            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &srg,
+            const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> &pipelineState,
+            const AZ::RHI::DrawListTag &drawListTag,
+            const AZStd::span<const AZ::RHI::StreamBufferView> &streamBufferViews,
+            uint32_t vertexCount) {
+        AZ::RHI::DrawLinear drawLinear;
+        drawLinear.m_vertexCount = vertexCount;
+        drawLinear.m_vertexOffset = 0;
+        drawLinear.m_instanceCount = 1;
+        drawLinear.m_instanceOffset = 0;
+
+        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+        drawPacketBuilder.Begin(nullptr);
+        drawPacketBuilder.SetDrawArguments(drawLinear);
+        drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
+
+        AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
+        drawRequest.m_listTag = drawListTag;
+        drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
+        drawRequest.m_streamBufferViews = streamBufferViews;
+        drawPacketBuilder.AddDrawItem(drawRequest);
+        return drawPacketBuilder.End();
+    }
+
+    void PointcloudFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline *renderPipeline,
+                                                             AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) {
+        if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added) {
+            if (!m_meshPipelineState) {
+                m_meshPipelineState = aznew AZ::RPI::PipelineStateForDraw;
+                m_meshPipelineState->Init(m_shader);
+
+
+                AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
+                layoutBuilder.AddBuffer()
+                        ->Channel("POSITION", AZ::RHI::Format::R32G32B32_FLOAT)
+                        ->Channel("COLOR", AZ::RHI::Format::R8G8B8A8_UNORM);
+                layoutBuilder.SetTopology(AZ::RHI::PrimitiveTopology::PointList);
+                auto inputStreamLayout = layoutBuilder.End();
+
+                m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
+                m_meshPipelineState->SetOutputFromScene(GetParentScene());
+                m_meshPipelineState->Finalize();
+
+                UpdateDrawPacket();
+            }
+        } else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged) {
+            if (m_meshPipelineState) {
+                m_meshPipelineState->SetOutputFromScene(GetParentScene());
+                m_meshPipelineState->Finalize();
+                UpdateDrawPacket();
+            }
+        }
+    }
+
+    void PointcloudFeatureProcessor::UpdateShaderConstants()
     {
-        
-    }    
+        if (m_drawSrg)
+        {
+            AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor SetPointSize");
+            AZ::Matrix4x4 orientation = AZ::Matrix4x4::CreateFromTransform(m_transform);
+            m_drawSrg->SetConstant(m_modelMatrixIndex, orientation);
+            m_drawSrg->SetConstant(m_pointSizeIndex, m_pointSize);
+            m_drawSrg->Compile();
+        }
+    }
+    void PointcloudFeatureProcessor::SetTransform(const AZ::Transform& transform)
+    {
+        m_updateShaderConstants = true;
+        m_transform = transform;
+    }
+    void PointcloudFeatureProcessor::SetPointSize(float pointSize)
+    {
+        m_updateShaderConstants = true;
+        m_pointSize = pointSize;
+
+    }
+
+
 }

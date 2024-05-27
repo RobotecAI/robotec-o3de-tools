@@ -13,7 +13,7 @@
 
 namespace Pointcloud
 {
-    inline constexpr AZ::TypeId PointcloudComponentTypeId { "{2DEF80D1-2D5F-4912-80AF-D2001FF0EEE3}" };
+    inline constexpr AZ::TypeId PointcloudComponentTypeId { "{9F9534D4-A840-4657-9B02-1102A2B9CA3E}" };
 
     class PointcloudComponent final
         : public AzFramework::Components::ComponentAdapter<PointcloudComponentController, PointcloudComponentConfig>
