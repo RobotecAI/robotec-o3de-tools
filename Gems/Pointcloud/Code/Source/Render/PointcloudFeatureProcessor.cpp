@@ -48,7 +48,8 @@ namespace Pointcloud {
 
 
         auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        AZ_Assert(viewportContextInterface, "PointcloudFeatureProcessor requires the ViewportContextRequestsInterface.");
+        AZ_Assert(viewportContextInterface,
+                  "PointcloudFeatureProcessor requires the ViewportContextRequestsInterface.");
         auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
         AZ_Assert(viewportContext, "PointcloudFeatureProcessor requires a valid ViewportContext.");
         m_viewportSize = viewportContext->GetViewportSize();
@@ -57,20 +58,6 @@ namespace Pointcloud {
 
         AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
 
-
-//        AZStd::vector<CloudVertex> data;
-//        std::ifstream file("/home/michalpelka/cloud3.txt");
-//        while (!file.eof()) {
-//            CloudVertex star;
-//            file >> star.m_position[0] >> star.m_position[1] >> star.m_position[2];
-//            float intensity;
-//            file >> intensity;
-//            uint8_t intensity8 = static_cast<uint8_t>(intensity);
-//            star.m_color = intensity8 | (intensity8 << 8) | (intensity8 << 16) | 0xFF000000;
-//            data.push_back(star);
-//        }
-//
-//        SetCloud(data);
     }
 
     void PointcloudFeatureProcessor::SetCloud(const AZStd::vector<CloudVertex> &cloudVertexData) {
@@ -120,8 +107,7 @@ namespace Pointcloud {
     }
 
     void PointcloudFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket &packet) {
-        if (m_updateShaderConstants)
-        {
+        if (m_updateShaderConstants) {
             m_updateShaderConstants = false;
             UpdateShaderConstants();
         }
@@ -202,10 +188,8 @@ namespace Pointcloud {
         }
     }
 
-    void PointcloudFeatureProcessor::UpdateShaderConstants()
-    {
-        if (m_drawSrg)
-        {
+    void PointcloudFeatureProcessor::UpdateShaderConstants() {
+        if (m_drawSrg) {
             AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor SetPointSize");
             AZ::Matrix4x4 orientation = AZ::Matrix4x4::CreateFromTransform(m_transform);
             m_drawSrg->SetConstant(m_modelMatrixIndex, orientation);
@@ -213,13 +197,13 @@ namespace Pointcloud {
             m_drawSrg->Compile();
         }
     }
-    void PointcloudFeatureProcessor::SetTransform(const AZ::Transform& transform)
-    {
+
+    void PointcloudFeatureProcessor::SetTransform(const AZ::Transform &transform) {
         m_updateShaderConstants = true;
         m_transform = transform;
     }
-    void PointcloudFeatureProcessor::SetPointSize(float pointSize)
-    {
+
+    void PointcloudFeatureProcessor::SetPointSize(float pointSize) {
         m_updateShaderConstants = true;
         m_pointSize = pointSize;
 

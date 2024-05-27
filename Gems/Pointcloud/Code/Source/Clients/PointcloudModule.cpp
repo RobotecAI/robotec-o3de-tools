@@ -12,7 +12,6 @@
 
 #include <AzCore/RTTI/RTTI.h>
 
-#include <Components/PointcloudComponent.h>
 
 namespace Pointcloud
 {
@@ -28,7 +27,6 @@ namespace Pointcloud
             m_descriptors.insert(m_descriptors.end(),
                 {
                     PointcloudSystemComponent::CreateDescriptor(),
-                    PointcloudComponent::CreateDescriptor(),
                 });
         }
 

@@ -33,6 +33,7 @@ namespace Pointcloud
 
         virtual void SetTransform(const AZ::Transform &transform)= 0;
         virtual void SetPointSize(float pointSize)= 0;
+        virtual void SetCloud(const AZStd::vector<CloudVertex>& cloudVertexData)= 0;
 
     };
 }
