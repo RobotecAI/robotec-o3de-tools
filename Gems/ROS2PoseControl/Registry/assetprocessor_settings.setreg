@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder ROS2PoseControl/Assets": {
+                    "watch": "@GEMROOT:ROS2PoseControl@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder ROS2PoseControl/Registry": {
+                    "watch": "@GEMROOT:ROS2PoseControl@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
