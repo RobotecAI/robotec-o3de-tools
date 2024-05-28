@@ -24,6 +24,7 @@
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <LmbrCentral/Scripting/TagComponentBus.h>
 
 namespace ROS2PoseControl
 {
@@ -54,6 +55,12 @@ namespace ROS2PoseControl
             OnTopicConfigurationChanged();
         }
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
+
+        AZ::TickBus::QueueFunction(
+            [this]()
+            {
+                ApplyTransform(AZ::Transform::CreateIdentity());
+            });
     }
 
     void ROS2PoseControl::Deactivate()
@@ -185,6 +192,8 @@ namespace ROS2PoseControl
         {
             OnIsTrackingChanged();
         }
+        ImGui::Checkbox("Lock Z Axis", &m_configuration.m_lockZAxis);
+        ImGui::Checkbox("Clamp to Ground", &m_configuration.m_clampToGround);
         ImGui::Text(
             "Tracking Mode: %s",
             m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2 ? "TF2" : "Pose Messages");
@@ -236,22 +245,46 @@ namespace ROS2PoseControl
         return transform;
     }
 
+    AZStd::optional<AZ::Transform> ROS2PoseControl::GetOffsetTransform(const AZStd::string& tagName) const
+    {
+        AZStd::optional<AZ::Transform> offsetTransform = AZStd::nullopt;
+        AZ::EBusAggregateResults<AZ::EntityId> aggregator;
+        const LmbrCentral::Tag tag = AZ::Crc32(tagName);
+        LmbrCentral::TagGlobalRequestBus::EventResult(aggregator, tag, &LmbrCentral::TagGlobalRequests::RequestTaggedEntities);
+        AZ_Error(
+            "ROS2PoseControl",
+            aggregator.values.size() <= 1,
+            "Multiple entities found with tag %s. The first entity will be used.",
+            tagName.c_str());
+        AZ_Warning("ROS2PoseControl", !aggregator.values.empty(), "No entity with tag found %s.", tagName.c_str());
+
+        if (!aggregator.values.empty())
+        {
+            const AZ::EntityId& entityId = aggregator.values[0];
+            AZ::TransformBus::EventResult(offsetTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
+        }
+
+        return offsetTransform;
+    }
+
     void ROS2PoseControl::ApplyTransform(const AZ::Transform& transform)
     {
         AZ::Transform modifiedTransform = m_configuration.m_lockZAxis ? RemoveTilt(transform) : transform;
-        if (m_configuration.m_startOffset.IsValid())
+        if (!m_configuration.m_startOffsetTag.empty())
         {
-            AZ::Transform startOffsetTransform = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(startOffsetTransform, m_configuration.m_startOffset, &AZ::TransformBus::Events::GetWorldTM);
-            modifiedTransform = startOffsetTransform * modifiedTransform;
+            auto startOffsetTransform = GetOffsetTransform(m_configuration.m_startOffsetTag);
+            if (startOffsetTransform.has_value())
+            {
+                modifiedTransform = startOffsetTransform.value() * modifiedTransform;
+            }
         }
         if (m_configuration.m_clampToGround)
         {
             constexpr float maxDistance = 40.0f;
-            const AZ::Vector3 gravityDirection = - AZ::Vector3::CreateAxisZ();
+            const AZ::Vector3 gravityDirection = -AZ::Vector3::CreateAxisZ();
             const AZ::Vector3 location = modifiedTransform.GetTranslation();
-            const AZ::Vector3 locationAbove = location + AZ::Vector3::CreateAxisZ() * maxDistance/2.0f;
-            AZStd::optional<AZ::Vector3> hitPosition = QueryGround(locationAbove, gravityDirection, maxDistance );
+            const AZ::Vector3 locationAbove = location + AZ::Vector3::CreateAxisZ() * maxDistance / 2.0f;
+            AZStd::optional<AZ::Vector3> hitPosition = QueryGround(locationAbove, gravityDirection, maxDistance);
             if (hitPosition.has_value())
             {
                 modifiedTransform.SetTranslation(hitPosition.value() - gravityDirection * m_configuration.m_groundOffset);

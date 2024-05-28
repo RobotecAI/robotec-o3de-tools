@@ -51,6 +51,12 @@ namespace ROS2PoseControl
         void SetIsTracking(bool isTracking);
 
     private:
+
+        //! Obtains the transform in the world tagged with the given tag name.
+        //! @param tagName The name of the tag to search for.
+        //! @return The transform of the entity with the given tag name, if it exists.
+        AZStd::optional<AZ::Transform> GetOffsetTransform(const AZStd::string& tagName) const;
+
         // ImGui::ImGuiUpdateListenerBus::Handler overrides
         void OnImGuiUpdate() override;
 

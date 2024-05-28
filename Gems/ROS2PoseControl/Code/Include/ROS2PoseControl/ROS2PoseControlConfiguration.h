@@ -36,6 +36,6 @@ namespace ROS2PoseControl {
         bool m_clampToGround = false;
         float m_groundOffset = 0.0f;
 
-        AZ::EntityId m_startOffset;
+        AZStd::string m_startOffsetTag;
     };
 } // namespace ROS2

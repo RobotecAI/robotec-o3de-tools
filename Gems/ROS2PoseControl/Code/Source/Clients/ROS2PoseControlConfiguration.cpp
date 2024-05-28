@@ -28,7 +28,7 @@ namespace ROS2PoseControl {
                     ->Field("m_targetFrame", &ROS2PoseControlConfiguration::m_targetFrame)
                     ->Field("m_referenceFrame", &ROS2PoseControlConfiguration::m_referenceFrame)
                     ->Field("lockZAxis", &ROS2PoseControlConfiguration::m_lockZAxis)
-                    ->Field("startOffset", &ROS2PoseControlConfiguration::m_startOffset)
+                    ->Field("startOffsetTag", &ROS2PoseControlConfiguration::m_startOffsetTag)
                     ->Field("m_clampToGround", &ROS2PoseControlConfiguration::m_clampToGround)
                     ->Field("m_groundOffset", &ROS2PoseControlConfiguration::m_groundOffset);
 
@@ -61,8 +61,8 @@ namespace ROS2PoseControl {
                                     &ROS2PoseControlConfiguration::isTrackingModeTF2Visibility)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_lockZAxis,
                                     "Lock Z Axis", "Lock Z axis")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_startOffset,
-                                "StartOffset", "Coordinate system offset for the start position of the robot")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_startOffsetTag,
+                                "Start Offset Tag", "Tag that will be used to set the start offset for the entity.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_clampToGround,
                                       "Clamp to Ground", "Clamp to ground")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_groundOffset, "Ground Offset",
