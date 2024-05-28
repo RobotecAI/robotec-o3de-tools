@@ -13,7 +13,8 @@
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <fstream>
-
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <AzCore/Name/NameDictionary.h>
 namespace Pointcloud {
     void PointcloudFeatureProcessor::Reflect(AZ::ReflectContext *context) {
         if (auto *serializeContext = azrtti_cast<AZ::SerializeContext *>(context)) {
@@ -86,6 +87,7 @@ namespace Pointcloud {
         m_meshStreamBufferViews.front() = AZ::RHI::StreamBufferView(*m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize,
                                                                     elementSize);
         UpdateDrawPacket();
+        UpdateBackgroundClearColor();
         m_updateShaderConstants = true;
     }
 
@@ -98,6 +100,8 @@ namespace Pointcloud {
 
     void PointcloudFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) {
         AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor OnAssetReloaded");
+        UpdateDrawPacket();
+        UpdateBackgroundClearColor();
     }
 
     void PointcloudFeatureProcessor::Deactivate() {
@@ -131,6 +135,36 @@ namespace Pointcloud {
         }
 
 
+    }
+    void PointcloudFeatureProcessor::UpdateBackgroundClearColor()
+    {
+        // This function is only necessary for now because the default clear value
+        // color is not black, and is set in various .pass files in places a user
+        // is unlikely to find.  Unfortunately, the viewport will revert to the
+        // grey color when resizing momentarily.
+        const AZ::RHI::ClearValue blackClearValue = AZ::RHI::ClearValue::CreateVector4Float(0.f, 0.f, 0.f, 0.f);
+        AZ::RPI::PassFilter passFilter;
+        AZStd::string slot;
+
+        auto setClearValue = [&](AZ::RPI::Pass* pass)->AZ:: RPI::PassFilterExecutionFlow
+        {
+            AZ::Name slotName = AZ::Name::FromStringLiteral(slot, AZ::Interface<AZ::NameDictionary>::Get());
+            if (auto binding = pass->FindAttachmentBinding(slotName))
+            {
+                binding->m_unifiedScopeDesc.m_loadStoreAction.m_clearValue = blackClearValue;
+            }
+            return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+        };
+
+        slot = "SpecularOutput";
+        passFilter= AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ForwardPassTemplate"), GetParentScene());
+        AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
+        passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ForwardMSAAPassTemplate"), GetParentScene());
+        AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
+
+        slot = "ReflectionOutput";
+        passFilter =AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ReflectionGlobalFullscreenPassTemplate"), GetParentScene());
+        AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
     }
 
     AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> PointcloudFeatureProcessor::BuildDrawPacket(
@@ -178,12 +212,14 @@ namespace Pointcloud {
                 m_meshPipelineState->Finalize();
 
                 UpdateDrawPacket();
+                UpdateBackgroundClearColor();
             }
         } else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged) {
             if (m_meshPipelineState) {
                 m_meshPipelineState->SetOutputFromScene(GetParentScene());
                 m_meshPipelineState->Finalize();
                 UpdateDrawPacket();
+                UpdateBackgroundClearColor();
             }
         }
     }

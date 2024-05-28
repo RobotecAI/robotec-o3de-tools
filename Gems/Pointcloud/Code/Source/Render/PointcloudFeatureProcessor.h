@@ -44,7 +44,7 @@ namespace Pointcloud
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     private:
-
+        void UpdateBackgroundClearColor();
 
         // FeatureProcessor overrides
         void Activate() override;
