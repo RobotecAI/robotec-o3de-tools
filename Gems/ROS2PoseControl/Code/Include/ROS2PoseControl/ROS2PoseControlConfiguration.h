@@ -4,7 +4,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 #include <ROS2/Communication/TopicConfiguration.h>
-
+#include <AzCore/Component/EntityId.h>
 namespace ROS2PoseControl {
     //! A structure for a single ROS2 topic, a part of publisher or subscriber configuration.
     struct ROS2PoseControlConfiguration {
@@ -17,6 +17,9 @@ namespace ROS2PoseControl {
 
         AZ::Crc32 isTrackingModePoseMessagesVisibility() const;
 
+
+        AZ::Crc32 isGroudOffsetVisible() const;
+
         enum class TrackingMode {
             PoseMessages,
             TF2
@@ -27,5 +30,12 @@ namespace ROS2PoseControl {
 
         AZStd::string m_targetFrame;
         AZStd::string m_referenceFrame;
+
+        bool m_lockZAxis = true;
+
+        bool m_clampToGround = false;
+        float m_groundOffset = 0.0f;
+
+        AZStd::string m_startOffsetTag;
     };
 } // namespace ROS2
