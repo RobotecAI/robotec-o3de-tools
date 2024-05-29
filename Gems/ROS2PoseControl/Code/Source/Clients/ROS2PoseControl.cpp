@@ -75,8 +75,9 @@ namespace ROS2PoseControl
     AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2() const
     {
         geometry_msgs::msg::TransformStamped transformStamped;
-        if (m_tf_buffer->canTransform(m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(), tf2::TimePointZero))
-        {
+        std::string errorString;
+        if (m_tf_buffer->canTransform(m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(),
+                                      tf2::TimePointZero, &errorString)) {
             transformStamped = m_tf_buffer->lookupTransform(
                 m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(), tf2::TimePointZero);
         }
