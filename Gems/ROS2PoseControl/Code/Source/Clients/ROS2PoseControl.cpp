@@ -82,12 +82,13 @@ namespace ROS2PoseControl
         }
         else
         {
-            AZ_Warning(
+            AZ_WarningOnce(
                 "ROS2PositionControl",
                 false,
-                "Could not transform %s to %s",
+                "Could not transform %s to %s , error: %s",
                 m_configuration.m_targetFrame.c_str(),
-                m_configuration.m_referenceFrame.c_str());
+                m_configuration.m_referenceFrame.c_str(),
+                errorString.c_str());
             return AZ::Failure("Could not transform");
         }
         const AZ::Quaternion rotation = ROS2::ROS2Conversions::FromROS2Quaternion(transformStamped.transform.rotation);
@@ -256,7 +257,7 @@ namespace ROS2PoseControl
             aggregator.values.size() <= 1,
             "Multiple entities found with tag %s. The first entity will be used.",
             tagName.c_str());
-        AZ_Warning("ROS2PoseControl", !aggregator.values.empty(), "No entity with tag found %s.", tagName.c_str());
+        AZ_WarningOnce("ROS2PoseControl", !aggregator.values.empty(), "No entity with tag found %s.", tagName.c_str());
 
         if (!aggregator.values.empty())
         {
@@ -319,7 +320,7 @@ namespace ROS2PoseControl
         request.m_distance = maxDistance;
 
         AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
-        AZ_Warning("ROS2PoseControl", hitPosition.has_value(), "No ground found for the entity");
+        AZ_WarningOnce("ROS2PoseControl", hitPosition.has_value(), "No ground found for the entity");
         if (!result.m_hits.empty())
         {
             hitPosition = result.m_hits.front().m_position;
