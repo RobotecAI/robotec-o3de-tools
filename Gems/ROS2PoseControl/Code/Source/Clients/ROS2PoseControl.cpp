@@ -10,17 +10,16 @@
 
 #include <ROS2/Frame/ROS2FrameComponent.h>
 #include <ROS2/ROS2Bus.h>
-#include <ROS2/ROS2GemUtilities.h>
 #include <ROS2/Utilities/ROS2Conversions.h>
 #include <ROS2/Utilities/ROS2Names.h>
 #include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
 #include <tf2_ros/transform_listener.h>
 
-#include "AzCore/Time/ITime.h"
-#include "AzCore/std/string/regex.h"
-#include "AzFramework/Entity/GameEntityContextComponent.h"
-#include "AzFramework/Physics/SimulatedBodies/RigidBody.h"
-#include "RigidBodyComponent.h"
+#include <AzCore/std/string/regex.h>
+#include <AzFramework/Entity/GameEntityContextComponent.h>
+#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <RigidBodyComponent.h>
+
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
@@ -72,19 +71,44 @@ namespace ROS2PoseControl
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
     }
 
+    void ROS2PoseControl::DisablePhysics()
+    {
+        if (auto* rigidBodyComponent = m_entity->FindComponent<PhysX::RigidBodyComponent>())
+        {
+            rigidBodyComponent->DisablePhysics();
+        }
+        AZStd::vector<AZ::EntityId> children;
+        AZ::TransformBus::EventResult(children, GetEntityId(), &AZ::TransformBus::Events::GetAllDescendants);
+        for (const AZ::EntityId& child : children)
+        {
+            AZ::Entity* childEntity;
+            AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationRequests::FindEntity, child);
+            if (auto* childRigidBodyComponent = childEntity->FindComponent<PhysX::RigidBodyComponent>())
+            {
+                childRigidBodyComponent->DisablePhysics();
+            }
+        }
+    }
+
     AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2()
     {
         geometry_msgs::msg::TransformStamped transformStamped;
         std::string errorString;
-        if (m_tf_buffer->canTransform(m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(),
-                                      tf2::TimePointZero, &errorString)) {
+        if (m_tf_buffer->canTransform(
+            m_configuration.m_referenceFrame.c_str(),
+            m_configuration.m_targetFrame.c_str(),
+            tf2::TimePointZero,
+            &errorString))
+        {
             transformStamped = m_tf_buffer->lookupTransform(
-                m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(), tf2::TimePointZero);
+                m_configuration.m_referenceFrame.c_str(),
+                m_configuration.m_targetFrame.c_str(),
+                tf2::TimePointZero);
             m_tf2WarningShown = false;
         }
         else
         {
-            if(!m_tf2WarningShown)
+            if (!m_tf2WarningShown)
             {
                 AZ_Warning(
                     "ROS2PositionControl",
@@ -284,6 +308,11 @@ namespace ROS2PoseControl
 
     void ROS2PoseControl::ApplyTransform(const AZ::Transform& transform)
     {
+        if (!m_isPhysicsDisabled)
+        {
+            DisablePhysics();
+            m_isPhysicsDisabled = true;
+        }
         AZ::Transform modifiedTransform = m_configuration.m_lockZAxis ? RemoveTilt(transform) : transform;
         if (!m_configuration.m_startOffsetTag.empty())
         {
