@@ -60,6 +60,7 @@ namespace LevelModificationTools
 
     void PrefabVariantEditorComponent::Deactivate()
     {
+        m_spawnTicket = AzFramework::EntitySpawnTicket();
         PrefabVariantRequestsBus::Handler::BusDisconnect();
     }
 
