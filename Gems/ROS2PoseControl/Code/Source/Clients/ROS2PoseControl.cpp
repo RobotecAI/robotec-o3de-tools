@@ -86,7 +86,7 @@ namespace ROS2PoseControl
             AZ_WarningOnce(
                 "ROS2PositionControl",
                 false,
-                "Could not transform %s to %s , error: %s",
+                "Could not transform %s to %s, error: %s",
                 m_configuration.m_targetFrame.c_str(),
                 m_configuration.m_referenceFrame.c_str(),
                 errorString.c_str());
