@@ -72,7 +72,7 @@ namespace ROS2PoseControl
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
     }
 
-    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2() const
+    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2()
     {
         geometry_msgs::msg::TransformStamped transformStamped;
         std::string errorString;
@@ -80,16 +80,21 @@ namespace ROS2PoseControl
                                       tf2::TimePointZero, &errorString)) {
             transformStamped = m_tf_buffer->lookupTransform(
                 m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(), tf2::TimePointZero);
+            m_tf2WarningShown = false;
         }
         else
         {
-            AZ_WarningOnce(
-                "ROS2PositionControl",
-                false,
-                "Could not transform %s to %s, error: %s",
-                m_configuration.m_targetFrame.c_str(),
-                m_configuration.m_referenceFrame.c_str(),
-                errorString.c_str());
+            if(!m_tf2WarningShown)
+            {
+                AZ_Warning(
+                    "ROS2PositionControl",
+                    false,
+                    "Could not transform %s to %s, error: %s",
+                    m_configuration.m_targetFrame.c_str(),
+                    m_configuration.m_referenceFrame.c_str(),
+                    errorString.c_str());
+                m_tf2WarningShown = true;
+            }
             return AZ::Failure("Could not transform");
         }
         const AZ::Quaternion rotation = ROS2::ROS2Conversions::FromROS2Quaternion(transformStamped.transform.rotation);
