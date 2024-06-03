@@ -11,7 +11,7 @@ If so, set its mode to Kinematic.
 
 After adding the component, you should see a window like this:
 
-![Pose control UI](../Images/pose_control_ui.png)
+![Pose control UI](../Images/PoseControlUI.png)
 
 You can use this component in the following modes:
 
