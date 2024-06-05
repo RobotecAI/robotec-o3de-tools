@@ -55,12 +55,12 @@ namespace ROS2PoseControl
         //! Obtains the transform in the world tagged with the given tag name.
         //! @param tagName The name of the tag to search for.
         //! @return The transform of the entity with the given tag name, if it exists.
-        AZStd::optional<AZ::Transform> GetOffsetTransform(const AZStd::string& tagName) const;
+        AZStd::optional<AZ::Transform> GetOffsetTransform(const AZStd::string& tagName);
 
         // ImGui::ImGuiUpdateListenerBus::Handler overrides
         void OnImGuiUpdate() override;
 
-        [[nodiscard]] AZ::Outcome<AZ::Transform, const char*> GetCurrentTransformViaTF2() const;
+        [[nodiscard]] AZ::Outcome<AZ::Transform, const char*> GetCurrentTransformViaTF2();
 
         void OnTopicConfigurationChanged();
 
@@ -68,7 +68,7 @@ namespace ROS2PoseControl
 
         AZ::Transform RemoveTilt(AZ::Transform transform) const;
 
-        AZStd::optional<AZ::Vector3> QueryGround(const AZ::Vector3& location,  const AZ::Vector3& gravityDirection, float maxDistance) const;
+        AZStd::optional<AZ::Vector3> QueryGround(const AZ::Vector3& location,  const AZ::Vector3& gravityDirection, float maxDistance);
 
         void ApplyTransform(const AZ::Transform& transform);
 
@@ -81,6 +81,10 @@ namespace ROS2PoseControl
         // TF2 Tracking
         std::shared_ptr<tf2_ros::TransformListener> m_tf_listener{ nullptr };
         std::unique_ptr<tf2_ros::Buffer> m_tf_buffer;
+
+        bool m_tf2WarningShown = false;
+        bool m_groundNotFoundWarningShown = false;
+        bool m_startingOffsetNotFoundWarningShown = false;
 
     };
 } // namespace ROS2PoseControl

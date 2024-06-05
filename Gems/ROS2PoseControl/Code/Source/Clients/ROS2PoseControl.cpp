@@ -72,22 +72,29 @@ namespace ROS2PoseControl
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
     }
 
-    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2() const
+    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2()
     {
         geometry_msgs::msg::TransformStamped transformStamped;
-        if (m_tf_buffer->canTransform(m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(), tf2::TimePointZero))
-        {
+        std::string errorString;
+        if (m_tf_buffer->canTransform(m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(),
+                                      tf2::TimePointZero, &errorString)) {
             transformStamped = m_tf_buffer->lookupTransform(
                 m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(), tf2::TimePointZero);
+            m_tf2WarningShown = false;
         }
         else
         {
-            AZ_Warning(
-                "ROS2PositionControl",
-                false,
-                "Could not transform %s to %s",
-                m_configuration.m_targetFrame.c_str(),
-                m_configuration.m_referenceFrame.c_str());
+            if(!m_tf2WarningShown)
+            {
+                AZ_Warning(
+                    "ROS2PositionControl",
+                    false,
+                    "Could not transform %s to %s, error: %s",
+                    m_configuration.m_targetFrame.c_str(),
+                    m_configuration.m_referenceFrame.c_str(),
+                    errorString.c_str());
+                m_tf2WarningShown = true;
+            }
             return AZ::Failure("Could not transform");
         }
         const AZ::Quaternion rotation = ROS2::ROS2Conversions::FromROS2Quaternion(transformStamped.transform.rotation);
@@ -245,19 +252,27 @@ namespace ROS2PoseControl
         return transform;
     }
 
-    AZStd::optional<AZ::Transform> ROS2PoseControl::GetOffsetTransform(const AZStd::string& tagName) const
+    AZStd::optional<AZ::Transform> ROS2PoseControl::GetOffsetTransform(const AZStd::string& tagName)
     {
         AZStd::optional<AZ::Transform> offsetTransform = AZStd::nullopt;
         AZ::EBusAggregateResults<AZ::EntityId> aggregator;
         const LmbrCentral::Tag tag = AZ::Crc32(tagName);
         LmbrCentral::TagGlobalRequestBus::EventResult(aggregator, tag, &LmbrCentral::TagGlobalRequests::RequestTaggedEntities);
-        AZ_Error(
-            "ROS2PoseControl",
-            aggregator.values.size() <= 1,
-            "Multiple entities found with tag %s. The first entity will be used.",
-            tagName.c_str());
-        AZ_Warning("ROS2PoseControl", !aggregator.values.empty(), "No entity with tag found %s.", tagName.c_str());
+        if (!m_groundNotFoundWarningShown)
+        {
+            AZ_Warning(
+                "ROS2PoseControl",
+                aggregator.values.size() <= 1,
+                "Multiple entities found with tag %s. The first entity will be used.",
+                tagName.c_str());
 
+            AZ_Warning("ROS2PoseControl", !aggregator.values.empty(), "No entity with tag found %s.", tagName.c_str());
+            m_groundNotFoundWarningShown = aggregator.values.size() != 1;
+        }
+        if (aggregator.values.size() == 1)
+        {
+            m_groundNotFoundWarningShown = false;
+        }
         if (!aggregator.values.empty())
         {
             const AZ::EntityId& entityId = aggregator.values[0];
@@ -294,7 +309,7 @@ namespace ROS2PoseControl
     }
 
     AZStd::optional<AZ::Vector3> ROS2PoseControl::QueryGround(
-        const AZ::Vector3& location, const AZ::Vector3& gravityDirection, float maxDistance) const
+        const AZ::Vector3& location, const AZ::Vector3& gravityDirection, float maxDistance)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
@@ -319,7 +334,12 @@ namespace ROS2PoseControl
         request.m_distance = maxDistance;
 
         AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
-        AZ_Warning("ROS2PoseControl", hitPosition.has_value(), "No ground found for the entity");
+        if(!m_groundNotFoundWarningShown)
+        {
+            AZ_Warning("ROS2PoseControl", hitPosition.has_value(), "No ground found for the entity");
+            m_groundNotFoundWarningShown = !hitPosition.has_value();
+        }
+        m_groundNotFoundWarningShown = hitPosition.has_value();
         if (!result.m_hits.empty())
         {
             hitPosition = result.m_hits.front().m_position;
