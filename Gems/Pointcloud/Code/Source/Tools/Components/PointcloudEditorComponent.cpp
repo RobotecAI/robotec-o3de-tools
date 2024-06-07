@@ -97,14 +97,24 @@ namespace Pointcloud {
         }
 
         happly::PLYData plyIn(fileName.toStdString());
-        auto vertices = plyIn.getVertexPositions();
-
-        std::vector<std::array<unsigned char, 3>> colors;
-        try {
-            colors = plyIn.getVertexColors();
-        } catch (std::exception &e) {
-            AZ_Printf("PointcloudEditorComponent", "No colors in the file");
+        //auto vertices = plyIn.getVertexPositions();
+        std::vector<std::array<double, 3>> vertices;
+        // fill with grid of points
+        for (double i = 0; i < 10; i++) {
+            for (double j = 0; j < 10; j++) {
+                for (double k = 0; k < 10; k++) {
+                    vertices.push_back({i, j, k});
+                }
+            }
         }
+
+        std::vector<std::array<unsigned char, 3>> colors(vertices.size(), {255, 255, 255});
+
+//        try {
+//            colors = plyIn.getVertexColors();
+//        } catch (std::exception &e) {
+//            AZ_Printf("PointcloudEditorComponent", "No colors in the file");
+//        }
 
         if (m_moveToCentroid) {
             double centroid[3] = {0, 0, 0};
