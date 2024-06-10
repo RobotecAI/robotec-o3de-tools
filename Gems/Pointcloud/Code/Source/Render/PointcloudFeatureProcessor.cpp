@@ -14,6 +14,8 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <fstream>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Name/NameDictionary.h>
 namespace Pointcloud {
     void PointcloudFeatureProcessor::Reflect(AZ::ReflectContext *context) {
@@ -25,24 +27,32 @@ namespace Pointcloud {
 
     void PointcloudFeatureProcessor::Activate() {
         AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Activated");
-        const char *shaderFilePath = "Shaders/Billboard.azshader";
+        const char *shaderFilePath = "shaders/billboard2.azshader";
         m_shader = AZ::RPI::LoadCriticalShader(shaderFilePath);
 
         if (!m_shader) {
+            printf("Failed to load required stars shader.\n");
             AZ_Error("PointcloudFeatureProcessor", false, "Failed to load required stars shader.");
             return;
         }
         AZ::Data::AssetBus::Handler::BusConnect(m_shader->GetAssetId());
-
-        auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
+        
+        printf(" m_shader->GetAsset() %s Lol", m_shader->GetAsset()->GetName().GetCStr());
+        //auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
+        auto drawSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("PerDrawSrg"));
         AZ_Error("PointcloudFeatureProcessor", drawSrgLayout,
                  "Failed to get the draw shader resource group layout for the pointcloud shader.");
+
         if (drawSrgLayout) {
+
             m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(),
                                                              drawSrgLayout->GetName());
             m_pointSizeIndex.Reset();
             m_modelMatrixIndex.Reset();
+            printf("Created SRG\n");
 
+        }   else {
+            printf("Failed to create SRG\n");
         }
 
         m_drawListTag = m_shader->GetDrawListTag();
@@ -58,6 +68,9 @@ namespace Pointcloud {
         EnableSceneNotification();
 
         AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
+        texAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::StreamingImageAsset>("assets/untitled1.png.streamingimage");
+        texAsset.QueueLoad();
+
 
     }
 
@@ -87,9 +100,9 @@ namespace Pointcloud {
         AZStd::vector<float> cloudVertexDataBuffer = ConvertToBuffer(cloudVertexData);
         m_starsMeshData = cloudVertexDataBuffer;
         const uint32_t bufferSize = 4 * 4 * cloudVertexDataBuffer.size() * elementSize; // bytecount
-
+        const uint32_t strideSize = 4 * 4 * elementSize;
         m_numStarsVertices = elementCount;
-        AZ::RHI::ShaderInputNameIndex m_mBuffery = "m_positionBuffer";
+
 
         if (!m_cloudVertexBuffer) {
             AZ::RPI::CommonBufferDescriptor desc;
@@ -100,6 +113,7 @@ namespace Pointcloud {
             desc.m_bufferData = m_starsMeshData.data();
             desc.m_elementFormat = AZ::RHI::Format::R32_FLOAT;
             m_cloudVertexBuffer = AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+            m_cloudVertexBuffer->WaitForUpload();
 
         } else {
             if (m_cloudVertexBuffer->GetBufferSize() != bufferSize) {
@@ -107,9 +121,10 @@ namespace Pointcloud {
             }
 
             m_cloudVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
+            m_cloudVertexBuffer->WaitForUpload();
         }
 
-        m_drawSrg->SetBufferView(m_mBuffery, m_cloudVertexBuffer->GetBufferView());
+        m_meshStreamBufferViews.front() = AZ::RHI::StreamBufferView(*m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize,strideSize);
         //m_meshStreamBufferViews.front() = AZ::RHI::StreamBufferView(*m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize,elementSize);
         UpdateDrawPacket();
         UpdateBackgroundClearColor();
@@ -117,7 +132,15 @@ namespace Pointcloud {
     }
 
     void PointcloudFeatureProcessor::UpdateDrawPacket() {
-        if (m_meshPipelineState && m_drawSrg && m_meshStreamBufferViews.front().GetByteCount() != 0) {
+        // print if  things
+        printf("PointcloudFeatureProcessor UpdateDrawPacket\n");
+        // variables
+        printf("m_meshPipelineState %s\n", m_meshPipelineState ? "true" : "false");
+        printf("m_drawSrg %s\n", m_drawSrg ? "true" : "false");
+        printf("m_cloudVertexBuffer %s\n", m_cloudVertexBuffer ? "true" : "false");
+
+        if (m_meshPipelineState && m_drawSrg && m_cloudVertexBuffer) {
+            printf ("PointcloudFeatureProcessor UpdateDrawPacket\n");
             m_drawPacket = BuildDrawPacket(m_drawSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews,
                                            m_numStarsVertices);
         }
@@ -147,13 +170,12 @@ namespace Pointcloud {
 
 
         AZ_PROFILE_FUNCTION(AzRender);
-
         if (m_drawPacket) {
             for (auto &view: packet.m_views) {
                 if (!view->HasDrawListTag(m_drawListTag)) {
                     continue;
                 }
-
+                printf("Booo");
                 constexpr float depth = 0.f;
                 view->AddDrawPacket(m_drawPacket.get(), depth);
             }
@@ -199,16 +221,28 @@ namespace Pointcloud {
             const AZStd::span<const AZ::RHI::StreamBufferView> &streamBufferViews,
             uint32_t vertexCount) {
         AZ::RHI::DrawLinear drawLinear;
-        drawLinear.m_vertexCount = vertexCount;
-        drawLinear.m_vertexOffset = 0;
-        drawLinear.m_instanceCount = 1;
-        drawLinear.m_instanceOffset = 0;
+        drawLinear.m_vertexCount = vertexCount*6;
+        // drawLinear.m_vertexOffset = 0;
+        // drawLinear.m_instanceCount = 1;
+        // drawLinear.m_instanceOffset = 0;
 
         AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(drawLinear);
         drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
+        AZ::Data::AssetData::AssetStatus status = texAsset.BlockUntilLoadComplete();
+        if (!m_isTextureValid) {
+            if(status == AZ::Data::AssetData::AssetStatus::Ready ) {
+                m_isTextureValid = true;
+                texture = AZ::RPI::StreamingImage::FindOrCreate(texAsset);
+                srg->SetImage(m_inputTextureImageIndex, texture);
+            }else {
+                AZ_Printf("Blibloard", "Texture not ready\n");
+            }
+        }
+
+        srg->SetBufferView(m_mBuffery, m_cloudVertexBuffer->GetBufferView());
         AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = drawListTag;
         drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
@@ -225,13 +259,16 @@ namespace Pointcloud {
                 m_meshPipelineState->Init(m_shader);
 
 
-                AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
-                layoutBuilder.AddBuffer()
-                        ->Channel("POSITION", AZ::RHI::Format::R32G32B32_FLOAT)
-                        ->Channel("COLOR", AZ::RHI::Format::R8G8B8A8_UNORM);
-                layoutBuilder.SetTopology(AZ::RHI::PrimitiveTopology::PointList);
-                auto inputStreamLayout = layoutBuilder.End();
+                // AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
+                // layoutBuilder.AddBuffer()
+                //         ->Channel("POSITION", AZ::RHI::Format::R32G32B32_FLOAT)
+                //         ->Channel("VERTEXID", AZ::RHI::Format::Count);
+                // layoutBuilder.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
+                // auto inputStreamLayout = layoutBuilder.End();
 
+                AZ::RHI::InputStreamLayout inputStreamLayout;
+                inputStreamLayout.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
+                inputStreamLayout.Finalize();
                 m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
                 m_meshPipelineState->SetOutputFromScene(GetParentScene());
                 m_meshPipelineState->Finalize();

@@ -12,6 +12,8 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <AzCore/Math/Transform.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
 namespace Pointcloud
 {
     class Scene;
@@ -81,7 +83,11 @@ namespace Pointcloud
         float m_pointSize = 1.0f;
         AZ::RHI::ShaderInputNameIndex m_pointSizeIndex = "m_pointSize";
         AZ::RHI::ShaderInputNameIndex m_modelMatrixIndex = "m_modelMatrix";
-
+        AZ::RHI::ShaderInputNameIndex m_mBuffery = "m_positionBuffer";
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> texAsset;
+        bool m_isTextureValid = false;
+        AZ::Data::Instance< AZ::RPI::StreamingImage> texture;
+        AZ::RHI::ShaderInputNameIndex m_inputTextureImageIndex = "m_inputTexture";
 
     };
 }

@@ -82,29 +82,12 @@ namespace Pointcloud {
     }
 
     AZ::Crc32 PointcloudEditorComponent::LoadCloud() {
-        QString fileName = QFileDialog::getOpenFileName(
-                AzToolsFramework::GetActiveWindow(),
-                "Open PLY File",
-                "",
-                "Ply Files (*.ply)"
-        );
-
-        if (fileName.isEmpty()) {
-            QMessageBox::warning(
-                    AzToolsFramework::GetActiveWindow(), "Error",
-                    "Please specify file", QMessageBox::Ok);
-            return AZ::Edit::PropertyRefreshLevels::None;
-        }
-
-        happly::PLYData plyIn(fileName.toStdString());
         //auto vertices = plyIn.getVertexPositions();
         std::vector<std::array<double, 3>> vertices;
         // fill with grid of points
         for (double i = 0; i < 10; i++) {
             for (double j = 0; j < 10; j++) {
-                for (double k = 0; k < 10; k++) {
-                    vertices.push_back({i, j, k});
-                }
+                vertices.push_back({i, j, 0});
             }
         }
 
