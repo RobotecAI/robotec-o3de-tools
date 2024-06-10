@@ -157,53 +157,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         return mul(ViewSrg::m_viewProjectionMatrix, vertexWorldPosition);
     }
 
-    float4 GetFlatscreenClipCoordinates(const uint vertexIndex)
-    {
-        // Just like a regular bitmap the cell row goes from
-        // 0 (top edge) to m_numRows-1 (bottom edge)
-        //const float cellWidth = 2.0 / float(m_numColumns);
-        //const float cellHeight = 2.0 / float(m_numRows);
-        //const float cellPosX = -1.0 +  cellWidth * m_column;
-        //const float cellPosY = 1.0 - cellHeight * m_row;
-
-
-        const float cellWidth = m_flatscreenLayout.z * 2.0f;
-        const float cellHeight = m_flatscreenLayout.w * 2.0f;
-        const float cellPosX = -1.0 +  m_flatscreenLayout.x * 2.0f;
-        const float cellPosY = 1.0 - m_flatscreenLayout.y * 2.0f;
-
-        const float nearZdepth = 1.0; // Atom uses reverse Zdepth where 0.0 is far.
-        const float4 expansion[6] =
-        {
-            // Fullscreen clip coordinates
-            //X = [-w (left edge), w (right edge)]
-            //Y = [-w (bottom edge), w (top edge)]
-            // 0---2 3 
-            // |  / /|
-            // | / / |
-            // 1/ 4--5
-            //float4( -1,  1, nearZdepth, 1.),
-            //float4( -1, -1, nearZdepth, 1.),
-            //float4(  1,  1, nearZdepth, 1.),
-            //float4(  1,  1, nearZdepth, 1.),
-            //float4( -1, -1, nearZdepth, 1.),
-            //float4(  1, -1, nearZdepth, 1.)
-            float4( cellPosX,             cellPosY,              nearZdepth, 1.),
-            float4( cellPosX,             cellPosY - cellHeight, nearZdepth, 1.),
-            float4( cellPosX + cellWidth, cellPosY,              nearZdepth, 1.),
-            float4( cellPosX + cellWidth, cellPosY,              nearZdepth, 1.),
-            float4( cellPosX,             cellPosY - cellHeight, nearZdepth, 1.),
-            float4( cellPosX + cellWidth, cellPosY - cellHeight, nearZdepth, 1.)
-        };
-
-        return expansion[vertexIndex]; //* PerDrawSrg::m_starParams.m_scale;
-    }
-
     // As vertex shaders are supposed to do, returns the Clip Space(aka Homogenous Clip Space) coordinates
     // in the range (-w,-w, 0) - (w, w, w)  
     float4 GetVertexClipCoordinates(const uint vertexIndex,const uint bilboardIndex)
     {
-        return m_isFlatscreenMode ? GetFlatscreenClipCoordinates(vertexIndex) : GetBillboardClipCoordinates(vertexIndex,bilboardIndex);
+        return GetBillboardClipCoordinates(vertexIndex,bilboardIndex);
     }
 }
 

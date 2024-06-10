@@ -20,9 +20,6 @@ ShaderResourceGroup PerDrawSrg : SRG_PerDraw
 
 struct VSInput
 {
-    float3 m_position : POSITION;
-    float4 m_color : COLOR0;
-
     uint m_vertexID : SV_VertexID;
 };
 

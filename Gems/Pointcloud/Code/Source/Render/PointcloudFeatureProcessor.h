@@ -54,7 +54,7 @@ namespace Pointcloud
 
         void UpdateDrawPacket();
         void UpdateShaderConstants();
-
+        AZStd::vector<float> ConvertToBuffer(const AZStd::vector<CloudVertex> &cloudVertexData);
         //! build a draw packet to draw the point cloud
         AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> BuildDrawPacket(
                 const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg,
@@ -72,7 +72,7 @@ namespace Pointcloud
 
         AZStd::array<AZ::RHI::StreamBufferView,1> m_meshStreamBufferViews;
 
-        AZStd::vector<CloudVertex> m_starsMeshData;
+        AZStd::vector<float> m_starsMeshData;
         uint32_t m_numStarsVertices = 0;
 
         AzFramework::WindowSize m_viewportSize{0,0};
