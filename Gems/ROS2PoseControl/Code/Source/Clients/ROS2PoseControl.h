@@ -72,6 +72,9 @@ namespace ROS2PoseControl
 
         void ApplyTransform(const AZ::Transform& transform);
 
+        void DisablePhysics();
+        bool m_isPhysicsDisabled = false;
+
         bool m_isTracking = false;
         ROS2PoseControlConfiguration m_configuration;
 
