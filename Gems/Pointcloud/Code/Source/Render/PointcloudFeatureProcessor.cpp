@@ -175,7 +175,6 @@ namespace Pointcloud {
                 if (!view->HasDrawListTag(m_drawListTag)) {
                     continue;
                 }
-                printf("Booo");
                 constexpr float depth = 0.f;
                 view->AddDrawPacket(m_drawPacket.get(), depth);
             }
