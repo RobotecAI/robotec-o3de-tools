@@ -86,7 +86,7 @@ namespace Pointcloud {
         std::vector<std::array<double, 3>> vertices;
         // fill with grid of points
         for (double i = 0; i < 10; i++) {
-            for (double j = 0; j < 10; j++) {
+            for (double j = 0; j < 1; j++) {
                 vertices.push_back({i, j, 0});
             }
         }

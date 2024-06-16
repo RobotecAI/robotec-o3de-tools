@@ -88,6 +88,10 @@ namespace Pointcloud
         bool m_isTextureValid = false;
         AZ::Data::Instance< AZ::RPI::StreamingImage> texture;
         AZ::RHI::ShaderInputNameIndex m_inputTextureImageIndex = "m_inputTexture";
-
+        // time index
+        AZ::RHI::ShaderInputNameIndex m_timeIndex = "m_time";
+        float m_time = 0.0f;
+        // start time
+        AZStd::chrono::system_clock::time_point m_startTime;
     };
 }

@@ -29,7 +29,7 @@ namespace Pointcloud {
         AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Activated");
         const char *shaderFilePath = "shaders/billboard2.azshader";
         m_shader = AZ::RPI::LoadCriticalShader(shaderFilePath);
-
+        m_startTime = AZStd::chrono::system_clock::now();
         if (!m_shader) {
             printf("Failed to load required stars shader.\n");
             AZ_Error("PointcloudFeatureProcessor", false, "Failed to load required stars shader.");
@@ -159,14 +159,22 @@ namespace Pointcloud {
     }
 
     void PointcloudFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket &packet) {
-        if (m_updateShaderConstants) {
-            m_updateShaderConstants = false;
-            UpdateShaderConstants();
-        }
+        UpdateShaderConstants();
+//        if (m_updateShaderConstants) {
+//            m_updateShaderConstants = false;
+//            UpdateShaderConstants();
+//        }
 
     }
 
     void PointcloudFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket &packet) {
+        auto time = AZStd::chrono::system_clock::now();
+        // time since beginning
+
+        // loop every
+        float loop_length = 5.0f; // 5s
+        double time_diff = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(time - m_startTime).count() / 1e6;
+        m_time = fmod(time_diff, loop_length) / loop_length;
 
 
         AZ_PROFILE_FUNCTION(AzRender);
@@ -220,7 +228,7 @@ namespace Pointcloud {
             const AZStd::span<const AZ::RHI::StreamBufferView> &streamBufferViews,
             uint32_t vertexCount) {
         AZ::RHI::DrawLinear drawLinear;
-        drawLinear.m_vertexCount = vertexCount*6;
+        drawLinear.m_vertexCount = vertexCount*21;
         // drawLinear.m_vertexOffset = 0;
         // drawLinear.m_instanceCount = 1;
         // drawLinear.m_instanceOffset = 0;
@@ -288,7 +296,7 @@ namespace Pointcloud {
     void PointcloudFeatureProcessor::UpdateShaderConstants() {
         if (m_drawSrg) {
             AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor SetPointSize");
-
+            m_drawSrg->SetConstant(m_timeIndex, m_time);
             //AZ::Matrix4x4 orientation = AZ::Matrix4x4::CreateFromTransform(m_transform);
 //            m_drawSrg->SetConstant(m_modelMatrixIndex, orientation);
 //            m_drawSrg->SetConstant(m_pointSizeIndex, m_pointSize);
