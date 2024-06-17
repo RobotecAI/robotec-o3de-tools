@@ -43,10 +43,10 @@ namespace ROS2PoseControl
     void ROS2PoseControl::Activate()
     {
         auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        m_tf_buffer = std::make_unique<tf2_ros::Buffer>(ros2Node->get_clock());
+        m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
         {
-            m_tf_buffer = std::make_unique<tf2_ros::Buffer>(ros2Node->get_clock());
-            m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
             AZ::TickBus::Handler::BusConnect();
         }
         else if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::PoseMessages)
@@ -90,23 +90,35 @@ namespace ROS2PoseControl
         }
     }
 
-    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2()
+    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2(
+        const AZStd::string& targetFrame,
+        const AZStd::string& sourceFrame)
     {
         geometry_msgs::msg::TransformStamped transformStamped;
         std::string errorString;
+        bool exceptionThrown = false;
+        const auto targetFrameCStr = targetFrame.c_str();
+        const auto sourceFrameCStr = sourceFrame.c_str();
         if (m_tf_buffer->canTransform(
-            m_configuration.m_referenceFrame.c_str(),
-            m_configuration.m_targetFrame.c_str(),
+            targetFrameCStr,
+            sourceFrameCStr,
             tf2::TimePointZero,
             &errorString))
         {
-            transformStamped = m_tf_buffer->lookupTransform(
-                m_configuration.m_referenceFrame.c_str(),
-                m_configuration.m_targetFrame.c_str(),
-                tf2::TimePointZero);
-            m_tf2WarningShown = false;
+            try
+            {
+                transformStamped = m_tf_buffer->lookupTransform(
+                    targetFrameCStr,
+                    sourceFrameCStr,
+                    tf2::TimePointZero);
+                m_tf2WarningShown = false;
+            } catch (const tf2::TransformException& ex)
+            {
+                errorString = ex.what();
+                exceptionThrown = true;
+            }
         }
-        else
+        if (exceptionThrown || !errorString.empty())
         {
             if (!m_tf2WarningShown)
             {
@@ -114,8 +126,8 @@ namespace ROS2PoseControl
                     "ROS2PositionControl",
                     false,
                     "Could not transform %s to %s, error: %s",
-                    m_configuration.m_targetFrame.c_str(),
-                    m_configuration.m_referenceFrame.c_str(),
+                    targetFrameCStr,
+                    sourceFrameCStr,
                     errorString.c_str());
                 m_tf2WarningShown = true;
             }
@@ -130,7 +142,7 @@ namespace ROS2PoseControl
     {
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
         {
-            const AZ::Outcome<AZ::Transform, const char*> transform_outcome = GetCurrentTransformViaTF2();
+            const AZ::Outcome<AZ::Transform, const char*> transform_outcome = GetCurrentTransformViaTF2(m_configuration.m_referenceFrame,m_configuration.m_targetFrame);
             if (!transform_outcome.IsSuccess())
             {
                 return;
@@ -152,18 +164,43 @@ namespace ROS2PoseControl
         const auto* ros2_frame_component = m_entity->FindComponent<ROS2::ROS2FrameComponent>();
         auto namespaced_topic_name =
             ROS2::ROS2Names::GetNamespacedName(ros2_frame_component->GetNamespace(), m_configuration.m_poseTopicConfiguration.m_topic);
+        auto frameId = ros2_frame_component->GetFrameID();
         m_poseSubscription = ros2Node->create_subscription<geometry_msgs::msg::PoseStamped>(
             namespaced_topic_name.data(),
             m_configuration.m_poseTopicConfiguration.GetQoS(),
-            [this](const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+            [frameId, this](const geometry_msgs::msg::PoseStamped::SharedPtr msg)
             {
                 if (m_configuration.m_tracking_mode != ROS2PoseControlConfiguration::TrackingMode::PoseMessages || !m_isTracking)
                 {
                     return;
                 }
-                const AZ::Transform transform = ROS2::ROS2Conversions::FromROS2Pose(msg->pose);
-                //                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, transform);
-                ApplyTransform(transform);
+                const AZ::Transform offsetTransform = ROS2::ROS2Conversions::FromROS2Pose(msg->pose);
+                AZ::Transform finalTransform;
+                if (msg->header.frame_id.empty())
+                {
+                    finalTransform = offsetTransform;
+                }
+                else if (frameId.compare(msg->header.frame_id.c_str()) == 0)
+                {
+                    finalTransform = offsetTransform * GetEntity()->GetTransform()->GetLocalTM();
+                }
+                else
+                {
+                    AZStd::string headerFrameId(msg->header.frame_id.c_str());
+                    const AZ::Outcome<AZ::Transform, const char*> transform_outcome = GetCurrentTransformViaTF2(
+                        m_configuration.m_referenceFrame,
+                        headerFrameId);
+                    if (transform_outcome.IsSuccess())
+                    {
+                        finalTransform = offsetTransform * transform_outcome.GetValue();
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+
+                ApplyTransform(finalTransform);
             });
     }
 
@@ -173,7 +210,10 @@ namespace ROS2PoseControl
         {
             if (m_isTracking)
             {
-                AZ::TickBus::Handler::BusConnect();
+                if (!AZ::TickBus::Handler::BusIsConnected())
+                {
+                    AZ::TickBus::Handler::BusConnect();
+                }
             }
             else
             {
