@@ -90,23 +90,35 @@ namespace ROS2PoseControl
         }
     }
 
-    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2()
+    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2(
+        const AZStd::string& targetFrame,
+        const AZStd::string& sourceFrame)
     {
         geometry_msgs::msg::TransformStamped transformStamped;
         std::string errorString;
+        bool exceptionThrown = false;
+        const auto targetFrameCStr = targetFrame.c_str();
+        const auto sourceFrameCStr = sourceFrame.c_str();
         if (m_tf_buffer->canTransform(
-            m_configuration.m_referenceFrame.c_str(),
-            m_configuration.m_targetFrame.c_str(),
+            targetFrameCStr,
+            sourceFrameCStr,
             tf2::TimePointZero,
             &errorString))
         {
-            transformStamped = m_tf_buffer->lookupTransform(
-                m_configuration.m_referenceFrame.c_str(),
-                m_configuration.m_targetFrame.c_str(),
-                tf2::TimePointZero);
-            m_tf2WarningShown = false;
+            try
+            {
+                transformStamped = m_tf_buffer->lookupTransform(
+                    targetFrameCStr,
+                    sourceFrameCStr,
+                    tf2::TimePointZero);
+                m_tf2WarningShown = false;
+            } catch (const tf2::TransformException& ex)
+            {
+                errorString = ex.what();
+                exceptionThrown = true;
+            }
         }
-        else
+        if (exceptionThrown || !errorString.empty())
         {
             if (!m_tf2WarningShown)
             {
@@ -114,8 +126,8 @@ namespace ROS2PoseControl
                     "ROS2PositionControl",
                     false,
                     "Could not transform %s to %s, error: %s",
-                    m_configuration.m_targetFrame.c_str(),
-                    m_configuration.m_referenceFrame.c_str(),
+                    targetFrameCStr,
+                    sourceFrameCStr,
                     errorString.c_str());
                 m_tf2WarningShown = true;
             }
@@ -130,7 +142,7 @@ namespace ROS2PoseControl
     {
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
         {
-            const AZ::Outcome<AZ::Transform, const char*> transform_outcome = GetCurrentTransformViaTF2();
+            const AZ::Outcome<AZ::Transform, const char*> transform_outcome = GetCurrentTransformViaTF2(m_configuration.m_referenceFrame,m_configuration.m_targetFrame);
             if (!transform_outcome.IsSuccess())
             {
                 return;
@@ -174,30 +186,18 @@ namespace ROS2PoseControl
                 }
                 else
                 {
-                    geometry_msgs::msg::TransformStamped transformStamped;
-                    if (m_tf_buffer->canTransform(
-                        m_configuration.m_referenceFrame.c_str(),
-                        msg->header.frame_id.c_str(),
-                        tf2::TimePointZero))
+                    AZStd::string headerFrameId(msg->header.frame_id.c_str());
+                    const AZ::Outcome<AZ::Transform, const char*> transform_outcome = GetCurrentTransformViaTF2(
+                        m_configuration.m_referenceFrame,
+                        headerFrameId);
+                    if (transform_outcome.IsSuccess())
                     {
-                        transformStamped = m_tf_buffer->lookupTransform(
-                            m_configuration.m_referenceFrame.c_str(),
-                            msg->header.frame_id.c_str(),
-                            tf2::TimePointZero);
+                        finalTransform = offsetTransform * transform_outcome.GetValue();
                     }
                     else
                     {
-                        AZ_Warning(
-                            "ROS2PositionControl",
-                            false,
-                            "Could not transform %s to %s",
-                            msg->header.frame_id.c_str(),
-                            m_configuration.m_referenceFrame.c_str());
                         return;
                     }
-                    const AZ::Quaternion rotation = ROS2::ROS2Conversions::FromROS2Quaternion(transformStamped.transform.rotation);
-                    const AZ::Vector3 translation = ROS2::ROS2Conversions::FromROS2Vector3(transformStamped.transform.translation);
-                    finalTransform = offsetTransform * AZ::Transform::CreateFromQuaternionAndTranslation(rotation, translation);
                 }
 
                 ApplyTransform(finalTransform);

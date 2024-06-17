@@ -40,23 +40,25 @@ ly_add_target(
         NAME ${gem_name}.Private.Object STATIC
         NAMESPACE Gem
         FILES_CMAKE
-        ros2posecontrol_private_files.cmake
-        ${pal_dir}/ros2posecontrol_private_files.cmake
+            ros2posecontrol_private_files.cmake
+            ${pal_dir}/ros2posecontrol_private_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${CMAKE_CURRENT_LIST_DIR}/Platform/Common/${PAL_TRAIT_COMPILER_ID}/ros2scriptintegration_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
-        PUBLIC
-        Include
-        PRIVATE
-        Include
-        Source
+            PUBLIC
+                Include
+            PRIVATE
+                Include
+                Source
         BUILD_DEPENDENCIES
-        PUBLIC
-        AZ::AzCore
-        AZ::AzFramework
-        Gem::ImGui.Static
-        Gem::ROS2.Static
-        Gem::ROS2.API
+            PUBLIC
+                AZ::AzCore
+                AZ::AzFramework
+                Gem::ImGui.Static
+                Gem::ROS2.Static
+                Gem::ROS2.API
 )
 
 target_depends_on_ros2_packages(${gem_name}.Private.Object geometry_msgs)
