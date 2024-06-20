@@ -11,7 +11,12 @@
         "Enable" : true,
         "BlendSource" : "One",
         "BlendDest" : "AlphaSourceInverse",
-        "BlendAlphaOp" : "Add"
+        "BlendAlphaOp" : "Maximum"
+    },
+
+    "RasterState" :
+    {
+        "CullMode" : "None"
     },
   "DrawList": "forward",
   "ProgramSettings": {

@@ -36,17 +36,36 @@ namespace Pointcloud {
             return;
         }
         AZ::Data::AssetBus::Handler::BusConnect(m_shader->GetAssetId());
-        
+        AZ::RPI::ShaderOptionGroup shaderOptions = m_shader->CreateShaderOptionGroup();
+        m_drawListTag = m_shader->GetDrawListTag();
+
+        if (true)
+        {
+            static const AZ::Name valueTrue = AZ::Name("true");
+            static const AZ::Name valueFalse = AZ::Name("false");
+            shaderOptions.SetValue(AZ::Name("o_enablePunctualLights"), valueTrue);
+            shaderOptions.SetValue(AZ::Name("o_enableAreaLights"), valueTrue);
+            shaderOptions.SetValue(AZ::Name("o_enableDirectionalLights"), valueTrue);
+            shaderOptions.SetValue(AZ::Name("o_enableIBL"), valueTrue);
+            shaderOptions.SetValue(AZ::Name("o_enableShadows"), valueTrue);
+
+            // static const AZ::Name none = AZ::Name("TransmissionMode::None");
+            // static const AZ::Name thinObj = AZ::Name("TransmissionMode::ThinObject");
+            // static const AZ::Name thickObj = AZ::Name("TransmissionMode::ThickObject");
+            // shaderOptions.SetValue(AZ::Name("o_transmission_mode"), none);
+        }
+        auto shaderVariantId =  shaderOptions.GetShaderVariantId();
         printf(" m_shader->GetAsset() %s Lol", m_shader->GetAsset()->GetName().GetCStr());
         //auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
         auto drawSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("PerDrawSrg"));
         AZ_Error("PointcloudFeatureProcessor", drawSrgLayout,
                  "Failed to get the draw shader resource group layout for the pointcloud shader.");
+        auto shader_variant =  m_shader->GetVariant(shaderVariantId);
 
         if (drawSrgLayout) {
 
-            m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(),
-                                                             drawSrgLayout->GetName());
+            //m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(),    drawSrgLayout->GetName());
+            m_drawSrg = m_shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
             m_pointSizeIndex.Reset();
             m_modelMatrixIndex.Reset();
             printf("Created SRG\n");
@@ -54,9 +73,6 @@ namespace Pointcloud {
         }   else {
             printf("Failed to create SRG\n");
         }
-
-        m_drawListTag = m_shader->GetDrawListTag();
-
 
         auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         AZ_Assert(viewportContextInterface,
@@ -99,7 +115,7 @@ namespace Pointcloud {
 
         AZStd::vector<float> cloudVertexDataBuffer = ConvertToBuffer(cloudVertexData);
         m_starsMeshData = cloudVertexDataBuffer;
-        const uint32_t bufferSize = 4 * 4 * cloudVertexDataBuffer.size() * elementSize; // bytecount
+        const uint32_t bufferSize = cloudVertexDataBuffer.size() * elementSize; // bytecount
         const uint32_t strideSize = 4 * 4 * elementSize;
         m_numStarsVertices = elementCount;
 
@@ -108,7 +124,7 @@ namespace Pointcloud {
             AZ::RPI::CommonBufferDescriptor desc;
             desc.m_poolType = AZ::RPI::CommonBufferPoolType::StaticInputAssembly;
             desc.m_bufferName = AZStd::string(m_mBuffery.GetNameForDebug().GetCStr());
-            desc.m_byteCount = 4 * 4 * cloudVertexDataBuffer.size() * sizeof(float);
+            desc.m_byteCount =  cloudVertexDataBuffer.size() * sizeof(float);
             desc.m_elementSize = elementSize;
             desc.m_bufferData = m_starsMeshData.data();
             desc.m_elementFormat = AZ::RHI::Format::R32_FLOAT;
@@ -169,12 +185,18 @@ namespace Pointcloud {
 
     void PointcloudFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket &packet) {
         auto time = AZStd::chrono::system_clock::now();
-        // time since beginning
 
         // loop every
-        float loop_length = 5.0f; // 5s
+        float loop_length = 30.0f; // 5s
         double time_diff = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(time - m_startTime).count() / 1e6;
-        m_time = fmod(time_diff, loop_length) / loop_length;
+        double phase = fmod(time_diff, loop_length) / loop_length; // phase goes from 0 to 1
+
+        // m_time goes from 0 to 1 to 0
+        if (phase < 0.5) {
+            m_time = 2.0 * phase; // first half of the cycle, m_time goes from 0 to 1
+        } else {
+            m_time = 2.0 * (1.0 - phase); // second half of the cycle, m_time goes from 1 to 0
+        }
 
 
         AZ_PROFILE_FUNCTION(AzRender);

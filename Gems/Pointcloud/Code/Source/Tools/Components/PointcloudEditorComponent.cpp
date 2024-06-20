@@ -6,6 +6,7 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <random>
 #include <3rd/happly.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityContext.h>
@@ -85,11 +86,24 @@ namespace Pointcloud {
         //auto vertices = plyIn.getVertexPositions();
         std::vector<std::array<double, 3>> vertices;
         // fill with grid of points
-        for (double i = 0; i < 10; i++) {
-            for (double j = 0; j < 1; j++) {
-                vertices.push_back({i, j, 0});
+        uint32_t width = 100;
+        uint32_t height = width;
+        double cellSize = 1;
+
+        std::normal_distribution<double> distribution(0.0, 0.3);
+        auto m_random = std::mt19937(std::random_device{}());
+        for (uint32_t i = 0; i < width; i++) {
+            for (uint32_t j = 0; j < height; j++) {
+                AZ::Vector3 noise(distribution(m_random), distribution(m_random), 0);
+                vertices.push_back({i * cellSize + noise.GetX(), j * cellSize + noise.GetY(), 0});
             }
         }
+        vertices.push_back({-3,-3,0});
+
+        // random shuffee vertices
+        std::shuffle(vertices.begin(), vertices.end(), m_random);
+
+        printf("Loaded %lu vertices\n", vertices.size());
 
         std::vector<std::array<unsigned char, 3>> colors(vertices.size(), {255, 255, 255});
 
@@ -99,23 +113,23 @@ namespace Pointcloud {
 //            AZ_Printf("PointcloudEditorComponent", "No colors in the file");
 //        }
 
-        if (m_moveToCentroid) {
-            double centroid[3] = {0, 0, 0};
-            for (int i = 0; i < vertices.size(); i++) {
-                centroid[0] += vertices[i][0];
-                centroid[1] += vertices[i][1];
-                centroid[2] += vertices[i][2];
-            }
-            centroid[0] /= vertices.size();
-            centroid[1] /= vertices.size();
-            centroid[2] /= vertices.size();
-            for (int i = 0; i < vertices.size(); i++) {
-                vertices[i][0] -= centroid[0];
-                vertices[i][1] -= centroid[1];
-                vertices[i][2] -= centroid[2];
-            }
-
-        }
+        // if (m_moveToCentroid) {
+        //     double centroid[3] = {0, 0, 0};
+        //     for (int i = 0; i < vertices.size(); i++) {
+        //         centroid[0] += vertices[i][0];
+        //         centroid[1] += vertices[i][1];
+        //         centroid[2] += vertices[i][2];
+        //     }
+        //     centroid[0] /= vertices.size();
+        //     centroid[1] /= vertices.size();
+        //     centroid[2] /= vertices.size();
+        //     for (int i = 0; i < vertices.size(); i++) {
+        //         vertices[i][0] -= centroid[0];
+        //         vertices[i][1] -= centroid[1];
+        //         vertices[i][2] -= centroid[2];
+        //     }
+        //
+        // }
 
         AZStd::vector<PointcloudFeatureProcessor::CloudVertex> cloudVertexData;
         for (int i = 0; i < vertices.size(); i++) {
