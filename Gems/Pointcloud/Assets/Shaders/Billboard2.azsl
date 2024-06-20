@@ -136,7 +136,24 @@ ShaderResourceGroup PerDrawSrg : SRG_PerDraw
         position = RotateAroundZ(position,angle);
         normal = RotateAroundZ(normal,angle);
     }
-        
+
+    float getPointAt(float t, float p1, float pc, float p2) {
+        return (1 - t) * (1 - t) * p1 + 2 * (1 - t) * t * pc + t * t * p2;
+    }
+
+    float getDerivativeAt(float t, float p1, float pc, float p2) {
+        float d1 = 2 * (pc - p1);
+        float d2 = 2 * (p2 - pc);
+
+        return (1 - t) * d1 + t * d2;
+    }
+
+    float getNormalAt(float t, float p1, float pc, float p2) {
+        float d = getDerivativeAt(t, p1, pc, p2);
+        float q = sqrt(d * d);
+
+        return -d / q;
+    }
 
     float CubicBezier(float a, float b, float c, float d, float t)
     {
@@ -167,12 +184,17 @@ ShaderResourceGroup PerDrawSrg : SRG_PerDraw
         noise_position += wind_direction * PerDrawSrg::m_time*LoopLength*10;
         float noise = PerlinNoiseFbm(noise_position, 1/LoopLength, 2, 1);
         const float scaled_z = position.z / TotalHeight;
-        const float y_push = PerDrawSrg::CubicBezier(0,.3,.5,.86,scaled_z);
+        const float y_push = PerDrawSrg::getPointAt(scaled_z*noise,0,.1,10.0);
         // Modify the y value of the input position based on the y value of P
-        position.y -= y_push * noise*5;
+        position.y = y_push; //* noise*5;
         
         // compute normal
-        normal.y = CubicBezierDerivative(.2,.3,.5,.86,scaled_z);
+        normal.x = getDerivativeAt(scaled_z*noise,0,.1,10.0);
+
+        //move normal and position based on noise 
+        // position.y *= noise*3;
+        
+
     }
 }
 
@@ -206,12 +228,11 @@ VSOutput MainVS(VSInput IN)
     
     // // Rotate towards camera
     // float3 cameraPos = ViewSrg::m_worldPosition;
-    // float3 cameraPos2 = float3(cameraPos.x,cameraPos.y,vertexWorldPosition.z);
-    // float3 forward = normalize(cameraPos2 - vertexWorldPosition);
+
     // float3 right = cross(float3(0, 0, -1), forward); // Cross product of up and forward vectors
     // float3 up = float3(0, 0, 1);
 
-    // bool isInfront = dot(forward,vertexWorldPosition) > 0;
+    
     // if (!isInfront)
     // {
     //     right = -right;
@@ -224,8 +245,15 @@ VSOutput MainVS(VSInput IN)
     PerDrawSrg::RotateAroundZ2(vertexModelPosition, normal,rotation_noise);
     
 
-
     float4 vertexWorldPosition = float4(vertexModelPosition + translation, 1.0);
+    
+
+    // bool frontVisible = dot(normal,ViewSrg::m_worldPosition - vertexWorldPosition.xyz) > 0;
+    // if (!frontVisible)
+    // {
+    //     normal = -normal;
+    // }
+
 
     // // 1. Compute angle between the camera and the billboard
     // // 2. Rotate the billboard around the center of the blade such that it faces the camera
@@ -247,7 +275,8 @@ VSOutput MainVS(VSInput IN)
     // vertexWorldPosition = mul(tm, float4(vertexModelPosition, 1));
 
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, vertexWorldPosition);
-    OUT.m_normal = normalize(normal);
+    OUT.m_normal = normalize(normal);//float3(1,0,0);
+    OUT.m_worldPosition = vertexWorldPosition.xyz;
 
     // color based on distance from 0.0
     float distance = length(vertexModelPosition.xz - float2(0.0, TotalHeight*0.8 ))/TotalHeight;
@@ -262,6 +291,7 @@ VSOutput MainVS(VSInput IN)
     // change back to rgb
     float4 color = float4(HsvToRgb(hsv),1);
     OUT.m_color = color;
+    //OUT.m_color = float4(0.3,0.7,0,1);
     //OUT.m_color = float4(distance, distance, distance, 1);
     OUT.m_texCoord = GetVertexTextureCoord(vertexIndex);
 
@@ -286,11 +316,11 @@ ForwardPassOutput MainPS(VSOutput IN)
     surface.position = IN.m_worldPosition.xyz;
     surface.normal = normalize(surfaceNormalWorld);
     surface.vertexNormal = surfaceNormal;
-    surface.roughnessLinear = 1.0f;
+    surface.roughnessLinear = 0.5f;
     surface.CalculateRoughnessA();
 
     // Albedo, SpecularF0
-    const float metallic = 0.0f;
+    const float metallic = 0.3f;
     const float specularF0Factor = 0.5f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
@@ -307,13 +337,13 @@ ForwardPassOutput MainPS(VSOutput IN)
     lightingData.Init(ViewSrg::m_worldPosition.xyz, surface.normal, surface.roughnessLinear);
 
     // Shadow
-    lightingData.diffuseAmbientOcclusion = 1.0f - 0.0f;
+    lightingData.diffuseAmbientOcclusion = 0.1f;
 
     // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 
-    const float alpha = 0.5f;
+    const float alpha = 1.0f;
 
     // ------- Lighting Calculation -------
 
@@ -333,7 +363,7 @@ ForwardPassOutput MainPS(VSOutput IN)
 
     // ------- Output -------
     ForwardPassOutput OUT;
-
+    lightingOutput.m_diffuseColor.a = 1.0f;
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
     OUT.m_specularColor =  lightingOutput.m_specularColor;

@@ -8,10 +8,10 @@
     },
     "GlobalTargetBlendState" :
     {
-        "Enable" : true,
+        "Enable" : false,
         "BlendSource" : "One",
         "BlendDest" : "AlphaSourceInverse",
-        "BlendAlphaOp" : "Maximum"
+        "BlendAlphaOp" : "Add"
     },
 
     "RasterState" :
