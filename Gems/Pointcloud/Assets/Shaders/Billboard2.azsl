@@ -108,7 +108,21 @@ float3 GetVertexModelPosition(uint vertexId)
     return vertexModelPosition; //* PerDrawSrg::m_starParams.m_scale;
 }
 
-float3 GetVertexModelPositionBezier(uint vertexId)
+uint hash(uint x) {
+    x += (x << 10);
+    x ^= (x >> 6);
+    x += (x << 3);
+    x ^= (x >> 11);
+    x += (x << 15);
+    return x;
+}
+
+float randomFloat(uint seed) {
+    uint hashValue = hash(seed);
+    return (hashValue % 1000) / 1000.0;
+}
+
+float3 GetVertexModelPositionBezier(uint vertexId,float scale)
 {
     // If you use your right hand
     // these trinagles are facing in Y+ direction, 
@@ -148,6 +162,9 @@ float3 GetVertexModelPositionBezier(uint vertexId)
         float2(100,50)/200,
         float2(200,0)/200
     };
+
+    vertexModelPosition.x *= scale;
+    vertexModelPosition.z *= scale;
 
     vertexModelPosition.x *= getPointAt2d(vertexModelPosition.z/TotalHeight,points[0],points[1],points[2]).y;
    // vertexModelPosition.y = yVal;
@@ -222,22 +239,22 @@ ShaderResourceGroup PerDrawSrg : SRG_PerDraw
     }
 
     // float PerlinNoiseFbm(float3 input, float frequency, int octaves, float persistence) {
-    void PushByPerlinNoise(inout float3 position,inout float3 normal, uint billboardIndex, float windStrength){
+    void PushByPerlinNoise(inout float3 position,inout float3 normal, uint billboardIndex, float windStrength,float scale){
 
         float2 points[3] = {
             float2(0,0),
             float2(40,170),
-            float2(100,140)
+            float2(100,120)
         };
 
         float2 pointsWind[3] = {
             float2(0,0),
-            float2(40,90),
-            float2(200,60)
+            float2(40,60),
+            float2(200,20)
         };
 
 
-        const float scaled_z = position.z / TotalHeight;
+        const float scaled_z = position.z / (TotalHeight * scale);
         //const float y_push = PerDrawSrg::getPointAt(scaled_z*noise,0,.1,10.0);
 
         // lerp points based on noise between points and pointsWind
@@ -248,7 +265,7 @@ ShaderResourceGroup PerDrawSrg : SRG_PerDraw
         };
         for (int i = 1; i < 3; i++)
         {
-            pointsLerp[i] = lerp(points[i],pointsWind[i],windStrength)/200;
+            pointsLerp[i] = lerp(points[i],pointsWind[i],windStrength)/200 * scale;
         }
 
         const float2 pushed_point = getPointAt2d(scaled_z,pointsLerp[0],pointsLerp[1],pointsLerp[2]);
@@ -288,30 +305,34 @@ VSOutput MainVS(VSInput IN)
 
     const uint vertexIndex = uint(IN.m_vertexID) % uint(TotalVertices);
     const uint billboardIndex = uint(IN.m_vertexID) / uint(TotalVertices);
+    // random value based on billboardId (0-1)
+    const float scale = randomFloat(billboardIndex)/2 + 0.8;
+
     float3 translation = PerDrawSrg::GetBillboardPosition(billboardIndex);
-    float3 vertexModelPosition = GetVertexModelPositionBezier(vertexIndex);
+    float3 vertexModelPosition = GetVertexModelPositionBezier(vertexIndex,scale);
+    float x_distance = vertexModelPosition.x;
     float3 normal = float3(0,0,1);
 
     // generate wind noise
     float3 wind_direction = normalize(float3(2,1,0.1));
     float3 noise_position = float3( translation.x,translation.y,0);
-    noise_position += wind_direction * PerDrawSrg::m_time*LoopLength*5;
-    float windStrength = PerlinNoiseFbm(noise_position, 0.8/LoopLength, 2, 2);
+    noise_position += wind_direction * PerDrawSrg::m_time*LoopLength*1;
+    float windStrength = PerlinNoiseFbm(noise_position, 1.2/LoopLength, 2, 1)+1;
     float3 noise_position_rotation = float3( noise_position.x,noise_position.y,2);
-    float windRotation = PerlinNoiseFbm(noise_position_rotation, 0.8/LoopLength, 2, 2);
+    float windRotation = PerlinNoiseFbm(noise_position_rotation, 0.4/LoopLength, 2, 2);
 
-    PerDrawSrg::PushByPerlinNoise(vertexModelPosition,normal,billboardIndex,windStrength);
-    PerDrawSrg::RotateAroundZ2(vertexModelPosition, normal,windRotation*2*3.14159);
+    PerDrawSrg::PushByPerlinNoise(vertexModelPosition,normal,billboardIndex,windStrength,scale);
+    PerDrawSrg::RotateAroundZ2(vertexModelPosition, normal,windRotation*2*3.14159*1);
     
 
     float4 vertexWorldPosition = float4(vertexModelPosition + translation, 1.0);
     
 
-    bool frontVisible = dot(normal,ViewSrg::m_worldPosition - vertexWorldPosition.xyz) > 0;
-    if (!frontVisible)
-    {
-        normal = -normal;
-    }
+    // bool frontVisible = dot(normal,ViewSrg::m_worldPosition - vertexWorldPosition.xyz) > 0;
+    // if (!frontVisible)
+    // {
+    //     normal = -normal;
+    // }
 
 
     // // 1. Compute angle between the camera and the billboard
@@ -342,7 +363,7 @@ VSOutput MainVS(VSInput IN)
     // clamp to 0.0 to 0.2
     distance = max(0.0, min(0.4, distance));
     // green color with saturation based on distance
-    float3 green = float3(0, 1, 0);
+    float3 green = float3(0.2*scale, 0.7*scale, 0);
     // change to hsv
     float3 hsv = RgbToHsv(green);
     // change saturation
@@ -359,21 +380,25 @@ VSOutput MainVS(VSInput IN)
 };
 
 
-ForwardPassOutput MainPS(VSOutput IN)
+ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
 
-        
+    
     float3 baseColor = IN.m_color.rgb;
     float3 surfaceNormal = IN.m_normal;
-    const float3 surfaceNormalWorld = IN.m_normal;
-    
+    if (!isFrontFace)
+    {
+        surfaceNormal = -surfaceNormal;
+    }
     // ------- Surface -------
 
     Surface surface;
     
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
-    surface.normal = normalize(surfaceNormalWorld);
+    
+    float3 surface_normal = PerDrawSrg::RotateAroundZ(IN.m_normal,-(IN.m_texCoord.x-0.5)*3);
+    surface.normal = normalize(surface_normal);
     surface.vertexNormal = surfaceNormal;
     surface.roughnessLinear = 0.9f;
     surface.CalculateRoughnessA();
