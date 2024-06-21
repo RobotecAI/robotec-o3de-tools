@@ -71,6 +71,7 @@ namespace Pointcloud
         AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_drawPacket;
         AZ::Data::Instance<AZ::RPI::Shader> m_shader = nullptr;
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_drawSrg = nullptr;
+        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_objectSrg = nullptr;
 
         AZStd::array<AZ::RHI::StreamBufferView,1> m_meshStreamBufferViews;
 
@@ -80,8 +81,7 @@ namespace Pointcloud
         AzFramework::WindowSize m_viewportSize{0,0};
         [[maybe_unused]] bool m_updateShaderConstants = false;
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
-        float m_pointSize = 1.0f;
-        AZ::RHI::ShaderInputNameIndex m_pointSizeIndex = "m_pointSize";
+
         AZ::RHI::ShaderInputNameIndex m_modelMatrixIndex = "m_modelMatrix";
         AZ::RHI::ShaderInputNameIndex m_mBuffery = "m_positionBuffer";
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> texAsset;

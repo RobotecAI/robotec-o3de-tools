@@ -1,5 +1,5 @@
 {
-    "Source": "Billboard2.azsl",
+    "Source": "Billboard2.azsli",
     "DepthStencilState": {
       "Depth": {
         "Enable": true,

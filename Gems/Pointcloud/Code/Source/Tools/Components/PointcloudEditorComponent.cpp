@@ -88,7 +88,7 @@ namespace Pointcloud {
         // fill with grid of points
         uint32_t width = 100;
         uint32_t height = width;
-        double cellSize = 1;
+        double cellSize = 0.3;
 
         std::normal_distribution<double> distribution(0.0, 0.3);
         auto m_random = std::mt19937(std::random_device{}());

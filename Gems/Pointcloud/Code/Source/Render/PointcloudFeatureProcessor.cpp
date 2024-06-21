@@ -54,19 +54,21 @@ namespace Pointcloud {
             // static const AZ::Name thickObj = AZ::Name("TransmissionMode::ThickObject");
             // shaderOptions.SetValue(AZ::Name("o_transmission_mode"), none);
         }
+
         auto shaderVariantId =  shaderOptions.GetShaderVariantId();
         printf(" m_shader->GetAsset() %s Lol", m_shader->GetAsset()->GetName().GetCStr());
         //auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
         auto drawSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("PerDrawSrg"));
+        auto objectSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("PerObjectSrg"));
         AZ_Error("PointcloudFeatureProcessor", drawSrgLayout,
                  "Failed to get the draw shader resource group layout for the pointcloud shader.");
         auto shader_variant =  m_shader->GetVariant(shaderVariantId);
 
-        if (drawSrgLayout) {
+        if (drawSrgLayout && objectSrgLayout){
 
             //m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(),    drawSrgLayout->GetName());
             m_drawSrg = m_shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
-            m_pointSizeIndex.Reset();
+            m_objectSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), objectSrgLayout->GetName());
             m_modelMatrixIndex.Reset();
             printf("Created SRG\n");
 
