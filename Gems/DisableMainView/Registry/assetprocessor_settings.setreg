@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder DisableMainView/Assets": {
+                    "watch": "@GEMROOT:DisableMainView@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder DisableMainView/Registry": {
+                    "watch": "@GEMROOT:DisableMainView@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
