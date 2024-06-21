@@ -30,8 +30,8 @@
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 static float TotalHeight = 2.0;
-static float TotalWidth = 0.1;
-static uint MaxSegments = 4;
+static float TotalWidth = 0.3;
+static uint MaxSegments = 6;
 static float SegmentHeight = TotalHeight / MaxSegments;
 static float LoopLength = 30.0;
 static uint TotalVertices = MaxSegments *6 -3;
@@ -40,6 +40,33 @@ static uint TotalVertices = MaxSegments *6 -3;
 float GetScaledTime(float time)
 {
     return time / LoopLength;
+}
+
+//https://jsfiddle.net/0nk4m36j/10/ 
+float2 getPointAt2d(float t, float2 p1, float2 pc, float2 p2) {
+    float x = (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * pc.x + t * t * p2.x;
+    float y = (1 - t) * (1 - t) * p1.y + 2 * (1 - t) * t * pc.y + t * t * p2.y;
+    return float2(x,y);
+}
+
+float2 getDerivativeAt2d(float t, float2 p1, float2 pc, float2 p2) {
+    float2 d1 = float2(2 * (pc.x - p1.x), 2 * (pc.y - p1.y));
+    float2 d2 = float2(2 * (p2.x - pc.x), 2 * (p2.y - pc.y));
+
+    float x = (1 - t) * d1.x + t * d2.x;
+    float y = (1 - t) * d1.y + t * d2.y;
+
+    return float2(x,y);
+}
+
+float2 getNormalAt2d(float t, float2 p1, float2 pc, float2 p2) {
+    float2 d = getDerivativeAt2d(t, p1, pc, p2);
+    float q = sqrt(d.x * d.x + d.y * d.y);
+
+    float x = -d.y / q;
+    float y = d.x / q;
+    
+    return float2(x,y);
 }
 
 float3 GetVertexModelPosition(uint vertexId)
@@ -80,6 +107,54 @@ float3 GetVertexModelPosition(uint vertexId)
    // vertexModelPosition.y = yVal;
     return vertexModelPosition; //* PerDrawSrg::m_starParams.m_scale;
 }
+
+float3 GetVertexModelPositionBezier(uint vertexId)
+{
+    // If you use your right hand
+    // these trinagles are facing in Y+ direction, 
+    // 3 2---0  
+    // | \\  |
+    // |  \\ |
+    // 5---4 1
+    uint vertexIndex = vertexId % 6;
+    uint segmentIndex = vertexId / 6;
+    bool isHead = vertexId >= TotalVertices-3;
+
+    const float3 expansion[6] =
+    {
+        float3( TotalWidth, 0,  SegmentHeight),
+        float3( TotalWidth, 0, 0),
+        float3(-TotalWidth, 0,  SegmentHeight),
+        float3(-TotalWidth, 0,  SegmentHeight),
+        float3( TotalWidth, 0, 0),
+        float3(-TotalWidth, 0, 0),
+    };
+    const float3 head[3] =
+    {
+        float3(-TotalWidth, 0,  0),
+        float3( 0, 0,  SegmentHeight*1),
+        float3( TotalWidth, 0,  0),
+    };
+    float3 vertexModelPosition;
+    if (isHead)
+    {
+        vertexModelPosition = head[vertexIndex];
+    }else{
+        vertexModelPosition = expansion[vertexIndex];
+    }
+    vertexModelPosition.z += segmentIndex * SegmentHeight;
+    const float2 points[3] = {
+        float2(0,50)/200,
+        float2(100,50)/200,
+        float2(200,0)/200
+    };
+
+    vertexModelPosition.x *= getPointAt2d(vertexModelPosition.z/TotalHeight,points[0],points[1],points[2]).y;
+   // vertexModelPosition.y = yVal;
+    return vertexModelPosition; //* PerDrawSrg::m_starParams.m_scale;
+}
+
+
 
 float2 GetVertexTextureCoord(uint vertexId)
 {
@@ -137,34 +212,6 @@ ShaderResourceGroup PerDrawSrg : SRG_PerDraw
         normal = RotateAroundZ(normal,angle);
     }
 
-    float getPointAt(float t, float p1, float pc, float p2) {
-        return (1 - t) * (1 - t) * p1 + 2 * (1 - t) * t * pc + t * t * p2;
-    }
-
-    float getDerivativeAt(float t, float p1, float pc, float p2) {
-        float d1 = 2 * (pc - p1);
-        float d2 = 2 * (p2 - pc);
-
-        return (1 - t) * d1 + t * d2;
-    }
-
-    float getNormalAt(float t, float p1, float pc, float p2) {
-        float d = getDerivativeAt(t, p1, pc, p2);
-        float q = sqrt(d * d);
-
-        return -d / q;
-    }
-
-    float CubicBezier(float a, float b, float c, float d, float t)
-    {
-        return lerp(lerp(lerp(a, b, t), lerp(b, c, t), t), lerp(lerp(b, c, t), lerp(c, d, t), t), t);
-    }
-
-    float CubicBezierDerivative(float a, float b, float c, float d, float t)
-    {
-        return lerp(lerp(lerp(b - a, c - b, t), lerp(c - b, d - c, t), t), lerp(lerp(c - b, d - c, t), lerp(d - c, d - c, t), t), t);
-    }
-
     float3 GetBillboardPosition(uint billboardIndex)
     {
         return float3(
@@ -175,21 +222,42 @@ ShaderResourceGroup PerDrawSrg : SRG_PerDraw
     }
 
     // float PerlinNoiseFbm(float3 input, float frequency, int octaves, float persistence) {
-    void PushByPerlinNoise(inout float3 position,inout float3 normal, uint billboardIndex){
-        float3 center_position = GetBillboardPosition(billboardIndex);
-        float3 wind_direction = normalize(float3(2,1,0.1));
-        // 
+    void PushByPerlinNoise(inout float3 position,inout float3 normal, uint billboardIndex, float windStrength){
 
-        float3 noise_position = float3( center_position.x,center_position.y,0);
-        noise_position += wind_direction * PerDrawSrg::m_time*LoopLength*10;
-        float noise = PerlinNoiseFbm(noise_position, 1/LoopLength, 2, 1);
+        float2 points[3] = {
+            float2(0,0),
+            float2(40,170),
+            float2(100,140)
+        };
+
+        float2 pointsWind[3] = {
+            float2(0,0),
+            float2(40,90),
+            float2(200,60)
+        };
+
+
         const float scaled_z = position.z / TotalHeight;
-        const float y_push = PerDrawSrg::getPointAt(scaled_z*noise,0,.1,10.0);
+        //const float y_push = PerDrawSrg::getPointAt(scaled_z*noise,0,.1,10.0);
+
+        // lerp points based on noise between points and pointsWind
+        float2 pointsLerp[3] = {
+            float2(0,0),
+            float2(0,0),
+            float2(0,0)
+        };
+        for (int i = 1; i < 3; i++)
+        {
+            pointsLerp[i] = lerp(points[i],pointsWind[i],windStrength)/200;
+        }
+
+        const float2 pushed_point = getPointAt2d(scaled_z,pointsLerp[0],pointsLerp[1],pointsLerp[2]);
         // Modify the y value of the input position based on the y value of P
-        position.y = y_push; //* noise*5;
+        position.yz = pushed_point.xy; //* noise*5;
         
         // compute normal
-        normal.x = getDerivativeAt(scaled_z*noise,0,.1,10.0);
+        //normal.x = -getDerivativeAt(scaled_z*noise,0,.1,10.0);
+        normal.yz = getNormalAt2d(scaled_z,pointsLerp[0],pointsLerp[1],pointsLerp[2]);
 
         //move normal and position based on noise 
         // position.y *= noise*3;
@@ -221,38 +289,29 @@ VSOutput MainVS(VSInput IN)
     const uint vertexIndex = uint(IN.m_vertexID) % uint(TotalVertices);
     const uint billboardIndex = uint(IN.m_vertexID) / uint(TotalVertices);
     float3 translation = PerDrawSrg::GetBillboardPosition(billboardIndex);
-    float3 vertexModelPosition = GetVertexModelPosition(vertexIndex);
+    float3 vertexModelPosition = GetVertexModelPositionBezier(vertexIndex);
     float3 normal = float3(0,0,1);
-    PerDrawSrg::PushByPerlinNoise(vertexModelPosition,normal,billboardIndex);
 
-    
-    // // Rotate towards camera
-    // float3 cameraPos = ViewSrg::m_worldPosition;
+    // generate wind noise
+    float3 wind_direction = normalize(float3(2,1,0.1));
+    float3 noise_position = float3( translation.x,translation.y,0);
+    noise_position += wind_direction * PerDrawSrg::m_time*LoopLength*5;
+    float windStrength = PerlinNoiseFbm(noise_position, 0.8/LoopLength, 2, 2);
+    float3 noise_position_rotation = float3( noise_position.x,noise_position.y,2);
+    float windRotation = PerlinNoiseFbm(noise_position_rotation, 0.8/LoopLength, 2, 2);
 
-    // float3 right = cross(float3(0, 0, -1), forward); // Cross product of up and forward vectors
-    // float3 up = float3(0, 0, 1);
-
-    
-    // if (!isInfront)
-    // {
-    //     right = -right;
-    // }
-    // right *= 0.2;
-    
-    // noise for rotation
-    float3 noise_position = float3( translation.x,translation.y+0.5,PerDrawSrg::m_time*LoopLength*3);
-    float rotation_noise = PerlinNoiseFbm(noise_position, 1/LoopLength, 2, 1);
-    PerDrawSrg::RotateAroundZ2(vertexModelPosition, normal,rotation_noise);
+    PerDrawSrg::PushByPerlinNoise(vertexModelPosition,normal,billboardIndex,windStrength);
+    PerDrawSrg::RotateAroundZ2(vertexModelPosition, normal,windRotation*2*3.14159);
     
 
     float4 vertexWorldPosition = float4(vertexModelPosition + translation, 1.0);
     
 
-    // bool frontVisible = dot(normal,ViewSrg::m_worldPosition - vertexWorldPosition.xyz) > 0;
-    // if (!frontVisible)
-    // {
-    //     normal = -normal;
-    // }
+    bool frontVisible = dot(normal,ViewSrg::m_worldPosition - vertexWorldPosition.xyz) > 0;
+    if (!frontVisible)
+    {
+        normal = -normal;
+    }
 
 
     // // 1. Compute angle between the camera and the billboard
@@ -316,12 +375,12 @@ ForwardPassOutput MainPS(VSOutput IN)
     surface.position = IN.m_worldPosition.xyz;
     surface.normal = normalize(surfaceNormalWorld);
     surface.vertexNormal = surfaceNormal;
-    surface.roughnessLinear = 0.5f;
+    surface.roughnessLinear = 0.9f;
     surface.CalculateRoughnessA();
 
     // Albedo, SpecularF0
-    const float metallic = 0.3f;
-    const float specularF0Factor = 0.5f;
+    const float metallic = 0.0f;
+    const float specularF0Factor = 0.1f;
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     // Clear Coat
@@ -337,7 +396,7 @@ ForwardPassOutput MainPS(VSOutput IN)
     lightingData.Init(ViewSrg::m_worldPosition.xyz, surface.normal, surface.roughnessLinear);
 
     // Shadow
-    lightingData.diffuseAmbientOcclusion = 0.1f;
+    lightingData.diffuseAmbientOcclusion = 0.3f;
 
     // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
@@ -363,20 +422,9 @@ ForwardPassOutput MainPS(VSOutput IN)
 
     // ------- Output -------
     ForwardPassOutput OUT;
-    lightingOutput.m_diffuseColor.a = 1.0f;
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
     OUT.m_specularColor =  lightingOutput.m_specularColor;
-    //OUT.m_specularColor =  float4(lightingData.diffuseLighting,1);
-    //bool isLight = o_enableAreaLights;
-    // if (isLight)
-    // {
-    //     OUT.m_specularColor = float4(0,1,0,1);
-    // }else{
-    //     OUT.m_specularColor =  float4(1,0,0,1);
-    // }
-
-   
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;

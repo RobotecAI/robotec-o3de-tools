@@ -250,7 +250,7 @@ namespace Pointcloud {
             const AZStd::span<const AZ::RHI::StreamBufferView> &streamBufferViews,
             uint32_t vertexCount) {
         AZ::RHI::DrawLinear drawLinear;
-        drawLinear.m_vertexCount = vertexCount*21;
+        drawLinear.m_vertexCount = vertexCount*33;
         // drawLinear.m_vertexOffset = 0;
         // drawLinear.m_instanceCount = 1;
         // drawLinear.m_instanceOffset = 0;
