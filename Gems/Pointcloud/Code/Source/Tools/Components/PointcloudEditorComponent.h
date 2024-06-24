@@ -9,11 +9,12 @@
 #include <AzCore/Component/TransformBus.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
 #include <AzFramework/Scene/Scene.h>
+#include "ShaderParameter.h"
 namespace Pointcloud
 {
 
-    class PointcloudEditorComponent : public AzToolsFramework::Components::EditorComponentBase,
-        private AZ::TransformNotificationBus::Handler
+    class PointcloudEditorComponent : public AzToolsFramework::Components::EditorComponentBase
+        // private AZ::TransformNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(PointcloudEditorComponent, "{018fba15-560f-78cb-afb4-cf4d00cefc17}");
@@ -27,13 +28,16 @@ namespace Pointcloud
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+        void LoadParameters(const AZStd::vector<ShaderParameterUnion>& shaderParameters);
+        AZStd::vector<ShaderParameterUnion> GetConstants() const;
+        void PushNewParameters();
 
     private:
 
         //AZ::TransformNotificationBus::Handler overrides ...
-        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
-
-        AZ::Crc32 OnSetPointSize();
+        // void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+        AZStd::vector<ShaderParameter> shaderParameters;
+        // AZ::Crc32 OnSetPointSize();
         AZ::Crc32 LoadCloud();
         float m_pointSize = 1.0f;
         bool m_moveToCentroid {true};

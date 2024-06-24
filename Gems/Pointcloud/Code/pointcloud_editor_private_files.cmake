@@ -11,4 +11,6 @@ set(FILES
     Source/Tools/PointcloudEditorSystemComponent.h
     Source/Tools/Components/PointcloudEditorComponent.cpp
     Source/Tools/Components/PointcloudEditorComponent.h
+    Source/Tools/Components/ShaderParameter.cpp
+    Source/Tools/Components/ShaderParameter.h
 )

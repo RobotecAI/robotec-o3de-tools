@@ -34,9 +34,12 @@ namespace Pointcloud
         virtual ~PointcloudFeatureProcessor() = default;
 
         // PointcloudFeatureProcessorInterface
-        void SetTransform(const AZ::Transform& transform) override;
-        void SetPointSize(float pointSize) override;
+        // void SetTransform(const AZ::Transform& transform) override;
+        // void SetPointSize(float pointSize) override;
+        void SetParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) override;
         void SetCloud(const AZStd::vector<CloudVertex>& cloudVertexData) override;
+        AZStd::vector<ShaderParameterUnion> GetParameters() override;
+        static AZ::Outcome<ParameterType, AZStd::string> ExtractParameterType(const AZ::Name &parameterName);
 
     protected:
         // RPI::SceneNotificationBus overrides
@@ -59,7 +62,8 @@ namespace Pointcloud
         AZStd::vector<float> ConvertToBuffer(const AZStd::vector<CloudVertex> &cloudVertexData);
         //! build a draw packet to draw the point cloud
         AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> BuildDrawPacket(
-                const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg,
+                const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &drawSrg,
+                const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &objectSrg,
                 const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw>& pipelineState,
                 const AZ::RHI::DrawListTag& drawListTag,
                 const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
@@ -83,15 +87,17 @@ namespace Pointcloud
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
 
         AZ::RHI::ShaderInputNameIndex m_modelMatrixIndex = "m_modelMatrix";
-        AZ::RHI::ShaderInputNameIndex m_mBuffery = "m_positionBuffer";
+        AZ::RHI::ShaderInputNameIndex m_mBuffery = "m_f_positionBuffer";
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> texAsset;
         bool m_isTextureValid = false;
         AZ::Data::Instance< AZ::RPI::StreamingImage> texture;
-        AZ::RHI::ShaderInputNameIndex m_inputTextureImageIndex = "m_inputTexture";
+        AZ::RHI::ShaderInputNameIndex m_inputTextureImageIndex = "m_t2_inputTexture";
         // time index
         AZ::RHI::ShaderInputNameIndex m_timeIndex = "m_time";
         float m_time = 0.0f;
         // start time
         AZStd::chrono::system_clock::time_point m_startTime;
+        AZStd::vector<ShaderParameterUnion> m_shaderParameters;
+        uint32_t m_vertexCountPerMesh = 0;
     };
 }

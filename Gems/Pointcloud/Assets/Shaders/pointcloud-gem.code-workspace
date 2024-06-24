@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../.."
+		},
+		{
+			"path": "../../../../../RenderJoy/DemoProject"
+		},
+		{
+			"path": "../../../../../RenderJoy"
+		}
+	],
+	"settings": {}
+}

@@ -59,11 +59,13 @@ namespace Pointcloud {
         printf(" m_shader->GetAsset() %s Lol", m_shader->GetAsset()->GetName().GetCStr());
         //auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
         auto drawSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("PerDrawSrg"));
-        auto objectSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("PerObjectSrg"));
+        auto objectSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("ObjectSrg"));
         AZ_Error("PointcloudFeatureProcessor", drawSrgLayout,
                  "Failed to get the draw shader resource group layout for the pointcloud shader.");
         auto shader_variant =  m_shader->GetVariant(shaderVariantId);
 
+        printf("DrawSrgLayout %d\n", (bool)drawSrgLayout);
+        printf("ObjectSrgLayout %d\n", (bool)objectSrgLayout);
         if (drawSrgLayout && objectSrgLayout){
 
             //m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(),    drawSrgLayout->GetName());
@@ -71,10 +73,29 @@ namespace Pointcloud {
             m_objectSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), objectSrgLayout->GetName());
             m_modelMatrixIndex.Reset();
             printf("Created SRG\n");
-
+            auto input = objectSrgLayout->GetConstantsLayout();
+            auto inputs = input->GetShaderInputList();
+            for (auto input : inputs) {
+                printf("Input %s\n", input.m_name.GetCStr());
+                //                 ShaderInputConstantDescriptor(
+                // const Name& name,
+                // uint32_t constantByteOffset,
+                // uint32_t constantByteCount,
+                // uint32_t registerId,
+                // uint32_t spaceId);
+                // print all
+                printf("Name: %s, ByteOffset: %d, ByteCount: %d, RegisterId: %d, SpaceId: %d\n", input.m_name.GetCStr(), input.m_constantByteOffset, input.m_constantByteCount, input.m_registerId, input.m_spaceId);
+                auto extractOutcome = ExtractParameterType(input.m_name);
+                if(extractOutcome.IsSuccess()) {
+                    m_shaderParameters.push_back(ShaderParameterUnion(input.m_name, extractOutcome.GetValue()));
+                }else {
+                    AZ_Error("PointcloudFeatureProcessor", false, extractOutcome.GetError().c_str());
+                }
+            }
         }   else {
             printf("Failed to create SRG\n");
         }
+
 
         auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         AZ_Assert(viewportContextInterface,
@@ -149,6 +170,30 @@ namespace Pointcloud {
         m_updateShaderConstants = true;
     }
 
+    AZStd::vector<ShaderParameterUnion> PointcloudFeatureProcessor::GetParameters() {
+        return m_shaderParameters;
+    }
+
+    AZ::Outcome<ParameterType,AZStd::string> PointcloudFeatureProcessor::ExtractParameterType(const AZ::Name &parameterName) {
+        // all look for u_ , f_ , f2_ , f3_
+        // but frist there will be m_
+        if (parameterName.GetStringView().starts_with("m_")) {
+            if (parameterName.GetStringView().starts_with("m_f3_")) {
+                return ParameterType::Float3;
+            } else if (parameterName.GetStringView().starts_with("m_f2_")) {
+                return ParameterType::Float2;
+            } else if (parameterName.GetStringView().starts_with("m_f_")) {
+                return ParameterType::Float;
+            } else if (parameterName.GetStringView().starts_with("m_u_")) {
+                return ParameterType::uint;
+            }
+            AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with any of m_f_, m_f2_, m_f3_, or m_u_";
+            return AZ::Failure(error);
+        }
+        AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with m_";
+        return AZ::Failure(error);
+    }
+
     void PointcloudFeatureProcessor::UpdateDrawPacket() {
         // print if  things
         printf("PointcloudFeatureProcessor UpdateDrawPacket\n");
@@ -159,7 +204,7 @@ namespace Pointcloud {
 
         if (m_meshPipelineState && m_drawSrg && m_cloudVertexBuffer) {
             printf ("PointcloudFeatureProcessor UpdateDrawPacket\n");
-            m_drawPacket = BuildDrawPacket(m_drawSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews,
+            m_drawPacket = BuildDrawPacket(m_drawSrg,m_objectSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews,
                                            m_numStarsVertices);
         }
     }
@@ -246,13 +291,17 @@ namespace Pointcloud {
     }
 
     AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> PointcloudFeatureProcessor::BuildDrawPacket(
-            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &srg,
+            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &drawSrg,
+            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &objectSrg,
             const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> &pipelineState,
             const AZ::RHI::DrawListTag &drawListTag,
             const AZStd::span<const AZ::RHI::StreamBufferView> &streamBufferViews,
             uint32_t vertexCount) {
         AZ::RHI::DrawLinear drawLinear;
-        drawLinear.m_vertexCount = vertexCount*33;
+        drawLinear.m_vertexCount = vertexCount*m_vertexCountPerMesh;
+        printf("Vertex Count %d\n", drawLinear.m_vertexCount);
+        printf("Vertex Count Per Mesh %d\n", m_vertexCountPerMesh);
+        printf("Vertex Count2 %d\n", vertexCount);
         // drawLinear.m_vertexOffset = 0;
         // drawLinear.m_instanceCount = 1;
         // drawLinear.m_instanceOffset = 0;
@@ -260,20 +309,21 @@ namespace Pointcloud {
         AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(drawLinear);
-        drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
+        drawPacketBuilder.AddShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
+        drawPacketBuilder.AddShaderResourceGroup(objectSrg->GetRHIShaderResourceGroup());
 
         AZ::Data::AssetData::AssetStatus status = texAsset.BlockUntilLoadComplete();
         if (!m_isTextureValid) {
             if(status == AZ::Data::AssetData::AssetStatus::Ready ) {
                 m_isTextureValid = true;
                 texture = AZ::RPI::StreamingImage::FindOrCreate(texAsset);
-                srg->SetImage(m_inputTextureImageIndex, texture);
+                objectSrg->SetImage(m_inputTextureImageIndex, texture);
             }else {
                 AZ_Printf("Blibloard", "Texture not ready\n");
             }
         }
 
-        srg->SetBufferView(m_mBuffery, m_cloudVertexBuffer->GetBufferView());
+        objectSrg->SetBufferView(m_mBuffery, m_cloudVertexBuffer->GetBufferView());
         AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = drawListTag;
         drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
@@ -288,7 +338,6 @@ namespace Pointcloud {
             if (!m_meshPipelineState) {
                 m_meshPipelineState = aznew AZ::RPI::PipelineStateForDraw;
                 m_meshPipelineState->Init(m_shader);
-
 
                 // AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
                 // layoutBuilder.AddBuffer()
@@ -319,33 +368,41 @@ namespace Pointcloud {
 
     void PointcloudFeatureProcessor::UpdateShaderConstants() {
         if (m_drawSrg) {
-            AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor SetPointSize");
             m_drawSrg->SetConstant(m_timeIndex, m_time);
-            //AZ::Matrix4x4 orientation = AZ::Matrix4x4::CreateFromTransform(m_transform);
-//            m_drawSrg->SetConstant(m_modelMatrixIndex, orientation);
-//            m_drawSrg->SetConstant(m_pointSizeIndex, m_pointSize);
-//            bool m_alwaysFaceCamera;
-//            row_major float4x4 m_modelToWorld;
-//
-//            Buffer<float>  m_positionBuffer;
-//            Texture2D<float4> m_inputTexture; // A texture generated by a RenderJoy pipeline.
-
-
-
             m_drawSrg->Compile();
+        }
+        
+        if (m_objectSrg) {
+            for (const auto &param : m_shaderParameters) {
+                const auto index = m_objectSrg->FindShaderInputConstantIndex(param.m_parameterName);
+                m_objectSrg->SetConstant(index, param.m_value);
+            }
+            m_objectSrg->Compile();
+
         }
     }
 
-    void PointcloudFeatureProcessor::SetTransform(const AZ::Transform &transform) {
+    void PointcloudFeatureProcessor::SetParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) {
+        for (const auto &newParam : shaderParameters) {
+            for (auto &currentParam : m_shaderParameters) {
+                if (newParam.m_parameterName == currentParam.m_parameterName) {
+                    currentParam.m_value = newParam.m_value;
+                    break;
+                }
+            }
+            if (newParam.m_parameterName == AZ::Name("m_u_vertexCountPerMesh")) {
+                m_vertexCountPerMesh = newParam.m_value.m_uintInput;
+            }
+        }
         m_updateShaderConstants = true;
-        m_transform = transform;
-    }
-
-    void PointcloudFeatureProcessor::SetPointSize(float pointSize) {
-        m_updateShaderConstants = true;
-        m_pointSize = pointSize;
 
     }
+    //
+    // void PointcloudFeatureProcessor::SetPointSize(float pointSize) {
+    //     m_updateShaderConstants = true;
+    //     m_pointSize = pointSize;
+    //
+    // }
 
 
 }

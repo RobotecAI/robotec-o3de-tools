@@ -27,13 +27,30 @@ namespace Pointcloud {
         required.push_back(AZ_CRC_CE("TransformService"));
     }
 
+
+    inline void registerParameterTypeEnum(AZ::SerializeContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            context->Enum<ParameterType>()
+                ->Value("Float", ParameterType::Float)
+                ->Value("Float2", ParameterType::Float2)
+                ->Value("Float3", ParameterType::Float3)
+                ->Value("uint", ParameterType::uint);
+        }
+    }
+
     void PointcloudEditorComponent::Reflect(AZ::ReflectContext *context) {
+
         AZ::SerializeContext *serializeContext = azrtti_cast<AZ::SerializeContext *>(context);
+        registerParameterTypeEnum(serializeContext);
+        ShaderParameter::Reflect(context);
         if (serializeContext) {
             serializeContext->Class<PointcloudEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
                     ->Version(2)
                     ->Field("Point Size", &PointcloudEditorComponent::m_pointSize)
-                    ->Field("Move To Centroid", &PointcloudEditorComponent::m_moveToCentroid);
+                    ->Field("Move To Centroid", &PointcloudEditorComponent::m_moveToCentroid)
+                    ->Field("Shader Parameters", &PointcloudEditorComponent::shaderParameters);
             AZ::EditContext *editContext = serializeContext->GetEditContext();
             if (editContext) {
                 editContext->Class<PointcloudEditorComponent>("PointcloudEditorComponent", "PointcloudEditorComponent")
@@ -41,11 +58,12 @@ namespace Pointcloud {
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::Category, "RobotecTools")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::m_moveToCentroid,
-                                      "Move To Centroid", "Move the entity to the centroid of the pointcloud during load")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::m_pointSize,
-                                      "Point Size", "Size of the points in the pointcloud")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnSetPointSize)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::shaderParameters,
+                                      "Shader Parameters", "Shader parameters to set")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::PushNewParameters)
+                        // ->DataElement(AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::m_pointSize,
+                        //               "Point Size", "Size of the points in the pointcloud")
+                        // ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnSetPointSize)
                         ->UIElement(AZ::Edit::UIHandlers::Button, "LoadCloud", "")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "LoadCloud")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::LoadCloud);
@@ -62,31 +80,63 @@ namespace Pointcloud {
 
         }
 
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
+        // AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
     }
 
     void PointcloudEditorComponent::Deactivate() {
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
+        // AZ::TransformNotificationBus::Handler::BusDisconnect();
         if (m_scene) {
             m_scene->DisableFeatureProcessor<PointcloudFeatureProcessor>();
         }
     }
 
+
+
     void PointcloudEditorComponent::BuildGameEntity([[maybe_unused]] AZ::Entity *gameEntity) {
     }
 
-    AZ::Crc32 PointcloudEditorComponent::OnSetPointSize() {
-        if (m_featureProcessor) {
-            m_featureProcessor->SetPointSize(m_pointSize);
+    void PointcloudEditorComponent::LoadParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) {
+        // for for look for matching parameters names and types if they exist continue else add them
+        for (const auto &param : shaderParameters) {
+            bool found = false;
+            for (auto &existingParam : this->shaderParameters) {
+                if (existingParam.m_parameterName == param.m_parameterName.GetStringView()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                this->shaderParameters.push_back(ShaderParameter(param));
+            }
         }
-        return AZ::Edit::PropertyRefreshLevels::None;
+
     }
 
+    AZStd::vector<ShaderParameterUnion> PointcloudEditorComponent::GetConstants() const {
+        AZStd::vector<ShaderParameterUnion> shaderParameterUnions;
+        for (const auto &param : shaderParameters) {
+            shaderParameterUnions.push_back(param.ToShaderParameterUnion());
+        }
+        return shaderParameterUnions;
+    }
+
+    void PointcloudEditorComponent::PushNewParameters() {
+        m_featureProcessor->SetParameters(GetConstants());
+    }
+
+    // AZ::Crc32 PointcloudEditorComponent::OnSetPointSize() {
+    //     if (m_featureProcessor) {
+    //         m_featureProcessor->SetPointSize(m_pointSize);
+    //     }
+    //     return AZ::Edit::PropertyRefreshLevels::None;
+    // }
+
     AZ::Crc32 PointcloudEditorComponent::LoadCloud() {
+        LoadParameters(m_featureProcessor->GetParameters());
         //auto vertices = plyIn.getVertexPositions();
         std::vector<std::array<double, 3>> vertices;
         // fill with grid of points
-        uint32_t width = 100;
+        uint32_t width = 2;
         uint32_t height = width;
         double cellSize = 0.3;
 
@@ -150,16 +200,16 @@ namespace Pointcloud {
         if (m_featureProcessor) {
             AZ_Printf("PointcloudEditorComponent", "Setting cloud, size %d", cloudVertexData.size());
             m_featureProcessor->SetCloud(cloudVertexData);
-            m_featureProcessor->SetTransform(GetWorldTM());
-            m_featureProcessor->SetPointSize(m_pointSize);
+            // m_featureProcessor->SetTransform(GetWorldTM());
+            // m_featureProcessor->SetPointSize(m_pointSize);
         }
 
-        return AZ::Edit::PropertyRefreshLevels::None;
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
-    void PointcloudEditorComponent::OnTransformChanged(const AZ::Transform &local, const AZ::Transform &world) {
-        if (m_featureProcessor) {
-            m_featureProcessor->SetTransform(world);
-        }
-    }
+    // void PointcloudEditorComponent::OnTransformChanged(const AZ::Transform &local, const AZ::Transform &world) {
+    //     if (m_featureProcessor) {
+    //         m_featureProcessor->SetTransform(world);
+    //     }
+    // }
 }
