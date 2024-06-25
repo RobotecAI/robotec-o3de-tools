@@ -108,7 +108,7 @@ VSOutput MainVS(VSInput IN)
     const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
     float3 translation = ObjectSrg::GetBillboardPosition(billboardIndex);
     float3 vertexModelPosition = ObjectSrg::GetVertexModelPositionBezier(vertexIndex,scale);
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(position[IN.m_vertexID%3]* (ObjectSrg::m_f_totalHeight+1), 1.0));
+    //OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(position[IN.m_vertexID%3]* (ObjectSrg::m_f_totalHeight+1), 1.0));
     float x_distance = vertexModelPosition.x;
     float3 normal = float3(0,0,1);
 
@@ -127,7 +127,7 @@ VSOutput MainVS(VSInput IN)
     float4 vertexWorldPosition = float4(vertexModelPosition + translation, 1.0);
     
 
-    //OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, vertexWorldPosition);
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, vertexWorldPosition);
     OUT.m_normal = normalize(normal);//float3(1,0,0);
     OUT.m_worldPosition = vertexWorldPosition.xyz;
 
@@ -152,95 +152,79 @@ VSOutput MainVS(VSInput IN)
     return OUT;
 };
 
-struct PSOutput
+
+
+ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    float4 m_diffuse : SV_Target;
 
-};
 
-PSOutput MainPS(VSOutput IN)
-{
-    PSOutput OUT;
+    
+    //float3 baseColor = IN.m_color.rgb;
+    float3 surfaceNormal = IN.m_normal;
+    if (!isFrontFace)
+    {
+        surfaceNormal = -surfaceNormal;
+    }
+    // ------- Surface -------
 
-    OUT.m_diffuse = float4(1,1,1,1);
+    Surface surface;
+    
+    // Position, Normal, Roughness
+    surface.position = IN.m_worldPosition.xyz;
+    
+    float3 surface_normal = ObjectSrg::RotateAroundZ(IN.m_normal,-(IN.m_texCoord.x-0.5)*3);
+    surface.normal = normalize(surface_normal);
+    surface.vertexNormal = normalize(surfaceNormal);
+    surface.roughnessLinear = ObjectSrg::m_f_roughness;
+    surface.specularOcclusion = ObjectSrg::m_f_specularOcclusion;
+    surface.CalculateRoughnessA();
 
+    // Albedo, SpecularF0
+    surface.SetAlbedoAndSpecularF0(ObjectSrg::m_f3_baseColor, ObjectSrg::m_f_specularF0Factor, ObjectSrg::m_f_metallic);
+
+    // Clear Coat
+    surface.clearCoat.InitializeToZero();
+
+    // ------- LightingData -------
+
+    LightingData lightingData;
+
+    // Light iterator
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    // (real3 positionWS, real3 normal, real roughnessLinear)
+    lightingData.Init(ViewSrg::m_worldPosition.xyz, surface.normal, surface.roughnessLinear);
+
+    // Shadow
+    lightingData.diffuseAmbientOcclusion = ObjectSrg::m_f_diffuseAmbientOcclusion;
+
+    // Diffuse and Specular response
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+
+    // ------- Lighting Calculation -------
+
+    // Apply Decals
+    ApplyDecals(lightingData.tileIterator, surface);
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIblForward(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting();
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData,ObjectSrg::m_f_alpha);
+
+    // ------- Output -------
+    ForwardPassOutput OUT;
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
+    OUT.m_specularColor =  lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
     return OUT;
 }; 
-
-
-// ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
-// {
-
-    
-//     float3 baseColor = IN.m_color.rgb;
-//     float3 surfaceNormal = IN.m_normal;
-//     if (!isFrontFace)
-//     {
-//         surfaceNormal = -surfaceNormal;
-//     }
-//     // ------- Surface -------
-
-//     Surface surface;
-    
-//     // Position, Normal, Roughness
-//     surface.position = IN.m_worldPosition.xyz;
-    
-//     float3 surface_normal = ObjectSrg::RotateAroundZ(IN.m_normal,-(IN.m_texCoord.x-0.5)*3);
-//     surface.normal = normalize(surface_normal);
-//     surface.vertexNormal = surfaceNormal;
-//     surface.roughnessLinear = 0.9f;
-//     surface.CalculateRoughnessA();
-
-//     // Albedo, SpecularF0
-//     const float metallic = 0.0f;
-//     const float specularF0Factor = 0.1f;
-//     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
-
-//     // Clear Coat
-//     surface.clearCoat.InitializeToZero();
-
-//     // ------- LightingData -------
-
-//     LightingData lightingData;
-
-//     // Light iterator
-//     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-//     // (real3 positionWS, real3 normal, real roughnessLinear)
-//     lightingData.Init(ViewSrg::m_worldPosition.xyz, surface.normal, surface.roughnessLinear);
-
-//     // Shadow
-//     lightingData.diffuseAmbientOcclusion = 0.3f;
-
-//     // Diffuse and Specular response
-//     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-//     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
-
-//     const float alpha = 1.0f;
-
-//     // ------- Lighting Calculation -------
-
-//     // Apply Decals
-//     ApplyDecals(lightingData.tileIterator, surface);
-
-//     // Apply Direct Lighting
-//     ApplyDirectLighting(surface, lightingData, IN.m_position);
-
-//     // Apply Image Based Lighting (IBL)
-//     ApplyIblForward(surface, lightingData);
-
-//     // Finalize Lighting
-//     lightingData.FinalizeLighting();
-
-//     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
-
-//     // ------- Output -------
-//     ForwardPassOutput OUT;
-//     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
-//     OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
-//     OUT.m_specularColor =  lightingOutput.m_specularColor;
-//     OUT.m_specularF0 = lightingOutput.m_specularF0;
-//     OUT.m_albedo = lightingOutput.m_albedo;
-//     OUT.m_normal = lightingOutput.m_normal;
-//     return OUT;
-// }; 
 

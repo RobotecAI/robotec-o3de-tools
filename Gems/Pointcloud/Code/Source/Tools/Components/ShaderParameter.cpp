@@ -1,5 +1,5 @@
 #include "ShaderParameter.h"
-
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Pointcloud {
     ShaderParameter::ShaderParameter(ShaderParameterUnion shaderParameterUnion) {

@@ -92,6 +92,9 @@ namespace Pointcloud {
                     AZ_Error("PointcloudFeatureProcessor", false, extractOutcome.GetError().c_str());
                 }
             }
+            //ObjectSrg::m_f_totalHeight
+//            AZ::RHI::ShaderInputNameIndex m_f_totalHeightIndex = "m_f_totalHeight";
+//            m_objectSrg->SetConstant(m_f_totalHeightIndex,5.0f);
         }   else {
             printf("Failed to create SRG\n");
         }
@@ -374,8 +377,21 @@ namespace Pointcloud {
         
         if (m_objectSrg) {
             for (const auto &param : m_shaderParameters) {
-                const auto index = m_objectSrg->FindShaderInputConstantIndex(param.m_parameterName);
-                m_objectSrg->SetConstant(index, param.m_value);
+                AZ::RHI::ShaderInputNameIndex index(param.m_parameterName);
+                switch (param.m_parameterType) {
+                    case ParameterType::uint:
+                        m_objectSrg->SetConstant(index, param.m_value.m_uintInput);
+                        break;
+                    case ParameterType::Float:
+                        m_objectSrg->SetConstant(index, param.m_value.m_floatInput);
+                        break;
+                    case ParameterType::Float2:
+                        m_objectSrg->SetConstant(index, param.m_value.m_float2Input);
+                        break;
+                    case ParameterType::Float3:
+                        m_objectSrg->SetConstant(index, param.m_value.m_float3Input);
+                        break;
+                }
             }
             m_objectSrg->Compile();
 
@@ -394,6 +410,7 @@ namespace Pointcloud {
                 m_vertexCountPerMesh = newParam.m_value.m_uintInput;
             }
         }
+
         m_updateShaderConstants = true;
 
     }

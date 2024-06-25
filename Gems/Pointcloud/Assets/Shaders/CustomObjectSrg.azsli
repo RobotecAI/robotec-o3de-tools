@@ -60,8 +60,30 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
     uint m_u_vertexCountPerMesh;
     float m_f_loopLength; 
+    float2 m_f2_leafWidthCurvePoint1;
+    float2 m_f2_leafWidthCurvePoint2;
+
+    float2 m_f2_leafDefaultShapePoint2;
+    float2 m_f2_leafDefaultShapePoint3;
+
+    float2 m_f2_leafFullWindShapePoint2;
+    float2 m_f2_leafFullWindShapePoint3;
 
 
+    // float3 m_f3_baseColor = float3(1,1,1);
+    // float m_f_metallic = 0.0f;
+    // float m_f_roughness = 0.9f;
+    // float m_f_alpha = 1.0f;
+    // float m_f_diffuseAmbientOcclusion = 0.3f;
+    // float m_f_specularF0Factor = 0.1f;
+    // float m_f_specularOcclusion = 0.5f;
+    float3 m_f3_baseColor;
+    float m_f_metallic;
+    float m_f_roughness;
+    float m_f_alpha;
+    float m_f_diffuseAmbientOcclusion;
+    float m_f_specularF0Factor;
+    float m_f_specularOcclusion;
 
     float3 GetVertexModelPositionBezier(uint vertexId,float scale)
     {
@@ -99,9 +121,9 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         }
         vertexModelPosition.z += segmentIndex * SegmentHeight();
         const float2 points[3] = {
-            float2(0,50)/200,
-            float2(100,50)/200,
-            float2(200,0)/200
+            m_f2_leafWidthCurvePoint1,
+            m_f2_leafWidthCurvePoint2,
+            float2(1,0)
         };
 
         vertexModelPosition.x *= scale;
@@ -144,14 +166,14 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
         float2 points[3] = {
             float2(0,0),
-            float2(40,170),
-            float2(100,120)
+            m_f2_leafDefaultShapePoint2,
+            m_f2_leafDefaultShapePoint3
         };
 
         float2 pointsWind[3] = {
             float2(0,0),
-            float2(40,60),
-            float2(200,20)
+            m_f2_leafFullWindShapePoint2,
+            m_f2_leafFullWindShapePoint3
         };
 
         const float scaled_z = position.z / (m_f_totalHeight * scale);
@@ -162,7 +184,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         };
         for (int i = 1; i < 3; i++)
         {
-            pointsLerp[i] = lerp(points[i],pointsWind[i],windStrength)/200 * scale;
+            pointsLerp[i] = lerp(points[i],pointsWind[i],windStrength) * scale;
         }
 
         const float2 pushed_point = getPointAt2d(scaled_z,pointsLerp[0],pointsLerp[1],pointsLerp[2]);
