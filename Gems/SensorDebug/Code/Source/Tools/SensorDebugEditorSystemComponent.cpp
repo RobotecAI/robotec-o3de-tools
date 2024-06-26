@@ -39,5 +39,4 @@ namespace SensorDebug
     {
         ClearSensors();
     }
-
 } // namespace SensorDebug

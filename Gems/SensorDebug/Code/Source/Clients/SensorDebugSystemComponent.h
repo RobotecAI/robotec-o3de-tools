@@ -42,5 +42,4 @@ namespace SensorDebug
         AZStd::unordered_map<AZ::EntityComponentIdPair, AZStd::string> m_entitiesNames;
         AZStd::unordered_map<AZ::EntityComponentIdPair, float> m_sensorFrequencies;
     };
-
 } // namespace SensorDebug

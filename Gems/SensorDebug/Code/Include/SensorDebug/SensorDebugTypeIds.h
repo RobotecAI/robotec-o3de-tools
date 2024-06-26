@@ -10,6 +10,7 @@ namespace SensorDebug
     // Module derived classes TypeIds
     inline constexpr const char* SensorDebugModuleInterfaceTypeId = "{6273F4BC-9B69-4567-A748-B602FBFCB6CE}";
     inline constexpr const char* SensorDebugModuleTypeId = "{28353925-BFF1-49A2-B003-5FC22530672D}";
+
     // The Editor Module by default is mutually exclusive with the Client Module
     // so they use the Same TypeId
     inline constexpr const char* SensorDebugEditorModuleTypeId = SensorDebugModuleTypeId;

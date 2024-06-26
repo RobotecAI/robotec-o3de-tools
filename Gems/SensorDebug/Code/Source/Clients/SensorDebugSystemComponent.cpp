@@ -64,7 +64,7 @@ namespace SensorDebug
                 return true;
             });
 
-        AZ_Printf("test", "Found %d sensor entities", m_sensorEntities.size());
+        AZ_Printf("TestComponent", "Found %d sensor entities", m_sensorEntities.size());
     }
 
     void SensorDebugSystemComponent::FindSensorsWithComponentAPI()
@@ -103,7 +103,7 @@ namespace SensorDebug
         auto searchFunction = [this, typeId](AZ::Entity* entity)
         {
             AZ_Assert(entity, "Entity is null");
-            auto sensorComponent = ROS2::GetSensorsOfType(entity->GetId(), AZ::Uuid(typeId));
+            const auto sensorComponent = ROS2::GetSensorsOfType(entity->GetId(), AZ::Uuid(typeId));
             AZ_Printf("TestComponent", "Entity  %s has %d sensors", entity->GetName().c_str(), sensorComponent.size());
             m_sensorEntities.insert(m_sensorEntities.end(), sensorComponent.begin(), sensorComponent.end());
 
@@ -243,5 +243,4 @@ namespace SensorDebug
 
         ImGui::End();
     }
-
 } // namespace SensorDebug
