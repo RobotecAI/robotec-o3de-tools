@@ -20,7 +20,6 @@
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
-
 #include <Atom/RPI/Math.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
@@ -97,6 +96,9 @@ struct VSOutput
 //     return OUT;
 // }
 
+
+
+
 VSOutput MainVS(VSInput IN)
 {
     VSOutput OUT;
@@ -156,9 +158,6 @@ VSOutput MainVS(VSInput IN)
 
 ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-
-
-    
     //float3 baseColor = IN.m_color.rgb;
     float3 surfaceNormal = IN.m_normal;
     if (!isFrontFace)
@@ -183,26 +182,21 @@ ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
     surface.SetAlbedoAndSpecularF0(ObjectSrg::m_f3_baseColor, ObjectSrg::m_f_specularF0Factor, ObjectSrg::m_f_metallic);
 
     // Clear Coat
-    surface.clearCoat.InitializeToZero();
+    //surface.clearCoat.InitializeToZero();
 
     // ------- LightingData -------
 
     LightingData lightingData;
 
-    // Light iterator
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    // (real3 positionWS, real3 normal, real roughnessLinear)
-    lightingData.Init(ViewSrg::m_worldPosition.xyz, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    
+    // Diffuse and Specular response (used in IBL calculations)
+    real3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0 - specularResponse;
 
-    // Shadow
-    lightingData.diffuseAmbientOcclusion = ObjectSrg::m_f_diffuseAmbientOcclusion;
-
-    // Diffuse and Specular response
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
-
-    // ------- Lighting Calculation -------
-
+    // Multiscatter
+    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
     // Apply Decals
     ApplyDecals(lightingData.tileIterator, surface);
 
@@ -222,6 +216,7 @@ ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
     OUT.m_specularColor =  lightingOutput.m_specularColor;
+    //OUT.m_specularColor = float4(ObjectSrg::m_f3_baseColor,1);
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
