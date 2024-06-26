@@ -83,12 +83,13 @@ struct VSOutput
 
 // VSOutput MainVS(VSInput IN){
 //     VSOutput OUT;
-//     const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh);
+//     const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh());
 //     // draw triangle
 //     const float2 texcoord[3] = { float2(0, 0), float2(0, 1), float2(1, 0) };
 //     const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
 //     const float4 color[3] = { float4(1, 0, 0, 1), float4(0, 1, 0, 1), float4(0, 0, 1, 1) };
-//     OUT.m_position = float4(position[vertexIndex], 1.0);
+//     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix,  float4(position[vertexIndex], 1.0));
+//     //OUT.m_position = float4(position[vertexIndex], 1.0);
 //     OUT.m_texCoord = texcoord[vertexIndex];
 //     OUT.m_color = color[vertexIndex];
 //     OUT.m_normal = float3(0, 0, 1);
@@ -103,13 +104,14 @@ VSOutput MainVS(VSInput IN)
 {
     VSOutput OUT;
 
-    const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh);
-    const uint billboardIndex = uint(IN.m_vertexID) / uint(ObjectSrg::m_u_vertexCountPerMesh);
+    const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh());
+    const uint billboardIndex = uint(IN.m_vertexID) / uint(ObjectSrg::m_u_vertexCountPerMesh());
     // random value based on billboardId (0-1)
     const float scale = randomFloat(billboardIndex)/2 + 0.8;
-    const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
+    
     float3 translation = ObjectSrg::GetBillboardPosition(billboardIndex);
     float3 vertexModelPosition = ObjectSrg::GetVertexModelPositionBezier(vertexIndex,scale);
+    //const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
     //OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(position[IN.m_vertexID%3]* (ObjectSrg::m_f_totalHeight+1), 1.0));
     float x_distance = vertexModelPosition.x;
     float3 normal = float3(0,0,1);
@@ -158,7 +160,7 @@ VSOutput MainVS(VSInput IN)
 
 ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    //float3 baseColor = IN.m_color.rgb;
+    float3 baseColor = IN.m_color.rgb;
     float3 surfaceNormal = IN.m_normal;
     if (!isFrontFace)
     {

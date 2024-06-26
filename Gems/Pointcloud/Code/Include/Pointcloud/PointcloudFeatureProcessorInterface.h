@@ -82,6 +82,6 @@ namespace Pointcloud {
 
         virtual AZStd::vector<ShaderParameterUnion> GetParameters() = 0;
 
-        virtual void SetCloud(const AZStd::vector<CloudVertex> &cloudVertexData) = 0;
+        virtual void ForceUpdate(uint32_t totalVertices) = 0;
     };
 }

@@ -37,7 +37,7 @@ namespace Pointcloud
         // void SetTransform(const AZ::Transform& transform) override;
         // void SetPointSize(float pointSize) override;
         void SetParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) override;
-        void SetCloud(const AZStd::vector<CloudVertex>& cloudVertexData) override;
+        void ForceUpdate(uint32_t totalVertices) override;
         AZStd::vector<ShaderParameterUnion> GetParameters() override;
         static AZ::Outcome<ParameterType, AZStd::string> ExtractParameterType(const AZ::Name &parameterName);
 
@@ -70,7 +70,6 @@ namespace Pointcloud
                 uint32_t vertexCount);
 
         AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> m_meshPipelineState;
-        AZ::Data::Instance<AZ::RPI::Buffer> m_cloudVertexBuffer = nullptr;
         AZ::RHI::DrawListTag m_drawListTag;
         AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_drawPacket;
         AZ::Data::Instance<AZ::RPI::Shader> m_shader = nullptr;
@@ -78,9 +77,8 @@ namespace Pointcloud
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_objectSrg = nullptr;
 
         AZStd::array<AZ::RHI::StreamBufferView,1> m_meshStreamBufferViews;
-
-        AZStd::vector<float> m_starsMeshData;
-        uint32_t m_numStarsVertices = 0;
+        
+        uint32_t m_totalVertices = 3;
 
         AzFramework::WindowSize m_viewportSize{0,0};
         [[maybe_unused]] bool m_updateShaderConstants = false;
@@ -89,7 +87,7 @@ namespace Pointcloud
         AZ::RHI::ShaderInputNameIndex m_modelMatrixIndex = "m_modelMatrix";
         AZ::RHI::ShaderInputNameIndex m_mBuffery = "m_f_positionBuffer";
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> texAsset;
-        bool m_isTextureValid = false;
+        //bool m_isTextureValid = false;
         AZ::Data::Instance< AZ::RPI::StreamingImage> texture;
         AZ::RHI::ShaderInputNameIndex m_inputTextureImageIndex = "m_t2_inputTexture";
         // time index

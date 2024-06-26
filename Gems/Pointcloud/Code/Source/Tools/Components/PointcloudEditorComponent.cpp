@@ -50,6 +50,7 @@ namespace Pointcloud {
                     ->Version(2)
                     ->Field("Point Size", &PointcloudEditorComponent::m_pointSize)
                     ->Field("Move To Centroid", &PointcloudEditorComponent::m_moveToCentroid)
+                    ->Field("Total Verticies", &PointcloudEditorComponent::m_totalVertices)
                     ->Field("Shader Parameters", &PointcloudEditorComponent::shaderParameters);
             AZ::EditContext *editContext = serializeContext->GetEditContext();
             if (editContext) {
@@ -58,15 +59,17 @@ namespace Pointcloud {
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::Category, "RobotecTools")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::m_totalVertices,
+                                        "Total Vertices", "Total number of vertices in shader")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::shaderParameters,
                                       "Shader Parameters", "Shader parameters to set")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::PushNewParameters)
                         // ->DataElement(AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::m_pointSize,
                         //               "Point Size", "Size of the points in the pointcloud")
                         // ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnSetPointSize)
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "LoadCloud", "")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "LoadCloud")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::LoadCloud);
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "ForceUpdate", "")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "ForceUpdate")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::ForceUpdate);
             }
         }
     }
@@ -123,83 +126,53 @@ namespace Pointcloud {
     void PointcloudEditorComponent::PushNewParameters() {
         m_featureProcessor->SetParameters(GetConstants());
     }
-
-    // AZ::Crc32 PointcloudEditorComponent::OnSetPointSize() {
-    //     if (m_featureProcessor) {
-    //         m_featureProcessor->SetPointSize(m_pointSize);
-    //     }
-    //     return AZ::Edit::PropertyRefreshLevels::None;
-    // }
-
-    AZ::Crc32 PointcloudEditorComponent::LoadCloud() {
+    
+    AZ::Crc32 PointcloudEditorComponent::ForceUpdate() {
         LoadParameters(m_featureProcessor->GetParameters());
-        //auto vertices = plyIn.getVertexPositions();
-        std::vector<std::array<double, 3>> vertices;
-        // fill with grid of points
-        uint32_t width = 2;
-        uint32_t height = width;
-        double cellSize = 0.3;
-
-        std::normal_distribution<double> distribution(0.0, 0.3);
-        auto m_random = std::mt19937(std::random_device{}());
-        for (uint32_t i = 0; i < width; i++) {
-            for (uint32_t j = 0; j < height; j++) {
-                AZ::Vector3 noise(distribution(m_random), distribution(m_random), 0);
-                vertices.push_back({i * cellSize + noise.GetX(), j * cellSize + noise.GetY(), 0});
-            }
-        }
-        vertices.push_back({-3,-3,0});
-
-        // random shuffee vertices
-        std::shuffle(vertices.begin(), vertices.end(), m_random);
-
-        printf("Loaded %lu vertices\n", vertices.size());
-
-        std::vector<std::array<unsigned char, 3>> colors(vertices.size(), {255, 255, 255});
-
-//        try {
-//            colors = plyIn.getVertexColors();
-//        } catch (std::exception &e) {
-//            AZ_Printf("PointcloudEditorComponent", "No colors in the file");
-//        }
-
-        // if (m_moveToCentroid) {
-        //     double centroid[3] = {0, 0, 0};
-        //     for (int i = 0; i < vertices.size(); i++) {
-        //         centroid[0] += vertices[i][0];
-        //         centroid[1] += vertices[i][1];
-        //         centroid[2] += vertices[i][2];
-        //     }
-        //     centroid[0] /= vertices.size();
-        //     centroid[1] /= vertices.size();
-        //     centroid[2] /= vertices.size();
-        //     for (int i = 0; i < vertices.size(); i++) {
-        //         vertices[i][0] -= centroid[0];
-        //         vertices[i][1] -= centroid[1];
-        //         vertices[i][2] -= centroid[2];
-        //     }
+        // //auto vertices = plyIn.getVertexPositions();
+        // std::vector<std::array<double, 3>> vertices;
+        // // fill with grid of points
+        // uint32_t width = 2;
+        // uint32_t height = width;
+        // double cellSize = 0.3;
         //
+        // std::normal_distribution<double> distribution(0.0, 0.3);
+        // auto m_random = std::mt19937(std::random_device{}());
+        // for (uint32_t i = 0; i < width; i++) {
+        //     for (uint32_t j = 0; j < height; j++) {
+        //         AZ::Vector3 noise(distribution(m_random), distribution(m_random), 0);
+        //         vertices.push_back({i * cellSize + noise.GetX(), j * cellSize + noise.GetY(), 0});
+        //     }
         // }
-
-        AZStd::vector<PointcloudFeatureProcessor::CloudVertex> cloudVertexData;
-        for (int i = 0; i < vertices.size(); i++) {
-            PointcloudFeatureProcessor::CloudVertex vertex;
-            vertex.m_position = {static_cast<float>(vertices[i][0]),
-                                 static_cast<float>(vertices[i][1]),
-                                 static_cast<float>(vertices[i][2])};
-            if (i < colors.size()) {
-                unsigned char r = colors[i][0];
-                unsigned char g = colors[i][1];
-                unsigned char b = colors[i][2];
-                AZ::Color m_color {r, g, b, 255};
-                vertex.m_color = m_color.ToU32();
-
-            }
-            cloudVertexData.push_back(vertex);
-        }
+        // vertices.push_back({-3,-3,0});
+        //
+        // // random shuffee vertices
+        // std::shuffle(vertices.begin(), vertices.end(), m_random);
+        //
+        // printf("Loaded %lu vertices\n", vertices.size());
+        //
+        // std::vector<std::array<unsigned char, 3>> colors(vertices.size(), {255, 255, 255});
+        //
+        //
+        // AZStd::vector<PointcloudFeatureProcessor::CloudVertex> cloudVertexData;
+        // for (int i = 0; i < vertices.size(); i++) {
+        //     PointcloudFeatureProcessor::CloudVertex vertex;
+        //     vertex.m_position = {static_cast<float>(vertices[i][0]),
+        //                          static_cast<float>(vertices[i][1]),
+        //                          static_cast<float>(vertices[i][2])};
+        //     if (i < colors.size()) {
+        //         unsigned char r = colors[i][0];
+        //         unsigned char g = colors[i][1];
+        //         unsigned char b = colors[i][2];
+        //         AZ::Color m_color {r, g, b, 255};
+        //         vertex.m_color = m_color.ToU32();
+        //
+        //     }
+        //     cloudVertexData.push_back(vertex);
+        // }
         if (m_featureProcessor) {
-            AZ_Printf("PointcloudEditorComponent", "Setting cloud, size %d", cloudVertexData.size());
-            m_featureProcessor->SetCloud(cloudVertexData);
+            AZ_Printf("PointcloudEditorComponent", "Setting total vertices to: %d", m_totalVertices);
+            m_featureProcessor->ForceUpdate(m_totalVertices);
             // m_featureProcessor->SetTransform(GetWorldTM());
             // m_featureProcessor->SetPointSize(m_pointSize);
         }

@@ -14,6 +14,19 @@ float randomFloat(uint seed) {
     return (hashValue & 0xfff) / 4096.0;
 }
 
+float2 randomNormalPair(uint seed) {
+    // Generate two uniform random numbers in [0, 1)
+    float u1 = randomFloat(seed);
+    float u2 = randomFloat(seed + 1u); // Offset seed for different value
+
+    // Apply Box-Muller transform
+    float r = sqrt(-2.0 * log(u1));
+    float theta = 2.0 * 3.14159265359 * u2; // 2*PI
+
+    // Return a pair of normally distributed values
+    return float2(r * cos(theta), r * sin(theta)); 
+}
+
 //https://jsfiddle.net/0nk4m36j/10/ 
 float2 getPointAt2d(float t, float2 p1, float2 pc, float2 p2) {
     float x = (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * pc.x + t * t * p2.x;

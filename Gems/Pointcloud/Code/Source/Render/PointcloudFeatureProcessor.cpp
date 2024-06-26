@@ -135,39 +135,40 @@ namespace Pointcloud {
         return random_data;
     }
 
-    void PointcloudFeatureProcessor::SetCloud(const AZStd::vector<CloudVertex> &cloudVertexData) {
-        const uint32_t elementCount = static_cast<uint32_t>(cloudVertexData.size());
-        const uint32_t elementSize = sizeof(float);
-
-        AZStd::vector<float> cloudVertexDataBuffer = ConvertToBuffer(cloudVertexData);
-        m_starsMeshData = cloudVertexDataBuffer;
-        const uint32_t bufferSize = cloudVertexDataBuffer.size() * elementSize; // bytecount
-        const uint32_t strideSize = 4 * 4 * elementSize;
-        m_numStarsVertices = elementCount;
-
-
-        if (!m_cloudVertexBuffer) {
-            AZ::RPI::CommonBufferDescriptor desc;
-            desc.m_poolType = AZ::RPI::CommonBufferPoolType::StaticInputAssembly;
-            desc.m_bufferName = AZStd::string(m_mBuffery.GetNameForDebug().GetCStr());
-            desc.m_byteCount =  cloudVertexDataBuffer.size() * sizeof(float);
-            desc.m_elementSize = elementSize;
-            desc.m_bufferData = m_starsMeshData.data();
-            desc.m_elementFormat = AZ::RHI::Format::R32_FLOAT;
-            m_cloudVertexBuffer = AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-            m_cloudVertexBuffer->WaitForUpload();
-
-        } else {
-            if (m_cloudVertexBuffer->GetBufferSize() != bufferSize) {
-                m_cloudVertexBuffer->Resize(bufferSize);
-            }
-
-            m_cloudVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
-            m_cloudVertexBuffer->WaitForUpload();
-        }
-
-        m_meshStreamBufferViews.front() = AZ::RHI::StreamBufferView(*m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize,strideSize);
-        //m_meshStreamBufferViews.front() = AZ::RHI::StreamBufferView(*m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize,elementSize);
+    void PointcloudFeatureProcessor::ForceUpdate(uint32_t totalVertices) {
+        m_totalVertices = totalVertices;
+        // const uint32_t elementCount = static_cast<uint32_t>(cloudVertexData.size());
+        // const uint32_t elementSize = sizeof(float);
+        //
+        // AZStd::vector<float> cloudVertexDataBuffer = ConvertToBuffer(cloudVertexData);
+        // m_starsMeshData = cloudVertexDataBuffer;
+        // const uint32_t bufferSize = cloudVertexDataBuffer.size() * elementSize; // bytecount
+        // const uint32_t strideSize = 4 * 4 * elementSize;
+        // m_numStarsVertices = elementCount;
+        //
+        //
+        // if (!m_cloudVertexBuffer) {
+        //     AZ::RPI::CommonBufferDescriptor desc;
+        //     desc.m_poolType = AZ::RPI::CommonBufferPoolType::StaticInputAssembly;
+        //     desc.m_bufferName = AZStd::string(m_mBuffery.GetNameForDebug().GetCStr());
+        //     desc.m_byteCount =  cloudVertexDataBuffer.size() * sizeof(float);
+        //     desc.m_elementSize = elementSize;
+        //     desc.m_bufferData = m_starsMeshData.data();
+        //     desc.m_elementFormat = AZ::RHI::Format::R32_FLOAT;
+        //     m_cloudVertexBuffer = AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+        //     m_cloudVertexBuffer->WaitForUpload();
+        //
+        // } else {
+        //     if (m_cloudVertexBuffer->GetBufferSize() != bufferSize) {
+        //         m_cloudVertexBuffer->Resize(bufferSize);
+        //     }
+        //
+        //     m_cloudVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
+        //     m_cloudVertexBuffer->WaitForUpload();
+        // }
+        //
+        // m_meshStreamBufferViews.front() = AZ::RHI::StreamBufferView(*m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize,strideSize);
+        // //m_meshStreamBufferViews.front() = AZ::RHI::StreamBufferView(*m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize,elementSize);
         UpdateDrawPacket();
         UpdateBackgroundClearColor();
         m_updateShaderConstants = true;
@@ -203,12 +204,12 @@ namespace Pointcloud {
         // variables
         printf("m_meshPipelineState %s\n", m_meshPipelineState ? "true" : "false");
         printf("m_drawSrg %s\n", m_drawSrg ? "true" : "false");
-        printf("m_cloudVertexBuffer %s\n", m_cloudVertexBuffer ? "true" : "false");
+        printf("m_objectSrg %s\n", m_objectSrg ? "true" : "false");
 
-        if (m_meshPipelineState && m_drawSrg && m_cloudVertexBuffer) {
+        if (m_meshPipelineState && m_drawSrg && m_objectSrg) {
             printf ("PointcloudFeatureProcessor UpdateDrawPacket\n");
             m_drawPacket = BuildDrawPacket(m_drawSrg,m_objectSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews,
-                                           m_numStarsVertices);
+                                           m_totalVertices);
         }
     }
 
@@ -301,32 +302,25 @@ namespace Pointcloud {
             const AZStd::span<const AZ::RHI::StreamBufferView> &streamBufferViews,
             uint32_t vertexCount) {
         AZ::RHI::DrawLinear drawLinear;
-        drawLinear.m_vertexCount = vertexCount*m_vertexCountPerMesh;
-        printf("Vertex Count %d\n", drawLinear.m_vertexCount);
-        printf("Vertex Count Per Mesh %d\n", m_vertexCountPerMesh);
-        printf("Vertex Count2 %d\n", vertexCount);
-        // drawLinear.m_vertexOffset = 0;
-        // drawLinear.m_instanceCount = 1;
-        // drawLinear.m_instanceOffset = 0;
-
+        drawLinear.m_vertexCount = vertexCount;
+        printf("Vertex Count %d\n", vertexCount);
         AZ::RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(drawLinear);
         drawPacketBuilder.AddShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(objectSrg->GetRHIShaderResourceGroup());
 
-        AZ::Data::AssetData::AssetStatus status = texAsset.BlockUntilLoadComplete();
-        if (!m_isTextureValid) {
-            if(status == AZ::Data::AssetData::AssetStatus::Ready ) {
-                m_isTextureValid = true;
-                texture = AZ::RPI::StreamingImage::FindOrCreate(texAsset);
-                objectSrg->SetImage(m_inputTextureImageIndex, texture);
-            }else {
-                AZ_Printf("Blibloard", "Texture not ready\n");
-            }
-        }
-
-        objectSrg->SetBufferView(m_mBuffery, m_cloudVertexBuffer->GetBufferView());
+        // AZ::Data::AssetData::AssetStatus status = texAsset.BlockUntilLoadComplete();
+        // if (!m_isTextureValid) {
+        //     if(status == AZ::Data::AssetData::AssetStatus::Ready ) {
+        //         m_isTextureValid = true;
+        //         texture = AZ::RPI::StreamingImage::FindOrCreate(texAsset);
+        //         objectSrg->SetImage(m_inputTextureImageIndex, texture);
+        //     }else {
+        //         AZ_Printf("Blibloard", "Texture not ready\n");
+        //     }
+        // }
+        
         AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = drawListTag;
         drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();

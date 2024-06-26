@@ -32,13 +32,16 @@ namespace Pointcloud
         AZStd::vector<ShaderParameterUnion> GetConstants() const;
         void PushNewParameters();
 
+        uint32_t m_totalVertices = 3;
+
     private:
 
         //AZ::TransformNotificationBus::Handler overrides ...
         // void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
         AZStd::vector<ShaderParameter> shaderParameters;
         // AZ::Crc32 OnSetPointSize();
-        AZ::Crc32 LoadCloud();
+        AZ::Crc32 ForceUpdate();
+
         float m_pointSize = 1.0f;
         bool m_moveToCentroid {true};
         PointcloudFeatureProcessorInterface *m_featureProcessor = nullptr;
