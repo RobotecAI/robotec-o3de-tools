@@ -173,6 +173,7 @@ namespace Pointcloud {
         if (m_featureProcessor) {
             AZ_Printf("PointcloudEditorComponent", "Setting total vertices to: %d", m_totalVertices);
             m_featureProcessor->ForceUpdate(m_totalVertices);
+            PushNewParameters();
             // m_featureProcessor->SetTransform(GetWorldTM());
             // m_featureProcessor->SetPointSize(m_pointSize);
         }

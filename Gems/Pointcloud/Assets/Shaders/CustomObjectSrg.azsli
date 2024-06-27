@@ -79,21 +79,24 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     float2 m_f2_leafFullWindShapePoint2;
     float2 m_f2_leafFullWindShapePoint3;
 
+    // color params
+    float3 m_f3_baseColor; // Diffuse color, Default float3(1,1,1)
+    float m_f_metallic; // Metallic, Default 0.0
+    float m_f_roughness; // Roughness, Default 0.9
+    float m_f_alpha;    // Alpha, Default 1.0
+    float m_f_diffuseAmbientOcclusion; // Ambient Occlusion, Default 0.3
+    float m_f_specularF0Factor;     // Specular F0 Factor, Default 0.1  
+    float m_f_specularOcclusion;   // Specular Occlusion, Default 0.5
 
-    // float3 m_f3_baseColor = float3(1,1,1);
-    // float m_f_metallic = 0.0f;
-    // float m_f_roughness = 0.9f;
-    // float m_f_alpha = 1.0f;
-    // float m_f_diffuseAmbientOcclusion = 0.3f;
-    // float m_f_specularF0Factor = 0.1f;
-    // float m_f_specularOcclusion = 0.5f;
-    float3 m_f3_baseColor;
-    float m_f_metallic;
-    float m_f_roughness;
-    float m_f_alpha;
-    float m_f_diffuseAmbientOcclusion;
-    float m_f_specularF0Factor;
-    float m_f_specularOcclusion;
+    // wind params
+    float3 m_f3_windDirection;
+    float m_f_windSpeed;
+    float m_f_windStrength;
+    float m_f_windScale;
+    float m_f_windStrengthFrequencyScale;
+    float m_f_windRotationStrengthFrequencyScale;
+    float m_u_windOctaves;
+    float m_f_windPersistence;
 
     float3 GetVertexModelPositionBezier(uint vertexId,float scale)
     {
@@ -212,5 +215,26 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         const float2 pushed_point = getPointAt2d(scaled_z,pointsLerp[0],pointsLerp[1],pointsLerp[2]);
         position.yz = pushed_point.xy;
         normal.yz = getNormalAt2d(scaled_z,pointsLerp[0],pointsLerp[1],pointsLerp[2]);
+    }
+
+    void GenerateWindNoise(inout float3 vertexModelPosition, inout float3 normal, float3 translation, uint billboardIndex, float time) {
+        // Calculate the noise position
+        float3 noisePosition = float3(translation.x, translation.y, 0);
+        noisePosition +=  time * m_f3_windDirection * ObjectSrg::m_f_loopLength * m_f_windSpeed;
+
+        // Calculate the wind strength
+        //float windStrength = PerlinNoiseFbm(noisePosition, m_f_windStrengthFrequencyScale / ObjectSrg::m_f_loopLength, m_u_windOctaves, m_f_windPersistence) + 1;
+        float windStrength = PerlinNoiseFbm(noisePosition, m_f_windStrengthFrequencyScale / ObjectSrg::m_f_loopLength, 2, m_f_windPersistence) + 1;
+
+
+        // Apply the wind noise to the vertex position
+        ObjectSrg::PushByPerlinNoise(vertexModelPosition, normal, billboardIndex, windStrength, m_f_windScale);
+
+        // Calculate the wind rotation
+        float3 noisePositionRotation = float3(noisePosition.x, noisePosition.y, 2);
+        float windRotation = PerlinNoiseFbm(noisePositionRotation, m_f_windRotationStrengthFrequencyScale / ObjectSrg::m_f_loopLength, 2, m_f_windPersistence+1);
+
+        // Apply the wind rotation to the vertex position
+        ObjectSrg::RotateAroundZ2(vertexModelPosition, normal,windRotation *2 * 3.14159);
     }
 }

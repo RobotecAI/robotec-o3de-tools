@@ -27,9 +27,33 @@ namespace Pointcloud {
 
     void PointcloudFeatureProcessor::Activate() {
         AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Activated");
-        const char *shaderFilePath = "shaders/billboard2.azshader";
-        m_shader = AZ::RPI::LoadCriticalShader(shaderFilePath);
         m_startTime = AZStd::chrono::system_clock::now();
+
+        LoadShader();
+
+        auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        AZ_Assert(viewportContextInterface,
+                  "PointcloudFeatureProcessor requires the ViewportContextRequestsInterface.");
+        auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
+        AZ_Assert(viewportContext, "PointcloudFeatureProcessor requires a valid ViewportContext.");
+        m_viewportSize = viewportContext->GetViewportSize();
+
+        EnableSceneNotification();
+
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
+        // texAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::StreamingImageAsset>("assets/untitled1.png.streamingimage");
+        // texAsset.QueueLoad();
+
+
+    }
+
+    void PointcloudFeatureProcessor::LoadShader() {
+        AZ_Printf("PointcloudFeatureProcessor", "Loading Shader");
+        const char *shaderFilePath = "shaders/billboard2.azshader";
+        if(m_shader) {
+            AZ::Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
+        }
+        m_shader = AZ::RPI::LoadCriticalShader(shaderFilePath);
         if (!m_shader) {
             printf("Failed to load required stars shader.\n");
             AZ_Error("PointcloudFeatureProcessor", false, "Failed to load required stars shader.");
@@ -57,33 +81,21 @@ namespace Pointcloud {
 
         auto shaderVariantId =  shaderOptions.GetShaderVariantId();
         printf(" m_shader->GetAsset() %s Lol", m_shader->GetAsset()->GetName().GetCStr());
-        //auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
         auto drawSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("PerDrawSrg"));
         auto objectSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("ObjectSrg"));
         AZ_Error("PointcloudFeatureProcessor", drawSrgLayout,
                  "Failed to get the draw shader resource group layout for the pointcloud shader.");
         auto shader_variant =  m_shader->GetVariant(shaderVariantId);
 
-        printf("DrawSrgLayout %d\n", (bool)drawSrgLayout);
-        printf("ObjectSrgLayout %d\n", (bool)objectSrgLayout);
         if (drawSrgLayout && objectSrgLayout){
-
-            //m_drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(),    drawSrgLayout->GetName());
             m_drawSrg = m_shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
             m_objectSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), objectSrgLayout->GetName());
             m_modelMatrixIndex.Reset();
             printf("Created SRG\n");
             auto input = objectSrgLayout->GetConstantsLayout();
             auto inputs = input->GetShaderInputList();
+            m_shaderParameters.clear();
             for (auto input : inputs) {
-                printf("Input %s\n", input.m_name.GetCStr());
-                //                 ShaderInputConstantDescriptor(
-                // const Name& name,
-                // uint32_t constantByteOffset,
-                // uint32_t constantByteCount,
-                // uint32_t registerId,
-                // uint32_t spaceId);
-                // print all
                 printf("Name: %s, ByteOffset: %d, ByteCount: %d, RegisterId: %d, SpaceId: %d\n", input.m_name.GetCStr(), input.m_constantByteOffset, input.m_constantByteCount, input.m_registerId, input.m_spaceId);
                 auto extractOutcome = ExtractParameterType(input.m_name);
                 if(extractOutcome.IsSuccess()) {
@@ -92,29 +104,12 @@ namespace Pointcloud {
                     AZ_Error("PointcloudFeatureProcessor", false, extractOutcome.GetError().c_str());
                 }
             }
-            //ObjectSrg::m_f_totalHeight
-//            AZ::RHI::ShaderInputNameIndex m_f_totalHeightIndex = "m_f_totalHeight";
-//            m_objectSrg->SetConstant(m_f_totalHeightIndex,5.0f);
         }   else {
             printf("Failed to create SRG\n");
         }
 
-
-        auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        AZ_Assert(viewportContextInterface,
-                  "PointcloudFeatureProcessor requires the ViewportContextRequestsInterface.");
-        auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
-        AZ_Assert(viewportContext, "PointcloudFeatureProcessor requires a valid ViewportContext.");
-        m_viewportSize = viewportContext->GetViewportSize();
-
-        EnableSceneNotification();
-
-        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
-        texAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::StreamingImageAsset>("assets/untitled1.png.streamingimage");
-        texAsset.QueueLoad();
-
-
     }
+
 
     AZStd::vector<float> PointcloudFeatureProcessor::ConvertToBuffer(const AZStd::vector<CloudVertex> &cloudVertexData){
         AZStd::vector<float> random_data(4 * 4 * cloudVertexData.size());
@@ -136,6 +131,7 @@ namespace Pointcloud {
     }
 
     void PointcloudFeatureProcessor::ForceUpdate(uint32_t totalVertices) {
+        LoadShader();
         m_totalVertices = totalVertices;
         // const uint32_t elementCount = static_cast<uint32_t>(cloudVertexData.size());
         // const uint32_t elementSize = sizeof(float);

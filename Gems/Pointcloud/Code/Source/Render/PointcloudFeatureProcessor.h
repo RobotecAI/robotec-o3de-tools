@@ -53,6 +53,9 @@ namespace Pointcloud
 
         // FeatureProcessor overrides
         void Activate() override;
+
+        void LoadShader();
+
         void Deactivate() override;
         void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
         void Render(const FeatureProcessor::RenderPacket& packet) override;
