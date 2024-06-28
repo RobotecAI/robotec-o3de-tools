@@ -73,7 +73,7 @@ namespace SensorDebug
         auto searchFunction = [this](AZ::Entity* entity)
         {
             AZ_Assert(entity, "Entity is null");
-            auto sensorComponent = ROS2::GetSensorsForEntity(entity->GetId());
+            const auto sensorComponent = ROS2::GetSensorsForEntity(entity->GetId());
             AZ_Printf("TestComponent", "Entity  %s has %d sensors", entity->GetName().c_str(), sensorComponent.size());
             m_sensorEntities.insert(m_sensorEntities.end(), sensorComponent.begin(), sensorComponent.end());
 
@@ -197,12 +197,12 @@ namespace SensorDebug
 
             if (ImGui::Button(buttonNameEna.c_str()))
             {
-                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::EnableSensor, true);
+                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::SetSensorEnabled, true);
             }
             ImGui::SameLine();
             if (ImGui::Button(buttonNameDis.c_str()))
             {
-                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::EnableSensor, false);
+                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::SetSensorEnabled, false);
             }
 
             AZStd::string buttonNamePubEna = AZStd::string::format("Enable Publication%s", cookie.c_str());
@@ -210,12 +210,12 @@ namespace SensorDebug
 
             if (ImGui::Button(buttonNamePubEna.c_str()))
             {
-                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::EnablePublishing, true);
+                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::SetPublishingEnabled, true);
             }
             ImGui::SameLine();
             if (ImGui::Button(buttonNamePubDis.c_str()))
             {
-                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::EnablePublishing, false);
+                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::SetPublishingEnabled, false);
             }
 
             AZStd::string buttonNameVisEna = AZStd::string::format("Enable Vis%s", cookie.c_str());
@@ -223,12 +223,12 @@ namespace SensorDebug
 
             if (ImGui::Button(buttonNameVisEna.c_str()))
             {
-                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::EnableVisualize, true);
+                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::SetVisualizeEnabled, true);
             }
             ImGui::SameLine();
             if (ImGui::Button(buttonNameVisDis.c_str()))
             {
-                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::EnableVisualize, false);
+                ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::SetVisualizeEnabled, false);
             }
             AZStd::string freqName = AZStd::string::format("Frequency%s", cookie.c_str());
             ImGui::DragFloat(freqName.c_str(), &m_sensorFrequencies[sensorEntity], 0.1f, 0.1f, 500.0f);
