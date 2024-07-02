@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder SensorDebug/Assets": {
+                    "watch": "@GEMROOT:SensorDebug@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder SensorDebug/Registry": {
+                    "watch": "@GEMROOT:SensorDebug@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}

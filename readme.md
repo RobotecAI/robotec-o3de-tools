@@ -48,3 +48,7 @@ Refer to [readme](Gems/RobotecWatchdogTools/readme.md)
 # LevelModificationTools
 
 TBD
+
+# SensorDebug
+
+A tool that allows to adjust frequency, activate and deactive sensor during game mode.
