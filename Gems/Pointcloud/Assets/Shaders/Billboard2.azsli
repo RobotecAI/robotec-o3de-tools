@@ -43,20 +43,7 @@
 
 
 
-float2 GetVertexTextureCoord(uint vertexId)
-{
-    const float2 texcoord[6] = 
-    { 
-        float2(0, 0), 
-        float2(0, 1),
-        float2(1, 0),
-        float2(1, 0),
-        float2(0, 1),
-        float2(1, 1),      
-    };
-    uint vertexIndex = vertexId % 6;
-    return texcoord[vertexIndex];
-}
+
 
 // ShaderResourceGroup PerDrawSrg : SRG_PerObject
 ShaderResourceGroup PerDrawSrg : SRG_PerDraw
@@ -108,15 +95,16 @@ VSOutput MainVS(VSInput IN)
     const uint billboardIndex = uint(IN.m_vertexID) / uint(ObjectSrg::m_u_vertexCountPerMesh());
     // random value based on billboardId (0-1)
     const float scale = randomFloat(billboardIndex)/2 + 0.8;
+    const float2 totalHeightWidth = ObjectSrg::TotalHeightAndWidthWithJitter(billboardIndex);
     
     float3 translation = ObjectSrg::GetBillboardPosition(billboardIndex);
-    float3 vertexModelPosition = ObjectSrg::GetVertexModelPositionBezier(vertexIndex,scale);
+    float3 vertexModelPosition = ObjectSrg::GetVertexModelPositionBezier(vertexIndex,totalHeightWidth);
     //const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
     //OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(position[IN.m_vertexID%3]* (ObjectSrg::m_f_totalHeight+1), 1.0));
     float3 normal = float3(0,0,1);
 
     // generate wind noise
-    ObjectSrg::GenerateWindNoise(vertexModelPosition, normal, translation, billboardIndex,PerDrawSrg::m_time);
+    ObjectSrg::GenerateWindNoise(vertexModelPosition, normal, translation, billboardIndex,PerDrawSrg::m_time,totalHeightWidth.x);
     // float3 wind_direction = normalize(float3(2,1,0.1));
     // float3 noise_position = float3( translation.x,translation.y,0);
     // noise_position += wind_direction * PerDrawSrg::m_time*ObjectSrg::m_f_loopLength*1;
@@ -136,7 +124,7 @@ VSOutput MainVS(VSInput IN)
     OUT.m_worldPosition = vertexWorldPosition.xyz;
 
     // color based on distance from 0.0
-    float distance = length(vertexModelPosition.xz - float2(0.0, ObjectSrg::m_f_totalHeight*0.8 ))/ObjectSrg::m_f_totalHeight;
+    float distance = length(vertexModelPosition.xz - float2(0.0, totalHeightWidth.x*0.8 ))/totalHeightWidth.x;
     // clamp to 0.0 to 0.2
     distance = max(0.0, min(0.4, distance));
     // green color with saturation based on distance
@@ -150,7 +138,7 @@ VSOutput MainVS(VSInput IN)
     OUT.m_color = color;
     //OUT.m_color = float4(0.3,0.7,0,1);
     //OUT.m_color = float4(distance, distance, distance, 1);
-    OUT.m_texCoord = GetVertexTextureCoord(vertexIndex);
+    OUT.m_texCoord = ObjectSrg::GetVertexTextureCoord(vertexIndex);
 
     
     return OUT;

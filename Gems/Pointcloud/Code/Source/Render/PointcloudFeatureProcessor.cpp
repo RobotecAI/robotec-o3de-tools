@@ -186,7 +186,8 @@ namespace Pointcloud {
                 return ParameterType::Float;
             } else if (parameterName.GetStringView().starts_with("m_u_")) {
                 return ParameterType::uint;
-            }
+            } else if (parameterName.GetStringView().starts_with("m_t2_")) {
+                return
             AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with any of m_f_, m_f2_, m_f3_, or m_u_";
             return AZ::Failure(error);
         }

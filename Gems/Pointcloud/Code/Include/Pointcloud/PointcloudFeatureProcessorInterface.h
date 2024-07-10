@@ -22,7 +22,8 @@ namespace Pointcloud {
         Float,
         Float2,
         Float3,
-        uint
+        uint,
+        Texture2D,
     };
 
     AZ_TYPE_INFO_SPECIALIZE(ParameterType, "{7ebef8a5-b40d-4a9a-8511-162da1dc0211}");
