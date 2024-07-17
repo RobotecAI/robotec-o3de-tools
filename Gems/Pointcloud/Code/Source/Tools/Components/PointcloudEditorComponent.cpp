@@ -75,13 +75,13 @@ namespace Pointcloud
                 if (!m_cloudData.empty())
                 {
                     AZ_Printf("PointcloudEditorComponent", "Setting cloud, size %d", m_cloudData.size());
-                    m_featureProcessor->SetCloud(m_cloudData);
-                    AZ::SystemTickBus::QueueFunction(
-                    [this]()
-                    {
-                        m_featureProcessor->SetTransform(GetWorldTM());
-                        m_featureProcessor->SetPointSize(m_pointSize);
-                    });
+//                    m_featureProcessor->SetCloud(m_cloudData);
+//                    AZ::SystemTickBus::QueueFunction(
+//                    [this]()
+//                    {
+//                        m_featureProcessor->SetTransform(GetWorldTM());
+//                        m_featureProcessor->SetPointSize(m_pointSize);
+//                    });
                 }
             }
         }
@@ -106,82 +106,82 @@ namespace Pointcloud
     {
         if (m_featureProcessor)
         {
-            m_featureProcessor->SetPointSize(m_pointSize);
+//            m_featureProcessor->SetPointSize(0, m_pointSize);
         }
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
     AZ::Crc32 PointcloudEditorComponent::LoadCloud()
     {
-        QString fileName = QFileDialog::getOpenFileName(AzToolsFramework::GetActiveWindow(), "Open PLY File", "", "Ply Files (*.ply)");
-
-        if (fileName.isEmpty())
-        {
-            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", "Please specify file", QMessageBox::Ok);
-            return AZ::Edit::PropertyRefreshLevels::None;
-        }
-
-        happly::PLYData plyIn(fileName.toStdString());
-        auto vertices = plyIn.getVertexPositions();
-
-        std::vector<std::array<unsigned char, 3>> colors;
-        try
-        {
-            colors = plyIn.getVertexColors();
-        } catch (std::exception& e)
-        {
-            AZ_Printf("PointcloudEditorComponent", "No colors in the file");
-        }
-
-        if (m_moveToCentroid)
-        {
-            double centroid[3] = { 0, 0, 0 };
-            for (int i = 0; i < vertices.size(); i++)
-            {
-                centroid[0] += vertices[i][0];
-                centroid[1] += vertices[i][1];
-                centroid[2] += vertices[i][2];
-            }
-            centroid[0] /= vertices.size();
-            centroid[1] /= vertices.size();
-            centroid[2] /= vertices.size();
-            for (int i = 0; i < vertices.size(); i++)
-            {
-                vertices[i][0] -= centroid[0];
-                vertices[i][1] -= centroid[1];
-                vertices[i][2] -= centroid[2];
-            }
-        }
-
-        AZStd::vector<PointcloudFeatureProcessor::CloudVertex> cloudVertexData;
-        for (int i = 0; i < vertices.size(); i++)
-        {
-            PointcloudFeatureProcessor::CloudVertex vertex;
-            vertex.m_position = { static_cast<float>(vertices[i][0]),
-                                  static_cast<float>(vertices[i][1]),
-                                  static_cast<float>(vertices[i][2]) };
-            if (i < colors.size())
-            {
-                unsigned char r = colors[i][0];
-                unsigned char g = colors[i][1];
-                unsigned char b = colors[i][2];
-                AZ::Color m_color{ r, g, b, 255 };
-                vertex.m_color = m_color.ToU32();
-            }
-            cloudVertexData.push_back(vertex);
-        }
-        AZStd::swap(m_cloudData, cloudVertexData);
-        if (m_featureProcessor)
-        {
-            AZ_Printf("PointcloudEditorComponent", "Setting cloud, size %d", m_cloudData.size());
-            m_featureProcessor->SetCloud(m_cloudData);
-            AZ::SystemTickBus::QueueFunction(
-            [this]()
-            {
-                m_featureProcessor->SetTransform(GetWorldTM());
-                m_featureProcessor->SetPointSize(m_pointSize);
-            });
-        }
+//        QString fileName = QFileDialog::getOpenFileName(AzToolsFramework::GetActiveWindow(), "Open PLY File", "", "Ply Files (*.ply)");
+//
+//        if (fileName.isEmpty())
+//        {
+//            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", "Please specify file", QMessageBox::Ok);
+//            return AZ::Edit::PropertyRefreshLevels::None;
+//        }
+//
+//        happly::PLYData plyIn(fileName.toStdString());
+//        auto vertices = plyIn.getVertexPositions();
+//
+//        std::vector<std::array<unsigned char, 3>> colors;
+//        try
+//        {
+//            colors = plyIn.getVertexColors();
+//        } catch (std::exception& e)
+//        {
+//            AZ_Printf("PointcloudEditorComponent", "No colors in the file");
+//        }
+//
+//        if (m_moveToCentroid)
+//        {
+//            double centroid[3] = { 0, 0, 0 };
+//            for (int i = 0; i < vertices.size(); i++)
+//            {
+//                centroid[0] += vertices[i][0];
+//                centroid[1] += vertices[i][1];
+//                centroid[2] += vertices[i][2];
+//            }
+//            centroid[0] /= vertices.size();
+//            centroid[1] /= vertices.size();
+//            centroid[2] /= vertices.size();
+//            for (int i = 0; i < vertices.size(); i++)
+//            {
+//                vertices[i][0] -= centroid[0];
+//                vertices[i][1] -= centroid[1];
+//                vertices[i][2] -= centroid[2];
+//            }
+//        }
+//
+//        AZStd::vector<PointcloudAsset::CloudVertex> cloudVertexData;
+//        for (int i = 0; i < vertices.size(); i++)
+//        {
+//            PointcloudAsset::CloudVertex vertex;
+//            vertex.m_position = { static_cast<float>(vertices[i][0]),
+//                                  static_cast<float>(vertices[i][1]),
+//                                  static_cast<float>(vertices[i][2]) };
+//            if (i < colors.size())
+//            {
+//                unsigned char r = colors[i][0];
+//                unsigned char g = colors[i][1];
+//                unsigned char b = colors[i][2];
+//                AZ::Color m_color{ r, g, b, 255 };
+//                vertex.m_color = m_color.ToU32();
+//            }
+//            cloudVertexData.push_back(vertex);
+//        }
+//        AZStd::swap(m_cloudData, cloudVertexData);
+//        if (m_featureProcessor)
+//        {
+//            AZ_Printf("PointcloudEditorComponent", "Setting cloud, size %d", m_cloudData.size());
+//            m_featureProcessor->SetCloud(m_cloudData);
+//            AZ::SystemTickBus::QueueFunction(
+//            [this]()
+//            {
+//                m_featureProcessor->SetTransform(GetWorldTM());
+//                m_featureProcessor->SetPointSize(m_pointSize);
+//            });
+//        }
 
         return AZ::Edit::PropertyRefreshLevels::None;
     }
@@ -190,7 +190,7 @@ namespace Pointcloud
     {
         if (m_featureProcessor)
         {
-            m_featureProcessor->SetTransform(world);
+            //m_featureProcessor->SetTransform(world);
         }
     }
 } // namespace Pointcloud

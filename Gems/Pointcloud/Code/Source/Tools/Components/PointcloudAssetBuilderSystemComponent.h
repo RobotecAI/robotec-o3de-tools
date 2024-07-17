@@ -3,7 +3,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <Clients/PointcloudAsset.h>
+#include <Pointcloud/PointcloudAsset.h>
 namespace AZ
 {
    class ReflectContext;
@@ -40,6 +40,6 @@ namespace Pointcloud
        AZStd::unique_ptr<PointcloudBuilder> m_pointcloudBuilder;
 
    private:
-       PointcloudAssetHandler* m_pointcloudAssetHandler;
+//       PointcloudAssetHandler* m_pointcloudAssetHandler;
    };
 } // namespace AiSceneGeneration

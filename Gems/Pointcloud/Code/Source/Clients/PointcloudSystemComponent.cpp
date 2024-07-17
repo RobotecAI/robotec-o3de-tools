@@ -74,8 +74,8 @@ namespace Pointcloud
 
     void PointcloudSystemComponent::Activate()
     {
-//        m_pointcloudAssetHandler = aznew PointcloudAssetHandler();
-//        m_pointcloudAssetHandler->Register();
+        m_pointcloudAssetHandler = aznew PointcloudAssetHandler();
+        m_pointcloudAssetHandler->Register();
         PointcloudRequestBus::Handler::BusConnect();
 
 
@@ -83,8 +83,8 @@ namespace Pointcloud
 
     void PointcloudSystemComponent::Deactivate()
     {
-//        m_pointcloudAssetHandler->Unregister();
-//        delete m_pointcloudAssetHandler;
+        m_pointcloudAssetHandler->Unregister();
+        delete m_pointcloudAssetHandler;
         PointcloudRequestBus::Handler::BusDisconnect();
     }
 

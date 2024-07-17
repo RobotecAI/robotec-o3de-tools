@@ -43,15 +43,15 @@ namespace Pointcloud
 
     void PointcloudAssetBuilderSystemComponent::Activate()
     {
-        m_pointcloudAssetHandler = aznew PointcloudAssetHandler();
-        m_pointcloudAssetHandler->Register();
+//        m_pointcloudAssetHandler = aznew PointcloudAssetHandler();
+//        m_pointcloudAssetHandler->Register();
         m_pointcloudBuilder = AZStd::make_unique<PointcloudBuilder>();
     }
 
     void PointcloudAssetBuilderSystemComponent::Deactivate()
     {
-        m_pointcloudAssetHandler->Unregister();
-        delete m_pointcloudAssetHandler;
+//        m_pointcloudAssetHandler->Unregister();
+//        delete m_pointcloudAssetHandler;
         m_pointcloudBuilder.reset();
     }
 

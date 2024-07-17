@@ -10,7 +10,7 @@
 #include <PointcloudModuleInterface.h>
 #include "PointcloudEditorSystemComponent.h"
 #include "Components/PointcloudEditorComponent.h"
-
+#include "Tools/Components/PointcloudAssetBuilderSystemComponent.h"
 namespace Pointcloud
 {
     class PointcloudEditorModule
@@ -29,6 +29,7 @@ namespace Pointcloud
             m_descriptors.insert(m_descriptors.end(), {
                 PointcloudEditorSystemComponent::CreateDescriptor(),
                 PointcloudEditorComponent::CreateDescriptor(),
+                PointcloudAssetBuilderSystemComponent::CreateDescriptor()
             });
         }
 

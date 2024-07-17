@@ -13,6 +13,7 @@
 
 #include "Tools/Components/PointcloudAssetBuilderSystemComponent.h"
 #include <Clients/PointcloudSystemComponent.h>
+#include <Clients/PointcloudComponent.h>
 namespace Pointcloud
 {
     AZ_TYPE_INFO_WITH_NAME_IMPL(PointcloudModuleInterface, "PointcloudModuleInterface", PointcloudModuleInterfaceTypeId);
@@ -29,7 +30,7 @@ namespace Pointcloud
             m_descriptors.end(),
             {
                 PointcloudSystemComponent::CreateDescriptor(),
-                PointcloudAssetBuilderSystemComponent::CreateDescriptor(),
+                PointcloudComponent::CreateDescriptor(),
             });
     }
 

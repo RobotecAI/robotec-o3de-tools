@@ -6,7 +6,7 @@
 *
 */
 
-#include "PointcloudAsset.h"
+#include <Pointcloud/PointcloudAsset.h>
 
 namespace Pointcloud
 {

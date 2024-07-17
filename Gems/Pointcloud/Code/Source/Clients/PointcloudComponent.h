@@ -6,9 +6,8 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
+#include <Pointcloud/PointcloudAsset.h>
 namespace Pointcloud
 {
 
@@ -17,12 +16,11 @@ namespace Pointcloud
         , private AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(PointcloudComponent, "{018fba15-560f-78cb-afb4-cf4d00cefc17}");
+        AZ_COMPONENT(PointcloudComponent, "{0190c091-83aa-7c6e-a6da-5efea1f23473}");
         PointcloudComponent() = default;
         ~PointcloudComponent() = default;
 
         static void Reflect(AZ::ReflectContext* context);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         // Component interface overrides ...
         void Activate() override;
@@ -31,6 +29,12 @@ namespace Pointcloud
     private:
         // AZ::TransformNotificationBus::Handler overrides ...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
+
+        float m_pointSize = 1.0f;
+        AZ::Data::Asset<PointcloudAsset> m_pointcloudAsset;
+        PointcloudFeatureProcessorInterface *m_featureProcessor = nullptr;
+        AZ::RPI::Scene *m_scene = nullptr;
+        PointcloudHandle m_pointcloudHandle = InvalidPointcloudHandle;
 
 //        AZ::Crc32 OnSetPointSize();
 //        AZ::Crc32 LoadCloud();

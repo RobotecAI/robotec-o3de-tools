@@ -15,7 +15,7 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
-#include <Clients/PointcloudAsset.h>
+#include <Pointcloud//PointcloudAsset.h>
 namespace Pointcloud
 {
 
