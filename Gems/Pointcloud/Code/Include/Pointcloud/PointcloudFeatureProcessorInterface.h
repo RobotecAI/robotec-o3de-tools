@@ -23,6 +23,7 @@ namespace Pointcloud
         : public AZ::RPI::FeatureProcessor
     {
     public:
+
         AZ_RTTI(PointcloudFeatureProcessorInterface, "{8597AF27-EB4E-4363-8889-3BFC2AF5D2EC}", AZ::RPI::FeatureProcessor);
         struct CloudVertex
         {
@@ -30,6 +31,7 @@ namespace Pointcloud
             //AZStd::array<float, 3> m_normal;
             uint32_t m_color;
         };
+
 
         virtual void SetTransform(const AZ::Transform &transform)= 0;
         virtual void SetPointSize(float pointSize)= 0;

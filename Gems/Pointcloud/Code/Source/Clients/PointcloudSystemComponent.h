@@ -11,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <Pointcloud/PointcloudBus.h>
-
+#include <Clients/PointcloudAsset.h>
 namespace Pointcloud
 {
     class PointcloudSystemComponent
@@ -43,7 +43,8 @@ namespace Pointcloud
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
-
+    private:
+//        PointcloudAssetHandler* m_pointcloudAssetHandler;
     };
 
 } // namespace Pointcloud

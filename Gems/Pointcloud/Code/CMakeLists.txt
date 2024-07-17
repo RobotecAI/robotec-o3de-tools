@@ -138,6 +138,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_Utils.Static
                 Gem::Atom_Feature_Common.Static
                 Gem::AtomLyIntegration_CommonFeatures.Static
+            PRIVATE
+                AZ::AssetBuilderSDK
     )
 
     ly_add_target(

@@ -9,6 +9,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
 #include <AzFramework/Scene/Scene.h>
+#include <Pointcloud/PointcloudFeatureProcessorInterface.h>
 namespace Pointcloud
 {
 
@@ -39,5 +40,6 @@ namespace Pointcloud
         bool m_moveToCentroid {true};
         PointcloudFeatureProcessorInterface *m_featureProcessor = nullptr;
         AZ::RPI::Scene *m_scene = nullptr;
+        AZStd::vector<PointcloudFeatureProcessorInterface::CloudVertex> m_cloudData;
     };
 } // namespace Pointcloud
