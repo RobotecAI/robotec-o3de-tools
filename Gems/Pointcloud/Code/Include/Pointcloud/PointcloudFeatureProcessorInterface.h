@@ -17,23 +17,20 @@ namespace Pointcloud
 {
    class Pointcloud;
 
-   using PointcloudHandle = AZStd::shared_ptr<Pointcloud>;
-
    // PointcloudFeatureProcessorInterface provides an interface to the feature processor for code outside of Atom
    class PointcloudFeatureProcessorInterface
        : public AZ::RPI::FeatureProcessor
    {
    public:
+       using PointcloudHandle = int;
+       constexpr static PointcloudHandle InvalidPointcloudHandle = -1;
        AZ_RTTI(PointcloudFeatureProcessorInterface, "{8597AF27-EB4E-4363-8889-3BFC2AF5D2EC}", AZ::RPI::FeatureProcessor);
-//       struct CloudVertex
-//       {
-//           AZStd::array<float, 3> m_position;
-//           uint32_t m_color;
-//       };
 
-       virtual void SetTransform(const AZ::Transform &transform)= 0;
-       virtual void SetPointSize(float pointSize)= 0;
-       virtual void SetCloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData)= 0;
+       virtual void SetTransform(const PointcloudHandle& handle, const AZ::Transform &transform)= 0;
+       virtual void SetPointSize(const PointcloudHandle& handle, float pointSize)= 0;
+       virtual PointcloudHandle AquirePointcloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData)= 0;
+       virtual void SetVisibility(const PointcloudHandle& handle, bool visible)= 0;
+       virtual void ReleasePointcloud(const PointcloudHandle& handle)= 0;
 
    };
 }

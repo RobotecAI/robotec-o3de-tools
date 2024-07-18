@@ -80,23 +80,24 @@ namespace Pointcloud
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
         happly::PLYData plyIn(request.m_fullPath.c_str());
         auto vertices = plyIn.getVertexPositions();
+        auto colors = plyIn.getVertexColors();
         const auto elementNames = plyIn.getElementNames();
-
-        AZ_Printf("PointcloudBuilder", "Opened pointcloud, elements in PLY: ");
-        for (const auto& elementName : elementNames)
-        {
-            AZ_Printf("PointcloudBuilder", "  -> Element: %s", elementName.c_str());
-        }
-        AZ_Printf("PointcloudBuilder", " Number of vertices: %d", vertices.size());
 
         AZ::Data::Asset<PointcloudAsset> pointcloudAsset;
         pointcloudAsset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
         pointcloudAsset->m_data.reserve(vertices.size());
-        for (const auto& vertex : vertices)
+        for (int i= 0; i < vertices.size(); i++)
         {
+            const auto& vertex = vertices[i];
+            AZ::Color color = AZ::Colors::GreenYellow;
+            if (i < colors.size())
+            {
+                const auto& colorData = colors[i];
+                color = AZ::Color(static_cast<float>(colorData[0]) / 255.0f, static_cast<float>(colorData[1]) / 255.0f, static_cast<float>(colorData[2]) / 255.0f, 1.0f);
+            }
             PointcloudAsset::CloudVertex cloudVertex;
             cloudVertex.m_position = { static_cast<float>(vertex[0]), static_cast<float>(vertex[1]), static_cast<float>(vertex[2]) };
-            AZ::Color color = AZ::Colors::GreenYellow;
+
             cloudVertex.m_color = color.ToU32();
             pointcloudAsset->m_data.push_back(cloudVertex);
         }

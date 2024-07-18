@@ -35,14 +35,7 @@ namespace Pointcloud
         AZ::Data::Asset<PointcloudAsset> m_pointcloudAsset;
         PointcloudFeatureProcessorInterface *m_featureProcessor = nullptr;
         AZ::RPI::Scene *m_scene = nullptr;
-//        PointcloudHandle m_pointcloudHandle = InvalidPointcloudHandle;
+        PointcloudFeatureProcessorInterface::PointcloudHandle m_pointcloudHandle = PointcloudFeatureProcessorInterface::InvalidPointcloudHandle;
 
-//        AZ::Crc32 OnSetPointSize();
-//        AZ::Crc32 LoadCloud();
-//        float m_pointSize = 1.0f;
-//        bool m_moveToCentroid{ true };
-//        PointcloudFeatureProcessorInterface* m_featureProcessor = nullptr;
-//        AZ::RPI::Scene* m_scene = nullptr;
-//        AZStd::vector<PointcloudFeatureProcessorInterface::CloudVertex> m_cloudData;
     };
 } // namespace Pointcloud

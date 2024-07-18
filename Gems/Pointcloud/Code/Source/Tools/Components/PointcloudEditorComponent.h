@@ -34,10 +34,14 @@ namespace Pointcloud
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         AZ::Crc32 OnSetPointSize();
+        AZ::Crc32 OnVisibility();
+
         AZ::Crc32 LoadCloud();
         float m_pointSize = 1.0f;
-        bool m_moveToCentroid {true};
+        bool m_visible = true;
         PointcloudFeatureProcessorInterface *m_featureProcessor = nullptr;
         AZ::RPI::Scene *m_scene = nullptr;
+        PointcloudFeatureProcessorInterface::PointcloudHandle m_pointcloudHandle = PointcloudFeatureProcessorInterface::InvalidPointcloudHandle;
+        AZ::Data::Asset<PointcloudAsset> m_pointcloudAsset;
     };
 } // namespace Pointcloud
