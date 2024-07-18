@@ -14,7 +14,6 @@ set(FILES
     Source/Render/PointcloudFeatureProcessor.h
     Source/Render/PointcloudFeatureProcessor.cpp
     Source/Clients/PointcloudAsset.cpp
-    Source/Clients/PointcloudAsset.h
     Source/Clients/PointcloudComponent.cpp
     Source/Clients/PointcloudComponent.h
 )

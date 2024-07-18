@@ -7,4 +7,5 @@
 #
 
 set(FILES
+        Include/Pointcloud/PointcloudAsset.h
 )

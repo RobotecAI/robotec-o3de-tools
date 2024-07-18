@@ -20,7 +20,6 @@ namespace Pointcloud
         struct CloudVertex
         {
             AZStd::array<float, 3> m_position;
-            AZStd::array<float, 3> m_normal;
             uint32_t m_color;
         };
         static constexpr inline const char* DisplayName = "PointcloudAsset";

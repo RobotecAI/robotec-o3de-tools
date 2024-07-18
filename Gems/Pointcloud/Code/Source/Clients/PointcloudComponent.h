@@ -8,6 +8,7 @@
 #include <AzFramework/Scene/Scene.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
 #include <Pointcloud/PointcloudAsset.h>
+#include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 namespace Pointcloud
 {
 
@@ -34,7 +35,7 @@ namespace Pointcloud
         AZ::Data::Asset<PointcloudAsset> m_pointcloudAsset;
         PointcloudFeatureProcessorInterface *m_featureProcessor = nullptr;
         AZ::RPI::Scene *m_scene = nullptr;
-        PointcloudHandle m_pointcloudHandle = InvalidPointcloudHandle;
+//        PointcloudHandle m_pointcloudHandle = InvalidPointcloudHandle;
 
 //        AZ::Crc32 OnSetPointSize();
 //        AZ::Crc32 LoadCloud();

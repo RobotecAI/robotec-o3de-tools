@@ -40,6 +40,6 @@ namespace Pointcloud
        AZStd::unique_ptr<PointcloudBuilder> m_pointcloudBuilder;
 
    private:
-//       PointcloudAssetHandler* m_pointcloudAssetHandler;
+       PointcloudAssetHandler* m_pointcloudAssetHandler;
    };
 } // namespace AiSceneGeneration

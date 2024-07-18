@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Pointcloud/PointcloudTypeIds.h>
 #include <Render/PointcloudFeatureProcessor.h>
+#include <3rd/happly.h>
 namespace Pointcloud
 {
 
@@ -61,7 +62,64 @@ namespace Pointcloud
                     AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
                     m_pointcloudAsset.QueueLoad();
                     m_pointcloudAsset.BlockUntilLoadComplete();
-                    m_featureProcessor->AquirePointcloud(m_pointcloudAsset);
+                    m_featureProcessor->SetCloud(m_pointcloudAsset->m_data);
+                    m_featureProcessor->SetTransform(AZ::Transform::Identity());
+                    m_featureProcessor->SetPointSize(m_pointSize);
+
+//                    happly::PLYData plyIn("/home/michalpelka/github/KubotaAgricultureSimulator/project/Assets/cloud.ply");
+//                    auto vertices = plyIn.getVertexPositions();
+//
+//                    std::vector<std::array<unsigned char, 3>> colors;
+//                    try {
+//                        colors = plyIn.getVertexColors();
+//                    } catch (std::exception &e) {
+//                        AZ_Printf("PointcloudEditorComponent", "No colors in the file");
+//                    }
+//
+//                    if (true) {
+//                        double centroid[3] = {0, 0, 0};
+//                        for (int i = 0; i < vertices.size(); i++) {
+//                            centroid[0] += vertices[i][0];
+//                            centroid[1] += vertices[i][1];
+//                            centroid[2] += vertices[i][2];
+//                        }
+//                        centroid[0] /= vertices.size();
+//                        centroid[1] /= vertices.size();
+//                        centroid[2] /= vertices.size();
+//                        for (int i = 0; i < vertices.size(); i++) {
+//                            vertices[i][0] -= centroid[0];
+//                            vertices[i][1] -= centroid[1];
+//                            vertices[i][2] -= centroid[2];
+//                        }
+//
+//                    }
+//
+//                    AZStd::vector<PointcloudAsset::CloudVertex> cloudVertexData;
+//                    for (int i = 0; i < vertices.size(); i++) {
+//                        PointcloudAsset::CloudVertex vertex;
+//                        vertex.m_position = {static_cast<float>(vertices[i][0]),
+//                                              static_cast<float>(vertices[i][1]),
+//                                              static_cast<float>(vertices[i][2])};
+//                        if (i < colors.size()) {
+//                            unsigned char r = colors[i][0];
+//                            unsigned char g = colors[i][1];
+//                            unsigned char b = colors[i][2];
+//                            AZ::Color m_color {r, g, b, 255};
+//                            vertex.m_color = m_color.ToU32();
+//
+//                        }
+//                        cloudVertexData.push_back(vertex);
+//                    }
+//                    if (m_featureProcessor) {
+//                        AZ_Printf("PointcloudEditorComponent", "Setting cloud, size %d", cloudVertexData.size());
+//                        m_featureProcessor->SetCloud(cloudVertexData);
+//                        m_featureProcessor->SetTransform(AZ::Transform::Identity());
+//                        m_featureProcessor->SetPointSize(m_pointSize);
+//                    }
+//
+
+
+//                    m_featureProcessor->AquirePointcloud(m_pointcloudAsset);
                 }
             });
     }

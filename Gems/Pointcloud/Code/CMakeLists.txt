@@ -47,6 +47,8 @@ ly_add_target(
 ly_add_target(
     NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
+    PLATFORM_INCLUDE_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/Platform/Common/${PAL_TRAIT_COMPILER_ID}/pointcloud_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     FILES_CMAKE
         pointcloud_private_files.cmake
     TARGET_PROPERTIES
@@ -69,6 +71,8 @@ ly_add_target(
 ly_add_target(
     NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
+    PLATFORM_INCLUDE_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/Platform/Common/${PAL_TRAIT_COMPILER_ID}/pointcloud_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     FILES_CMAKE
         pointcloud_shared_files.cmake
     INCLUDE_DIRECTORIES

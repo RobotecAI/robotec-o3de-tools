@@ -16,6 +16,7 @@
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
 #include <Pointcloud//PointcloudAsset.h>
+#include <AzCore/Math/Color.h>
 namespace Pointcloud
 {
 
@@ -95,8 +96,8 @@ namespace Pointcloud
         {
             PointcloudAsset::CloudVertex cloudVertex;
             cloudVertex.m_position = { static_cast<float>(vertex[0]), static_cast<float>(vertex[1]), static_cast<float>(vertex[2]) };
-            cloudVertex.m_normal = { 0.0f, 0.0f, 0.0f };
-            cloudVertex.m_color = 0xFFFFFFFF;
+            AZ::Color color = AZ::Colors::GreenYellow;
+            cloudVertex.m_color = color.ToU32();
             pointcloudAsset->m_data.push_back(cloudVertex);
         }
 
