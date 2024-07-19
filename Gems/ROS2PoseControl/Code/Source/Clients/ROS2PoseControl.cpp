@@ -43,6 +43,7 @@ namespace ROS2PoseControl
     void ROS2PoseControl::Activate()
     {
         auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        AZ_Assert(ros2Node, "ROS2PoseControl requires a valid ROS2 node.")
         m_tf_buffer = std::make_unique<tf2_ros::Buffer>(ros2Node->get_clock());
         m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
@@ -90,7 +91,7 @@ namespace ROS2PoseControl
         }
     }
 
-    AZ::Outcome<AZ::Transform, const char*> ROS2PoseControl::GetCurrentTransformViaTF2(
+    AZ::Outcome<AZ::Transform, AZStd::string> ROS2PoseControl::GetCurrentTransformViaTF2(
         const AZStd::string& targetFrame,
         const AZStd::string& sourceFrame)
     {
@@ -142,7 +143,7 @@ namespace ROS2PoseControl
     {
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
         {
-            const AZ::Outcome<AZ::Transform, const char*> transform_outcome = GetCurrentTransformViaTF2(m_configuration.m_referenceFrame,m_configuration.m_targetFrame);
+            const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome = GetCurrentTransformViaTF2(m_configuration.m_referenceFrame,m_configuration.m_targetFrame);
             if (!transform_outcome.IsSuccess())
             {
                 return;
@@ -187,7 +188,7 @@ namespace ROS2PoseControl
                 else
                 {
                     AZStd::string headerFrameId(msg->header.frame_id.c_str());
-                    const AZ::Outcome<AZ::Transform, const char*> transform_outcome = GetCurrentTransformViaTF2(
+                    const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome = GetCurrentTransformViaTF2(
                         m_configuration.m_referenceFrame,
                         headerFrameId);
                     if (transform_outcome.IsSuccess())
