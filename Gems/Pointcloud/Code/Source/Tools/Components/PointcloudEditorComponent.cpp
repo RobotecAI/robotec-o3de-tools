@@ -150,9 +150,11 @@ namespace Pointcloud {
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    void PointcloudEditorComponent::OnTransformChanged(const AZ::Transform &local, const AZ::Transform &world) {
-        if (m_featureProcessor) {
-            m_featureProcessor->SetTransform(world);
+    void PointcloudEditorComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
+    {
+        if (m_featureProcessor)
+        {
+            m_featureProcessor->SetTransform(m_pointcloudHandle, world);
         }
     }
 }
