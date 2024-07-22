@@ -43,7 +43,7 @@ namespace ROS2PoseControl
     void ROS2PoseControl::Activate()
     {
         auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
-        AZ_Assert(ros2Node, "ROS2PoseControl requires a valid ROS2 node.")
+        AZ_Assert(ros2Node, "ROS2PoseControl requires a valid ROS 2 node.")
         m_tf_buffer = std::make_unique<tf2_ros::Buffer>(ros2Node->get_clock());
         m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
