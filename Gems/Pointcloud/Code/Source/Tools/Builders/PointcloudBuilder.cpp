@@ -14,9 +14,9 @@
 #include "3rd/happly.h"
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
-#include <Pointcloud/PointcloudFeatureProcessorInterface.h>
-#include <Pointcloud//PointcloudAsset.h>
 #include <AzCore/Math/Color.h>
+#include <Pointcloud/PointcloudAsset.h>
+#include <Pointcloud/PointcloudFeatureProcessorInterface.h>
 namespace Pointcloud
 {
 
@@ -28,8 +28,11 @@ namespace Pointcloud
         prefabInfoAssetBuilderDescriptor.m_name = PointcloudBuilderJobKey;
         prefabInfoAssetBuilderDescriptor.m_version = 1;
         prefabInfoAssetBuilderDescriptor.m_busId = azrtti_typeid<PointcloudBuilder>();
-        prefabInfoAssetBuilderDescriptor.m_analysisFingerprint =
-            AZStd::string::format("%u,%lu,%lu", PointcloudAsset::PointcloudMagicNumber, sizeof (PointcloudAsset::CloudHeader),sizeof(PointcloudAsset::CloudVertex));
+        prefabInfoAssetBuilderDescriptor.m_analysisFingerprint = AZStd::string::format(
+            "%u,%lu,%lu",
+            PointcloudAsset::PointcloudMagicNumber,
+            sizeof(PointcloudAsset::CloudHeader),
+            sizeof(PointcloudAsset::CloudVertex));
         prefabInfoAssetBuilderDescriptor.m_patterns.push_back(
             AssetBuilderSDK::AssetBuilderPattern("*.ply", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
 
@@ -86,14 +89,18 @@ namespace Pointcloud
         AZ::Data::Asset<PointcloudAsset> pointcloudAsset;
         pointcloudAsset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
         pointcloudAsset->m_data.reserve(vertices.size());
-        for (int i= 0; i < vertices.size(); i++)
+        for (int i = 0; i < vertices.size(); i++)
         {
             const auto& vertex = vertices[i];
             AZ::Color color = AZ::Colors::GreenYellow;
             if (i < colors.size())
             {
                 const auto& colorData = colors[i];
-                color = AZ::Color(static_cast<float>(colorData[0]) / 255.0f, static_cast<float>(colorData[1]) / 255.0f, static_cast<float>(colorData[2]) / 255.0f, 1.0f);
+                color = AZ::Color(
+                    static_cast<float>(colorData[0]) / 255.0f,
+                    static_cast<float>(colorData[1]) / 255.0f,
+                    static_cast<float>(colorData[2]) / 255.0f,
+                    1.0f);
             }
             PointcloudAsset::CloudVertex cloudVertex;
             cloudVertex.m_position = { static_cast<float>(vertex[0]), static_cast<float>(vertex[1]), static_cast<float>(vertex[2]) };
@@ -101,7 +108,6 @@ namespace Pointcloud
             cloudVertex.m_color = color.ToU32();
             pointcloudAsset->m_data.push_back(cloudVertex);
         }
-
 
         if (auto assetHandler = AZ::Data::AssetManager::Instance().GetHandler(azrtti_typeid<PointcloudAsset>()))
         {
@@ -112,8 +118,7 @@ namespace Pointcloud
             if (!outStream.IsOpen())
             {
                 AZ_TracePrintf(
-                    AssetBuilderSDK::ErrorWindow, "Error: Failed job %s because file cannot be created.\n",
-                    request.m_fullPath.c_str());
+                    AssetBuilderSDK::ErrorWindow, "Error: Failed job %s because file cannot be created.\n", request.m_fullPath.c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
@@ -132,8 +137,7 @@ namespace Pointcloud
             }
             else
             {
-                AZ_Error("PrefabInfoAssetBuilder", false, "The asset could not be saved to file: %s",
-                tempAssetOutputPath.c_str());
+                AZ_Error("PrefabInfoAssetBuilder", false, "The asset could not be saved to file: %s", tempAssetOutputPath.c_str());
             }
         }
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;

@@ -18,16 +18,13 @@
 
 namespace Pointcloud
 {
-    AZ_COMPONENT_IMPL(PointcloudSystemComponent, "PointcloudSystemComponent",
-        PointcloudSystemComponentTypeId);
+    AZ_COMPONENT_IMPL(PointcloudSystemComponent, "PointcloudSystemComponent", PointcloudSystemComponentTypeId);
 
     void PointcloudSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<PointcloudSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+            serializeContext->Class<PointcloudSystemComponent, AZ::Component>()->Version(0);
         }
 
         PointcloudFeatureProcessor::Reflect(context);
@@ -77,8 +74,6 @@ namespace Pointcloud
         m_pointcloudAssetHandler = aznew PointcloudAssetHandler();
         m_pointcloudAssetHandler->Register();
         PointcloudRequestBus::Handler::BusConnect();
-
-
     }
 
     void PointcloudSystemComponent::Deactivate()

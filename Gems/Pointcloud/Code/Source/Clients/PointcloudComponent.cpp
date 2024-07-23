@@ -16,8 +16,7 @@
 namespace Pointcloud
 {
 
-    PointcloudComponent::PointcloudComponent(
-        const AZ::Data::Asset<PointcloudAsset>& pointcloudAsset, const float pointSize)
+    PointcloudComponent::PointcloudComponent(const AZ::Data::Asset<PointcloudAsset>& pointcloudAsset, const float pointSize)
         : m_pointcloudAsset(pointcloudAsset)
         , m_pointSize(pointSize)
     {

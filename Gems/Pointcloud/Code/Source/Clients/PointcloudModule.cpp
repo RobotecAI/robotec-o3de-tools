@@ -6,17 +6,15 @@
  *
  */
 
+#include "PointcloudSystemComponent.h"
 #include <Pointcloud/PointcloudTypeIds.h>
 #include <PointcloudModuleInterface.h>
-#include "PointcloudSystemComponent.h"
 
 #include <AzCore/RTTI/RTTI.h>
 
-
 namespace Pointcloud
 {
-    class PointcloudModule
-        : public PointcloudModuleInterface
+    class PointcloudModule : public PointcloudModuleInterface
     {
     public:
         AZ_RTTI(PointcloudModule, PointcloudModuleTypeId, PointcloudModuleInterface);
@@ -24,7 +22,8 @@ namespace Pointcloud
 
         PointcloudModule()
         {
-            m_descriptors.insert(m_descriptors.end(),
+            m_descriptors.insert(
+                m_descriptors.end(),
                 {
                     PointcloudSystemComponent::CreateDescriptor(),
                 });
@@ -35,6 +34,6 @@ namespace Pointcloud
             return AZ::ComponentTypeList{ azrtti_typeid<PointcloudSystemComponent>() };
         }
     };
-}// namespace Pointcloud
+} // namespace Pointcloud
 
 AZ_DECLARE_MODULE_CLASS(Gem_Pointcloud, Pointcloud::PointcloudModule)

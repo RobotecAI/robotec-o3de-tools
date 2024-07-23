@@ -12,8 +12,8 @@
 #include <Pointcloud/PointcloudTypeIds.h>
 
 #include "Tools/Components/PointcloudAssetBuilderSystemComponent.h"
-#include <Clients/PointcloudSystemComponent.h>
 #include <Clients/PointcloudComponent.h>
+#include <Clients/PointcloudSystemComponent.h>
 namespace Pointcloud
 {
     AZ_TYPE_INFO_WITH_NAME_IMPL(PointcloudModuleInterface, "PointcloudModuleInterface", PointcloudModuleInterfaceTypeId);

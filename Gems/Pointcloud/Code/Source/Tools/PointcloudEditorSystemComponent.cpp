@@ -6,22 +6,21 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include "PointcloudEditorSystemComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <Pointcloud/PointcloudTypeIds.h>
 
 namespace Pointcloud
 {
-    AZ_COMPONENT_IMPL(PointcloudEditorSystemComponent, "PointcloudEditorSystemComponent",
-        PointcloudEditorSystemComponentTypeId, BaseSystemComponent);
+    AZ_COMPONENT_IMPL(
+        PointcloudEditorSystemComponent, "PointcloudEditorSystemComponent", PointcloudEditorSystemComponentTypeId, BaseSystemComponent);
 
     void PointcloudEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<PointcloudEditorSystemComponent, PointcloudSystemComponent>()
-                ->Version(0);
+            serializeContext->Class<PointcloudEditorSystemComponent, PointcloudSystemComponent>()->Version(0);
         }
     }
 

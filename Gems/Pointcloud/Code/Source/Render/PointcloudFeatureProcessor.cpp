@@ -80,7 +80,8 @@ namespace Pointcloud
         AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
     }
 
-    PointcloudFeatureProcessorInterface::PointcloudHandle PointcloudFeatureProcessor::AcquirePointcloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData)
+    PointcloudFeatureProcessorInterface::PointcloudHandle PointcloudFeatureProcessor::AcquirePointcloud(
+        const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData)
     {
         m_currentPointcloudDataIndex++;
         auto& pcData = m_pointcloudData[m_currentPointcloudDataIndex];
@@ -142,9 +143,7 @@ namespace Pointcloud
 
     void PointcloudFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
     {
-
         UpdateShaderConstants();
-
     }
 
     void PointcloudFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket& packet)
@@ -314,6 +313,5 @@ namespace Pointcloud
             m_pointcloudData.erase(it);
         }
     }
-
 
 } // namespace Pointcloud
