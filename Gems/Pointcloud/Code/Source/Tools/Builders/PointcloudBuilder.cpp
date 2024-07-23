@@ -29,7 +29,7 @@ namespace Pointcloud
         prefabInfoAssetBuilderDescriptor.m_version = 1;
         prefabInfoAssetBuilderDescriptor.m_busId = azrtti_typeid<PointcloudBuilder>();
         prefabInfoAssetBuilderDescriptor.m_analysisFingerprint =
-            AZStd::string::format("ElementLength_%lu", sizeof(PointcloudAsset::CloudVertex));
+            AZStd::string::format("%u,%lu,%lu", PointcloudAsset::PointcloudMagicNumber, sizeof (PointcloudAsset::CloudHeader),sizeof(PointcloudAsset::CloudVertex));
         prefabInfoAssetBuilderDescriptor.m_patterns.push_back(
             AssetBuilderSDK::AssetBuilderPattern("*.ply", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
 

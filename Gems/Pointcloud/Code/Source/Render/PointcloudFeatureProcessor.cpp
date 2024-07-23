@@ -80,7 +80,7 @@ namespace Pointcloud
         AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContext->GetId());
     }
 
-    PointcloudFeatureProcessorInterface::PointcloudHandle PointcloudFeatureProcessor::AquirePointcloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData)
+    PointcloudFeatureProcessorInterface::PointcloudHandle PointcloudFeatureProcessor::AcquirePointcloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData)
     {
         m_currentPointcloudDataIndex++;
         auto& pcData = m_pointcloudData[m_currentPointcloudDataIndex];

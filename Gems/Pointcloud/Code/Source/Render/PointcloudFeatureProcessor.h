@@ -34,7 +34,7 @@ namespace Pointcloud
         // PointcloudFeatureProcessorInterface overrides
         void SetTransform(const PointcloudHandle& handle, const AZ::Transform& transform) override;
         void SetPointSize(const PointcloudHandle& handle, float pointSize) override;
-        PointcloudHandle AquirePointcloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData) override;
+        PointcloudHandle AcquirePointcloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData) override;
         void SetVisibility(const PointcloudHandle& handle, bool visible) override;
         void ReleasePointcloud(const PointcloudHandle& handle) override;
 

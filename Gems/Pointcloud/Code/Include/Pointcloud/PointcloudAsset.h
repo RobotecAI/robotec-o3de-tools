@@ -17,11 +17,23 @@ namespace Pointcloud
     class PointcloudAsset final : public AZ::Data::AssetData
     {
     public:
+
+        //! The vertex data for the pointcloud
         struct CloudVertex
         {
             AZStd::array<float, 3> m_position;
             uint32_t m_color;
         };
+
+        struct CloudHeader
+        {
+            uint32_t m_magicNumber {0x0};
+            uint32_t m_elementSize {0x0};
+            uint32_t m_numPoints {0x0};
+        };
+
+        static constexpr uint32_t PointcloudMagicNumber = 0x12345678;
+
         static constexpr inline const char* DisplayName = "PointcloudAsset";
         static constexpr inline const char* Extension = "pointcloud";
         static constexpr inline const char* Group = "Pointcloud";
@@ -37,7 +49,6 @@ namespace Pointcloud
     public:
         PointcloudAssetHandler();
 
-    private:
         // AZ::Data::AssetHandler overrides...
         AZ::Data::AssetHandler::LoadResult LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
