@@ -31,7 +31,7 @@ namespace Pointcloud
         PointcloudAsset::CloudHeader header;
         header.m_magicNumber = PointcloudAsset::PointcloudMagicNumber;
         header.m_elementSize = elementSize;
-        header.m_numPoints = numElements;
+        header.m_numPoints = static_cast<uint32_t>(numElements);
 
         std::memcpy(headerData.data(), (void*)&header, headerSize);
         auto bytesWritten = stream->Write(headerSize, headerData.data());

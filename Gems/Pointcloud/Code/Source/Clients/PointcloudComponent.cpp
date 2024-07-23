@@ -7,14 +7,21 @@
  */
 
 #include "PointcloudComponent.h"
+#include <3rd/happly.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Pointcloud/PointcloudTypeIds.h>
 #include <Render/PointcloudFeatureProcessor.h>
-#include <3rd/happly.h>
 namespace Pointcloud
 {
+
+    PointcloudComponent::PointcloudComponent(
+        const AZ::Data::Asset<PointcloudAsset>& pointcloudAsset, const float pointSize)
+        : m_pointcloudAsset(pointcloudAsset)
+        , m_pointSize(pointSize)
+    {
+    }
 
     void PointcloudComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -47,7 +54,6 @@ namespace Pointcloud
 
     void PointcloudComponent::Activate()
     {
-
         AZ::SystemTickBus::QueueFunction(
             [this]()
             {
@@ -68,7 +74,6 @@ namespace Pointcloud
                         m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
                         m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
                     }
-
                 }
             });
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
@@ -85,7 +90,7 @@ namespace Pointcloud
         AZ_UNUSED(local);
         if (m_pointcloudHandle != PointcloudFeatureProcessorInterface::InvalidPointcloudHandle)
         {
-            m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
+            m_featureProcessor->SetTransform(m_pointcloudHandle, world);
         }
     }
 

@@ -14,12 +14,12 @@
 
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
+#include "Clients/PointcloudComponent.h"
 #include <Atom/RPI.Public/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <Render/PointcloudFeatureProcessor.h>
-
 namespace Pointcloud
 {
 
@@ -37,7 +37,8 @@ namespace Pointcloud
                 ->Version(2)
                 ->Field("Point Size", &PointcloudEditorComponent::m_pointSize)
                 ->Field("PointcloudAsset", &PointcloudEditorComponent::m_pointcloudAsset)
-                ->Field("Visible", &PointcloudEditorComponent::m_visible);
+                ->Field("Visible", &PointcloudEditorComponent::m_visible)
+                ->Field("NumPoints", &PointcloudEditorComponent::m_numPoints);
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
@@ -54,16 +55,19 @@ namespace Pointcloud
                         "Size of the points in the pointcloud")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnSetPointSize)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &PointcloudEditorComponent::m_visible,
-                        "Visible",
-                        "Visibility of the pointcloud")
+                        AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::m_visible, "Visible", "Visibility of the pointcloud")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PointcloudEditorComponent::m_pointcloudAsset,
                         "Pointcloud Asset",
                         "Asset containing the pointcloud data")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &PointcloudEditorComponent::m_numPoints,
+                        "NumPoints",
+                        "Number of points in the pointcloud")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::LoadCloud);
             }
         }
@@ -87,7 +91,7 @@ namespace Pointcloud
                     AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
                     m_pointcloudAsset.QueueLoad();
                     m_pointcloudAsset.BlockUntilLoadComplete();
-
+                    m_numPoints = m_pointcloudAsset->m_data.size();
                     AZStd::vector<AZStd::vector<PointcloudAsset::CloudVertex>> cloudVertexDataChunks;
 
                     m_pointcloudHandle = m_featureProcessor->AcquirePointcloud(m_pointcloudAsset->m_data);
@@ -110,6 +114,10 @@ namespace Pointcloud
 
     void PointcloudEditorComponent::BuildGameEntity([[maybe_unused]] AZ::Entity* gameEntity)
     {
+        if (m_visible)
+        {
+            gameEntity->CreateComponent<PointcloudComponent>(m_pointcloudAsset, m_pointSize);
+        }
     }
 
     AZ::Crc32 PointcloudEditorComponent::OnSetPointSize()
