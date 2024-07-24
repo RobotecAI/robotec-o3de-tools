@@ -63,7 +63,6 @@ namespace Pointcloud
             bool m_visible = true;
             bool m_needSrgUpdate = true;
         };
-        void UpdateBackgroundClearColor();
 
         // FeatureProcessor overrides
         void Activate() override;

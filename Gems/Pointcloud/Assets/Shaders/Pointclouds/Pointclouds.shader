@@ -12,7 +12,7 @@
       "BlendDest" : "One",
       "BlendOp" : "Add"
   },
-  "DrawList": "forward",
+  "DrawList": "auxgeom",
   "ProgramSettings": {
     "EntryPoints": [
       {
