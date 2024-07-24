@@ -82,7 +82,6 @@ namespace Pointcloud
             const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
             uint32_t vertexCount);
 
-        AZ::Data::Asset<AZ::RPI::ResourcePoolAsset> m_resourcePoolAsset;
         AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> m_meshPipelineState;
         AZ::RHI::DrawListTag m_drawListTag;
         AZ::Data::Instance<AZ::RPI::Shader> m_shader = nullptr;

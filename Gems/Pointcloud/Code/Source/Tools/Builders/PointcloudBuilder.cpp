@@ -24,33 +24,33 @@ namespace Pointcloud
 
     PointcloudBuilder::PointcloudBuilder()
     {
-        AssetBuilderSDK::AssetBuilderDesc prefabInfoAssetBuilderDescriptor;
-        prefabInfoAssetBuilderDescriptor.m_name = PointcloudBuilderJobKey;
-        prefabInfoAssetBuilderDescriptor.m_version = 1;
-        prefabInfoAssetBuilderDescriptor.m_busId = azrtti_typeid<PointcloudBuilder>();
-        prefabInfoAssetBuilderDescriptor.m_analysisFingerprint = AZStd::string::format(
+        AssetBuilderSDK::AssetBuilderDesc pointcloudAssetBuilderDescriptor;
+        pointcloudAssetBuilderDescriptor.m_name = PointcloudBuilderJobKey;
+        pointcloudAssetBuilderDescriptor.m_version = 1;
+        pointcloudAssetBuilderDescriptor.m_busId = azrtti_typeid<PointcloudBuilder>();
+        pointcloudAssetBuilderDescriptor.m_analysisFingerprint = AZStd::string::format(
             "%u,%lu,%lu",
             PointcloudAsset::PointcloudMagicNumber,
             sizeof(PointcloudAsset::CloudHeader),
             sizeof(PointcloudAsset::CloudVertex));
-        prefabInfoAssetBuilderDescriptor.m_patterns.push_back(
+        pointcloudAssetBuilderDescriptor.m_patterns.push_back(
             AssetBuilderSDK::AssetBuilderPattern("*.ply", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
 
-        prefabInfoAssetBuilderDescriptor.m_createJobFunction = [this](auto&& request, auto&& response)
+        pointcloudAssetBuilderDescriptor.m_createJobFunction = [this](auto&& request, auto&& response)
         {
             return CreateJobs(request, response);
         };
 
-        prefabInfoAssetBuilderDescriptor.m_processJobFunction = [this](auto&& request, auto&& response)
+        pointcloudAssetBuilderDescriptor.m_processJobFunction = [this](auto&& request, auto&& response)
         {
             return ProcessJob(request, response);
         };
 
-        BusConnect(prefabInfoAssetBuilderDescriptor.m_busId);
+        BusConnect(pointcloudAssetBuilderDescriptor.m_busId);
 
         // Register this builder with the AssetBuilderSDK.
         AssetBuilderSDK::AssetBuilderBus::Broadcast(
-            &AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, prefabInfoAssetBuilderDescriptor);
+            &AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, pointcloudAssetBuilderDescriptor);
     }
 
     PointcloudBuilder::~PointcloudBuilder()
@@ -124,14 +124,13 @@ namespace Pointcloud
             }
             if (assetHandler->SaveAssetData(pointcloudAsset, &outStream))
             {
-                AZ_Info("PrefabInfoAssetBuilder", "PrefabInfoAsset created successfully: %s", tempAssetOutputPath.c_str());
                 // inform the AssetProcessor that we've created a new asset
-                AssetBuilderSDK::JobProduct prefabInfoJobProduct;
-                prefabInfoJobProduct.m_productFileName = tempAssetOutputPath.String();
-                prefabInfoJobProduct.m_productSubID = 0;
-                prefabInfoJobProduct.m_productAssetType = azrtti_typeid<PointcloudAsset>();
-                prefabInfoJobProduct.m_dependenciesHandled = true;
-                response.m_outputProducts.push_back(AZStd::move(prefabInfoJobProduct));
+                AssetBuilderSDK::JobProduct pointcloudJobProduct;
+                pointcloudJobProduct.m_productFileName = tempAssetOutputPath.String();
+                pointcloudJobProduct.m_productSubID = 0;
+                pointcloudJobProduct.m_productAssetType = azrtti_typeid<PointcloudAsset>();
+                pointcloudJobProduct.m_dependenciesHandled = true;
+                response.m_outputProducts.push_back(AZStd::move(pointcloudJobProduct));
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }

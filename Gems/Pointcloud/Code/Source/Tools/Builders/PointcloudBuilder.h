@@ -9,7 +9,6 @@ namespace Pointcloud
 {
     [[maybe_unused]] constexpr const char* PointcloudBuilderName = "PointcloudBuilder";
 
-
     class PointcloudBuilder : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
     {
     public:
@@ -24,7 +23,6 @@ namespace Pointcloud
         void ShutDown() override
         {
         }
-
     };
 
-} // namespace AiSceneGeneration
+} // namespace Pointcloud

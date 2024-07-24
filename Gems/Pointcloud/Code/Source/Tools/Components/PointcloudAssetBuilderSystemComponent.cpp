@@ -20,12 +20,12 @@ namespace Pointcloud
 
     void PointcloudAssetBuilderSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("PrefabInfoAssetBuilderService"));
+        provided.push_back(AZ_CRC_CE("PointcloudAssetBuilderService"));
     }
 
     void PointcloudAssetBuilderSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("PrefabInfoAssetBuilderService"));
+        incompatible.push_back(AZ_CRC_CE("PointcloudAssetBuilderService"));
     }
 
     void PointcloudAssetBuilderSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)

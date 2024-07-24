@@ -29,23 +29,6 @@ namespace Pointcloud
 
     void PointcloudFeatureProcessor::Activate()
     {
-        AZ_UNUSED(m_resourcePoolAsset);
-#if 1
-        auto bufferPoolDesc = AZStd::make_unique<AZ::RHI::BufferPoolDescriptor>();
-        bufferPoolDesc->m_bindFlags = AZ::RHI::BufferBindFlags::InputAssembly;
-        bufferPoolDesc->m_heapMemoryLevel = AZ::RHI::HeapMemoryLevel::Device;
-        bufferPoolDesc->m_budgetInBytes = 1024 * 1024 * 1024; // 1GB
-        // bufferPoolDesc->m_largestPooledAllocationSizeInBytes = (MaximumPointcloudCount+1) * sizeof (PointcloudAsset::CloudVertex);
-
-        AZ::RPI::ResourcePoolAssetCreator creator;
-        creator.Begin(AZ::Uuid::CreateRandom());
-        creator.SetPoolDescriptor(AZStd::move(bufferPoolDesc));
-
-        creator.SetPoolName("Pointclouds");
-        creator.End(m_resourcePoolAsset);
-        m_resourcePoolAsset.BlockUntilLoadComplete();
-#endif
-        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Activated");
         const char* shaderFilePath = "Shaders/Pointclouds/Pointclouds.azshader";
         m_shader = AZ::RPI::LoadCriticalShader(shaderFilePath);
 

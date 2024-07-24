@@ -55,9 +55,6 @@ namespace Pointcloud
                         "Size of the points in the pointcloud")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnSetPointSize)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &PointcloudEditorComponent::m_visible, "Visible", "Visibility of the pointcloud")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnVisibility)
-                    ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PointcloudEditorComponent::m_pointcloudAsset,
                         "Pointcloud Asset",
@@ -67,8 +64,7 @@ namespace Pointcloud
                         &PointcloudEditorComponent::m_numPoints,
                         "NumPoints",
                         "Number of points in the pointcloud")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::LoadCloud);
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
             }
         }
     }
@@ -103,12 +99,14 @@ namespace Pointcloud
                     }
                 }
             });
+        AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
     }
 
     void PointcloudEditorComponent::Deactivate()
     {
         AZ::TransformNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
     }
 
@@ -129,38 +127,12 @@ namespace Pointcloud
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    AZ::Crc32 PointcloudEditorComponent::OnVisibility()
+    void PointcloudEditorComponent::OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool visible)
     {
-        if (m_featureProcessor)
+        if (entityId == GetEntityId())
         {
-            m_featureProcessor->SetVisibility(m_pointcloudHandle, m_visible);
+            m_featureProcessor->SetVisibility(m_pointcloudHandle, visible);
         }
-        return AZ::Edit::PropertyRefreshLevels::None;
-    }
-
-    AZ::Crc32 PointcloudEditorComponent::LoadCloud()
-    {
-        if (m_pointcloudHandle != PointcloudFeatureProcessorInterface::InvalidPointcloudHandle)
-        {
-            m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
-        }
-        if (m_scene && m_pointcloudAsset)
-        {
-            m_featureProcessor = m_scene->EnableFeatureProcessor<PointcloudFeatureProcessor>();
-            AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
-            m_pointcloudAsset.QueueLoad();
-            m_pointcloudAsset.BlockUntilLoadComplete();
-
-            m_pointcloudHandle = m_featureProcessor->AcquirePointcloud(m_pointcloudAsset->m_data);
-
-            if (m_pointcloudHandle != PointcloudFeatureProcessorInterface::InvalidPointcloudHandle)
-            {
-                m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
-                m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
-            }
-        }
-
-        return AZ::Edit::PropertyRefreshLevels::None;
     }
 
     void PointcloudEditorComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
