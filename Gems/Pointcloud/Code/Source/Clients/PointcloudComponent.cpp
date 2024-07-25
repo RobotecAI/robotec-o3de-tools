@@ -65,9 +65,10 @@ namespace Pointcloud
                     m_pointcloudAsset.BlockUntilLoadComplete();
 
                     AZStd::vector<AZStd::vector<PointcloudAsset::CloudVertex>> cloudVertexDataChunks;
-
-                    m_pointcloudHandle = m_featureProcessor->AcquirePointcloud(m_pointcloudAsset->m_data);
-
+                    if (m_pointcloudAsset.GetId().IsValid() && m_pointcloudAsset.IsReady())
+                    {
+                        m_pointcloudHandle = m_featureProcessor->AcquirePointcloud(m_pointcloudAsset->m_data);
+                    }
                     if (m_pointcloudHandle != PointcloudFeatureProcessorInterface::InvalidPointcloudHandle)
                     {
                         m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());

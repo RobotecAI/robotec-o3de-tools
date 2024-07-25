@@ -40,6 +40,7 @@ namespace Pointcloud
         void OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool visible) override;
 
         AZ::Crc32 OnSetPointSize();
+        AZ::Crc32 OnAssetChanged();
 
         float m_pointSize = 1.0f;
         bool m_visible = true;

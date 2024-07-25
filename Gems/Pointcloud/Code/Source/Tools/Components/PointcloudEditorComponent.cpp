@@ -59,6 +59,7 @@ namespace Pointcloud
                         &PointcloudEditorComponent::m_pointcloudAsset,
                         "Pointcloud Asset",
                         "Asset containing the pointcloud data")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnAssetChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PointcloudEditorComponent::m_numPoints,
@@ -122,6 +123,19 @@ namespace Pointcloud
     {
         if (m_featureProcessor)
         {
+            m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
+        }
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+    AZ::Crc32 PointcloudEditorComponent::OnAssetChanged()
+    {
+        if (m_featureProcessor && m_pointcloudAsset.GetId().IsValid())
+        {
+            m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
+            m_pointcloudAsset.QueueLoad();
+            m_pointcloudAsset.BlockUntilLoadComplete();
+            m_pointcloudHandle = m_featureProcessor->AcquirePointcloud(m_pointcloudAsset->m_data);
+            m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
             m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
         }
         return AZ::Edit::PropertyRefreshLevels::None;
