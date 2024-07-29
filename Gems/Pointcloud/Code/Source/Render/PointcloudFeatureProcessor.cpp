@@ -39,16 +39,9 @@ namespace Pointcloud
         }
         AZ::Data::AssetBus::Handler::BusConnect(m_shader->GetAssetId());
 
-        auto drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
+        m_drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
         AZ_Error(
-            "PointcloudFeatureProcessor", drawSrgLayout, "Failed to get the draw shader resource group layout for the pointcloud shader.");
-        if (drawSrgLayout)
-        {
-            m_drawSrg =
-                AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
-            m_pointSizeIndex.Reset();
-            m_modelMatrixIndex.Reset();
-        }
+            "PointcloudFeatureProcessor", m_drawSrgLayout, "Failed to get the draw shader resource group layout for the pointcloud shader.");
 
         m_drawListTag = m_shader->GetDrawListTag();
 
@@ -56,7 +49,6 @@ namespace Pointcloud
         AZ_Assert(viewportContextInterface, "PointcloudFeatureProcessor requires the ViewportContextRequestsInterface.");
         auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
         AZ_Assert(viewportContext, "PointcloudFeatureProcessor requires a valid ViewportContext.");
-        m_viewportSize = viewportContext->GetViewportSize();
 
         EnableSceneNotification();
 
@@ -66,6 +58,7 @@ namespace Pointcloud
     PointcloudFeatureProcessorInterface::PointcloudHandle PointcloudFeatureProcessor::AcquirePointcloud(
         const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData)
     {
+        AZ_Assert(m_drawSrgLayout, "DrawSrgLayout is not initialized");
         m_currentPointcloudDataIndex++;
         auto& pcData = m_pointcloudData[m_currentPointcloudDataIndex];
         pcData.m_index = m_currentPointcloudDataIndex;
@@ -73,7 +66,7 @@ namespace Pointcloud
         const uint32_t elementCount = static_cast<uint32_t>(cloudVertexData.size());
         const uint32_t bufferSize = elementCount * elementSize; // bytecount
 
-        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor SetCloud %d, bytesize %d", elementCount, bufferSize);
+        AZ_TracePrintf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor SetCloud %d, bytesize %d", elementCount, bufferSize);
         pcData.m_pointData = cloudVertexData;
         pcData.m_vertices = elementCount;
 
@@ -84,15 +77,16 @@ namespace Pointcloud
         desc.m_elementSize = elementSize;
         desc.m_bufferData = pcData.m_pointData.data();
 
-        AZStd::vector<uint8_t> bufferData;
-
-        bufferData.resize_no_construct(desc.m_byteCount);
-        memcpy(bufferData.data(), desc.m_bufferData, desc.m_byteCount);
-
         pcData.m_cloudVertexBuffer = AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
         pcData.m_meshStreamBufferViews.front() =
             AZ::RHI::StreamBufferView(*pcData.m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
+
+        pcData.m_drawSrg =
+            AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_drawSrgLayout->GetName());
+        m_pointSizeIndex.Reset();
+        m_modelMatrixIndex.Reset();
+
         UpdateDrawPacket();
         return pcData.m_index;
     }
@@ -101,10 +95,10 @@ namespace Pointcloud
     {
         for (auto& [_, pcData] : m_pointcloudData)
         {
-            if (m_meshPipelineState && m_drawSrg && pcData.m_meshStreamBufferViews.front().GetByteCount() != 0)
+            if (m_meshPipelineState &&  pcData.m_drawSrg && pcData.m_meshStreamBufferViews.front().GetByteCount() != 0)
             {
                 pcData.m_drawPacket =
-                    BuildDrawPacket(m_drawSrg, m_meshPipelineState, m_drawListTag, pcData.m_meshStreamBufferViews, pcData.m_vertices);
+                    BuildDrawPacket( pcData.m_drawSrg, m_meshPipelineState, m_drawListTag, pcData.m_meshStreamBufferViews, pcData.m_vertices);
             }
         }
     }
@@ -217,13 +211,13 @@ namespace Pointcloud
     {
         for (auto& [_, pcData] : m_pointcloudData)
         {
-            if (m_drawSrg && pcData.m_needSrgUpdate)
+            if (pcData.m_needSrgUpdate && pcData.m_drawSrg)
             {
                 pcData.m_needSrgUpdate = false;
                 AZ::Matrix4x4 orientation = AZ::Matrix4x4::CreateFromTransform(pcData.m_transform);
-                m_drawSrg->SetConstant(m_modelMatrixIndex, orientation);
-                m_drawSrg->SetConstant(m_pointSizeIndex, pcData.m_pointSize);
-                m_drawSrg->Compile();
+                pcData.m_drawSrg->SetConstant(m_modelMatrixIndex, orientation);
+                pcData.m_drawSrg->SetConstant(m_pointSizeIndex, pcData.m_pointSize);
+                pcData.m_drawSrg->Compile();
             }
         }
     }

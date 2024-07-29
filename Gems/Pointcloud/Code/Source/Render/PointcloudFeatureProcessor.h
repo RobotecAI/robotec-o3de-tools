@@ -49,7 +49,6 @@ namespace Pointcloud
     private:
         struct PointcloudData
         {
-
             PointcloudHandle m_index = 0;
             AZ::Data::Asset<AZ::RPI::BufferAsset> m_cloudVertexBufferAsset;
             AZ::Data::Instance<AZ::RPI::Buffer> m_cloudVertexBuffer = nullptr;
@@ -60,6 +59,7 @@ namespace Pointcloud
             float m_pointSize = 1.0f;
             AZ::Transform m_transform = AZ::Transform::CreateIdentity();
             AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_drawPacket;
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_drawSrg = nullptr;
             bool m_visible = true;
             bool m_needSrgUpdate = true;
         };
@@ -83,15 +83,11 @@ namespace Pointcloud
 
         AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> m_meshPipelineState;
         AZ::RHI::DrawListTag m_drawListTag;
-        AZ::Data::Instance<AZ::RPI::Shader> m_shader = nullptr;
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_drawSrg = nullptr;
-
-        AzFramework::WindowSize m_viewportSize{ 0, 0 };
-
+        AZ::Data::Instance<AZ::RPI::Shader> m_shader = nullptr; //!< Shader for the pointcloud
         AZ::RHI::ShaderInputNameIndex m_pointSizeIndex = "m_pointSize";
         AZ::RHI::ShaderInputNameIndex m_modelMatrixIndex = "m_modelMatrix";
-
-        AZStd::unordered_map<PointcloudHandle, PointcloudData> m_pointcloudData;
-        PointcloudHandle m_currentPointcloudDataIndex = 0;
+        AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout; //!< Shader resource group layout for the draw packet
+        AZStd::unordered_map<PointcloudHandle, PointcloudData> m_pointcloudData; //!< Map of pointcloud data
+        PointcloudHandle m_currentPointcloudDataIndex = 0; //!< Index to the next pointcloud data to be created
     };
 } // namespace Pointcloud

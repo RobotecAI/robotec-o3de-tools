@@ -129,16 +129,25 @@ namespace Pointcloud
     }
     AZ::Crc32 PointcloudEditorComponent::OnAssetChanged()
     {
-        if (m_featureProcessor && m_pointcloudAsset.GetId().IsValid())
+        if (m_featureProcessor)
         {
             m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
-            m_pointcloudAsset.QueueLoad();
-            m_pointcloudAsset.BlockUntilLoadComplete();
-            m_pointcloudHandle = m_featureProcessor->AcquirePointcloud(m_pointcloudAsset->m_data);
-            m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
-            m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
+            if (m_pointcloudAsset.GetId().IsValid())
+            {
+                m_pointcloudAsset.QueueLoad();
+                m_pointcloudAsset.BlockUntilLoadComplete();
+                if (m_pointcloudAsset.IsReady())
+                {
+                    m_pointcloudHandle = m_featureProcessor->AcquirePointcloud(m_pointcloudAsset->m_data);
+                    m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
+                    m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
+                    m_numPoints = m_pointcloudAsset->m_data.size();
+                }
+            }else{
+                m_numPoints = 0;
+            }
         }
-        return AZ::Edit::PropertyRefreshLevels::None;
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     void PointcloudEditorComponent::OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool visible)

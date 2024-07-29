@@ -34,7 +34,6 @@ namespace Pointcloud
             {
                 editContext->Class<PointcloudComponent>("PointcloudComponent", "PointcloudComponent")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "PointcloudComponent")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "RobotecTools")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(

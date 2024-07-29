@@ -66,7 +66,6 @@ namespace Pointcloud
             const auto expectedDataSize = header.m_elementSize * header.m_numPoints;
 
             AZStd::vector<uint8_t> rawData(expectedDataSize);
-            assetData->m_data.resize(expectedDataSize);
             stream->Read(stream->GetLength(), rawData.data());
 
             const size_t elementSize = sizeof(PointcloudAsset::CloudVertex);
