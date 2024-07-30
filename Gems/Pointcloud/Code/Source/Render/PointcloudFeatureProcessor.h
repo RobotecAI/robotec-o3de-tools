@@ -45,6 +45,7 @@ namespace Pointcloud
 
         // Data::AssetBus overrides
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     private:
         struct PointcloudData

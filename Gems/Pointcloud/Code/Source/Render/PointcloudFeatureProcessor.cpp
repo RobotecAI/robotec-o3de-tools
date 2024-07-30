@@ -105,8 +105,18 @@ namespace Pointcloud
 
     void PointcloudFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor OnAssetReloaded");
-        UpdateDrawPacket();
+        if (asset.GetId() == m_shader->GetAssetId())
+        {
+            UpdateDrawPacket();
+        }
+    }
+
+    void PointcloudFeatureProcessor::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (asset.GetId() == m_shader->GetAssetId())
+        {
+            UpdateDrawPacket();
+        }
     }
 
     void PointcloudFeatureProcessor::Deactivate()

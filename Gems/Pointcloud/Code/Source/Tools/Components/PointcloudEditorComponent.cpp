@@ -9,8 +9,6 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
-#include <QFileDialog>
-#include <QMessageBox>
 
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
@@ -53,6 +51,8 @@ namespace Pointcloud
                         &PointcloudEditorComponent::m_pointSize,
                         "Point Size",
                         "Size of the points in the pointcloud")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnSetPointSize)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
