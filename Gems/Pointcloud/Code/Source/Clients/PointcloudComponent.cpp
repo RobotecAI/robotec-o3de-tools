@@ -7,7 +7,6 @@
  */
 
 #include "PointcloudComponent.h"
-#include <3rd/happly.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

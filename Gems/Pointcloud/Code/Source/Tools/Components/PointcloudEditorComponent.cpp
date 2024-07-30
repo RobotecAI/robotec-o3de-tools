@@ -1,22 +1,7 @@
 #include "PointcloudEditorComponent.h"
-#include "AzCore/Debug/Trace.h"
-#include <3rd/happly.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/Entity/EntityContext.h>
-#include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
-#include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemInterface.h>
-
-#include <AzFramework/Scene/SceneSystemInterface.h>
-
 #include "Clients/PointcloudComponent.h"
 #include <Atom/RPI.Public/Scene.h>
-#include <AzFramework/Scene/SceneSystemInterface.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzFramework/Entity/EntityContext.h>
 #include <Render/PointcloudFeatureProcessor.h>
 namespace Pointcloud
 {
@@ -35,7 +20,6 @@ namespace Pointcloud
                 ->Version(2)
                 ->Field("Point Size", &PointcloudEditorComponent::m_pointSize)
                 ->Field("PointcloudAsset", &PointcloudEditorComponent::m_pointcloudAsset)
-                ->Field("Visible", &PointcloudEditorComponent::m_visible)
                 ->Field("NumPoints", &PointcloudEditorComponent::m_numPoints);
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
@@ -113,10 +97,7 @@ namespace Pointcloud
 
     void PointcloudEditorComponent::BuildGameEntity([[maybe_unused]] AZ::Entity* gameEntity)
     {
-        if (m_visible)
-        {
-            gameEntity->CreateComponent<PointcloudComponent>(m_pointcloudAsset, m_pointSize);
-        }
+        gameEntity->CreateComponent<PointcloudComponent>(m_pointcloudAsset, m_pointSize);
     }
 
     AZ::Crc32 PointcloudEditorComponent::OnSetPointSize()
@@ -143,7 +124,9 @@ namespace Pointcloud
                     m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
                     m_numPoints = m_pointcloudAsset->m_data.size();
                 }
-            }else{
+            }
+            else
+            {
                 m_numPoints = 0;
             }
         }

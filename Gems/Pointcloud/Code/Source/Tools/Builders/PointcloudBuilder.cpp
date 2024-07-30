@@ -11,7 +11,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 
-#include "3rd/happly.h"
+#include "3rdParty/happly.h"
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <AzCore/Math/Color.h>

@@ -49,21 +49,6 @@ namespace Pointcloud
     {
     }
 
-    PointcloudSystemComponent::PointcloudSystemComponent()
-    {
-        if (PointcloudInterface::Get() == nullptr)
-        {
-            PointcloudInterface::Register(this);
-        }
-    }
-
-    PointcloudSystemComponent::~PointcloudSystemComponent()
-    {
-        if (PointcloudInterface::Get() == this)
-        {
-            PointcloudInterface::Unregister(this);
-        }
-    }
 
     void PointcloudSystemComponent::Init()
     {
@@ -73,14 +58,12 @@ namespace Pointcloud
     {
         m_pointcloudAssetHandler = aznew PointcloudAssetHandler();
         m_pointcloudAssetHandler->Register();
-        PointcloudRequestBus::Handler::BusConnect();
     }
 
     void PointcloudSystemComponent::Deactivate()
     {
         m_pointcloudAssetHandler->Unregister();
         delete m_pointcloudAssetHandler;
-        PointcloudRequestBus::Handler::BusDisconnect();
     }
 
 } // namespace Pointcloud

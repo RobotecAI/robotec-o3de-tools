@@ -43,7 +43,6 @@ namespace Pointcloud
         AZ::Crc32 OnAssetChanged();
 
         float m_pointSize = 1.0f;
-        bool m_visible = true;
         uint32_t m_numPoints = 0;
         PointcloudFeatureProcessorInterface* m_featureProcessor = nullptr;
         AZ::RPI::Scene* m_scene = nullptr;

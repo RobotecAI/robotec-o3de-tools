@@ -10,13 +10,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <Pointcloud/PointcloudBus.h>
 #include <Pointcloud/PointcloudAsset.h>
 namespace Pointcloud
 {
     class PointcloudSystemComponent
         : public AZ::Component
-        , protected PointcloudRequestBus::Handler
     {
     public:
         AZ_COMPONENT_DECL(PointcloudSystemComponent);
@@ -28,15 +26,10 @@ namespace Pointcloud
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        PointcloudSystemComponent();
-        ~PointcloudSystemComponent();
+        PointcloudSystemComponent() = default;
+        ~PointcloudSystemComponent() = default;
 
     protected:
-        ////////////////////////////////////////////////////////////////////////
-        // PointcloudRequestBus interface implementation
-
-        ////////////////////////////////////////////////////////////////////////
-
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
