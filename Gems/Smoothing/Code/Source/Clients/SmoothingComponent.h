@@ -2,7 +2,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Components/ComponentAdapter.h>
-
+#include "Utils.h"
 struct SmoothingConfig
     : public AZ::ComponentConfig
 {
@@ -12,6 +12,7 @@ struct SmoothingConfig
 
     AZ::EntityId m_entityToTrack;
     bool m_lockZAxis = false;
+    int m_smoothBufferLen = 10;
 };
 
 class SmoothingComponentController:
@@ -37,6 +38,7 @@ public:
     int GetTickOrder() override;
 protected:
     SmoothingConfig m_config;
+    SmoothingUtils::SmoothingCache m_smoothingCache;
     AZ::EntityId m_entityId;
 };
 using SmoothingComponentBase = AzFramework::Components::ComponentAdapter<SmoothingComponentController, SmoothingConfig>;

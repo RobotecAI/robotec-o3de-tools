@@ -1,23 +1,33 @@
 #include "SmoothingComponent.h"
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Component/TransformBus.h>
 #include "Utils.h"
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 void SmoothingConfig::Reflect(AZ::ReflectContext* context)
 {
-
     if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
         serializeContext->Class<SmoothingConfig, AZ::ComponentConfig>()
             ->Version(1)
             ->Field("m_entityToTrack", &SmoothingConfig::m_entityToTrack)
-            ->Field("m_lockZAxis", &SmoothingConfig::m_lockZAxis);
+            ->Field("m_lockZAxis", &SmoothingConfig::m_lockZAxis)
+            ->Field("m_smoothBufferLen", &SmoothingConfig::m_smoothBufferLen);
 
         if (AZ::EditContext* editContext = serializeContext->GetEditContext())
         {
             editContext->Class<SmoothingConfig>("SmoothingConfig", "An example of a component that does something")
-                ->DataElement(AZ::Edit::UIHandlers::Default, &SmoothingConfig::m_entityToTrack, "Entity to Track", "The entity to track for smoothing")
-                ->DataElement(AZ::Edit::UIHandlers::Default, &SmoothingConfig::m_lockZAxis, "Lock Z Axis", "Lock the Z axis of the entity to track");
+                ->DataElement(
+                    AZ::Edit::UIHandlers::Default,
+                    &SmoothingConfig::m_entityToTrack,
+                    "Entity to Track",
+                    "The entity to track for smoothing")
+                ->DataElement(
+                    AZ::Edit::UIHandlers::Default, &SmoothingConfig::m_lockZAxis, "Lock Z Axis", "Lock the Z axis of the entity to track")
+                ->DataElement(
+                    AZ::Edit::UIHandlers::Default,
+                    &SmoothingConfig::m_smoothBufferLen,
+                    "Smooth Buffer Length",
+                    "The length of the buffer to smooth the entity's position");
         }
     }
 }
@@ -27,8 +37,7 @@ void SmoothingComponentController::Reflect(AZ::ReflectContext* context)
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
         serializeContext->Class<SmoothingComponentController>()
-            ->Field(
-                "Configuration", &SmoothingComponentController::m_config)
+            ->Field("Configuration", &SmoothingComponentController::m_config)
             ->Version(1);
         if (AZ::EditContext* editContext = serializeContext->GetEditContext())
         {
@@ -46,7 +55,6 @@ SmoothingComponentController::SmoothingComponentController(const SmoothingConfig
     : m_config(config)
 {
 }
-
 
 void SmoothingComponentController::Activate(AZ::EntityId entityId)
 {
@@ -71,9 +79,17 @@ void SmoothingComponentController::OnTick(float deltaTime, AZ::ScriptTimePoint t
     {
         transform = SmoothingUtils::RemoveTiltFromTransform(transform);
     }
+
+    if (m_config.m_smoothBufferLen > 0)
+    {
+        SmoothingUtils::CacheTransform(m_smoothingCache, transform, deltaTime, m_config.m_smoothBufferLen);
+        auto positionSmooth = SmoothingUtils::SmoothTranslation(m_smoothingCache);
+        transform.SetTranslation(positionSmooth);
+        auto rotationSmooth = SmoothingUtils::SmoothRotation(m_smoothingCache);
+        transform.SetRotation(rotationSmooth);
+    }
     // set transform to this entity
     AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Events::SetWorldTM, transform);
-
 }
 
 int SmoothingComponentController::GetTickOrder()
@@ -103,10 +119,9 @@ SmoothingComponent::SmoothingComponent(const SmoothingConfig& config)
 void SmoothingComponent::Reflect(AZ::ReflectContext* context)
 {
     SmoothingComponentBase::Reflect(context);
-    if(auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<SmoothingComponent, SmoothingComponentBase>()
-            ->Version(1);
+        serializeContext->Class<SmoothingComponent, SmoothingComponentBase>()->Version(1);
     }
 }
 
@@ -119,4 +134,3 @@ void SmoothingComponent::Deactivate()
 {
     SmoothingComponentBase::Deactivate();
 }
-
