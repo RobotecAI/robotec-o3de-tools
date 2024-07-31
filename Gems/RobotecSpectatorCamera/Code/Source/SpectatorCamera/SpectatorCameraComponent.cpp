@@ -1,0 +1,258 @@
+#include "SpectatorCameraComponent.h"
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+
+namespace RobotecSpectatorCamera
+{
+    SpectatorCameraComponent::SpectatorCameraComponent(
+        const RobotecSpectatorCamera::SpectatorCameraConfiguration& spectatorCameraConfiguration)
+        : m_configuration(spectatorCameraConfiguration)
+    {
+    }
+
+    void SpectatorCameraComponent::Reflect(AZ::ReflectContext* context)
+    {
+        SpectatorCameraConfiguration::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<SpectatorCameraComponent, AZ::Component>()->Version(0)->Field(
+                "Configuration", &SpectatorCameraComponent::m_configuration);
+        }
+    }
+
+    void SpectatorCameraComponent::Activate()
+    {
+        AZ::TickBus::Handler::BusConnect();
+        AzFramework::InputChannelEventListener::Connect();
+
+        AZ::TransformBus::EventResult(m_currentTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+    }
+
+    void SpectatorCameraComponent::Deactivate()
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+        AzFramework::InputChannelEventListener::Disconnect();
+    }
+
+    void SpectatorCameraComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    {
+        if (m_configuration.m_cameraMode == CameraMode::ThirdPerson)
+        {
+            AZ::Vector3 cameraLocalPosition{ -m_orbitRadius, 0.0f, 0.0f };
+            const AZ::Quaternion yawMouseRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(1.0f), -m_yaw);
+            const AZ::Quaternion pitchMouseRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(1.0f), m_pitch);
+            const AZ::Quaternion finalRotation = yawMouseRotation * pitchMouseRotation;
+            cameraLocalPosition = finalRotation.TransformVector(cameraLocalPosition);
+            AZ::Transform targetWorldPosition = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(targetWorldPosition, m_configuration.m_lookAtTarget, &AZ::TransformBus::Events::GetWorldTM);
+            if (m_configuration.m_followTargetRotation)
+            {
+                m_currentTransform = AZ::Transform::CreateLookAt(
+                    (targetWorldPosition.TransformPoint(cameraLocalPosition)), targetWorldPosition.GetTranslation());
+            }
+            else
+            {
+                m_currentTransform = AZ::Transform::CreateLookAt(
+                    (targetWorldPosition.GetTranslation() + cameraLocalPosition), targetWorldPosition.GetTranslation());
+            }
+        }
+        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, m_currentTransform);
+    }
+
+    bool SpectatorCameraComponent::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
+    {
+        const AzFramework::InputDeviceId& deviceId = inputChannel.GetInputDevice().GetInputDeviceId();
+
+        if (AzFramework::InputDeviceMouse::IsMouseDevice(deviceId))
+        {
+            MouseEvent(inputChannel);
+        }
+
+        if (AzFramework::InputDeviceKeyboard::IsKeyboardDevice(deviceId))
+        {
+            KeyboardEvent(inputChannel);
+        }
+
+        return false;
+    }
+
+    void SpectatorCameraComponent::MouseEvent(const AzFramework::InputChannel& inputChannel)
+    {
+        const AzFramework::InputChannelId& channelId = inputChannel.GetInputChannelId();
+
+        if (channelId == AzFramework::InputDeviceMouse::Movement::Z && m_configuration.m_cameraMode == CameraMode::ThirdPerson)
+        {
+            if (const float newOrbitRadius =
+                    m_orbitRadius - (inputChannel.GetValue() / 1200.0f); // value 1200.0f has been chosen experimentally
+                (newOrbitRadius >= SpectatorCameraConfiguration::OrbitRadiusMin) &&
+                (newOrbitRadius <= SpectatorCameraConfiguration::OrbitRadiusMax))
+            {
+                m_orbitRadius -= inputChannel.GetValue() / 1200.0f;
+            }
+        }
+
+        if (channelId == AzFramework::InputDeviceMouse::Button::Right || m_configuration.m_cameraMode == CameraMode::FreeFlying)
+        {
+            if (inputChannel.IsStateBegan())
+            {
+                m_isRightMouseButtonPressed = true;
+
+                // Capture the initial mouse position and cursor state
+                m_initialMousePosition = GetCurrentMousePosition();
+                m_ignoreNextMovement = true; // Flag to ignore the next mouse movement preventing jump on re-centering
+            }
+            else if (inputChannel.IsStateEnded())
+            {
+                m_isRightMouseButtonPressed = false;
+
+                // Restore the cursor's original position
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id,
+                    &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized,
+                    m_initialMousePosition);
+
+                // Update m_lastMousePosition to the restored position to prevent the jump on the next rotation start
+                m_lastMousePosition = m_initialMousePosition;
+            }
+        }
+
+        if ((m_isRightMouseButtonPressed || m_configuration.m_cameraMode == CameraMode::FreeFlying) &&
+            (channelId == AzFramework::InputDeviceMouse::Movement::X || channelId == AzFramework::InputDeviceMouse::Movement::Y))
+        {
+            if (m_ignoreNextMovement)
+            {
+                m_ignoreNextMovement = false; // Reset the flag after ignoring one movement
+                m_lastMousePosition = GetCurrentMousePosition(); // Update the last position to current to avoid the jump
+                return; // Do not process this movement
+            }
+
+            AZ::Vector2 currentMousePosition = GetCurrentMousePosition();
+            AZ::Vector2 mouseDelta = currentMousePosition - m_lastMousePosition;
+
+            RotateCameraOnMouse(mouseDelta);
+
+            const auto center = AZ::Vector2(0.5f, 0.5f);
+
+            // Recenter the cursor to avoid edge constraints
+            AzFramework::InputSystemCursorRequestBus::Event(
+                AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized, center);
+
+            // Then update m_lastMousePosition accordingly
+            m_lastMousePosition = center;
+        }
+    }
+
+    void SpectatorCameraComponent::KeyboardEvent(const AzFramework::InputChannel& inputChannel)
+    {
+        const AzFramework::InputChannelId& channelId = inputChannel.GetInputChannelId();
+        if (inputChannel.IsStateBegan())
+        {
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericC)
+            {
+                ToggleCameraMode();
+            }
+        }
+
+        if (m_configuration.m_cameraMode == CameraMode::FreeFlying)
+        {
+            AZ::Vector3 localCamPositionChange = AZ::Vector3::CreateZero();
+
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericW)
+            {
+                localCamPositionChange += AZ::Vector3::CreateAxisY() * m_configuration.m_cameraSpeed;
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericS)
+            {
+                localCamPositionChange -= AZ::Vector3::CreateAxisY() * m_configuration.m_cameraSpeed;
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericA)
+            {
+                localCamPositionChange -= AZ::Vector3::CreateAxisX() * m_configuration.m_cameraSpeed;
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericD)
+            {
+                localCamPositionChange += AZ::Vector3::CreateAxisX() * m_configuration.m_cameraSpeed;
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericQ)
+            {
+                localCamPositionChange -= AZ::Vector3::CreateAxisZ() * m_configuration.m_cameraSpeed;
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericE)
+            {
+                localCamPositionChange += AZ::Vector3::CreateAxisZ() * m_configuration.m_cameraSpeed;
+            }
+
+            m_currentTransform = m_currentTransform * AZ::Transform::CreateTranslation(localCamPositionChange);
+        }
+    }
+
+    AZ::Vector2 SpectatorCameraComponent::GetCurrentMousePosition() const
+    {
+        AZ::Vector2 mousePosition = AZ::Vector2::CreateZero();
+
+        // Query the input system for the current mouse position
+        AzFramework::InputSystemCursorRequestBus::EventResult(
+            mousePosition, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::GetSystemCursorPositionNormalized);
+
+        return mousePosition;
+    }
+
+    void SpectatorCameraComponent::RotateCameraOnMouse(const AZ::Vector2& mouseDelta)
+    {
+        if (m_configuration.m_cameraMode == CameraMode::ThirdPerson)
+        {
+            m_yaw += mouseDelta.GetX() * m_configuration.m_mouseSensitivity;
+            if (AZStd::abs(m_yaw) >= AZ::DegToRad(360))
+            {
+                m_yaw = 0.0f;
+            }
+            // block pitch to go above 87 degrees - this is done to avoid strange camera jumps that start to appear at around 87.5-88
+            // degrees
+            if (float newPitch = m_pitch + (mouseDelta.GetY() * m_configuration.m_mouseSensitivity);
+                AZStd::abs(newPitch) < AZ::DegToRad(87))
+            {
+                m_pitch += mouseDelta.GetY() * m_configuration.m_mouseSensitivity;
+            }
+        }
+
+        if (m_configuration.m_cameraMode == CameraMode::FreeFlying)
+        {
+            float yawRotation = -mouseDelta.GetX() * m_configuration.m_mouseSensitivity; // Inverted X for reversed yaw rotation
+            float pitchRotation = -mouseDelta.GetY() * m_configuration.m_mouseSensitivity; // Inverted Y for pitch, adjust as needed
+
+            const AZ::Quaternion currentRotation = m_currentTransform.GetRotation();
+
+            AZ::Quaternion yawQuat = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), yawRotation);
+
+            // Apply yaw rotation to current camera orientation
+            AZ::Quaternion tempRotation = yawQuat * currentRotation;
+
+            // Calculate pitch rotation around the camera's local X-axis after applying yaw
+            // This ensures that pitch adjustments are made relative to the camera's adjusted orientation
+            const AZ::Vector3 localXAxis = tempRotation.TransformVector(AZ::Vector3::CreateAxisX());
+            const auto pitchQuat = AZ::Quaternion::CreateFromAxisAngle(localXAxis, pitchRotation);
+
+            // Apply pitch rotation
+            auto newRotation = pitchQuat * tempRotation;
+            newRotation.Normalize(); // Normalize the quaternion to prevent drift and ensure no numerical instability
+
+            // Update the camera's offset matrix with the new orientation, keeping the position unchanged
+            const AZ::Vector3 currentPosition = m_currentTransform.GetTranslation();
+            m_currentTransform = AZ::Transform::CreateFromQuaternionAndTranslation(newRotation, currentPosition);
+        }
+    }
+
+    void SpectatorCameraComponent::ToggleCameraMode()
+    {
+        if (m_configuration.m_cameraMode == CameraMode::ThirdPerson)
+        {
+            m_configuration.m_cameraMode = CameraMode::FreeFlying;
+            return;
+        }
+        m_configuration.m_cameraMode = CameraMode::ThirdPerson;
+    }
+} // namespace RobotecSpectatorCamera
