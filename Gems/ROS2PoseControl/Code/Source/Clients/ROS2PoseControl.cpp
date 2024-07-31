@@ -175,28 +175,36 @@ namespace ROS2PoseControl
                 {
                     return;
                 }
-                const AZ::Transform offsetTransform = ROS2::ROS2Conversions::FromROS2Pose(msg->pose);
+                const AZ::Transform requestedTransform = ROS2::ROS2Conversions::FromROS2Pose(msg->pose);
                 AZ::Transform finalTransform;
                 if (msg->header.frame_id.empty())
                 {
-                    finalTransform = offsetTransform;
+                    finalTransform = requestedTransform;
                 }
                 else if (frameId.compare(msg->header.frame_id.c_str()) == 0)
                 {
-                    finalTransform = offsetTransform * GetEntity()->GetTransform()->GetLocalTM();
+                    auto offsetTransformOptional = GetOffsetTransform(m_configuration.m_startOffsetTag);
+                    AZ::Transform offsetTransform = offsetTransformOptional.has_value() ? offsetTransformOptional.value() : AZ::Transform::CreateIdentity();
+                    offsetTransform.Invert();
+
+                    auto entityTransform = GetEntity()->GetTransform()->GetWorldTM();
+
+                    finalTransform = offsetTransform * entityTransform * requestedTransform;
                 }
                 else
                 {
                     AZStd::string headerFrameId(msg->header.frame_id.c_str());
+                    
                     const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome = GetCurrentTransformViaTF2(
                         m_configuration.m_referenceFrame,
                         headerFrameId);
                     if (transform_outcome.IsSuccess())
                     {
-                        finalTransform = offsetTransform * transform_outcome.GetValue();
+                        finalTransform = transform_outcome.GetValue() * requestedTransform;
                     }
                     else
                     {
+                        AZ_Warning("ROS2PoseControl", true, "No transform found from refrence frame (%s) to requested frame (%s)\n",m_configuration.m_referenceFrame.c_str(), headerFrameId.c_str());
                         return;
                     }
                 }
@@ -323,7 +331,7 @@ namespace ROS2PoseControl
         AZ::EBusAggregateResults<AZ::EntityId> aggregator;
         const LmbrCentral::Tag tag = AZ::Crc32(tagName);
         LmbrCentral::TagGlobalRequestBus::EventResult(aggregator, tag, &LmbrCentral::TagGlobalRequests::RequestTaggedEntities);
-        if (!m_groundNotFoundWarningShown)
+        if (!m_startingOffsetNotFoundWarningShown)
         {
             AZ_Warning(
                 "ROS2PoseControl",
@@ -332,11 +340,11 @@ namespace ROS2PoseControl
                 tagName.c_str());
 
             AZ_Warning("ROS2PoseControl", !aggregator.values.empty(), "No entity with tag found %s.", tagName.c_str());
-            m_groundNotFoundWarningShown = aggregator.values.size() != 1;
+            m_startingOffsetNotFoundWarningShown = aggregator.values.size() != 1;
         }
         if (aggregator.values.size() == 1)
         {
-            m_groundNotFoundWarningShown = false;
+            m_startingOffsetNotFoundWarningShown = false;
         }
         if (!aggregator.values.empty())
         {
