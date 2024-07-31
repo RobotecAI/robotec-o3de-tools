@@ -6,8 +6,7 @@
 
 namespace ROS2PoseControl
 {
-    class ROS2PoseControlModuleInterface
-        : public AZ::Module
+    class ROS2PoseControlModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(ROS2PoseControlModuleInterface)
@@ -21,4 +20,4 @@ namespace ROS2PoseControl
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace ROS2PoseControl
+} // namespace ROS2PoseControl

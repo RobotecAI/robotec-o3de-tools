@@ -3,8 +3,8 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <Clients/SensorDebugSystemComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <Clients/SensorDebugSystemComponent.h>
 namespace SensorDebug
 {
     /// System component for SensorDebug editor
@@ -13,6 +13,7 @@ namespace SensorDebug
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
         using BaseSystemComponent = SensorDebugSystemComponent;
+
     public:
         AZ_COMPONENT_DECL(SensorDebugEditorSystemComponent);
 

@@ -13,6 +13,7 @@ namespace ROS2ScriptIntegration
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = ROS2ScriptIntegrationSystemComponent;
+
     public:
         AZ_COMPONENT_DECL(ROS2ScriptIntegrationEditorSystemComponent);
 

@@ -43,7 +43,7 @@ namespace LevelModificationTools
             return;
         }
 
-        const auto assetIter = m_config.m_prefabVariants.begin()+variantId;
+        const auto assetIter = m_config.m_prefabVariants.begin() + variantId;
         AZ_Warning(
             "PrefabVariantComponent", assetIter != m_config.m_prefabVariants.end(), "Prefab variant with id %d not found.", variantId);
         if (assetIter != m_config.m_prefabVariants.end())

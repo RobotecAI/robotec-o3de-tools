@@ -41,7 +41,9 @@ namespace Pointcloud
 
         m_drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
         AZ_Error(
-            "PointcloudFeatureProcessor", m_drawSrgLayout, "Failed to get the draw shader resource group layout for the pointcloud shader.");
+            "PointcloudFeatureProcessor",
+            m_drawSrgLayout,
+            "Failed to get the draw shader resource group layout for the pointcloud shader.");
 
         m_drawListTag = m_shader->GetDrawListTag();
 
@@ -95,10 +97,10 @@ namespace Pointcloud
     {
         for (auto& [_, pcData] : m_pointcloudData)
         {
-            if (m_meshPipelineState &&  pcData.m_drawSrg && pcData.m_meshStreamBufferViews.front().GetByteCount() != 0)
+            if (m_meshPipelineState && pcData.m_drawSrg && pcData.m_meshStreamBufferViews.front().GetByteCount() != 0)
             {
-                pcData.m_drawPacket =
-                    BuildDrawPacket( pcData.m_drawSrg, m_meshPipelineState, m_drawListTag, pcData.m_meshStreamBufferViews, pcData.m_vertices);
+                pcData.m_drawPacket = BuildDrawPacket(
+                    pcData.m_drawSrg, m_meshPipelineState, m_drawListTag, pcData.m_meshStreamBufferViews, pcData.m_vertices);
             }
         }
     }

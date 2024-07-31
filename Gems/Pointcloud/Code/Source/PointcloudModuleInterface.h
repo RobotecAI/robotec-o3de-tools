@@ -13,8 +13,7 @@
 
 namespace Pointcloud
 {
-    class PointcloudModuleInterface
-        : public AZ::Module
+    class PointcloudModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(PointcloudModuleInterface)
@@ -28,4 +27,4 @@ namespace Pointcloud
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace Pointcloud
+} // namespace Pointcloud

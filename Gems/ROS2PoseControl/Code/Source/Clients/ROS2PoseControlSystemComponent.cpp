@@ -8,17 +8,14 @@
 
 namespace ROS2PoseControl
 {
-    AZ_COMPONENT_IMPL(ROS2PoseControlSystemComponent, "ROS2PoseControlSystemComponent",
-        ROS2PoseControlSystemComponentTypeId);
+    AZ_COMPONENT_IMPL(ROS2PoseControlSystemComponent, "ROS2PoseControlSystemComponent", ROS2PoseControlSystemComponentTypeId);
 
     void ROS2PoseControlSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         ROS2PoseControlConfiguration::Reflect(context);
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ROS2PoseControlSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+            serializeContext->Class<ROS2PoseControlSystemComponent, AZ::Component>()->Version(0);
         }
     }
 
@@ -59,6 +56,5 @@ namespace ROS2PoseControl
     void ROS2PoseControlSystemComponent::Deactivate()
     {
     }
-
 
 } // namespace ROS2PoseControl

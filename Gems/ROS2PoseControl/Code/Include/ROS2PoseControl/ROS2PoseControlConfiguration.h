@@ -1,26 +1,28 @@
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 #include <ROS2/Communication/TopicConfiguration.h>
-#include <AzCore/Component/EntityId.h>
-namespace ROS2PoseControl {
+namespace ROS2PoseControl
+{
     //! A structure for a single ROS2 topic, a part of publisher or subscriber configuration.
-    struct ROS2PoseControlConfiguration {
+    struct ROS2PoseControlConfiguration
+    {
     public:
         AZ_TYPE_INFO(ROS2PoseControlConfiguration, "{4f7686d5-f44e-43a6-a1b8-f404065c6430}");
 
-        static void Reflect(AZ::ReflectContext *context);
+        static void Reflect(AZ::ReflectContext* context);
 
         AZ::Crc32 isTrackingModeTF2Visibility() const;
 
         AZ::Crc32 isTrackingModePoseMessagesVisibility() const;
 
-
         AZ::Crc32 isGroudOffsetVisible() const;
 
-        enum class TrackingMode {
+        enum class TrackingMode
+        {
             PoseMessages,
             TF2
         };
@@ -38,4 +40,4 @@ namespace ROS2PoseControl {
 
         AZStd::string m_startOffsetTag;
     };
-} // namespace ROS2
+} // namespace ROS2PoseControl

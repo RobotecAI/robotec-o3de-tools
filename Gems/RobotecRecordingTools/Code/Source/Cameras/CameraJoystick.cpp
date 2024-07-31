@@ -12,12 +12,12 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include "CameraJoystick.h"
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <ROS2/Frame/ROS2FrameComponent.h>
 #include <ROS2/ROS2Bus.h>
 #include <ROS2/Utilities/ROS2Names.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 namespace ROS2::Demo
 {
@@ -56,7 +56,6 @@ namespace ROS2::Demo
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraJoystick::m_cameraSpeed, "cameraSpeed", "cameraSpeed")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraJoystick::m_gimbalSpeed, "gimbalSpeed", "gimbalSpeed")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraJoystick::m_hideEntities, "hideEntities", "hideEntities");
-
             }
         }
     }
@@ -79,20 +78,20 @@ namespace ROS2::Demo
             [&](sensor_msgs::msg::Joy msg)
             {
                 const float expo = 0.0f;
-                m_gimbalAxis1 = Expo(-GetDeadzoned(msg.axes[AXIS_CAM1]),expo);
-                m_gimbalAxis2 = Expo(-GetDeadzoned(msg.axes[AXIS_CAM2]),expo);
+                m_gimbalAxis1 = Expo(-GetDeadzoned(msg.axes[AXIS_CAM1]), expo);
+                m_gimbalAxis2 = Expo(-GetDeadzoned(msg.axes[AXIS_CAM2]), expo);
                 float pitchSpeed = Expo(GetDeadzoned(msg.axes[AXIS_PITCH]), expo);
                 float aileronSpeed = Expo(-GetDeadzoned(msg.axes[AXIS_ALEIRON]), expo);
-                float throttle = Expo(GetDeadzoned(msg.axes[AXIS_THROTTLE], 0.05),expo);
+                float throttle = Expo(GetDeadzoned(msg.axes[AXIS_THROTTLE], 0.05), expo);
                 m_cameraAngularVelocity = { 0.0f, 0.0f, -m_gimbalAxis1 };
                 m_cameraLinearVelocity = { -pitchSpeed, -aileronSpeed, throttle };
 
                 float hideAxis = msg.axes[AXIS_HIDE];
-                if (hideAxis>0)
+                if (hideAxis > 0)
                 {
                     m_hide = true;
                 }
-                else if (hideAxis<0)
+                else if (hideAxis < 0)
                 {
                     m_hide = false;
                 }
@@ -126,12 +125,11 @@ namespace ROS2::Demo
         transform.SetRotation(transform.GetRotation() * updateLocal);
         AZ::TransformBus::Event(m_cameraGimbalEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
 
-        if (m_hide!=m_hideOld)
+        if (m_hide != m_hideOld)
         {
             for (auto& entityId : m_hideEntities)
             {
                 AZ::Render::MeshComponentRequestBus::Event(entityId, &AZ::Render::MeshComponentRequests::SetVisibility, !m_hide);
-
             }
         }
         m_hideOld = m_hide;

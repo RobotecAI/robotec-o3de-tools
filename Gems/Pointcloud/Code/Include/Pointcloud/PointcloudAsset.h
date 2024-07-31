@@ -17,7 +17,6 @@ namespace Pointcloud
     class PointcloudAsset final : public AZ::Data::AssetData
     {
     public:
-
         //! The vertex data for the pointcloud
         struct CloudVertex
         {
@@ -27,9 +26,9 @@ namespace Pointcloud
 
         struct CloudHeader
         {
-            uint32_t m_magicNumber {0x0};
-            uint32_t m_elementSize {0x0};
-            uint32_t m_numPoints {0x0};
+            uint32_t m_magicNumber{ 0x0 };
+            uint32_t m_elementSize{ 0x0 };
+            uint32_t m_numPoints{ 0x0 };
         };
 
         static constexpr uint32_t PointcloudMagicNumber = 0x12345678;

@@ -73,7 +73,7 @@ namespace ROS2::Demo
             m_joystickTopicConfiguration.GetQoS(),
             [&](sensor_msgs::msg::Joy msg)
             {
-                m_trackSpeed = 0.010f*(1.0f+msg.axes[3])/2.0f;
+                m_trackSpeed = 0.010f * (1.0f + msg.axes[3]) / 2.0f;
                 SplineCameraAnimationGlobalBus::Broadcast(&SplineCameraAnimationGlobalBus::Events::SetSpeed, m_trackSpeed);
             });
 
@@ -119,7 +119,6 @@ namespace ROS2::Demo
 
     void SplineCameraAnimation::SetVisibility(bool visible)
     {
-
         for (auto& entityId : m_hideEntities)
         {
             AZStd::vector<AZ::EntityId> descendantIds;
@@ -140,14 +139,12 @@ namespace ROS2::Demo
                 SetVisibility(false);
                 m_visible = false;
             }
-
         }
 
         AZ::Transform splineTransform{ AZ::Transform::CreateIdentity() };
         AZ::TransformBus::EventResult(splineTransform, m_entity->GetId(), &AZ::TransformBus::Events::GetWorldTM);
 
         m_currentTrackTime += m_trackSpeed * deltaTime;
-
 
         AZ::ConstSplinePtr splinePtr{ nullptr };
         LmbrCentral::SplineComponentRequestBus::EventResult(splinePtr, m_entity->GetId(), &LmbrCentral::SplineComponentRequests::GetSpline);

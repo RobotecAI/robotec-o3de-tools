@@ -6,8 +6,7 @@
 
 namespace SensorDebug
 {
-    class SensorDebugModuleInterface
-        : public AZ::Module
+    class SensorDebugModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(SensorDebugModuleInterface)
@@ -21,4 +20,4 @@ namespace SensorDebug
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace SensorDebug
+} // namespace SensorDebug

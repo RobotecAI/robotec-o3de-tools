@@ -1,21 +1,21 @@
 /*
-* Copyright (c) Contributors to the Open 3D Engine Project.
-* For complete copyright and license terms please see the LICENSE at the root
-* of this distribution.
-*
-* SPDX-License-Identifier: Apache-2.0 OR MIT
-*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root
+ * of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
  */
 #pragma once
 
-#include <AzCore/Math/Transform.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Math/Transform.h>
 #include <ImGuiBus.h>
+#include <ROS2/Communication/TopicConfiguration.h>
 #include <rclcpp/subscription.hpp>
 #include <sensor_msgs/msg/joy.hpp>
-#include <ROS2/Communication/TopicConfiguration.h>
 
 namespace ROS2::Demo
 {
@@ -48,7 +48,6 @@ namespace ROS2::Demo
         , protected ImGui::ImGuiUpdateListenerBus::Handler
         , protected SplineCameraAnimationGlobalBus::Handler
     {
-
     public:
         AZ_COMPONENT(SplineCameraAnimation, "1eb76f57-01f4-41aa-834d-b4138272005a");
 
@@ -79,12 +78,12 @@ namespace ROS2::Demo
         float m_trackSpeed = 0.1f;
         float m_phaseShift = 0.0f; //!< Phase shift in meters
         float m_normalizedPose = 0.0f;
-        AZ::EntityId m_entityToAnimate {AZ::EntityId::InvalidEntityId};
+        AZ::EntityId m_entityToAnimate{ AZ::EntityId::InvalidEntityId };
         AZ::Transform m_localTransform = AZ::Transform::CreateIdentity();
 
         float m_hideTimeOffset = 0.95f;
         AZStd::vector<AZ::EntityId> m_hideEntities;
-        bool m_visible {true};
+        bool m_visible{ true };
 
         ROS2::TopicConfiguration m_joystickTopicConfiguration;
         std::shared_ptr<rclcpp::Subscription<sensor_msgs::msg::Joy>> m_joystickSubscription;

@@ -16,8 +16,7 @@ namespace RobotecRecordingTools
         // Put your public methods here
     };
 
-    class RobotecRecordingToolsBusTraits
-        : public AZ::EBusTraits
+    class RobotecRecordingToolsBusTraits : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////

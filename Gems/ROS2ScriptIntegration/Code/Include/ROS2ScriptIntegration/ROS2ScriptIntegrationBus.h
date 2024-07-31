@@ -16,8 +16,7 @@ namespace ROS2ScriptIntegration
         // Put your public methods here
     };
 
-    class ROS2ScriptIntegrationBusTraits
-        : public AZ::EBusTraits
+    class ROS2ScriptIntegrationBusTraits : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////

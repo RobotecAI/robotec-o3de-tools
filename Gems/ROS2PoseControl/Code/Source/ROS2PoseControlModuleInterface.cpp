@@ -2,15 +2,14 @@
 #include "ROS2PoseControlModuleInterface.h"
 #include <AzCore/Memory/Memory.h>
 
-#include <ROS2PoseControl/ROS2PoseControlTypeIds.h>
 #include "Clients/ROS2PoseControl.h"
+#include <ROS2PoseControl/ROS2PoseControlTypeIds.h>
 
 #include <Clients/ROS2PoseControlSystemComponent.h>
 
 namespace ROS2PoseControl
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(ROS2PoseControlModuleInterface,
-        "ROS2PoseControlModuleInterface", ROS2PoseControlModuleInterfaceTypeId);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(ROS2PoseControlModuleInterface, "ROS2PoseControlModuleInterface", ROS2PoseControlModuleInterfaceTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL(ROS2PoseControlModuleInterface, AZ::Module);
     AZ_CLASS_ALLOCATOR_IMPL(ROS2PoseControlModuleInterface, AZ::SystemAllocator);
 
@@ -20,10 +19,8 @@ namespace ROS2PoseControl
         // Add ALL components descriptors associated with this gem to m_descriptors.
         // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
         // This happens through the [MyComponent]::Reflect() function.
-        m_descriptors.insert(m_descriptors.end(), {
-            ROS2PoseControlSystemComponent::CreateDescriptor(),
-            ROS2PoseControl::CreateDescriptor()
-            });
+        m_descriptors.insert(
+            m_descriptors.end(), { ROS2PoseControlSystemComponent::CreateDescriptor(), ROS2PoseControl::CreateDescriptor() });
     }
 
     AZ::ComponentTypeList ROS2PoseControlModuleInterface::GetRequiredSystemComponents() const
