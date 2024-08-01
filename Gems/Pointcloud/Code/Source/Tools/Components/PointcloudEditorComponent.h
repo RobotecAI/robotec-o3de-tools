@@ -9,7 +9,9 @@
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <Pointcloud/PointcloudComponentConfigurationBus.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
+#include <Pointcloud/PointcloudTypeIds.h>
 
 namespace Pointcloud
 {
@@ -18,9 +20,10 @@ namespace Pointcloud
         : public AzToolsFramework::Components::EditorComponentBase
         , private AZ::TransformNotificationBus::Handler
         , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
+        , private PointcloudEditorComponentConfigurationBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(PointcloudEditorComponent, "{018fba15-560f-78cb-afb4-cf4d00cefc17}");
+        AZ_EDITOR_COMPONENT(PointcloudEditorComponent, PointcloudEditorComponentTypeId);
         PointcloudEditorComponent() = default;
         ~PointcloudEditorComponent() = default;
 
@@ -38,6 +41,10 @@ namespace Pointcloud
 
         // AzToolsFramework::EditorEntityInfoNotificationBus overrides ...
         void OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool visible) override;
+
+        // PointcloudEditorComponentConfigurationBus::Handler overrides ...
+        void SetPointcloudAsset(AZ::Data::Asset<PointcloudAsset> asset) override;
+        void SetPointSize(float pointSize) override;
 
         AZ::Crc32 OnSetPointSize();
         AZ::Crc32 OnAssetChanged();
