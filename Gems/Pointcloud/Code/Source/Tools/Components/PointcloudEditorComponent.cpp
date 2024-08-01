@@ -91,9 +91,10 @@ namespace Pointcloud
 
     void PointcloudEditorComponent::Deactivate()
     {
+        PointcloudEditorComponentConfigurationBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
-        PointcloudEditorComponentConfigurationBus::Handler::BusDisconnect();
+
         m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
     }
 
