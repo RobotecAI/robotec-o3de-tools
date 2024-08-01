@@ -29,23 +29,6 @@ namespace Pointcloud
                 ->Version(0)
                 ->Field("PointcloudAsset", &PointcloudComponent::m_pointcloudAsset)
                 ->Field("PointSize", &PointcloudComponent::m_pointSize);
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<PointcloudComponent>("PointcloudComponent", "PointcloudComponent")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "PointcloudComponent")
-                    ->Attribute(AZ::Edit::Attributes::Category, "RobotecTools")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &PointcloudComponent::m_pointcloudAsset,
-                        "Pointcloud Asset",
-                        "Asset containing the pointcloud data")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &PointcloudComponent::m_pointSize,
-                        "Point Size",
-                        "Size of the points in the pointcloud");
-            }
         }
     }
 

@@ -9,6 +9,7 @@
 #include <AzFramework/Scene/Scene.h>
 #include <Pointcloud/PointcloudAsset.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
+#include <Pointcloud/PointcloudTypeIds.h>
 namespace Pointcloud
 {
 
@@ -17,7 +18,7 @@ namespace Pointcloud
         , private AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(PointcloudComponent, "{0190c091-83aa-7c6e-a6da-5efea1f23473}");
+        AZ_COMPONENT(PointcloudComponent, PointcloudComponentTypeId);
         PointcloudComponent() = default;
         PointcloudComponent(const AZ::Data::Asset<PointcloudAsset>& pointcloudAsset, const float pointSize);
         ~PointcloudComponent() = default;

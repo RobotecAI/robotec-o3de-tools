@@ -21,6 +21,12 @@ namespace Pointcloud
     // so they use the Same TypeId
     inline constexpr const char* PointcloudEditorModuleTypeId = PointcloudModuleTypeId;
 
+    // Components TypeIds
+    inline constexpr const char* PointcloudComponentTypeId = "{0190c091-83aa-7c6e-a6da-5efea1f23473}";
+    inline constexpr const char* PointcloudEditorComponentTypeId = "{018fba15-560f-78cb-afb4-cf4d00cefc17}";
+
     // Interface TypeIds
     inline constexpr const char* PointcloudRequestsTypeId = "{86CA76D8-2225-4C50-86E4-B1C8EFDEA8EF}";
+    // component buses
+    inline constexpr const char* PointCloudEditorComponentRequestsTypeId = "{5985443b-feab-444f-a633-4b2a8142c560}";
 } // namespace Pointcloud

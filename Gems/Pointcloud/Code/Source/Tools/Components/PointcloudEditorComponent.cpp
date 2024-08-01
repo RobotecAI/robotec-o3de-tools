@@ -86,12 +86,15 @@ namespace Pointcloud
             });
         AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
+        PointcloudEditorComponentConfigurationBus::Handler::BusConnect(GetEntityId());
     }
 
     void PointcloudEditorComponent::Deactivate()
     {
+        PointcloudEditorComponentConfigurationBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
+
         m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
     }
 
@@ -108,6 +111,7 @@ namespace Pointcloud
         }
         return AZ::Edit::PropertyRefreshLevels::None;
     }
+
     AZ::Crc32 PointcloudEditorComponent::OnAssetChanged()
     {
         if (m_featureProcessor)
@@ -148,4 +152,14 @@ namespace Pointcloud
             m_featureProcessor->SetTransform(m_pointcloudHandle, world);
         }
     }
+
+    void PointcloudEditorComponent::SetPointcloudAsset(AZ::Data::Asset<PointcloudAsset> asset)
+    {
+        m_pointcloudAsset = asset;
+    }
+    void PointcloudEditorComponent::SetPointSize(float pointSize)
+    {
+        m_pointSize = pointSize;
+    }
+
 } // namespace Pointcloud
