@@ -70,7 +70,6 @@ namespace DisableMainView
             auto viewportContext = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
             viewportContext->SetCameraTransform(AZ::Transform::CreateIdentity());
             viewportContext->SetCameraProjectionMatrix(AZ::Matrix4x4::CreateZero());
-
         }
     }
 
