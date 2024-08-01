@@ -13,6 +13,7 @@ namespace RobotecRecordingTools
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = RobotecRecordingToolsSystemComponent;
+
     public:
         AZ_COMPONENT_DECL(RobotecRecordingToolsEditorSystemComponent);
 

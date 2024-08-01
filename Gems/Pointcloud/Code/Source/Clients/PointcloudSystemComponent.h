@@ -13,8 +13,7 @@
 #include <Pointcloud/PointcloudAsset.h>
 namespace Pointcloud
 {
-    class PointcloudSystemComponent
-        : public AZ::Component
+    class PointcloudSystemComponent : public AZ::Component
     {
     public:
         AZ_COMPONENT_DECL(PointcloudSystemComponent);

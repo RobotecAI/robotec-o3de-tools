@@ -49,7 +49,6 @@ namespace Pointcloud
     {
     }
 
-
     void PointcloudSystemComponent::Init()
     {
     }

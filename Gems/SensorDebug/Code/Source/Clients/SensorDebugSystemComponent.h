@@ -33,6 +33,7 @@ namespace SensorDebug
         void Deactivate() override;
 
         void ClearSensors();
+
     private:
         void FindSensorsWithBusAPI();
         void FindSensorsWithComponentAPI();

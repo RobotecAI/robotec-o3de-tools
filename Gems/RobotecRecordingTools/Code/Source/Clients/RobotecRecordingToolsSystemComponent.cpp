@@ -7,16 +7,14 @@
 
 namespace RobotecRecordingTools
 {
-    AZ_COMPONENT_IMPL(RobotecRecordingToolsSystemComponent, "RobotecRecordingToolsSystemComponent",
-        RobotecRecordingToolsSystemComponentTypeId);
+    AZ_COMPONENT_IMPL(
+        RobotecRecordingToolsSystemComponent, "RobotecRecordingToolsSystemComponent", RobotecRecordingToolsSystemComponentTypeId);
 
     void RobotecRecordingToolsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<RobotecRecordingToolsSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+            serializeContext->Class<RobotecRecordingToolsSystemComponent, AZ::Component>()->Version(0);
         }
     }
 
@@ -34,7 +32,8 @@ namespace RobotecRecordingTools
     {
     }
 
-    void RobotecRecordingToolsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void RobotecRecordingToolsSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
 

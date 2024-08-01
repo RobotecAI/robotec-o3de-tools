@@ -6,8 +6,7 @@
 
 namespace RobotecRecordingTools
 {
-    class RobotecRecordingToolsModuleInterface
-        : public AZ::Module
+    class RobotecRecordingToolsModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(RobotecRecordingToolsModuleInterface)
@@ -21,4 +20,4 @@ namespace RobotecRecordingTools
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace RobotecRecordingTools
+} // namespace RobotecRecordingTools

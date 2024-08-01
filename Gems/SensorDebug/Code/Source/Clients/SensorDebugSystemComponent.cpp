@@ -20,7 +20,6 @@ namespace SensorDebug
     void SensorDebugSystemComponent::Activate()
     {
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
-
     }
 
     void SensorDebugSystemComponent::Deactivate()

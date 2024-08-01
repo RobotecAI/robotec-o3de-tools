@@ -9,8 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <WatchdogTools/WatchdogToolsBus.h>
 #include <AzCore/std/containers/set.h>
+#include <WatchdogTools/WatchdogToolsBus.h>
 
 namespace WatchdogTools
 {
@@ -32,6 +32,7 @@ namespace WatchdogTools
         ~WatchdogToolsSystemComponent();
 
         void CheckRequiredModules() override;
+
     protected:
         // AZ::Component overrides ...
         void Activate() override;

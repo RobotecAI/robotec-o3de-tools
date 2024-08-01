@@ -1,20 +1,22 @@
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include "ROS2PoseControlEditorSystemComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <ROS2PoseControl/ROS2PoseControlTypeIds.h>
 
 namespace ROS2PoseControl
 {
-    AZ_COMPONENT_IMPL(ROS2PoseControlEditorSystemComponent, "ROS2PoseControlEditorSystemComponent",
-        ROS2PoseControlEditorSystemComponentTypeId, BaseSystemComponent);
+    AZ_COMPONENT_IMPL(
+        ROS2PoseControlEditorSystemComponent,
+        "ROS2PoseControlEditorSystemComponent",
+        ROS2PoseControlEditorSystemComponentTypeId,
+        BaseSystemComponent);
 
     void ROS2PoseControlEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ROS2PoseControlEditorSystemComponent, ROS2PoseControlSystemComponent>()
-                ->Version(0);
+            serializeContext->Class<ROS2PoseControlEditorSystemComponent, ROS2PoseControlSystemComponent>()->Version(0);
         }
     }
 
@@ -39,7 +41,8 @@ namespace ROS2PoseControl
         BaseSystemComponent::GetRequiredServices(required);
     }
 
-    void ROS2PoseControlEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void ROS2PoseControlEditorSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         BaseSystemComponent::GetDependentServices(dependent);
     }

@@ -51,7 +51,6 @@ namespace ROS2PoseControl
         void SetIsTracking(bool isTracking);
 
     private:
-
         //! Obtains the transform in the world tagged with the given tag name.
         //! @param tagName The name of the tag to search for.
         //! @return The transform of the entity with the given tag name, if it exists.
@@ -68,7 +67,7 @@ namespace ROS2PoseControl
 
         AZ::Transform RemoveTilt(AZ::Transform transform) const;
 
-        AZStd::optional<AZ::Vector3> QueryGround(const AZ::Vector3& location,  const AZ::Vector3& gravityDirection, float maxDistance);
+        AZStd::optional<AZ::Vector3> QueryGround(const AZ::Vector3& location, const AZ::Vector3& gravityDirection, float maxDistance);
 
         void ApplyTransform(const AZ::Transform& transform);
 
@@ -88,6 +87,5 @@ namespace ROS2PoseControl
         bool m_tf2WarningShown = false;
         bool m_groundNotFoundWarningShown = false;
         bool m_startingOffsetNotFoundWarningShown = false;
-
     };
 } // namespace ROS2PoseControl

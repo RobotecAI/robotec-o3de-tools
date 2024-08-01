@@ -95,15 +95,10 @@ namespace ROS2PoseControl
         geometry_msgs::msg::TransformStamped transformStamped;
         std::string errorString;
         if (m_tf_buffer->canTransform(
-            m_configuration.m_referenceFrame.c_str(),
-            m_configuration.m_targetFrame.c_str(),
-            tf2::TimePointZero,
-            &errorString))
+                m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(), tf2::TimePointZero, &errorString))
         {
             transformStamped = m_tf_buffer->lookupTransform(
-                m_configuration.m_referenceFrame.c_str(),
-                m_configuration.m_targetFrame.c_str(),
-                tf2::TimePointZero);
+                m_configuration.m_referenceFrame.c_str(), m_configuration.m_targetFrame.c_str(), tf2::TimePointZero);
             m_tf2WarningShown = false;
         }
         else
@@ -363,7 +358,7 @@ namespace ROS2PoseControl
         request.m_distance = maxDistance;
 
         AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
-        if(!m_groundNotFoundWarningShown)
+        if (!m_groundNotFoundWarningShown)
         {
             AZ_Warning("ROS2PoseControl", hitPosition.has_value(), "No ground found for the entity");
             m_groundNotFoundWarningShown = !hitPosition.has_value();

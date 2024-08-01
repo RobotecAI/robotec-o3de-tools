@@ -25,7 +25,7 @@ namespace LevelModificationTools
     public:
         AZ_COMPONENT(PrefabVariantComponent, "{018f8611-85fc-7e0f-a879-b3a0ff793535}", AZ::Component);
         PrefabVariantComponent() = default;
-        explicit PrefabVariantComponent(PrefabVariantConfig  config);
+        explicit PrefabVariantComponent(PrefabVariantConfig config);
         ~PrefabVariantComponent() override = default;
 
         // Component overrides

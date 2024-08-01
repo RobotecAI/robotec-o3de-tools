@@ -20,6 +20,7 @@ namespace Pointcloud
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = PointcloudSystemComponent;
+
     public:
         AZ_COMPONENT_DECL(PointcloudEditorSystemComponent);
 

@@ -13,6 +13,7 @@ namespace ROS2PoseControl
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = ROS2PoseControlSystemComponent;
+
     public:
         AZ_COMPONENT_DECL(ROS2PoseControlEditorSystemComponent);
 

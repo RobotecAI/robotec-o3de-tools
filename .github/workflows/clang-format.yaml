@@ -1,0 +1,15 @@
+name: clang-format check
+on: [pull_request]
+
+jobs:
+  formatting-check:
+    name: Formatting Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run clang-format style check.
+        uses: jidicula/clang-format-action@v4.13.0
+        with:
+          clang-format-version: "15"
+          check-path: "Gems"
+          exclude-regex: "3rdParty" # Exclude paths containing "3rdParty"

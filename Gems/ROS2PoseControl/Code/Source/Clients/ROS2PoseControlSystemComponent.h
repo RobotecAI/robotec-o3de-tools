@@ -6,8 +6,7 @@
 
 namespace ROS2PoseControl
 {
-    class ROS2PoseControlSystemComponent
-        : public AZ::Component
+    class ROS2PoseControlSystemComponent : public AZ::Component
     {
     public:
         AZ_COMPONENT_DECL(ROS2PoseControlSystemComponent);

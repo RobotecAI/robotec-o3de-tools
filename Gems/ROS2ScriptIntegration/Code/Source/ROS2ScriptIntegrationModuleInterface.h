@@ -6,8 +6,7 @@
 
 namespace ROS2ScriptIntegration
 {
-    class ROS2ScriptIntegrationModuleInterface
-        : public AZ::Module
+    class ROS2ScriptIntegrationModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(ROS2ScriptIntegrationModuleInterface)
@@ -21,4 +20,4 @@ namespace ROS2ScriptIntegration
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace ROS2ScriptIntegration
+} // namespace ROS2ScriptIntegration
