@@ -16,8 +16,7 @@ namespace DisableMainView
         // Put your public methods here
     };
 
-    class DisableMainViewBusTraits
-        : public AZ::EBusTraits
+    class DisableMainViewBusTraits : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////

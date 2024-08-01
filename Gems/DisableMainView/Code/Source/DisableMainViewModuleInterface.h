@@ -6,8 +6,7 @@
 
 namespace DisableMainView
 {
-    class DisableMainViewModuleInterface
-        : public AZ::Module
+    class DisableMainViewModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(DisableMainViewModuleInterface)
@@ -21,4 +20,4 @@ namespace DisableMainView
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace DisableMainView
+} // namespace DisableMainView
