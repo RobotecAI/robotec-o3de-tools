@@ -1,0 +1,28 @@
+{
+    "gem_name": "DisableMainView",
+    "version": "1.0.0",
+    "display_name": "DisableMainView",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.ai",
+    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "type": "Code",
+    "summary": "Disable the main view, usable for debugging",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "DisableMainView"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": [],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "DisableMainView"
+}
