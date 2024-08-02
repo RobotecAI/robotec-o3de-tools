@@ -6,8 +6,7 @@
 
 namespace RobotecSpectatorCamera
 {
-    class RobotecSpectatorCameraModuleInterface
-        : public AZ::Module
+    class RobotecSpectatorCameraModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(RobotecSpectatorCameraModuleInterface)
@@ -21,4 +20,4 @@ namespace RobotecSpectatorCamera
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace RobotecSpectatorCamera
+} // namespace RobotecSpectatorCamera

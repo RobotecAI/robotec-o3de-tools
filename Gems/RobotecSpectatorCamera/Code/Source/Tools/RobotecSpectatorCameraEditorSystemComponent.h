@@ -13,6 +13,7 @@ namespace RobotecSpectatorCamera
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = RobotecSpectatorCameraSystemComponent;
+
     public:
         AZ_COMPONENT_DECL(RobotecSpectatorCameraEditorSystemComponent);
 

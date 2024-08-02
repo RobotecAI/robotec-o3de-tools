@@ -1,6 +1,6 @@
 #include "SpectatorCameraEditorComponent.h"
-#include <AzCore/Serialization/EditContext.h>
 #include "SpectatorCameraComponent.h"
+#include <AzCore/Serialization/EditContext.h>
 
 namespace RobotecSpectatorCamera
 {

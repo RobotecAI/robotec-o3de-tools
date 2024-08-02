@@ -1,20 +1,22 @@
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include "RobotecSpectatorCameraEditorSystemComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <RobotecSpectatorCamera/RobotecSpectatorCameraTypeIds.h>
 
 namespace RobotecSpectatorCamera
 {
-    AZ_COMPONENT_IMPL(RobotecSpectatorCameraEditorSystemComponent, "RobotecSpectatorCameraEditorSystemComponent",
-        RobotecSpectatorCameraEditorSystemComponentTypeId, BaseSystemComponent);
+    AZ_COMPONENT_IMPL(
+        RobotecSpectatorCameraEditorSystemComponent,
+        "RobotecSpectatorCameraEditorSystemComponent",
+        RobotecSpectatorCameraEditorSystemComponentTypeId,
+        BaseSystemComponent);
 
     void RobotecSpectatorCameraEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<RobotecSpectatorCameraEditorSystemComponent, RobotecSpectatorCameraSystemComponent>()
-                ->Version(0);
+            serializeContext->Class<RobotecSpectatorCameraEditorSystemComponent, RobotecSpectatorCameraSystemComponent>()->Version(0);
         }
     }
 
@@ -34,12 +36,14 @@ namespace RobotecSpectatorCamera
         incompatible.push_back(AZ_CRC_CE("RobotecSpectatorCameraEditorService"));
     }
 
-    void RobotecSpectatorCameraEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    void RobotecSpectatorCameraEditorSystemComponent::GetRequiredServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         BaseSystemComponent::GetRequiredServices(required);
     }
 
-    void RobotecSpectatorCameraEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void RobotecSpectatorCameraEditorSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         BaseSystemComponent::GetDependentServices(dependent);
     }
