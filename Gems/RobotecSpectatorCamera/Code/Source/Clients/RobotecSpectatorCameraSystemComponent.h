@@ -7,10 +7,7 @@
 
 namespace RobotecSpectatorCamera
 {
-    class RobotecSpectatorCameraSystemComponent
-        : public AZ::Component
-        , protected RobotecSpectatorCameraRequestBus::Handler
-        , public AZ::TickBus::Handler
+    class RobotecSpectatorCameraSystemComponent : public AZ::Component
     {
     public:
         AZ_COMPONENT_DECL(RobotecSpectatorCameraSystemComponent);
@@ -27,20 +24,10 @@ namespace RobotecSpectatorCamera
 
     protected:
         ////////////////////////////////////////////////////////////////////////
-        // RobotecSpectatorCameraRequestBus interface implementation
-
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AZTickBus interface implementation
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
     };
 

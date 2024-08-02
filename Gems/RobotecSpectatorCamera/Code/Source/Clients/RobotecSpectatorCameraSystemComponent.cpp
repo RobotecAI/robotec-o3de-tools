@@ -7,16 +7,14 @@
 
 namespace RobotecSpectatorCamera
 {
-    AZ_COMPONENT_IMPL(RobotecSpectatorCameraSystemComponent, "RobotecSpectatorCameraSystemComponent",
-        RobotecSpectatorCameraSystemComponentTypeId);
+    AZ_COMPONENT_IMPL(
+        RobotecSpectatorCameraSystemComponent, "RobotecSpectatorCameraSystemComponent", RobotecSpectatorCameraSystemComponentTypeId);
 
     void RobotecSpectatorCameraSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<RobotecSpectatorCameraSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+            serializeContext->Class<RobotecSpectatorCameraSystemComponent, AZ::Component>()->Version(0);
         }
     }
 
@@ -34,24 +32,17 @@ namespace RobotecSpectatorCamera
     {
     }
 
-    void RobotecSpectatorCameraSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void RobotecSpectatorCameraSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
 
     RobotecSpectatorCameraSystemComponent::RobotecSpectatorCameraSystemComponent()
     {
-        if (RobotecSpectatorCameraInterface::Get() == nullptr)
-        {
-            RobotecSpectatorCameraInterface::Register(this);
-        }
     }
 
     RobotecSpectatorCameraSystemComponent::~RobotecSpectatorCameraSystemComponent()
     {
-        if (RobotecSpectatorCameraInterface::Get() == this)
-        {
-            RobotecSpectatorCameraInterface::Unregister(this);
-        }
     }
 
     void RobotecSpectatorCameraSystemComponent::Init()
@@ -60,18 +51,9 @@ namespace RobotecSpectatorCamera
 
     void RobotecSpectatorCameraSystemComponent::Activate()
     {
-        RobotecSpectatorCameraRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void RobotecSpectatorCameraSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
-        RobotecSpectatorCameraRequestBus::Handler::BusDisconnect();
     }
-
-    void RobotecSpectatorCameraSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-    }
-
 } // namespace RobotecSpectatorCamera

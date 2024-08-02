@@ -24,10 +24,13 @@ namespace RobotecSpectatorCamera
         static constexpr float SensitivityMax = 30.0f;
         static constexpr float CameraSpeedMin = 0.05f;
         static constexpr float CameraSpeedMax = 1.0f;
+        static constexpr float VerticalOffsetMin = -100.0f;
+        static constexpr float VerticalOffsetMax = 100.0f;
 
         AZ::EntityId m_lookAtTarget;
         float m_mouseSensitivity{ 1.0f };
         float m_cameraSpeed{ CameraSpeedMin };
+        float m_verticalOffset{ 0.0f };
         bool m_followTargetRotation{ true };
         CameraMode m_cameraMode{ CameraMode::ThirdPerson };
     };

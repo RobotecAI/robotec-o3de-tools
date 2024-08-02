@@ -12,7 +12,8 @@ namespace RobotecSpectatorCamera
                 ->Field("LookAtTarget", &SpectatorCameraConfiguration::m_lookAtTarget)
                 ->Field("FollowTargetRotation", &SpectatorCameraConfiguration::m_followTargetRotation)
                 ->Field("MouseSensitivity", &SpectatorCameraConfiguration::m_mouseSensitivity)
-                ->Field("CameraSpeed", &SpectatorCameraConfiguration::m_cameraSpeed);
+                ->Field("CameraSpeed", &SpectatorCameraConfiguration::m_cameraSpeed)
+                ->Field("VerticalOffset", &SpectatorCameraConfiguration::m_verticalOffset);
 
             if (auto editContext = serializeContext->GetEditContext())
             {
@@ -38,7 +39,14 @@ namespace RobotecSpectatorCamera
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &SpectatorCameraConfiguration::m_cameraSpeed, "Camera speed", "Camera speed")
                     ->Attribute(AZ::Edit::Attributes::Min, CameraSpeedMin)
-                    ->Attribute(AZ::Edit::Attributes::Max, CameraSpeedMax);
+                    ->Attribute(AZ::Edit::Attributes::Max, CameraSpeedMax)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SpectatorCameraConfiguration::m_verticalOffset,
+                        "Vertical offset",
+                        "Vertical offset to change the point of the target which is used to calculate LookAt transform")
+                    ->Attribute(AZ::Edit::Attributes::Min, VerticalOffsetMin)
+                    ->Attribute(AZ::Edit::Attributes::Max, VerticalOffsetMax);
             }
         }
     }

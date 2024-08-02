@@ -47,17 +47,21 @@ namespace RobotecSpectatorCamera
             const AZ::Quaternion pitchMouseRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(1.0f), m_pitch);
             const AZ::Quaternion finalRotation = yawMouseRotation * pitchMouseRotation;
             cameraLocalPosition = finalRotation.TransformVector(cameraLocalPosition);
-            AZ::Transform targetWorldPosition = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(targetWorldPosition, m_configuration.m_lookAtTarget, &AZ::TransformBus::Events::GetWorldTM);
+            AZ::Transform targetWorldTM = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(targetWorldTM, m_configuration.m_lookAtTarget, &AZ::TransformBus::Events::GetWorldTM);
+            AZ::Vector3 currentTranslation = targetWorldTM.GetTranslation();
+            const float verticalValueWithOffset = currentTranslation.GetZ() + m_configuration.m_verticalOffset;
+            currentTranslation.SetZ(verticalValueWithOffset);
+            targetWorldTM.SetTranslation(currentTranslation);
             if (m_configuration.m_followTargetRotation)
             {
-                m_currentTransform = AZ::Transform::CreateLookAt(
-                    (targetWorldPosition.TransformPoint(cameraLocalPosition)), targetWorldPosition.GetTranslation());
+                m_currentTransform =
+                    AZ::Transform::CreateLookAt((targetWorldTM.TransformPoint(cameraLocalPosition)), targetWorldTM.GetTranslation());
             }
             else
             {
-                m_currentTransform = AZ::Transform::CreateLookAt(
-                    (targetWorldPosition.GetTranslation() + cameraLocalPosition), targetWorldPosition.GetTranslation());
+                m_currentTransform =
+                    AZ::Transform::CreateLookAt((targetWorldTM.GetTranslation() + cameraLocalPosition), targetWorldTM.GetTranslation());
             }
         }
         AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, m_currentTransform);
@@ -86,12 +90,11 @@ namespace RobotecSpectatorCamera
 
         if (channelId == AzFramework::InputDeviceMouse::Movement::Z && m_configuration.m_cameraMode == CameraMode::ThirdPerson)
         {
-            if (const float newOrbitRadius =
-                    m_orbitRadius - (inputChannel.GetValue() / 1200.0f); // value 1200.0f has been chosen experimentally
+            if (const float newOrbitRadius = m_orbitRadius - (inputChannel.GetValue() / scrollValueDivider);
                 (newOrbitRadius >= SpectatorCameraConfiguration::OrbitRadiusMin) &&
                 (newOrbitRadius <= SpectatorCameraConfiguration::OrbitRadiusMax))
             {
-                m_orbitRadius -= inputChannel.GetValue() / 1200.0f;
+                m_orbitRadius -= inputChannel.GetValue() / scrollValueDivider;
             }
         }
 
@@ -206,14 +209,14 @@ namespace RobotecSpectatorCamera
         if (m_configuration.m_cameraMode == CameraMode::ThirdPerson)
         {
             m_yaw += mouseDelta.GetX() * m_configuration.m_mouseSensitivity;
-            if (AZStd::abs(m_yaw) >= AZ::DegToRad(360))
+            if (AZStd::abs(m_yaw) >= AZ::DegToRad(360.0f))
             {
                 m_yaw = 0.0f;
             }
             // block pitch to go above 87 degrees - this is done to avoid strange camera jumps that start to appear at around 87.5-88
             // degrees
             if (float newPitch = m_pitch + (mouseDelta.GetY() * m_configuration.m_mouseSensitivity);
-                AZStd::abs(newPitch) < AZ::DegToRad(87))
+                AZStd::abs(newPitch) < AZ::DegToRad(pitchDegLimit))
             {
                 m_pitch += mouseDelta.GetY() * m_configuration.m_mouseSensitivity;
             }
@@ -254,5 +257,55 @@ namespace RobotecSpectatorCamera
             return;
         }
         m_configuration.m_cameraMode = CameraMode::ThirdPerson;
+    }
+
+    CameraMode SpectatorCameraComponent::GetCameraMode() const
+    {
+        return m_configuration.m_cameraMode;
+    }
+
+    void SpectatorCameraComponent::SetCameraMode(const CameraMode cameraMode)
+    {
+        m_configuration.m_cameraMode = cameraMode;
+    }
+
+    float SpectatorCameraComponent::GetMouseSensitivity() const
+    {
+        return m_configuration.m_mouseSensitivity;
+    }
+
+    void SpectatorCameraComponent::SetMouseSensitivity(const float mouseSensitivity)
+    {
+        m_configuration.m_mouseSensitivity = mouseSensitivity;
+    }
+
+    float SpectatorCameraComponent::GetCameraSpeed() const
+    {
+        return m_configuration.m_cameraSpeed;
+    }
+
+    void SpectatorCameraComponent::SetCameraSpeed(const float cameraSpeed)
+    {
+        m_configuration.m_cameraSpeed = cameraSpeed;
+    }
+
+    bool SpectatorCameraComponent::GetFollowTargetRotation() const
+    {
+        return m_configuration.m_followTargetRotation;
+    }
+
+    void SpectatorCameraComponent::SetFollowTargetRotation(const bool followTargetRotation)
+    {
+        m_configuration.m_followTargetRotation = followTargetRotation;
+    }
+
+    float SpectatorCameraComponent::GetVerticalOffset() const
+    {
+        return m_configuration.m_verticalOffset;
+    }
+
+    void SpectatorCameraComponent::SetVerticalOffset(const float verticalOffset)
+    {
+        m_configuration.m_verticalOffset = verticalOffset;
     }
 } // namespace RobotecSpectatorCamera
