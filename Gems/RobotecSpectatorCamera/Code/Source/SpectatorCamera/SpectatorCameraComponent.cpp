@@ -26,6 +26,7 @@ namespace RobotecSpectatorCamera
 
     void SpectatorCameraComponent::Activate()
     {
+        RobotecSpectatorCameraRequestBus::Handler::BusConnect(GetEntityId());
         AZ::TickBus::Handler::BusConnect();
         AzFramework::InputChannelEventListener::Connect();
 
@@ -34,6 +35,7 @@ namespace RobotecSpectatorCamera
 
     void SpectatorCameraComponent::Deactivate()
     {
+        RobotecSpectatorCameraRequestBus::Handler::BusDisconnect(GetEntityId());
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::InputChannelEventListener::Disconnect();
     }
