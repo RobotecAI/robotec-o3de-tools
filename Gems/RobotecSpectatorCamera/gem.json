@@ -1,0 +1,28 @@
+{
+    "gem_name": "RobotecSpectatorCamera",
+    "version": "1.0.0",
+    "display_name": "RobotecSpectatorCamera",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.ai",
+    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "type": "Code",
+    "summary": "Camera that works in two modes - ThirdPerson and FreeFlying",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "RobotecSpectatorCamera"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": [],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "RobotecSpectatorCamera"
+}

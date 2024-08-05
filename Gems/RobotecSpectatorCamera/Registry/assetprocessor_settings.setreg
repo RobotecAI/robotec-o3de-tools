@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder RobotecSpectatorCamera/Assets": {
+                    "watch": "@GEMROOT:RobotecSpectatorCamera@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder RobotecSpectatorCamera/Registry": {
+                    "watch": "@GEMROOT:RobotecSpectatorCamera@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
