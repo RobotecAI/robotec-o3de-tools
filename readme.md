@@ -52,3 +52,9 @@ TBD
 # SensorDebug
 
 A tool that allows to adjust frequency, activate and deactive sensor during game mode.
+
+# Smoothing
+
+Gem contains a smoothing component that will mimic the movement of an attached entity with the tracked entity. It offers multiple smoothing methods. It allows the lock Z axis to point up direction.
+Useful for robots' movement smoothing.
+![alt text](doc/Smoothing.png) 
