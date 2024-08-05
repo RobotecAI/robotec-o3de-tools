@@ -44,24 +44,32 @@ namespace RobotecSpectatorCamera
     {
         if (m_configuration.m_cameraMode == CameraMode::ThirdPerson)
         {
+            // initial position of the camera, 'behind' the target
             AZ::Vector3 cameraLocalPosition{ -m_orbitRadius, 0.0f, 0.0f };
+            // calculation of the rotations using the m_yaw and m_pitch values (which correspond to the mouse movement)
             const AZ::Quaternion yawMouseRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(1.0f), -m_yaw);
             const AZ::Quaternion pitchMouseRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(1.0f), m_pitch);
             const AZ::Quaternion finalRotation = yawMouseRotation * pitchMouseRotation;
+            // local camera position after the mouse rotations
             cameraLocalPosition = finalRotation.TransformVector(cameraLocalPosition);
             AZ::Transform targetWorldTM = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(targetWorldTM, m_configuration.m_lookAtTarget, &AZ::TransformBus::Events::GetWorldTM);
             AZ::Vector3 currentTranslation = targetWorldTM.GetTranslation();
+            // change the target's translation to apply the vertical offset
             const float verticalValueWithOffset = currentTranslation.GetZ() + m_configuration.m_verticalOffset;
             currentTranslation.SetZ(verticalValueWithOffset);
             targetWorldTM.SetTranslation(currentTranslation);
             if (m_configuration.m_followTargetRotation)
             {
+                // calculation of the final transform that follows the target's rotation - without mouse input the camera always looks at
+                // the same target point
                 m_currentTransform =
                     AZ::Transform::CreateLookAt((targetWorldTM.TransformPoint(cameraLocalPosition)), targetWorldTM.GetTranslation());
             }
             else
             {
+                // calculation of the final transform that doesn't follow the target's rotation - without mouse input the camera position is
+                // const, but the target can change its position in relation to the camera
                 m_currentTransform =
                     AZ::Transform::CreateLookAt((targetWorldTM.GetTranslation() + cameraLocalPosition), targetWorldTM.GetTranslation());
             }
@@ -92,12 +100,10 @@ namespace RobotecSpectatorCamera
 
         if (channelId == AzFramework::InputDeviceMouse::Movement::Z && m_configuration.m_cameraMode == CameraMode::ThirdPerson)
         {
-            if (const float newOrbitRadius = m_orbitRadius - (inputChannel.GetValue() / scrollValueDivider);
-                (newOrbitRadius >= SpectatorCameraConfiguration::OrbitRadiusMin) &&
-                (newOrbitRadius <= SpectatorCameraConfiguration::OrbitRadiusMax))
-            {
-                m_orbitRadius -= inputChannel.GetValue() / scrollValueDivider;
-            }
+            m_orbitRadius = AZStd::clamp(
+                m_orbitRadius - (inputChannel.GetValue() / scrollValueDivider),
+                SpectatorCameraConfiguration::OrbitRadiusMin,
+                SpectatorCameraConfiguration::OrbitRadiusMax);
         }
 
         if (channelId == AzFramework::InputDeviceMouse::Button::Right || m_configuration.m_cameraMode == CameraMode::FreeFlying)
