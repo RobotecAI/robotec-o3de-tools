@@ -7,16 +7,13 @@
 
 namespace Smoothing
 {
-    AZ_COMPONENT_IMPL(SmoothingSystemComponent, "SmoothingSystemComponent",
-        SmoothingSystemComponentTypeId);
+    AZ_COMPONENT_IMPL(SmoothingSystemComponent, "SmoothingSystemComponent", SmoothingSystemComponentTypeId);
 
     void SmoothingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SmoothingSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+            serializeContext->Class<SmoothingSystemComponent, AZ::Component>()->Version(0);
         }
     }
 

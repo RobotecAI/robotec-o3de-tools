@@ -1,22 +1,43 @@
 #pragma once
+#include "Utils.h"
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/std/optional.h>
 #include <AzFramework/Components/ComponentAdapter.h>
-#include "Utils.h"
-struct SmoothingConfig
-    : public AZ::ComponentConfig
+struct SmoothingConfig : public AZ::ComponentConfig
 {
     AZ_RTTI(SmoothingConfig, "{01910429-f597-7e0b-a4a2-8ac297a0d5ed}", AZ::ComponentConfig);
 
     static void Reflect(AZ::ReflectContext* context);
 
     AZ::EntityId m_entityToTrack;
+
+    enum class SmoothingAlgorithm : AZ::u8
+    {
+        NoSmoothing = 0,
+        AverageSmoothing,
+        DampingSmoothing,
+    };
+
+    SmoothingAlgorithm m_smoothingMethod = SmoothingAlgorithm::DampingSmoothing;
     bool m_lockZAxis = false;
+
+    // config for average smoothing
     int m_smoothBufferLen = 10;
+
+    // config for damping smoothing
+    float m_dampingFactor = 0.1f;
+    float m_springFactor = 0.1f;
+
+private:
+    AZ::Crc32 SmoothBufferVisibility() const;
+    AZ::Crc32 DampingFactorVisibility() const;
+    AZ::Crc32 DampingFactorVisibilityWarning() const;
+
+    AZ::Crc32 OnSmoothMethodChanged();
 };
 
-class SmoothingComponentController:
-     public AZ::TickBus::Handler
+class SmoothingComponentController : public AZ::TickBus::Handler
 {
 public:
     AZ_TYPE_INFO(SmoothingComponentController, "{F8A7B6D3-56E2-4B6E-A869-5F16B5E3A4D4}");
@@ -36,13 +57,18 @@ public:
     // TickBus interface implementation
     void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
     int GetTickOrder() override;
+
 protected:
     SmoothingConfig m_config;
     SmoothingUtils::SmoothingCache m_smoothingCache;
     AZ::EntityId m_entityId;
+    AZStd::optional<AZ::Transform> m_lastTargetTransform;
+    AZStd::optional<AZ::Transform> m_ourLastTransform;
+    AZ::Vector3 m_ourLastVelocity;
+    AZ::Vector3 m_ourLastAngularVelocity;
+    bool m_isFirstTick = true;
 };
 using SmoothingComponentBase = AzFramework::Components::ComponentAdapter<SmoothingComponentController, SmoothingConfig>;
-
 
 class SmoothingComponent : public SmoothingComponentBase
 {
@@ -57,7 +83,4 @@ public:
     // Component overrides...
     void Activate() override;
     void Deactivate() override;
-
-
 };
-

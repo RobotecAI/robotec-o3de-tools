@@ -13,6 +13,7 @@ namespace Smoothing
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = SmoothingSystemComponent;
+
     public:
         AZ_COMPONENT_DECL(SmoothingEditorSystemComponent);
 

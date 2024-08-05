@@ -4,12 +4,11 @@
 
 #include <Smoothing/SmoothingTypeIds.h>
 
-#include <Clients/SmoothingSystemComponent.h>
 #include "Clients/SmoothingComponent.h"
+#include <Clients/SmoothingSystemComponent.h>
 namespace Smoothing
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(SmoothingModuleInterface,
-        "SmoothingModuleInterface", SmoothingModuleInterfaceTypeId);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SmoothingModuleInterface, "SmoothingModuleInterface", SmoothingModuleInterfaceTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL(SmoothingModuleInterface, AZ::Module);
     AZ_CLASS_ALLOCATOR_IMPL(SmoothingModuleInterface, AZ::SystemAllocator);
 
@@ -19,9 +18,11 @@ namespace Smoothing
         // Add ALL components descriptors associated with this gem to m_descriptors.
         // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
         // This happens through the [MyComponent]::Reflect() function.
-        m_descriptors.insert(m_descriptors.end(), {
-            SmoothingSystemComponent::CreateDescriptor(),
-            SmoothingComponent::CreateDescriptor(),
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                SmoothingSystemComponent::CreateDescriptor(),
+                SmoothingComponent::CreateDescriptor(),
             });
     }
 

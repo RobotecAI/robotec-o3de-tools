@@ -3,6 +3,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
 void SmoothingConfig::Reflect(AZ::ReflectContext* context)
 {
     if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -11,7 +12,10 @@ void SmoothingConfig::Reflect(AZ::ReflectContext* context)
             ->Version(1)
             ->Field("m_entityToTrack", &SmoothingConfig::m_entityToTrack)
             ->Field("m_lockZAxis", &SmoothingConfig::m_lockZAxis)
-            ->Field("m_smoothBufferLen", &SmoothingConfig::m_smoothBufferLen);
+            ->Field("m_smoothBufferLen", &SmoothingConfig::m_smoothBufferLen)
+            ->Field("m_smoothingMethod", &SmoothingConfig::m_smoothingMethod)
+            ->Field("m_dampingFactor", &SmoothingConfig::m_dampingFactor)
+            ->Field("m_springFactor", &SmoothingConfig::m_springFactor);
 
         if (AZ::EditContext* editContext = serializeContext->GetEditContext())
         {
@@ -23,14 +27,65 @@ void SmoothingConfig::Reflect(AZ::ReflectContext* context)
                     "The entity to track for smoothing")
                 ->DataElement(
                     AZ::Edit::UIHandlers::Default, &SmoothingConfig::m_lockZAxis, "Lock Z Axis", "Lock the Z axis of the entity to track")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SmoothingConfig::OnSmoothMethodChanged)
+                ->DataElement(
+                    AZ::Edit::UIHandlers::ComboBox,
+                    &SmoothingConfig::m_smoothingMethod,
+                    "Smoothing method",
+                    "A method to smooth the entity's position")
+                ->EnumAttribute(SmoothingConfig::SmoothingAlgorithm::NoSmoothing, "No Smoothing")
+                ->EnumAttribute(SmoothingConfig::SmoothingAlgorithm::AverageSmoothing, "Average Smoothing")
+                ->EnumAttribute(SmoothingConfig::SmoothingAlgorithm::DampingSmoothing, "Damping Smoothing")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SmoothingConfig::OnSmoothMethodChanged)
                 ->DataElement(
                     AZ::Edit::UIHandlers::Default,
                     &SmoothingConfig::m_smoothBufferLen,
                     "Smooth Buffer Length",
-                    "The length of the buffer to smooth the entity's position");
+                    "The length of the buffer to smooth the entity's position")
+                ->Attribute(AZ::Edit::Attributes::Visibility, &SmoothingConfig::SmoothBufferVisibility)
+                ->DataElement(
+                    AZ::Edit::UIHandlers::Default,
+                    &SmoothingConfig::m_dampingFactor,
+                    "Damping Factor",
+                    "The damping factor to smooth the entity's position")
+                ->Attribute(AZ::Edit::Attributes::Visibility, &SmoothingConfig::DampingFactorVisibility)
+                ->DataElement(
+                    AZ::Edit::UIHandlers::Default,
+                    &SmoothingConfig::m_springFactor,
+                    "Spring Factor",
+                    "The spring factor to smooth the entity's position")
+                ->Attribute(AZ::Edit::Attributes::Visibility, &SmoothingConfig::DampingFactorVisibility)
+                ->UIElement(AZ::Edit::UIHandlers::Label, "", "")
+                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                ->Attribute(
+                    AZ::Edit::Attributes::ValueText, "It is recommended to use damping smoothing with lock Z axis for better results.")
+                ->Attribute(AZ::Edit::Attributes::Visibility, &SmoothingConfig::DampingFactorVisibilityWarning);
         }
     }
 }
+
+AZ::Crc32 SmoothingConfig::OnSmoothMethodChanged()
+{
+    return AZ::Edit::PropertyRefreshLevels::EntireTree;
+}
+
+AZ::Crc32 SmoothingConfig::SmoothBufferVisibility() const
+{
+    return m_smoothingMethod == SmoothingAlgorithm::AverageSmoothing ? AZ::Edit::PropertyVisibility::Show
+                                                                     : AZ::Edit::PropertyVisibility::Hide;
+}
+
+AZ::Crc32 SmoothingConfig::DampingFactorVisibility() const
+{
+    return m_smoothingMethod == SmoothingAlgorithm::DampingSmoothing ? AZ::Edit::PropertyVisibility::Show
+                                                                     : AZ::Edit::PropertyVisibility::Hide;
+}
+AZ::Crc32 SmoothingConfig::DampingFactorVisibilityWarning() const
+{
+    return m_smoothingMethod == SmoothingAlgorithm::DampingSmoothing && !m_lockZAxis ? AZ::Edit::PropertyVisibility::Show
+                                                                                     : AZ::Edit::PropertyVisibility::Hide;
+}
+
 void SmoothingComponentController::Reflect(AZ::ReflectContext* context)
 {
     SmoothingConfig::Reflect(context);
@@ -58,7 +113,10 @@ SmoothingComponentController::SmoothingComponentController(const SmoothingConfig
 
 void SmoothingComponentController::Activate(AZ::EntityId entityId)
 {
+    m_ourLastVelocity = AZ::Vector3::CreateZero();
+    m_ourLastAngularVelocity = AZ::Vector3::CreateZero();
     m_entityId = entityId;
+    m_lastTargetTransform.reset();
     AZ::TickBus::Handler::BusConnect();
 }
 
@@ -69,27 +127,87 @@ void SmoothingComponentController::Deactivate()
 
 void SmoothingComponentController::OnTick(float deltaTime, AZ::ScriptTimePoint time)
 {
-    AZ_UNUSED(deltaTime);
     AZ_UNUSED(time);
     // get transform of entity to track
-    AZ::Transform transform = AZ::Transform::CreateIdentity();
-    AZ::TransformBus::EventResult(transform, m_config.m_entityToTrack, &AZ::TransformBus::Events::GetWorldTM);
+    AZ::Transform targetTransform = AZ::Transform::CreateIdentity();
+    AZ::Transform ourTransform = AZ::Transform::CreateIdentity();
+    AZ::TransformBus::EventResult(targetTransform, m_config.m_entityToTrack, &AZ::TransformBus::Events::GetWorldTM);
+    AZ::TransformBus::EventResult(ourTransform, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
+
+    AZ::Transform newTransform = AZ::Transform::CreateIdentity();
     // lock Z axis if needed
     if (m_config.m_lockZAxis)
     {
-        transform = SmoothingUtils::RemoveTiltFromTransform(transform);
+        targetTransform = SmoothingUtils::RemoveTiltFromTransform(targetTransform);
     }
 
-    if (m_config.m_smoothBufferLen > 0)
+    if (m_config.m_smoothingMethod == SmoothingConfig::SmoothingAlgorithm::NoSmoothing)
     {
-        SmoothingUtils::CacheTransform(m_smoothingCache, transform, deltaTime, m_config.m_smoothBufferLen);
-        auto positionSmooth = SmoothingUtils::SmoothTranslation(m_smoothingCache);
-        transform.SetTranslation(positionSmooth);
-        auto rotationSmooth = SmoothingUtils::SmoothRotation(m_smoothingCache);
-        transform.SetRotation(rotationSmooth);
+        newTransform = targetTransform;
     }
-    // set transform to this entity
-    AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+    else if (m_config.m_smoothingMethod == SmoothingConfig::SmoothingAlgorithm::AverageSmoothing)
+    {
+        if (m_config.m_smoothBufferLen > 0)
+        {
+            SmoothingUtils::CacheTransform(m_smoothingCache, targetTransform, deltaTime, m_config.m_smoothBufferLen);
+            auto positionSmooth = SmoothingUtils::SmoothTranslation(m_smoothingCache);
+            newTransform.SetTranslation(positionSmooth);
+            auto rotationSmooth = SmoothingUtils::SmoothRotation(m_smoothingCache);
+            newTransform.SetRotation(rotationSmooth);
+        }
+    }
+    else if (m_config.m_smoothingMethod == SmoothingConfig::SmoothingAlgorithm::DampingSmoothing)
+    {
+        // clip delta time to avoid big jumps
+        deltaTime = AZStd::min(deltaTime, 0.1f);
+        if (m_isFirstTick)
+        {
+            m_lastTargetTransform = targetTransform;
+            newTransform = targetTransform;
+        }
+        if (m_ourLastTransform.has_value() && m_ourLastTransform.has_value())
+        {
+            // easy part - linear damping
+            {
+                const AZ::Vector3 targetPosition = targetTransform.GetTranslation();
+                const AZ::Vector3 ourPosition = ourTransform.GetTranslation();
+                // const AZ::Vector3 targetVelocity = (targetPosition - m_lastTargetTransform->GetTranslation()) / deltaTime;
+                // AZ::Vector3 ourVelocity = (ourPosition - m_ourLastTransform->GetTranslation()) / deltaTime;
+
+                // simplified mass-spring-damper model where damping is proportional to our velocity
+                AZ::Vector3 force = m_config.m_springFactor * (targetPosition - ourPosition) - m_config.m_dampingFactor * m_ourLastVelocity;
+                m_ourLastVelocity += force * deltaTime;
+                newTransform.SetTranslation(ourPosition + m_ourLastVelocity * deltaTime);
+            }
+            // harder part - rotation
+            {
+                // The cross product of two vectors is a vector that is perpendicular to both vector, so it can be used to calculate the
+                // torque response.
+                // We compute sum of cross products of target and our direction X and Y vectors.
+                // We need two cross products to get the torque response in all three axes.
+                // We can imagine a system as three rubbers bands that attached to the target and our entity and we are trying to align
+                // them. The first is attached to the target and our entity's X axis, the second is attached to the target and our entity's
+                // Y axis.
+                auto diff = ourTransform.GetBasisX().Cross(targetTransform.GetBasisX()) +
+                    ourTransform.GetBasisY().Cross(targetTransform.GetBasisY());
+
+                AZ::Vector3 torque = m_config.m_springFactor * (diff)-m_config.m_dampingFactor * m_ourLastAngularVelocity;
+                m_ourLastAngularVelocity += torque * deltaTime;
+                // to be on safe side we lock Z axis for velocity
+                if (m_config.m_lockZAxis)
+                {
+                    m_ourLastAngularVelocity.SetX(.0f);
+                    m_ourLastAngularVelocity.SetY(.0f);
+                }
+                newTransform.SetRotation(
+                    ourTransform.GetRotation() * AZ::Quaternion::CreateFromScaledAxisAngle(m_ourLastAngularVelocity * deltaTime));
+            }
+        }
+    }
+    m_isFirstTick = false;
+    m_lastTargetTransform = targetTransform;
+    m_ourLastTransform = newTransform;
+    AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Events::SetWorldTM, newTransform);
 }
 
 int SmoothingComponentController::GetTickOrder()

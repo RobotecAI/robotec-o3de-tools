@@ -4,12 +4,10 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 
-
 namespace Smoothing
 {
 
-    class SmoothingSystemComponent
-        : public AZ::Component
+    class SmoothingSystemComponent : public AZ::Component
     {
     public:
         AZ_COMPONENT_DECL(SmoothingSystemComponent);
@@ -36,7 +34,6 @@ namespace Smoothing
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
-
     };
 
 } // namespace Smoothing

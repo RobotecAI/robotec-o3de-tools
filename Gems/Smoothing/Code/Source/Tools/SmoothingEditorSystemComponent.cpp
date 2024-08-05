@@ -1,20 +1,19 @@
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include "SmoothingEditorSystemComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <Smoothing/SmoothingTypeIds.h>
 
 namespace Smoothing
 {
-    AZ_COMPONENT_IMPL(SmoothingEditorSystemComponent, "SmoothingEditorSystemComponent",
-        SmoothingEditorSystemComponentTypeId, BaseSystemComponent);
+    AZ_COMPONENT_IMPL(
+        SmoothingEditorSystemComponent, "SmoothingEditorSystemComponent", SmoothingEditorSystemComponentTypeId, BaseSystemComponent);
 
     void SmoothingEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SmoothingEditorSystemComponent, SmoothingSystemComponent>()
-                ->Version(0);
+            serializeContext->Class<SmoothingEditorSystemComponent, SmoothingSystemComponent>()->Version(0);
         }
     }
 

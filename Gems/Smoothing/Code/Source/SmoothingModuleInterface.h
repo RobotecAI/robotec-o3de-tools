@@ -6,8 +6,7 @@
 
 namespace Smoothing
 {
-    class SmoothingModuleInterface
-        : public AZ::Module
+    class SmoothingModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(SmoothingModuleInterface)
@@ -21,4 +20,4 @@ namespace Smoothing
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace Smoothing
+} // namespace Smoothing

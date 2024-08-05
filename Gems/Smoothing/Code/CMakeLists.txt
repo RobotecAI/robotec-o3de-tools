@@ -71,8 +71,11 @@ ly_add_target(
         PRIVATE
             Gem::${gem_name}.Private.Object
 )
+find_package (Eigen3 3.3 NO_MODULE)
 
-# Include the gem name into the Client Module source file
+target_link_libraries(${gem_name}.Private.Object PUBLIC Eigen3::Eigen)
+
+    # Include the gem name into the Client Module source file
 # for use with the AZ_DECLARE_MODULE_CLASS macro
 # This is to allow renaming of the gem to also cause
 # the CreateModuleClass_Gem_<gem-name> function which

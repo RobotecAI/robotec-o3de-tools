@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Clients/SmoothingComponent.h>
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <Clients/SmoothingComponent.h>
 
 using SmoothingComponentEditorBase =
     AzToolsFramework::Components::EditorComponentAdapter<SmoothingComponentController, SmoothingComponent, SmoothingConfig>;
@@ -21,6 +21,4 @@ public:
     void Activate() override;
     void Deactivate() override;
     bool ShouldActivateController() const override;
-
-
 };

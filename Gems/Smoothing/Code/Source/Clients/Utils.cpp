@@ -7,7 +7,8 @@ AZ::Transform SmoothingUtils::RemoveTiltFromTransform(AZ::Transform transform)
     const AZ::Vector3 axisX = transform.GetBasisX();
     const AZ::Vector3 axisY = transform.GetBasisY();
 
-    const AZ::Matrix3x3 projectionOnXY {AZ::Matrix3x3::CreateFromColumns(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateZero())};
+    const AZ::Matrix3x3 projectionOnXY{ AZ::Matrix3x3::CreateFromColumns(
+        AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateZero()) };
 
     const AZ::Vector3 newAxisZ = AZ::Vector3::CreateAxisZ(); // new axis Z points up
 
@@ -61,7 +62,8 @@ AZ::Quaternion SmoothingUtils::SmoothRotation(const SmoothingUtils::SmoothingCac
     return q;
 }
 
-void SmoothingUtils::CacheTransform(SmoothingUtils::SmoothingCache& cache, const AZ::Transform& transform, float deltaTime, int smoothBufferLen )
+void SmoothingUtils::CacheTransform(
+    SmoothingUtils::SmoothingCache& cache, const AZ::Transform& transform, float deltaTime, int smoothBufferLen)
 {
     // update the smoothing buffer
     cache.m_lastTranslationsBuffer.push_back(AZStd::make_pair(transform.GetTranslation(), deltaTime));
