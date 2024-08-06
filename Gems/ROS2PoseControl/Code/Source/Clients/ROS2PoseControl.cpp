@@ -170,38 +170,51 @@ namespace ROS2PoseControl
                 }
                 const AZ::Transform requestedTransform = ROS2::ROS2Conversions::FromROS2Pose(msg->pose);
                 AZ::Transform finalTransform;
+
                 if (msg->header.frame_id.empty())
                 {
                     finalTransform = requestedTransform;
                 }
                 else if (frameId.compare(msg->header.frame_id.c_str()) == 0)
                 {
-                    auto offsetTransformOptional = GetOffsetTransform(m_configuration.m_startOffsetTag);
-                    AZ::Transform offsetTransform =
-                        offsetTransformOptional.has_value() ? offsetTransformOptional.value() : AZ::Transform::CreateIdentity();
-                    offsetTransform.Invert();
-
                     auto entityTransform = GetEntity()->GetTransform()->GetWorldTM();
-
-                    finalTransform = offsetTransform * entityTransform * requestedTransform;
+                    auto offsetTransformOptional = GetOffsetTransform(m_configuration.m_startOffsetTag);
+                    AZ::Transform invertedOffsetTransform =
+                        offsetTransformOptional.has_value() ? offsetTransformOptional.value() : AZ::Transform::CreateIdentity();
+                    invertedOffsetTransform.Invert();
+                    finalTransform = invertedOffsetTransform * entityTransform * requestedTransform;
                 }
                 else
                 {
                     AZStd::string headerFrameId(msg->header.frame_id.c_str());
 
-                    const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome =
+                    const AZ::Outcome<AZ::Transform, AZStd::string> transformOutcomeReferenceFrame =
                         GetCurrentTransformViaTF2(m_configuration.m_referenceFrame, headerFrameId);
-                    if (transform_outcome.IsSuccess())
+                    bool foundTransform = false;
+                    if (transformOutcomeReferenceFrame.IsSuccess())
                     {
-                        finalTransform = transform_outcome.GetValue() * requestedTransform;
+                        finalTransform = transformOutcomeReferenceFrame.GetValue() * requestedTransform;
+                        foundTransform = true;
                     }
                     else
+                    {
+                        const AZ::Outcome<AZ::Transform, AZStd::string> transformOutcomeBaseFrame =
+                            GetCurrentTransformViaTF2(m_configuration.m_targetFrame, headerFrameId);
+                        if (transformOutcomeBaseFrame.IsSuccess())
+                        {
+                            finalTransform = transformOutcomeBaseFrame.GetValue() * requestedTransform;
+                            foundTransform = true;
+                        }
+                    }
+
+                    if (!foundTransform)
                     {
                         AZ_Warning(
                             "ROS2PoseControl",
                             true,
-                            "No transform found from refrence frame (%s) to requested frame (%s)\n",
+                            "No transform found from reference frame (%s) or target frame (%s) to requested frame (%s)  \n",
                             m_configuration.m_referenceFrame.c_str(),
+                            m_configuration.m_targetFrame.c_str(),
                             headerFrameId.c_str());
                         return;
                     }
