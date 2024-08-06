@@ -135,9 +135,10 @@ namespace ROS2PoseControl
     {
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
         {
-            const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome = GetCurrentTransformViaTF2(
-                    m_configuration.m_referenceFrame, m_configuration.m_targetFrame);
-            if (!transform_outcome.IsSuccess()) {
+            const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome =
+                GetCurrentTransformViaTF2(m_configuration.m_referenceFrame, m_configuration.m_targetFrame);
+            if (!transform_outcome.IsSuccess())
+            {
                 return;
             }
             else
