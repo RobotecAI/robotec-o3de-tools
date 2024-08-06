@@ -59,8 +59,9 @@ namespace ROS2PoseControl
         // ImGui::ImGuiUpdateListenerBus::Handler overrides
         void OnImGuiUpdate() override;
 
-        [[nodiscard]] AZ::Outcome<AZ::Transform, const char*> GetCurrentTransformViaTF2();
-
+        [[nodiscard]]  AZ::Outcome<AZ::Transform, AZStd::string>
+        GetCurrentTransformViaTF2(const AZStd::string &targetFrame, const AZStd::string &sourceFrame);
+        
         void OnTopicConfigurationChanged();
 
         void OnIsTrackingChanged();
