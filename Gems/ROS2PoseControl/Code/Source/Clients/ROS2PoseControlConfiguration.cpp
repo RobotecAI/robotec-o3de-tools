@@ -56,13 +56,11 @@ namespace ROS2PoseControl
                         &ROS2PoseControlConfiguration::m_targetFrame,
                         "Target Frame",
                         "Frame to track eg. base_link")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isTrackingModeTF2Visibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ROS2PoseControlConfiguration::m_referenceFrame,
                         "Reference Frame",
                         "Reference frame eg. map")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isTrackingModeTF2Visibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_lockZAxis, "Lock Z Axis", "Lock Z axis")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
