@@ -92,29 +92,25 @@ namespace ROS2PoseControl
     }
 
     AZ::Outcome<AZ::Transform, AZStd::string> ROS2PoseControl::GetCurrentTransformViaTF2(
-        const AZStd::string& targetFrame,
-        const AZStd::string& sourceFrame)
-    {
+            const AZStd::string &targetFrame,
+            const AZStd::string &sourceFrame) {
         geometry_msgs::msg::TransformStamped transformStamped;
         std::string errorString;
         bool exceptionThrown = false;
         const auto targetFrameCStr = targetFrame.c_str();
         const auto sourceFrameCStr = sourceFrame.c_str();
         if (m_tf_buffer->canTransform(
-            targetFrameCStr,
-            sourceFrameCStr,
-            tf2::TimePointZero,
-            &errorString))
-        {
-            try
-            {
+                targetFrameCStr,
+                sourceFrameCStr,
+                tf2::TimePointZero,
+                &errorString)) {
+            try {
                 transformStamped = m_tf_buffer->lookupTransform(
-                    targetFrameCStr,
-                    sourceFrameCStr,
-                    tf2::TimePointZero);
+                        targetFrameCStr,
+                        sourceFrameCStr,
+                        tf2::TimePointZero);
                 m_tf2WarningShown = false;
-            } catch (const tf2::TransformException& ex)
-            {
+            } catch (const tf2::TransformException &ex) {
                 errorString = ex.what();
                 exceptionThrown = true;
             }
@@ -143,9 +139,9 @@ namespace ROS2PoseControl
     {
         if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
         {
-            const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome = GetCurrentTransformViaTF2(m_configuration.m_referenceFrame,m_configuration.m_targetFrame);
-            if (!transform_outcome.IsSuccess())
-            {
+            const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome = GetCurrentTransformViaTF2(
+                    m_configuration.m_referenceFrame, m_configuration.m_targetFrame);
+            if (!transform_outcome.IsSuccess()) {
                 return;
             }
             else
@@ -184,7 +180,8 @@ namespace ROS2PoseControl
                 else if (frameId.compare(msg->header.frame_id.c_str()) == 0)
                 {
                     auto offsetTransformOptional = GetOffsetTransform(m_configuration.m_startOffsetTag);
-                    AZ::Transform offsetTransform = offsetTransformOptional.has_value() ? offsetTransformOptional.value() : AZ::Transform::CreateIdentity();
+                    AZ::Transform offsetTransform = offsetTransformOptional.has_value()
+                                                    ? offsetTransformOptional.value() : AZ::Transform::CreateIdentity();
                     offsetTransform.Invert();
 
                     auto entityTransform = GetEntity()->GetTransform()->GetWorldTM();
@@ -194,17 +191,19 @@ namespace ROS2PoseControl
                 else
                 {
                     AZStd::string headerFrameId(msg->header.frame_id.c_str());
-                    
+
                     const AZ::Outcome<AZ::Transform, AZStd::string> transform_outcome = GetCurrentTransformViaTF2(
-                        m_configuration.m_referenceFrame,
-                        headerFrameId);
+                            m_configuration.m_referenceFrame,
+                            headerFrameId);
                     if (transform_outcome.IsSuccess())
                     {
                         finalTransform = transform_outcome.GetValue() * requestedTransform;
                     }
                     else
                     {
-                        AZ_Warning("ROS2PoseControl", true, "No transform found from refrence frame (%s) to requested frame (%s)\n",m_configuration.m_referenceFrame.c_str(), headerFrameId.c_str());
+                        AZ_Warning("ROS2PoseControl", true,
+                                   "No transform found from refrence frame (%s) to requested frame (%s)\n",
+                                   m_configuration.m_referenceFrame.c_str(), headerFrameId.c_str());
                         return;
                     }
                 }
