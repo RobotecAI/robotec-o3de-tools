@@ -17,6 +17,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <fstream>
+
 namespace Pointcloud
 {
     void PointcloudFeatureProcessor::Reflect(AZ::ReflectContext* context)
@@ -37,7 +38,7 @@ namespace Pointcloud
             AZ_Error("PointcloudFeatureProcessor", false, "Failed to load required stars shader.");
             return;
         }
-        AZ::Data::AssetBus::Handler::BusConnect(m_shader->GetAssetId());
+        AZ::Data::AssetBus::MultiHandler::BusConnect(m_shader->GetAssetId());
 
         m_drawSrgLayout = m_shader->GetAsset()->GetDrawSrgLayout(m_shader->GetSupervariantIndex());
         AZ_Error(
@@ -60,37 +61,84 @@ namespace Pointcloud
     PointcloudFeatureProcessorInterface::PointcloudHandle PointcloudFeatureProcessor::AcquirePointcloud(
         const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData)
     {
-        AZ_Assert(m_drawSrgLayout, "DrawSrgLayout is not initialized");
         m_currentPointcloudDataIndex++;
         auto& pcData = m_pointcloudData[m_currentPointcloudDataIndex];
         pcData.m_index = m_currentPointcloudDataIndex;
-        const uint32_t elementSize = sizeof(PointcloudAsset::CloudVertex);
-        const uint32_t elementCount = static_cast<uint32_t>(cloudVertexData.size());
+        UpdatePointCloud(m_currentPointcloudDataIndex, cloudVertexData, 0);
+        return pcData.m_index;
+    }
+
+    void PointcloudFeatureProcessor::UpdatePointCloud(
+        PointcloudHandle PointcloudDataIndex, const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData, size_t startIdx)
+    {
+        if (m_pointcloudData.find(PointcloudDataIndex) == m_pointcloudData.end())
+        {
+            AZ_Error(
+                "PointcloudFeatureProcessor",
+                false,
+                "PointcloudDataIndex not found, use AcquirePointcloud to create a new pointcloud first");
+            return;
+        }
+        AZ_Assert(m_drawSrgLayout, "DrawSrgLayout is not initialized");
+        auto& pcData = m_pointcloudData[PointcloudDataIndex];
+        constexpr uint32_t elementSize = sizeof(PointcloudAsset::CloudVertex);
+
+        const uint32_t elementCount = AZStd::max(static_cast<uint32_t>(cloudVertexData.size() + startIdx), pcData.m_vertices);
+        // new element count
         const uint32_t bufferSize = elementCount * elementSize; // bytecount
 
-        AZ_TracePrintf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor SetCloud %d, bytesize %d", elementCount, bufferSize);
-        pcData.m_pointData = cloudVertexData;
+        pcData.m_pointData.resize(bufferSize);
         pcData.m_vertices = elementCount;
+        memcpy(pcData.m_pointData.data() + startIdx * elementSize, cloudVertexData.data(), cloudVertexData.size() * elementSize);
 
-        AZ::RPI::CommonBufferDescriptor desc;
-        desc.m_poolType = AZ::RPI::CommonBufferPoolType::ReadWrite;
-        desc.m_bufferName = AZStd::string::format("PointcloudFeatureProcessor, %d", pcData.m_index);
-        desc.m_byteCount = bufferSize;
-        desc.m_elementSize = elementSize;
-        desc.m_bufferData = pcData.m_pointData.data();
+        if (pcData.m_cloudVertexBuffer)
+        {
+            pcData.m_cloudVertexBuffer->Resize(bufferSize);
+            pcData.m_cloudVertexBuffer->UpdateData(pcData.m_pointData.data(), bufferSize, startIdx * elementSize);
+        }
+        else
+        {
+            AZ::RPI::CommonBufferDescriptor desc;
+            desc.m_poolType = AZ::RPI::CommonBufferPoolType::ReadWrite;
+            desc.m_bufferName = AZStd::string::format("PointcloudFeatureProcessor, %d", pcData.m_index);
+            desc.m_byteCount = bufferSize;
+            desc.m_elementSize = elementSize;
+            desc.m_bufferData = pcData.m_pointData.data();
 
-        pcData.m_cloudVertexBuffer = AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-
+            pcData.m_cloudVertexBuffer = AZ::RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+        }
         pcData.m_meshStreamBufferViews.front() =
             AZ::RHI::StreamBufferView(*pcData.m_cloudVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
 
-        pcData.m_drawSrg =
-            AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_drawSrgLayout->GetName());
-        m_pointSizeIndex.Reset();
-        m_modelMatrixIndex.Reset();
+        if (!pcData.m_drawSrg)
+        {
+            pcData.m_drawSrg =
+                AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_drawSrgLayout->GetName());
+            m_pointSizeIndex.Reset();
+            m_modelMatrixIndex.Reset();
+        }
 
         UpdateDrawPacket();
-        return pcData.m_index;
+    }
+
+    PointcloudFeatureProcessorInterface::PointcloudHandle PointcloudFeatureProcessor::AcquirePointcloudFromAsset(
+        AZ::Data::Asset<PointcloudAsset> pointcloudAsset)
+    {
+        m_currentPointcloudDataIndex++;
+        auto& pcData = m_pointcloudData[m_currentPointcloudDataIndex];
+        pcData.m_index = m_currentPointcloudDataIndex;
+        m_pointcloudAssets[pointcloudAsset.GetId()] = m_currentPointcloudDataIndex;
+        pcData.m_assetId = pointcloudAsset.GetId();
+        AZ::Data::AssetBus::MultiHandler::BusConnect(pointcloudAsset.GetId());
+        if (!(pointcloudAsset.IsLoading() || pointcloudAsset.IsReady()))
+        {
+            pointcloudAsset.QueueLoad();
+        }
+        if (pointcloudAsset.IsReady())
+        {
+            OnAssetReady(pointcloudAsset);
+        }
+        return m_currentPointcloudDataIndex;
     }
 
     void PointcloudFeatureProcessor::UpdateDrawPacket()
@@ -111,20 +159,35 @@ namespace Pointcloud
         {
             UpdateDrawPacket();
         }
+        else if (auto it = m_pointcloudAssets.find(asset.GetId()); it != m_pointcloudAssets.end())
+        {
+            AZ_Printf(
+                "PointcloudFeatureProcessor",
+                "Pointcloud asset reloaded,  old %s, new : %s",
+                it->first.ToString<AZStd::string>().c_str(),
+                asset.GetId().ToString<AZStd::string>().c_str());
+            const auto handle = it->second;
+            auto& pcData = m_pointcloudData[handle];
+            auto newAssetData = asset.GetAs<PointcloudAsset>();
+            AZ_Assert(newAssetData, "Asset is not of the expected type.");
+            pcData.m_assetData = asset; // store asset to have ref count of asset
+            UpdatePointCloud(handle, newAssetData->m_data, 0);
+        }
     }
 
     void PointcloudFeatureProcessor::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        if (asset.GetId() == m_shader->GetAssetId())
-        {
-            UpdateDrawPacket();
-        }
+        OnAssetReloaded(asset);
     }
 
     void PointcloudFeatureProcessor::Deactivate()
     {
         AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Deactivated");
-        AZ::Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect(m_shader->GetAssetId());
+        for (const auto& [assetId, _] : m_pointcloudAssets)
+        {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetId);
+        }
         AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
     }
 
@@ -266,6 +329,15 @@ namespace Pointcloud
         {
             m_pointcloudData.erase(it);
         }
-    }
 
+        for (auto it = m_pointcloudAssets.begin(); it != m_pointcloudAssets.end(); ++it)
+        {
+            if (it->second == handle)
+            {
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect(it->first);
+                m_pointcloudAssets.erase(it);
+                break;
+            }
+        }
+    }
 } // namespace Pointcloud

@@ -12,9 +12,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Pointcloud/PointcloudTypeIds.h>
 #include <Render/PointcloudFeatureProcessor.h>
+
 namespace Pointcloud
 {
-
     PointcloudComponent::PointcloudComponent(const AZ::Data::Asset<PointcloudAsset>& pointcloudAsset, const float pointSize)
         : m_pointcloudAsset(pointcloudAsset)
         , m_pointSize(pointSize)
@@ -42,19 +42,9 @@ namespace Pointcloud
                 {
                     m_featureProcessor = m_scene->EnableFeatureProcessor<PointcloudFeatureProcessor>();
                     AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
-                    m_pointcloudAsset.QueueLoad();
-                    m_pointcloudAsset.BlockUntilLoadComplete();
-
-                    AZStd::vector<AZStd::vector<PointcloudAsset::CloudVertex>> cloudVertexDataChunks;
-                    if (m_pointcloudAsset.GetId().IsValid() && m_pointcloudAsset.IsReady())
-                    {
-                        m_pointcloudHandle = m_featureProcessor->AcquirePointcloud(m_pointcloudAsset->m_data);
-                    }
-                    if (m_pointcloudHandle != PointcloudFeatureProcessorInterface::InvalidPointcloudHandle)
-                    {
-                        m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
-                        m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
-                    }
+                    m_pointcloudHandle = m_featureProcessor->AcquirePointcloudFromAsset(m_pointcloudAsset);
+                    m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
+                    m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
                 }
             });
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
@@ -63,7 +53,10 @@ namespace Pointcloud
     void PointcloudComponent::Deactivate()
     {
         AZ::TransformNotificationBus::Handler::BusDisconnect();
-        m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
+        if (m_featureProcessor)
+        {
+            m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
+        }
     }
 
     void PointcloudComponent::OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world)
@@ -74,5 +67,4 @@ namespace Pointcloud
             m_featureProcessor->SetTransform(m_pointcloudHandle, world);
         }
     }
-
 } // namespace Pointcloud
