@@ -9,7 +9,7 @@
  // of a Texure3D with gradient noise data.
  
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
-//#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
