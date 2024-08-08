@@ -17,6 +17,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Name/NameDictionary.h>
+
 namespace Grass {
     void GrassFeatureProcessor::Reflect(AZ::ReflectContext *context) {
         if (auto *serializeContext = azrtti_cast<AZ::SerializeContext *>(context)) {
@@ -187,230 +188,231 @@ namespace Grass {
             } else if (parameterName.GetStringView().starts_with("m_u_")) {
                 return ParameterType::uint;
             } else if (parameterName.GetStringView().starts_with("m_t2_")) {
-                 return ParameterType::Texture2D;
-            AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with any of m_f_, m_f2_, m_f3_, or m_u_";
-            return AZ::Failure(error);
+                return ParameterType::Texture2D;
+                AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with any of m_f_, m_f2_, m_f3_, or m_u_";
+                return AZ::Failure(error);
+            }
         }
         AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with m_";
         return AZ::Failure(error);
     }
 
-    void GrassFeatureProcessor::UpdateDrawPacket() {
-        // print if  things
-        printf("GrassFeatureProcessor UpdateDrawPacket\n");
-        // variables
-        printf("m_meshPipelineState %s\n", m_meshPipelineState ? "true" : "false");
-        printf("m_drawSrg %s\n", m_drawSrg ? "true" : "false");
-        printf("m_objectSrg %s\n", m_objectSrg ? "true" : "false");
+        void GrassFeatureProcessor::UpdateDrawPacket() {
+            // print if  things
+            printf("GrassFeatureProcessor UpdateDrawPacket\n");
+            // variables
+            printf("m_meshPipelineState %s\n", m_meshPipelineState ? "true" : "false");
+            printf("m_drawSrg %s\n", m_drawSrg ? "true" : "false");
+            printf("m_objectSrg %s\n", m_objectSrg ? "true" : "false");
 
-        if (m_meshPipelineState && m_drawSrg && m_objectSrg) {
-            printf ("GrassFeatureProcessor UpdateDrawPacket\n");
-            m_drawPacket = BuildDrawPacket(m_drawSrg,m_objectSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews,
-                                           m_totalVertices);
-        }
-    }
-
-    void GrassFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) {
-        AZ_Printf("GrassFeatureProcessor", "GrassFeatureProcessor OnAssetReloaded");
-        UpdateDrawPacket();
-        UpdateBackgroundClearColor();
-    }
-
-    void GrassFeatureProcessor::Deactivate() {
-        AZ_Printf("GrassFeatureProcessor", "GrassFeatureProcessor Deactivated");
-        AZ::Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
-        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
-    }
-
-    void GrassFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket &packet) {
-        UpdateShaderConstants();
-//        if (m_updateShaderConstants) {
-//            m_updateShaderConstants = false;
-//            UpdateShaderConstants();
-//        }
-
-    }
-
-    void GrassFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket &packet) {
-        auto time = AZStd::chrono::system_clock::now();
-
-        // loop every
-        float loop_length = 30.0f; // 5s
-        double time_diff = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(time - m_startTime).count() / 1e6;
-        double phase = fmod(time_diff, loop_length) / loop_length; // phase goes from 0 to 1
-
-        // m_time goes from 0 to 1 to 0
-        if (phase < 0.5) {
-            m_time = 2.0 * phase; // first half of the cycle, m_time goes from 0 to 1
-        } else {
-            m_time = 2.0 * (1.0 - phase); // second half of the cycle, m_time goes from 1 to 0
-        }
-
-
-        AZ_PROFILE_FUNCTION(AzRender);
-        if (m_drawPacket) {
-            for (auto &view: packet.m_views) {
-                if (!view->HasDrawListTag(m_drawListTag)) {
-                    continue;
-                }
-                constexpr float depth = 0.f;
-                view->AddDrawPacket(m_drawPacket.get(), depth);
+            if (m_meshPipelineState && m_drawSrg && m_objectSrg) {
+                printf ("GrassFeatureProcessor UpdateDrawPacket\n");
+                m_drawPacket = BuildDrawPacket(m_drawSrg,m_objectSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews,
+                                               m_totalVertices);
             }
         }
 
+        void GrassFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) {
+            AZ_Printf("GrassFeatureProcessor", "GrassFeatureProcessor OnAssetReloaded");
+            UpdateDrawPacket();
+            UpdateBackgroundClearColor();
+        }
 
-    }
-    void GrassFeatureProcessor::UpdateBackgroundClearColor()
-    {
-        // This function is only necessary for now because the default clear value
-        // color is not black, and is set in various .pass files in places a user
-        // is unlikely to find.  Unfortunately, the viewport will revert to the
-        // grey color when resizing momentarily.
-        const AZ::RHI::ClearValue blackClearValue = AZ::RHI::ClearValue::CreateVector4Float(0.f, 0.f, 0.f, 0.f);
-        AZ::RPI::PassFilter passFilter;
-        AZStd::string slot;
+        void GrassFeatureProcessor::Deactivate() {
+            AZ_Printf("GrassFeatureProcessor", "GrassFeatureProcessor Deactivated");
+            AZ::Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
+            AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
+        }
 
-        auto setClearValue = [&](AZ::RPI::Pass* pass)->AZ:: RPI::PassFilterExecutionFlow
+        void GrassFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket &packet) {
+            UpdateShaderConstants();
+            //        if (m_updateShaderConstants) {
+            //            m_updateShaderConstants = false;
+            //            UpdateShaderConstants();
+            //        }
+
+        }
+
+        void GrassFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket &packet) {
+            auto time = AZStd::chrono::system_clock::now();
+
+            // loop every
+            float loop_length = 30.0f; // 5s
+            double time_diff = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(time - m_startTime).count() / 1e6;
+            double phase = fmod(time_diff, loop_length) / loop_length; // phase goes from 0 to 1
+
+            // m_time goes from 0 to 1 to 0
+            if (phase < 0.5) {
+                m_time = 2.0 * phase; // first half of the cycle, m_time goes from 0 to 1
+            } else {
+                m_time = 2.0 * (1.0 - phase); // second half of the cycle, m_time goes from 1 to 0
+            }
+
+
+            AZ_PROFILE_FUNCTION(AzRender);
+            if (m_drawPacket) {
+                for (auto &view: packet.m_views) {
+                    if (!view->HasDrawListTag(m_drawListTag)) {
+                        continue;
+                    }
+                    constexpr float depth = 0.f;
+                    view->AddDrawPacket(m_drawPacket.get(), depth);
+                }
+            }
+
+
+        }
+        void GrassFeatureProcessor::UpdateBackgroundClearColor()
         {
-            AZ::Name slotName = AZ::Name::FromStringLiteral(slot, AZ::Interface<AZ::NameDictionary>::Get());
-            if (auto binding = pass->FindAttachmentBinding(slotName))
+            // This function is only necessary for now because the default clear value
+            // color is not black, and is set in various .pass files in places a user
+            // is unlikely to find.  Unfortunately, the viewport will revert to the
+            // grey color when resizing momentarily.
+            const AZ::RHI::ClearValue blackClearValue = AZ::RHI::ClearValue::CreateVector4Float(0.f, 0.f, 0.f, 0.f);
+            AZ::RPI::PassFilter passFilter;
+            AZStd::string slot;
+
+            auto setClearValue = [&](AZ::RPI::Pass* pass)->AZ:: RPI::PassFilterExecutionFlow
             {
-                binding->m_unifiedScopeDesc.m_loadStoreAction.m_clearValue = blackClearValue;
+                AZ::Name slotName = AZ::Name::FromStringLiteral(slot, AZ::Interface<AZ::NameDictionary>::Get());
+                if (auto binding = pass->FindAttachmentBinding(slotName))
+                {
+                    binding->m_unifiedScopeDesc.m_loadStoreAction.m_clearValue = blackClearValue;
+                }
+                return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            };
+
+            slot = "SpecularOutput";
+            passFilter= AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ForwardPassTemplate"), GetParentScene());
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
+            passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ForwardMSAAPassTemplate"), GetParentScene());
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
+
+            slot = "ReflectionOutput";
+            passFilter =AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ReflectionGlobalFullscreenPassTemplate"), GetParentScene());
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
+        }
+
+        AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> GrassFeatureProcessor::BuildDrawPacket(
+                const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &drawSrg,
+                const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &objectSrg,
+                const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> &pipelineState,
+                const AZ::RHI::DrawListTag &drawListTag,
+                const AZStd::span<const AZ::RHI::StreamBufferView> &streamBufferViews,
+                uint32_t vertexCount) {
+            AZ::RHI::DrawLinear drawLinear;
+            drawLinear.m_vertexCount = vertexCount;
+            printf("Vertex Count %d\n", vertexCount);
+            AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+            drawPacketBuilder.Begin(nullptr);
+            drawPacketBuilder.SetDrawArguments(drawLinear);
+            drawPacketBuilder.AddShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
+            drawPacketBuilder.AddShaderResourceGroup(objectSrg->GetRHIShaderResourceGroup());
+
+            // AZ::Data::AssetData::AssetStatus status = texAsset.BlockUntilLoadComplete();
+            // if (!m_isTextureValid) {
+            //     if(status == AZ::Data::AssetData::AssetStatus::Ready ) {
+            //         m_isTextureValid = true;
+            //         texture = AZ::RPI::StreamingImage::FindOrCreate(texAsset);
+            //         objectSrg->SetImage(m_inputTextureImageIndex, texture);
+            //     }else {
+            //         AZ_Printf("Blibloard", "Texture not ready\n");
+            //     }
+            // }
+
+            AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
+            drawRequest.m_listTag = drawListTag;
+            drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
+            drawRequest.m_streamBufferViews = streamBufferViews;
+            drawPacketBuilder.AddDrawItem(drawRequest);
+            return drawPacketBuilder.End();
+        }
+
+        void GrassFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline *renderPipeline,
+                                                                 AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) {
+            if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added) {
+                if (!m_meshPipelineState) {
+                    m_meshPipelineState = aznew AZ::RPI::PipelineStateForDraw;
+                    m_meshPipelineState->Init(m_shader);
+
+                    // AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
+                    // layoutBuilder.AddBuffer()
+                    //         ->Channel("POSITION", AZ::RHI::Format::R32G32B32_FLOAT)
+                    //         ->Channel("VERTEXID", AZ::RHI::Format::Count);
+                    // layoutBuilder.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
+                    // auto inputStreamLayout = layoutBuilder.End();
+
+                    AZ::RHI::InputStreamLayout inputStreamLayout;
+                    inputStreamLayout.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
+                    inputStreamLayout.Finalize();
+                    m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
+                    m_meshPipelineState->SetOutputFromScene(GetParentScene());
+                    m_meshPipelineState->Finalize();
+
+                    UpdateDrawPacket();
+                    UpdateBackgroundClearColor();
+                }
+            } else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged) {
+                if (m_meshPipelineState) {
+                    m_meshPipelineState->SetOutputFromScene(GetParentScene());
+                    m_meshPipelineState->Finalize();
+                    UpdateDrawPacket();
+                    UpdateBackgroundClearColor();
+                }
             }
-            return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
-        };
+        }
 
-        slot = "SpecularOutput";
-        passFilter= AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ForwardPassTemplate"), GetParentScene());
-        AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
-        passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ForwardMSAAPassTemplate"), GetParentScene());
-        AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
+        void GrassFeatureProcessor::UpdateShaderConstants() {
+            if (m_drawSrg) {
+                m_drawSrg->SetConstant(m_timeIndex, m_time);
+                m_drawSrg->Compile();
+            }
 
-        slot = "ReflectionOutput";
-        passFilter =AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("ReflectionGlobalFullscreenPassTemplate"), GetParentScene());
-        AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
-    }
+            if (m_objectSrg) {
+                for (const auto &param : m_shaderParameters) {
+                    AZ::RHI::ShaderInputNameIndex index(param.m_parameterName);
+                    switch (param.m_parameterType) {
+                        case ParameterType::uint:
+                            m_objectSrg->SetConstant(index, param.m_value.m_uintInput);
+                        break;
+                        case ParameterType::Float:
+                            m_objectSrg->SetConstant(index, param.m_value.m_floatInput);
+                        break;
+                        case ParameterType::Float2:
+                            m_objectSrg->SetConstant(index, param.m_value.m_float2Input);
+                        break;
+                        case ParameterType::Float3:
+                            m_objectSrg->SetConstant(index, param.m_value.m_float3Input);
+                        break;
+                    }
+                }
+                m_objectSrg->Compile();
 
-    AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> GrassFeatureProcessor::BuildDrawPacket(
-            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &drawSrg,
-            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &objectSrg,
-            const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> &pipelineState,
-            const AZ::RHI::DrawListTag &drawListTag,
-            const AZStd::span<const AZ::RHI::StreamBufferView> &streamBufferViews,
-            uint32_t vertexCount) {
-        AZ::RHI::DrawLinear drawLinear;
-        drawLinear.m_vertexCount = vertexCount;
-        printf("Vertex Count %d\n", vertexCount);
-        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
-        drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(drawLinear);
-        drawPacketBuilder.AddShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
-        drawPacketBuilder.AddShaderResourceGroup(objectSrg->GetRHIShaderResourceGroup());
+            }
+        }
 
-        // AZ::Data::AssetData::AssetStatus status = texAsset.BlockUntilLoadComplete();
-        // if (!m_isTextureValid) {
-        //     if(status == AZ::Data::AssetData::AssetStatus::Ready ) {
-        //         m_isTextureValid = true;
-        //         texture = AZ::RPI::StreamingImage::FindOrCreate(texAsset);
-        //         objectSrg->SetImage(m_inputTextureImageIndex, texture);
-        //     }else {
-        //         AZ_Printf("Blibloard", "Texture not ready\n");
-        //     }
+        void GrassFeatureProcessor::SetParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) {
+            for (const auto &newParam : shaderParameters) {
+                for (auto &currentParam : m_shaderParameters) {
+                    if (newParam.m_parameterName == currentParam.m_parameterName) {
+                        currentParam.m_value = newParam.m_value;
+                        break;
+                    }
+                }
+                if (newParam.m_parameterName == AZ::Name("m_u_vertexCountPerMesh")) {
+                    m_vertexCountPerMesh = newParam.m_value.m_uintInput;
+                }
+            }
+
+            m_updateShaderConstants = true;
+
+        }
+        //
+        // void GrassFeatureProcessor::SetPointSize(float pointSize) {
+        //     m_updateShaderConstants = true;
+        //     m_pointSize = pointSize;
+        //
         // }
-        
-        AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
-        drawRequest.m_listTag = drawListTag;
-        drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-        drawRequest.m_streamBufferViews = streamBufferViews;
-        drawPacketBuilder.AddDrawItem(drawRequest);
-        return drawPacketBuilder.End();
-    }
-
-    void GrassFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline *renderPipeline,
-                                                             AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) {
-        if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added) {
-            if (!m_meshPipelineState) {
-                m_meshPipelineState = aznew AZ::RPI::PipelineStateForDraw;
-                m_meshPipelineState->Init(m_shader);
-
-                // AZ::RHI::InputStreamLayoutBuilder layoutBuilder;
-                // layoutBuilder.AddBuffer()
-                //         ->Channel("POSITION", AZ::RHI::Format::R32G32B32_FLOAT)
-                //         ->Channel("VERTEXID", AZ::RHI::Format::Count);
-                // layoutBuilder.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
-                // auto inputStreamLayout = layoutBuilder.End();
-
-                AZ::RHI::InputStreamLayout inputStreamLayout;
-                inputStreamLayout.SetTopology(AZ::RHI::PrimitiveTopology::TriangleList);
-                inputStreamLayout.Finalize();
-                m_meshPipelineState->SetInputStreamLayout(inputStreamLayout);
-                m_meshPipelineState->SetOutputFromScene(GetParentScene());
-                m_meshPipelineState->Finalize();
-
-                UpdateDrawPacket();
-                UpdateBackgroundClearColor();
-            }
-        } else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged) {
-            if (m_meshPipelineState) {
-                m_meshPipelineState->SetOutputFromScene(GetParentScene());
-                m_meshPipelineState->Finalize();
-                UpdateDrawPacket();
-                UpdateBackgroundClearColor();
-            }
-        }
-    }
-
-    void GrassFeatureProcessor::UpdateShaderConstants() {
-        if (m_drawSrg) {
-            m_drawSrg->SetConstant(m_timeIndex, m_time);
-            m_drawSrg->Compile();
-        }
-        
-        if (m_objectSrg) {
-            for (const auto &param : m_shaderParameters) {
-                AZ::RHI::ShaderInputNameIndex index(param.m_parameterName);
-                switch (param.m_parameterType) {
-                    case ParameterType::uint:
-                        m_objectSrg->SetConstant(index, param.m_value.m_uintInput);
-                        break;
-                    case ParameterType::Float:
-                        m_objectSrg->SetConstant(index, param.m_value.m_floatInput);
-                        break;
-                    case ParameterType::Float2:
-                        m_objectSrg->SetConstant(index, param.m_value.m_float2Input);
-                        break;
-                    case ParameterType::Float3:
-                        m_objectSrg->SetConstant(index, param.m_value.m_float3Input);
-                        break;
-                }
-            }
-            m_objectSrg->Compile();
-
-        }
-    }
-
-    void GrassFeatureProcessor::SetParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) {
-        for (const auto &newParam : shaderParameters) {
-            for (auto &currentParam : m_shaderParameters) {
-                if (newParam.m_parameterName == currentParam.m_parameterName) {
-                    currentParam.m_value = newParam.m_value;
-                    break;
-                }
-            }
-            if (newParam.m_parameterName == AZ::Name("m_u_vertexCountPerMesh")) {
-                m_vertexCountPerMesh = newParam.m_value.m_uintInput;
-            }
-        }
-
-        m_updateShaderConstants = true;
-
-    }
-    //
-    // void GrassFeatureProcessor::SetPointSize(float pointSize) {
-    //     m_updateShaderConstants = true;
-    //     m_pointSize = pointSize;
-    //
-    // }
 
 
 }
