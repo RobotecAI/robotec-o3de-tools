@@ -1,0 +1,55 @@
+#pragma once
+
+uint hash(uint x) {
+    x += (x << 10);
+    x ^= (x >> 6);
+    x += (x << 3);
+    x ^= (x >> 11);
+    x += (x << 15);
+    return x;
+}
+
+float randomFloat(uint seed) {
+    uint hashValue = hash(seed);
+    return (hashValue & 0xfff) / 4096.0;
+}
+
+float2 randomNormalPair(uint seed) {
+    // Generate two uniform random numbers in [0, 1)
+    float u1 = randomFloat(seed);
+    float u2 = randomFloat(seed + 1u); // Offset seed for different value
+
+    // Apply Box-Muller transform
+    float r = sqrt(-2.0 * log(u1));
+    float theta = 2.0 * 3.14159265359 * u2; // 2*PI
+
+    // Return a pair of normally distributed values
+    return float2(r * cos(theta), r * sin(theta)); 
+}
+
+//https://jsfiddle.net/0nk4m36j/10/ 
+float2 getPointAt2d(float t, float2 p1, float2 pc, float2 p2) {
+    float x = (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * pc.x + t * t * p2.x;
+    float y = (1 - t) * (1 - t) * p1.y + 2 * (1 - t) * t * pc.y + t * t * p2.y;
+    return float2(x,y);
+}
+
+float2 getDerivativeAt2d(float t, float2 p1, float2 pc, float2 p2) {
+    float2 d1 = float2(2 * (pc.x - p1.x), 2 * (pc.y - p1.y));
+    float2 d2 = float2(2 * (p2.x - pc.x), 2 * (p2.y - pc.y));
+
+    float x = (1 - t) * d1.x + t * d2.x;
+    float y = (1 - t) * d1.y + t * d2.y;
+
+    return float2(x,y);
+}
+
+float2 getNormalAt2d(float t, float2 p1, float2 pc, float2 p2) {
+    float2 d = getDerivativeAt2d(t, p1, pc, p2);
+    float q = sqrt(d.x * d.x + d.y * d.y);
+
+    float x = -d.y / q;
+    float y = d.x / q;
+    
+    return float2(x,y);
+}

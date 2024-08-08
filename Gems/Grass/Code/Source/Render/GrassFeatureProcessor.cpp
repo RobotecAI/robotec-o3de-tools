@@ -6,7 +6,7 @@
  *
  */
 
-#include "PointcloudFeatureProcessor.h"
+#include "GrassFeatureProcessor.h"
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -17,25 +17,25 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Name/NameDictionary.h>
-namespace Pointcloud {
-    void PointcloudFeatureProcessor::Reflect(AZ::ReflectContext *context) {
+namespace Grass {
+    void GrassFeatureProcessor::Reflect(AZ::ReflectContext *context) {
         if (auto *serializeContext = azrtti_cast<AZ::SerializeContext *>(context)) {
             serializeContext
-                    ->Class<PointcloudFeatureProcessor, FeatureProcessor>();
+                    ->Class<GrassFeatureProcessor, FeatureProcessor>();
         }
     }
 
-    void PointcloudFeatureProcessor::Activate() {
-        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Activated");
+    void GrassFeatureProcessor::Activate() {
+        AZ_Printf("GrassFeatureProcessor", "GrassFeatureProcessor Activated");
         m_startTime = AZStd::chrono::system_clock::now();
 
         LoadShader();
 
         auto viewportContextInterface = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         AZ_Assert(viewportContextInterface,
-                  "PointcloudFeatureProcessor requires the ViewportContextRequestsInterface.");
+                  "GrassFeatureProcessor requires the ViewportContextRequestsInterface.");
         auto viewportContext = viewportContextInterface->GetViewportContextByScene(GetParentScene());
-        AZ_Assert(viewportContext, "PointcloudFeatureProcessor requires a valid ViewportContext.");
+        AZ_Assert(viewportContext, "GrassFeatureProcessor requires a valid ViewportContext.");
         m_viewportSize = viewportContext->GetViewportSize();
 
         EnableSceneNotification();
@@ -47,8 +47,8 @@ namespace Pointcloud {
 
     }
 
-    void PointcloudFeatureProcessor::LoadShader() {
-        AZ_Printf("PointcloudFeatureProcessor", "Loading Shader");
+    void GrassFeatureProcessor::LoadShader() {
+        AZ_Printf("GrassFeatureProcessor", "Loading Shader");
         const char *shaderFilePath = "shaders/billboard2.azshader";
         if(m_shader) {
             AZ::Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
@@ -56,7 +56,7 @@ namespace Pointcloud {
         m_shader = AZ::RPI::LoadCriticalShader(shaderFilePath);
         if (!m_shader) {
             printf("Failed to load required stars shader.\n");
-            AZ_Error("PointcloudFeatureProcessor", false, "Failed to load required stars shader.");
+            AZ_Error("GrassFeatureProcessor", false, "Failed to load required stars shader.");
             return;
         }
         AZ::Data::AssetBus::Handler::BusConnect(m_shader->GetAssetId());
@@ -83,8 +83,8 @@ namespace Pointcloud {
         printf(" m_shader->GetAsset() %s Lol", m_shader->GetAsset()->GetName().GetCStr());
         auto drawSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("PerDrawSrg"));
         auto objectSrgLayout = m_shader->GetAsset()->FindShaderResourceGroupLayout(AZ::Name("ObjectSrg"));
-        AZ_Error("PointcloudFeatureProcessor", drawSrgLayout,
-                 "Failed to get the draw shader resource group layout for the pointcloud shader.");
+        AZ_Error("GrassFeatureProcessor", drawSrgLayout,
+                 "Failed to get the draw shader resource group layout for the grass shader.");
         auto shader_variant =  m_shader->GetVariant(shaderVariantId);
 
         if (drawSrgLayout && objectSrgLayout){
@@ -101,7 +101,7 @@ namespace Pointcloud {
                 if(extractOutcome.IsSuccess()) {
                     m_shaderParameters.push_back(ShaderParameterUnion(input.m_name, extractOutcome.GetValue()));
                 }else {
-                    AZ_Error("PointcloudFeatureProcessor", false, extractOutcome.GetError().c_str());
+                    AZ_Error("GrassFeatureProcessor", false, extractOutcome.GetError().c_str());
                 }
             }
         }   else {
@@ -111,7 +111,7 @@ namespace Pointcloud {
     }
 
 
-    AZStd::vector<float> PointcloudFeatureProcessor::ConvertToBuffer(const AZStd::vector<CloudVertex> &cloudVertexData){
+    AZStd::vector<float> GrassFeatureProcessor::ConvertToBuffer(const AZStd::vector<CloudVertex> &cloudVertexData){
         AZStd::vector<float> random_data(4 * 4 * cloudVertexData.size());
         auto m_worldMatrix = AZ::Matrix4x4::CreateFromTransform(m_transform);
         AZ::Matrix3x4 m_worldMatrix3x4;
@@ -130,7 +130,7 @@ namespace Pointcloud {
         return random_data;
     }
 
-    void PointcloudFeatureProcessor::ForceUpdate(uint32_t totalVertices) {
+    void GrassFeatureProcessor::ForceUpdate(uint32_t totalVertices) {
         LoadShader();
         m_totalVertices = totalVertices;
         // const uint32_t elementCount = static_cast<uint32_t>(cloudVertexData.size());
@@ -170,11 +170,11 @@ namespace Pointcloud {
         m_updateShaderConstants = true;
     }
 
-    AZStd::vector<ShaderParameterUnion> PointcloudFeatureProcessor::GetParameters() {
+    AZStd::vector<ShaderParameterUnion> GrassFeatureProcessor::GetParameters() {
         return m_shaderParameters;
     }
 
-    AZ::Outcome<ParameterType,AZStd::string> PointcloudFeatureProcessor::ExtractParameterType(const AZ::Name &parameterName) {
+    AZ::Outcome<ParameterType,AZStd::string> GrassFeatureProcessor::ExtractParameterType(const AZ::Name &parameterName) {
         // all look for u_ , f_ , f2_ , f3_
         // but frist there will be m_
         if (parameterName.GetStringView().starts_with("m_")) {
@@ -187,7 +187,7 @@ namespace Pointcloud {
             } else if (parameterName.GetStringView().starts_with("m_u_")) {
                 return ParameterType::uint;
             } else if (parameterName.GetStringView().starts_with("m_t2_")) {
-                return ParameterType::Texture2D;
+                 return ParameterType::Texture2D;
             AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with any of m_f_, m_f2_, m_f3_, or m_u_";
             return AZ::Failure(error);
         }
@@ -195,34 +195,34 @@ namespace Pointcloud {
         return AZ::Failure(error);
     }
 
-    void PointcloudFeatureProcessor::UpdateDrawPacket() {
+    void GrassFeatureProcessor::UpdateDrawPacket() {
         // print if  things
-        printf("PointcloudFeatureProcessor UpdateDrawPacket\n");
+        printf("GrassFeatureProcessor UpdateDrawPacket\n");
         // variables
         printf("m_meshPipelineState %s\n", m_meshPipelineState ? "true" : "false");
         printf("m_drawSrg %s\n", m_drawSrg ? "true" : "false");
         printf("m_objectSrg %s\n", m_objectSrg ? "true" : "false");
 
         if (m_meshPipelineState && m_drawSrg && m_objectSrg) {
-            printf ("PointcloudFeatureProcessor UpdateDrawPacket\n");
+            printf ("GrassFeatureProcessor UpdateDrawPacket\n");
             m_drawPacket = BuildDrawPacket(m_drawSrg,m_objectSrg, m_meshPipelineState, m_drawListTag, m_meshStreamBufferViews,
                                            m_totalVertices);
         }
     }
 
-    void PointcloudFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) {
-        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor OnAssetReloaded");
+    void GrassFeatureProcessor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) {
+        AZ_Printf("GrassFeatureProcessor", "GrassFeatureProcessor OnAssetReloaded");
         UpdateDrawPacket();
         UpdateBackgroundClearColor();
     }
 
-    void PointcloudFeatureProcessor::Deactivate() {
-        AZ_Printf("PointcloudFeatureProcessor", "PointcloudFeatureProcessor Deactivated");
+    void GrassFeatureProcessor::Deactivate() {
+        AZ_Printf("GrassFeatureProcessor", "GrassFeatureProcessor Deactivated");
         AZ::Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
         AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
     }
 
-    void PointcloudFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket &packet) {
+    void GrassFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket &packet) {
         UpdateShaderConstants();
 //        if (m_updateShaderConstants) {
 //            m_updateShaderConstants = false;
@@ -231,7 +231,7 @@ namespace Pointcloud {
 
     }
 
-    void PointcloudFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket &packet) {
+    void GrassFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket &packet) {
         auto time = AZStd::chrono::system_clock::now();
 
         // loop every
@@ -260,7 +260,7 @@ namespace Pointcloud {
 
 
     }
-    void PointcloudFeatureProcessor::UpdateBackgroundClearColor()
+    void GrassFeatureProcessor::UpdateBackgroundClearColor()
     {
         // This function is only necessary for now because the default clear value
         // color is not black, and is set in various .pass files in places a user
@@ -291,7 +291,7 @@ namespace Pointcloud {
         AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, setClearValue);
     }
 
-    AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> PointcloudFeatureProcessor::BuildDrawPacket(
+    AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> GrassFeatureProcessor::BuildDrawPacket(
             const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &drawSrg,
             const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &objectSrg,
             const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> &pipelineState,
@@ -326,7 +326,7 @@ namespace Pointcloud {
         return drawPacketBuilder.End();
     }
 
-    void PointcloudFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline *renderPipeline,
+    void GrassFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline *renderPipeline,
                                                              AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) {
         if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added) {
             if (!m_meshPipelineState) {
@@ -360,7 +360,7 @@ namespace Pointcloud {
         }
     }
 
-    void PointcloudFeatureProcessor::UpdateShaderConstants() {
+    void GrassFeatureProcessor::UpdateShaderConstants() {
         if (m_drawSrg) {
             m_drawSrg->SetConstant(m_timeIndex, m_time);
             m_drawSrg->Compile();
@@ -389,7 +389,7 @@ namespace Pointcloud {
         }
     }
 
-    void PointcloudFeatureProcessor::SetParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) {
+    void GrassFeatureProcessor::SetParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) {
         for (const auto &newParam : shaderParameters) {
             for (auto &currentParam : m_shaderParameters) {
                 if (newParam.m_parameterName == currentParam.m_parameterName) {
@@ -406,7 +406,7 @@ namespace Pointcloud {
 
     }
     //
-    // void PointcloudFeatureProcessor::SetPointSize(float pointSize) {
+    // void GrassFeatureProcessor::SetPointSize(float pointSize) {
     //     m_updateShaderConstants = true;
     //     m_pointSize = pointSize;
     //

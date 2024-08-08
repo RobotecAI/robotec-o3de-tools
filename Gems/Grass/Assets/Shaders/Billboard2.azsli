@@ -1,0 +1,215 @@
+/*
+* Copyright (c) Galib Arrieta (aka lumbermixalot@github, aka galibzon@github).
+*
+* SPDX-License-Identifier: Apache-2.0 OR MIT
+*
+*/
+
+ // This is a cosmetic shader. Only useful to visualize a slice
+ // of a Texure3D with gradient noise data.
+ 
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/ParallaxMapping.azsli>
+//#include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
+#include "TileablePerlinNoise_A.azsli"
+#include "kr_utils.azsli"
+#include "CustomObjectSrg.azsli"
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
+#include <Atom/RPI/Math.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
+
+//#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
+#include <Atom/Features/PBR/Decals.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+// static float TotalHeight = 2.0;
+// static float TotalWidth = 0.3;
+// static uint MaxSegments = 6;
+// static float SegmentHeight = TotalHeight / MaxSegments;
+// static float LoopLength = 30.0;
+// static uint TotalVertices = MaxSegments *6 -3;
+
+
+
+
+
+
+
+
+// ShaderResourceGroup PerDrawSrg : SRG_PerObject
+ShaderResourceGroup PerDrawSrg : SRG_PerDraw
+{ 
+    float m_time;
+}
+
+
+
+
+struct VSInput
+{
+    uint m_vertexID : SV_VertexID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_texCoord : TEXCOORD;
+    float3 m_worldPosition : UV0;
+    float4 m_color : COLOR;
+    float3 m_normal : NORMAL;
+};
+
+// VSOutput MainVS(VSInput IN){
+//     VSOutput OUT;
+//     const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh());
+//     // draw triangle
+//     const float2 texcoord[3] = { float2(0, 0), float2(0, 1), float2(1, 0) };
+//     const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
+//     const float4 color[3] = { float4(1, 0, 0, 1), float4(0, 1, 0, 1), float4(0, 0, 1, 1) };
+//     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix,  float4(position[vertexIndex], 1.0));
+//     //OUT.m_position = float4(position[vertexIndex], 1.0);
+//     OUT.m_texCoord = texcoord[vertexIndex];
+//     OUT.m_color = color[vertexIndex];
+//     OUT.m_normal = float3(0, 0, 1);
+//     OUT.m_worldPosition = position[vertexIndex];
+//     return OUT;
+// }
+
+
+
+
+VSOutput MainVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh());
+    const uint billboardIndex = uint(IN.m_vertexID) / uint(ObjectSrg::m_u_vertexCountPerMesh());
+    // random value based on billboardId (0-1)
+    const float scale = randomFloat(billboardIndex)/2 + 0.8;
+    const float2 totalHeightWidth = ObjectSrg::TotalHeightAndWidthWithJitter(billboardIndex);
+    
+    float3 translation = ObjectSrg::GetBillboardPosition(billboardIndex);
+    float3 vertexModelPosition = ObjectSrg::GetVertexModelPositionBezier(vertexIndex,totalHeightWidth);
+    //const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
+    //OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(position[IN.m_vertexID%3]* (ObjectSrg::m_f_totalHeight+1), 1.0));
+    float3 normal = float3(0,0,1);
+
+    // generate wind noise
+    ObjectSrg::GenerateWindNoise(vertexModelPosition, normal, translation, billboardIndex,PerDrawSrg::m_time,totalHeightWidth.x);
+    // float3 wind_direction = normalize(float3(2,1,0.1));
+    // float3 noise_position = float3( translation.x,translation.y,0);
+    // noise_position += wind_direction * PerDrawSrg::m_time*ObjectSrg::m_f_loopLength*1;
+    // float windStrength = PerlinNoiseFbm(noise_position, 1.2/ObjectSrg::m_f_loopLength, 2, 1)+1;
+    // float3 noise_position_rotation = float3( noise_position.x,noise_position.y,2);
+    // float windRotation = PerlinNoiseFbm(noise_position_rotation, 0.4/ObjectSrg::m_f_loopLength, 2, 2);
+
+    // ObjectSrg::PushByPerlinNoise(vertexModelPosition,normal,billboardIndex,windStrength,scale);
+    //ObjectSrg::RotateAroundZ2(vertexModelPosition, normal,PerDrawSrg::m_time*2*3.14159*1);
+    
+
+    float4 vertexWorldPosition = float4(vertexModelPosition + translation, 1.0);
+    
+
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, vertexWorldPosition);
+    OUT.m_normal = normalize(normal);//float3(1,0,0);
+    OUT.m_worldPosition = vertexWorldPosition.xyz;
+
+    // color based on distance from 0.0
+    float distance = length(vertexModelPosition.xz - float2(0.0, totalHeightWidth.x*0.8 ))/totalHeightWidth.x;
+    // clamp to 0.0 to 0.2
+    distance = max(0.0, min(0.4, distance));
+    // green color with saturation based on distance
+    float3 green = float3(0.2*scale, 0.7*scale, 0);
+    // change to hsv
+    float3 hsv = RgbToHsv(green);
+    // change saturation
+    hsv.y -= distance;
+    // change back to rgb
+    float4 color = float4(HsvToRgb(hsv),1);
+    OUT.m_color = color;
+    //OUT.m_color = float4(0.3,0.7,0,1);
+    //OUT.m_color = float4(distance, distance, distance, 1);
+    OUT.m_texCoord = ObjectSrg::GetVertexTextureCoord(vertexIndex);
+
+    
+    return OUT;
+};
+
+
+
+ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    float3 baseColor = IN.m_color.rgb;
+    float3 surfaceNormal = IN.m_normal;
+    if (!isFrontFace)
+    {
+        surfaceNormal = -surfaceNormal;
+    }
+    // ------- Surface -------
+
+    Surface surface;
+    
+    // Position, Normal, Roughness
+    surface.position = IN.m_worldPosition.xyz;
+    
+    float3 surface_normal = ObjectSrg::RotateAroundZ(IN.m_normal,-(IN.m_texCoord.x-0.5)*3);
+    surface.normal = normalize(surface_normal);
+    surface.vertexNormal = normalize(surfaceNormal);
+    surface.roughnessLinear = ObjectSrg::m_f_roughness;
+    surface.specularOcclusion = ObjectSrg::m_f_specularOcclusion;
+    surface.CalculateRoughnessA();
+
+    // Albedo, SpecularF0
+    surface.SetAlbedoAndSpecularF0(ObjectSrg::m_f3_baseColor, ObjectSrg::m_f_specularF0Factor, ObjectSrg::m_f_metallic);
+
+    // Clear Coat
+    //surface.clearCoat.InitializeToZero();
+
+    // ------- LightingData -------
+
+    LightingData lightingData;
+
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    
+    // Diffuse and Specular response (used in IBL calculations)
+    real3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0 - specularResponse;
+
+    // Multiscatter
+    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
+    // Apply Decals
+    ApplyDecals(lightingData.tileIterator, surface);
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIblForward(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting();
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData,ObjectSrg::m_f_alpha);
+
+    // ------- Output -------
+    ForwardPassOutput OUT;
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
+    OUT.m_specularColor =  lightingOutput.m_specularColor;
+    //OUT.m_specularColor = float4(ObjectSrg::m_f3_baseColor,1);
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+    return OUT;
+}; 
+
