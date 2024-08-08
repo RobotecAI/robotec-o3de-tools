@@ -1,0 +1,100 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#define FORCE_OPAQUE 0
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+#include "AutoBrick_Common.azsli"
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/ParallaxMapping.azsli>
+
+
+// o_opacity_mode == OpacityMode::Blended
+
+ 
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT;
+    float2 m_uv : UV0;
+};
+
+struct VSOutput
+{
+    precise linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float4 m_tangent : TANGENT;
+    float3 m_worldPosition : UV0;
+    float2 m_uv : UV1;
+    uint m_instanceId : SV_InstanceID;
+};
+
+float4 GetWorldPositionBuffer(float3 modelPosition, float3 myWorldPos )
+{
+    float3 scale = float3(1.0,1.0,1.0);//float3(length(r), length(f), length(u));
+
+
+    const float3 cameraPos = ViewSrg::m_worldPosition;
+    float3 cameraPos2 = float3(cameraPos.x,cameraPos.y,myWorldPos.z);
+    float3 myForward = normalize(cameraPos2 - myWorldPos);
+    float3 myRight = cross(float3(0, 0, -1), myForward); // Cross product of up and forward vectors
+    float3 myUp = float3(0, 0, 1);
+
+    myRight *= scale.x;
+    myUp *= scale.y;
+    const row_major float4x4 tm = {
+        myRight.x, myForward.x, myUp.x, myWorldPos.x,
+        myRight.y, myForward.y, myUp.y, myWorldPos.y,
+        myRight.z, myForward.z, myUp.z, myWorldPos.z,
+                0,           0,      0,            1.0,
+    };
+    return mul(tm, float4(modelPosition, 1));
+
+}
+
+float3 GetVertexModelPosition(float2 m_uv)
+{
+    float3 vertexModelPosition = float3(m_uv.x-0.5, 0, m_uv.y-0.5);
+    return vertexModelPosition; 
+}
+
+VSOutput MainVS(VSInput IN, uint instanceId : SV_InstanceID)
+{
+    VSOutput OUT;
+ 
+    float3 worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
+    worldPosition = GetObjectToWorldMatrix(instanceId)._m03_m13_m23;
+    const uint vertexIndex = uint(instanceId) % uint(6);
+    const float heightToWidthRatio = 1.0; // float(texDims.y) / float(texDims.x);
+    const float3 vertexModelPosition = GetVertexModelPosition(IN.m_uv);
+    const float4 vertexWorldPosition = GetWorldPositionBuffer(vertexModelPosition,worldPosition);
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, vertexWorldPosition);
+    //OUT.m_texCoord = GetVertexTextureCoord(vertexIndex);
+
+
+    OUT.m_uv = float2(IN.m_uv.x, 1.0 - IN.m_uv.y);
+    //OUT.m_uv = IN.m_uv;
+
+    OUT.m_worldPosition = worldPosition;
+    //OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = IN.m_normal;
+    OUT.m_tangent = IN.m_tangent;
+    OUT.m_instanceId = instanceId;
+    return OUT;
+}
+
+
