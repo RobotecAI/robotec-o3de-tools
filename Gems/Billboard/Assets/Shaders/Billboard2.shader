@@ -9,7 +9,7 @@
     "GlobalTargetBlendState" :
     {
         "Enable" : true,
-        "BlendSource" : "One",
+        "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
         "BlendAlphaOp" : "Add"
     },
