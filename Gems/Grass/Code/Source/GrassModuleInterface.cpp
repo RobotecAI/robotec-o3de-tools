@@ -13,6 +13,8 @@
 
 #include <Clients/GrassSystemComponent.h>
 
+#include "Clients/GrassComponent.h"
+
 namespace Grass
 {
     AZ_TYPE_INFO_WITH_NAME_IMPL(GrassModuleInterface,
@@ -28,6 +30,7 @@ namespace Grass
         // This happens through the [MyComponent]::Reflect() function.
         m_descriptors.insert(m_descriptors.end(), {
             GrassSystemComponent::CreateDescriptor(),
+            GrassComponent::CreateDescriptor(),
             });
     }
 

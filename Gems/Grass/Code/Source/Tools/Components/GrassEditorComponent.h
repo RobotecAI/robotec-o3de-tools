@@ -17,7 +17,7 @@ namespace Grass
         // private AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(GrassEditorComponent, "{018fba15-560f-78cb-afb4-cf4d00cefc22}");
+        AZ_EDITOR_COMPONENT(GrassEditorComponent, "{c70eae54-9095-494e-9324-5259580f6810}");
         GrassEditorComponent() = default;
         ~GrassEditorComponent() = default;
 
@@ -38,12 +38,10 @@ namespace Grass
 
         //AZ::TransformNotificationBus::Handler overrides ...
         // void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
-        AZStd::vector<ShaderParameter> shaderParameters;
+        AZStd::vector<ShaderParameter> m_shaderParameters;
         // AZ::Crc32 OnSetPointSize();
         AZ::Crc32 ForceUpdate();
-
-        float m_pointSize = 1.0f;
-        bool m_moveToCentroid {true};
+        
         GrassFeatureProcessorInterface *m_featureProcessor = nullptr;
         AZ::RPI::Scene *m_scene = nullptr;
     };

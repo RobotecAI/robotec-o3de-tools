@@ -19,6 +19,7 @@
 #include <Render/GrassFeatureProcessor.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <Clients/GrassComponent.h>
 
 namespace Grass {
 
@@ -47,10 +48,8 @@ namespace Grass {
         if (serializeContext) {
             serializeContext->Class<GrassEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
                     ->Version(2)
-                    ->Field("Point Size", &GrassEditorComponent::m_pointSize)
-                    ->Field("Move To Centroid", &GrassEditorComponent::m_moveToCentroid)
                     ->Field("Total Verticies", &GrassEditorComponent::m_totalVertices)
-                    ->Field("Shader Parameters", &GrassEditorComponent::shaderParameters);
+                    ->Field("Shader Parameters", &GrassEditorComponent::m_shaderParameters);
             AZ::EditContext *editContext = serializeContext->GetEditContext();
             if (editContext) {
                 editContext->Class<GrassEditorComponent>("GrassEditorComponent", "GrassEditorComponent")
@@ -60,7 +59,7 @@ namespace Grass {
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &GrassEditorComponent::m_totalVertices,
                                         "Total Vertices", "Total number of vertices in shader")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &GrassEditorComponent::shaderParameters,
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &GrassEditorComponent::m_shaderParameters,
                                       "Shader Parameters", "Shader parameters to set")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GrassEditorComponent::PushNewParameters)
                         // ->DataElement(AZ::Edit::UIHandlers::Default, &GrassEditorComponent::m_pointSize,
@@ -95,20 +94,21 @@ namespace Grass {
 
 
     void GrassEditorComponent::BuildGameEntity([[maybe_unused]] AZ::Entity *gameEntity) {
+        gameEntity->CreateComponent<GrassComponent>(m_totalVertices, m_shaderParameters);
     }
 
     void GrassEditorComponent::LoadParameters(const AZStd::vector<ShaderParameterUnion> &shaderParameters) {
         // for for look for matching parameters names and types if they exist continue else add them
         for (const auto &param : shaderParameters) {
             bool found = false;
-            for (auto &existingParam : this->shaderParameters) {
+            for (auto &existingParam : this->m_shaderParameters) {
                 if (existingParam.m_parameterName == param.m_parameterName.GetStringView()) {
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                this->shaderParameters.push_back(ShaderParameter(param));
+                this->m_shaderParameters.push_back(ShaderParameter(param));
             }
         }
 
@@ -116,7 +116,7 @@ namespace Grass {
 
     AZStd::vector<ShaderParameterUnion> GrassEditorComponent::GetConstants() const {
         AZStd::vector<ShaderParameterUnion> shaderParameterUnions;
-        for (const auto &param : shaderParameters) {
+        for (const auto &param : m_shaderParameters) {
             shaderParameterUnions.push_back(param.ToShaderParameterUnion());
         }
         return shaderParameterUnions;
@@ -128,53 +128,11 @@ namespace Grass {
     
     AZ::Crc32 GrassEditorComponent::ForceUpdate() {
         LoadParameters(m_featureProcessor->GetParameters());
-        // //auto vertices = plyIn.getVertexPositions();
-        // std::vector<std::array<double, 3>> vertices;
-        // // fill with grid of points
-        // uint32_t width = 2;
-        // uint32_t height = width;
-        // double cellSize = 0.3;
-        //
-        // std::normal_distribution<double> distribution(0.0, 0.3);
-        // auto m_random = std::mt19937(std::random_device{}());
-        // for (uint32_t i = 0; i < width; i++) {
-        //     for (uint32_t j = 0; j < height; j++) {
-        //         AZ::Vector3 noise(distribution(m_random), distribution(m_random), 0);
-        //         vertices.push_back({i * cellSize + noise.GetX(), j * cellSize + noise.GetY(), 0});
-        //     }
-        // }
-        // vertices.push_back({-3,-3,0});
-        //
-        // // random shuffee vertices
-        // std::shuffle(vertices.begin(), vertices.end(), m_random);
-        //
-        // printf("Loaded %lu vertices\n", vertices.size());
-        //
-        // std::vector<std::array<unsigned char, 3>> colors(vertices.size(), {255, 255, 255});
-        //
-        //
-        // AZStd::vector<GrassFeatureProcessor::CloudVertex> cloudVertexData;
-        // for (int i = 0; i < vertices.size(); i++) {
-        //     GrassFeatureProcessor::CloudVertex vertex;
-        //     vertex.m_position = {static_cast<float>(vertices[i][0]),
-        //                          static_cast<float>(vertices[i][1]),
-        //                          static_cast<float>(vertices[i][2])};
-        //     if (i < colors.size()) {
-        //         unsigned char r = colors[i][0];
-        //         unsigned char g = colors[i][1];
-        //         unsigned char b = colors[i][2];
-        //         AZ::Color m_color {r, g, b, 255};
-        //         vertex.m_color = m_color.ToU32();
-        //
-        //     }
-        //     cloudVertexData.push_back(vertex);
-        // }
+
         if (m_featureProcessor) {
             AZ_Printf("GrassEditorComponent", "Setting total vertices to: %d", m_totalVertices);
             m_featureProcessor->ForceUpdate(m_totalVertices);
             PushNewParameters();
-            // m_featureProcessor->SetTransform(GetWorldTM());
-            // m_featureProcessor->SetPointSize(m_pointSize);
         }
 
         return AZ::Edit::PropertyRefreshLevels::EntireTree;

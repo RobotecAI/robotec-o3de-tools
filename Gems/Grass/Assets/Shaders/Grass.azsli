@@ -31,21 +31,7 @@
 #include <Atom/Features/PBR/Decals.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 
-// static float TotalHeight = 2.0;
-// static float TotalWidth = 0.3;
-// static uint MaxSegments = 6;
-// static float SegmentHeight = TotalHeight / MaxSegments;
-// static float LoopLength = 30.0;
-// static uint TotalVertices = MaxSegments *6 -3;
 
-
-
-
-
-
-
-
-// ShaderResourceGroup PerDrawSrg : SRG_PerObject
 ShaderResourceGroup PerDrawSrg : SRG_PerDraw
 { 
     float m_time;
@@ -66,26 +52,8 @@ struct VSOutput
     float3 m_worldPosition : UV0;
     float4 m_color : COLOR;
     float3 m_normal : NORMAL;
+    float m_verticalOffset : VERTICALOFFSET;
 };
-
-// VSOutput MainVS(VSInput IN){
-//     VSOutput OUT;
-//     const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh());
-//     // draw triangle
-//     const float2 texcoord[3] = { float2(0, 0), float2(0, 1), float2(1, 0) };
-//     const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
-//     const float4 color[3] = { float4(1, 0, 0, 1), float4(0, 1, 0, 1), float4(0, 0, 1, 1) };
-//     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix,  float4(position[vertexIndex], 1.0));
-//     //OUT.m_position = float4(position[vertexIndex], 1.0);
-//     OUT.m_texCoord = texcoord[vertexIndex];
-//     OUT.m_color = color[vertexIndex];
-//     OUT.m_normal = float3(0, 0, 1);
-//     OUT.m_worldPosition = position[vertexIndex];
-//     return OUT;
-// }
-
-
-
 
 VSOutput MainVS(VSInput IN)
 {
@@ -93,28 +61,15 @@ VSOutput MainVS(VSInput IN)
 
     const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh());
     const uint billboardIndex = uint(IN.m_vertexID) / uint(ObjectSrg::m_u_vertexCountPerMesh());
-    // random value based on billboardId (0-1)
     const float scale = randomFloat(billboardIndex)/2 + 0.8;
     const float2 totalHeightWidth = ObjectSrg::TotalHeightAndWidthWithJitter(billboardIndex);
     
     float3 translation = ObjectSrg::GetBillboardPosition(billboardIndex);
     float3 vertexModelPosition = ObjectSrg::GetVertexModelPositionBezier(vertexIndex,totalHeightWidth);
-    //const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
-    //OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(position[IN.m_vertexID%3]* (ObjectSrg::m_f_totalHeight+1), 1.0));
+    OUT.m_verticalOffset = vertexModelPosition.x;
     float3 normal = float3(0,0,1);
 
-    // generate wind noise
     ObjectSrg::GenerateWindNoise(vertexModelPosition, normal, translation, billboardIndex,PerDrawSrg::m_time,totalHeightWidth.x);
-    // float3 wind_direction = normalize(float3(2,1,0.1));
-    // float3 noise_position = float3( translation.x,translation.y,0);
-    // noise_position += wind_direction * PerDrawSrg::m_time*ObjectSrg::m_f_loopLength*1;
-    // float windStrength = PerlinNoiseFbm(noise_position, 1.2/ObjectSrg::m_f_loopLength, 2, 1)+1;
-    // float3 noise_position_rotation = float3( noise_position.x,noise_position.y,2);
-    // float windRotation = PerlinNoiseFbm(noise_position_rotation, 0.4/ObjectSrg::m_f_loopLength, 2, 2);
-
-    // ObjectSrg::PushByPerlinNoise(vertexModelPosition,normal,billboardIndex,windStrength,scale);
-    //ObjectSrg::RotateAroundZ2(vertexModelPosition, normal,PerDrawSrg::m_time*2*3.14159*1);
-    
 
     float4 vertexWorldPosition = float4(vertexModelPosition + translation, 1.0);
     
@@ -136,8 +91,6 @@ VSOutput MainVS(VSInput IN)
     // change back to rgb
     float4 color = float4(HsvToRgb(hsv),1);
     OUT.m_color = color;
-    //OUT.m_color = float4(0.3,0.7,0,1);
-    //OUT.m_color = float4(distance, distance, distance, 1);
     OUT.m_texCoord = ObjectSrg::GetVertexTextureCoord(vertexIndex);
 
     
@@ -161,7 +114,7 @@ ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
     
-    float3 surface_normal = ObjectSrg::RotateAroundZ(IN.m_normal,-(IN.m_texCoord.x-0.5)*3);
+    float3 surface_normal = ObjectSrg::RotateAroundZ(IN.m_normal,-(IN.m_verticalOffset*ObjectSrg::m_f_grassCurvyness));
     surface.normal = normalize(surface_normal);
     surface.vertexNormal = normalize(surfaceNormal);
     surface.roughnessLinear = ObjectSrg::m_f_roughness;
@@ -179,7 +132,7 @@ ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
     LightingData lightingData;
 
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
     
     // Diffuse and Specular response (used in IBL calculations)
     real3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);

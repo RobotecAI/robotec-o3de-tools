@@ -81,6 +81,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     float m_f_loopLength; 
     float2 m_f2_leafWidthCurvePoint1;
     float2 m_f2_leafWidthCurvePoint2;
+    float m_f_grassCurvyness;
 
     float2 m_f2_leafDefaultShapePoint2;
     float2 m_f2_leafDefaultShapePoint3;

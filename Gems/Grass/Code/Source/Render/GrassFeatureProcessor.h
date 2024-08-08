@@ -25,7 +25,7 @@ namespace Grass
         , protected AZ::Data::AssetBus::Handler
     {
     public:
-        AZ_RTTI(GrassFeatureProcessor, "{B6EF8776-F7F9-432B-8BD9-D43869FFFC22}", GrassFeatureProcessorInterface);
+        AZ_RTTI(GrassFeatureProcessor, "{276cbfac-1432-4c34-9fea-2a2080175c66}", GrassFeatureProcessorInterface);
         AZ_CLASS_ALLOCATOR(GrassFeatureProcessor, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context);

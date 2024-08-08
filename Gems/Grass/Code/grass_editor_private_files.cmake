@@ -11,6 +11,4 @@ set(FILES
     Source/Tools/GrassEditorSystemComponent.h
     Source/Tools/Components/GrassEditorComponent.cpp
     Source/Tools/Components/GrassEditorComponent.h
-    Source/Tools/Components/ShaderParameter.cpp
-    Source/Tools/Components/ShaderParameter.h
 )

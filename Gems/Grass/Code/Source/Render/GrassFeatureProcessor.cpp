@@ -50,7 +50,7 @@ namespace Grass {
 
     void GrassFeatureProcessor::LoadShader() {
         AZ_Printf("GrassFeatureProcessor", "Loading Shader");
-        const char *shaderFilePath = "shaders/billboard2.azshader";
+        const char *shaderFilePath = "shaders/grass.azshader";
         if(m_shader) {
             AZ::Data::AssetBus::Handler::BusDisconnect(m_shader->GetAssetId());
         }

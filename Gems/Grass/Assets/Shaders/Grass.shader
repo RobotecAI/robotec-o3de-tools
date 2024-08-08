@@ -1,15 +1,19 @@
 {
-    "Source": "Billboard2.azsli",
+    "Source": "Grass.azsli",
     "DepthStencilState": {
       "Depth": {
         "Enable": true,
         "CompareFunc": "GreaterEqual"
+      },
+      "Stencil" :
+      {
+          "Enable" : false
       }
     },
     "GlobalTargetBlendState" :
     {
         "Enable" : false,
-        "BlendSource" : "One",
+        "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
         "BlendAlphaOp" : "Add"
     },

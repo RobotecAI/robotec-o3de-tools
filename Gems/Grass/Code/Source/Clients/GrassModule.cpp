@@ -12,6 +12,8 @@
 
 #include <AzCore/RTTI/RTTI.h>
 
+#include "GrassComponent.h"
+
 
 namespace Grass
 {

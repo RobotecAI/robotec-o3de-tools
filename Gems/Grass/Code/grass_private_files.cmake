@@ -13,4 +13,8 @@ set(FILES
     Source/Clients/GrassSystemComponent.h
     Source/Render/GrassFeatureProcessor.h
     Source/Render/GrassFeatureProcessor.cpp
+    Source/Clients/GrassComponent.cpp
+    Source/Clients/GrassComponent.h
+    Source/Tools/Components/ShaderParameter.cpp
+    Source/Tools/Components/ShaderParameter.h
 )
