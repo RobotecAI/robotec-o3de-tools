@@ -20,7 +20,7 @@ namespace Pointcloud
     class PointcloudFeatureProcessor
         : public PointcloudFeatureProcessorInterface
         , protected AZ::RPI::ViewportContextIdNotificationBus::Handler
-        , protected AZ::Data::AssetBus::Handler
+        , protected AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_RTTI(PointcloudFeatureProcessor, "{B6EF8776-F7F9-432B-8BD9-D43869FFFC3D}", PointcloudFeatureProcessorInterface);
@@ -35,6 +35,11 @@ namespace Pointcloud
         void SetTransform(const PointcloudHandle& handle, const AZ::Transform& transform) override;
         void SetPointSize(const PointcloudHandle& handle, float pointSize) override;
         PointcloudHandle AcquirePointcloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData) override;
+        void UpdatePointCloud(
+            PointcloudHandle PointcloudDataIndex,
+            const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData,
+            size_t startIdx) override;
+        PointcloudHandle AcquirePointcloudFromAsset(AZ::Data::Asset<PointcloudAsset> pointcloudAsset) override;
         void SetVisibility(const PointcloudHandle& handle, bool visible) override;
         void ReleasePointcloud(const PointcloudHandle& handle) override;
 
@@ -63,6 +68,8 @@ namespace Pointcloud
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_drawSrg = nullptr;
             bool m_visible = true;
             bool m_needSrgUpdate = true;
+            AZ::Data::AssetId m_assetId; //! AssetId of the pointcloud asset, if pointcloud was acquired from an asset
+            AZ::Data::Asset<AZ::Data::AssetData> m_assetData; //! Pointcloud asset data, if pointcloud was acquired from an asset
         };
 
         // FeatureProcessor overrides
@@ -90,5 +97,6 @@ namespace Pointcloud
         AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout; //!< Shader resource group layout for the draw packet
         AZStd::unordered_map<PointcloudHandle, PointcloudData> m_pointcloudData; //!< Map of pointcloud data
         PointcloudHandle m_currentPointcloudDataIndex = 0; //!< Index to the next pointcloud data to be created
+        AZStd::unordered_map<AZ::Data::AssetId, PointcloudHandle> m_pointcloudAssets;
     };
 } // namespace Pointcloud

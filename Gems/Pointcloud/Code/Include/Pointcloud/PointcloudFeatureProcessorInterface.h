@@ -37,6 +37,19 @@ namespace Pointcloud
         //! @param cloudVertexData The vertex data of the pointcloud
         virtual PointcloudHandle AcquirePointcloud(const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData) = 0;
 
+        //! Allocate resources and return a handle to the pointcloud
+        //! @param pointcloudAsset The asset of the pointcloud
+        virtual PointcloudHandle AcquirePointcloudFromAsset(AZ::Data::Asset<PointcloudAsset> pointcloudAsset) = 0;
+
+        //! Update the vertex data of a pointcloud, resizes the pointcloud if necessary
+        //! @param handle The handle of the pointcloud obtained from AcquirePointcloud
+        //! @param cloudVertexData The vertex data of the pointcloud
+        //! @param startIdx The start index of the vertex data to update (default 0)
+        virtual void UpdatePointCloud(
+            PointcloudHandle PointcloudDataIndex,
+            const AZStd::vector<PointcloudAsset::CloudVertex>& cloudVertexData,
+            size_t startIdx = 0) = 0;
+
         //! Set the visibility of a pointcloud
         //! @param handle The handle of the pointcloud obtained from AcquirePointcloud
         virtual void SetVisibility(const PointcloudHandle& handle, bool visible) = 0;
