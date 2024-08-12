@@ -7,8 +7,8 @@
  */
 
 #include "PointcloudModuleInterface.h"
+#include "Tools/Components/PointcloudComponentController.h"
 #include <AzCore/Memory/Memory.h>
-
 #include <Pointcloud/PointcloudTypeIds.h>
 
 #include "Tools/Components/PointcloudAssetBuilderSystemComponent.h"

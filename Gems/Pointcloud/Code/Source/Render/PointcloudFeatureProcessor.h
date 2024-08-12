@@ -42,6 +42,7 @@ namespace Pointcloud
         PointcloudHandle AcquirePointcloudFromAsset(AZ::Data::Asset<PointcloudAsset> pointcloudAsset) override;
         void SetVisibility(const PointcloudHandle& handle, bool visible) override;
         void ReleasePointcloud(const PointcloudHandle& handle) override;
+        uint32_t GetPointCount(const PointcloudHandle& handle) const override;
 
     protected:
         // RPI::SceneNotificationBus overrides

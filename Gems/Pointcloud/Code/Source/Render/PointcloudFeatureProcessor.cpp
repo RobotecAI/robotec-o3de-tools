@@ -340,4 +340,12 @@ namespace Pointcloud
             }
         }
     }
+    uint32_t PointcloudFeatureProcessor::GetPointCount(const PointcloudHandle& handle) const
+    {
+        if (auto it = m_pointcloudData.find(handle); it != m_pointcloudData.end())
+        {
+            return it->second.m_vertices;
+        }
+        return 0;
+    }
 } // namespace Pointcloud

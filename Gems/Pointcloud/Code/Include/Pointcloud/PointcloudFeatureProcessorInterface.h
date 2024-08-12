@@ -57,5 +57,9 @@ namespace Pointcloud
         //! Release the resources of a pointcloud
         //! @param handle The handle of the pointcloud obtained from AcquirePointcloud
         virtual void ReleasePointcloud(const PointcloudHandle& handle) = 0;
+
+        //! Get the number of points in a pointcloud
+        //! @param handle The handle of the pointcloud obtained from AcquirePointcloud
+        virtual uint32_t GetPointCount(const PointcloudHandle& handle) const = 0;
     };
 } // namespace Pointcloud

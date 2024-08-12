@@ -7,14 +7,14 @@
 
 namespace Pointcloud
 {
-    class PointCloudEditorComponentRequests : public AZ::ComponentBus
+    class PointcloudControllerConfigurationRequests : public AZ::ComponentBus
     {
     public:
-        AZ_RTTI(PointCloudEditorComponentRequests, PointCloudEditorComponentRequestsTypeId);
-        virtual ~PointCloudEditorComponentRequests() = default;
+        AZ_RTTI(PointcloudControllerConfigurationRequests, PointCloudEditorComponentRequestsTypeId);
+        virtual ~PointcloudControllerConfigurationRequests() = default;
         virtual void SetPointcloudAsset(AZ::Data::Asset<PointcloudAsset> asset) = 0;
         virtual void SetPointSize(float pointSize) = 0;
     };
 
-    using PointcloudEditorComponentConfigurationBus = AZ::EBus<PointCloudEditorComponentRequests>;
+    using PointcloudComponentControllerConfigurationBus = AZ::EBus<PointcloudControllerConfigurationRequests>;
 } // namespace Pointcloud
