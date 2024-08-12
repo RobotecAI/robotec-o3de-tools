@@ -29,6 +29,10 @@ namespace RobotecSpectatorCamera
         RobotecSpectatorCameraRequestBus::Handler::BusConnect(GetEntityId());
         AZ::TickBus::Handler::BusConnect();
         AzFramework::InputChannelEventListener::Connect();
+        AzFramework::InputSystemCursorRequestBus::Event(
+            AzFramework::InputDeviceMouse::Id,
+            &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+            AzFramework::SystemCursorState::ConstrainedAndHidden);
 
         AZ::TransformBus::EventResult(m_currentTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
     }
