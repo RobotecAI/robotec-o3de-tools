@@ -82,9 +82,22 @@ namespace Pointcloud
     {
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
         happly::PLYData plyIn(request.m_fullPath.c_str());
-        auto vertices = plyIn.getVertexPositions();
-        auto colors = plyIn.getVertexColors();
         const auto elementNames = plyIn.getElementNames();
+        auto vertices = plyIn.getVertexPositions();
+        // find is red green blue are present in the ply file
+        bool hasRed = AZStd::find(elementNames.begin(), elementNames.end(), "red") != elementNames.end();
+        bool hasGreen = AZStd::find(elementNames.begin(), elementNames.end(), "green") != elementNames.end();
+        bool hasBlue = AZStd::find(elementNames.begin(), elementNames.end(), "blue") != elementNames.end();
+        std::vector<std::array<unsigned char, 3>> colors;
+        if (hasRed && hasGreen && hasBlue)
+        {
+            colors = plyIn.getVertexColors();
+        }
+        else
+        {
+            AZ_TracePrintf(AssetBuilderSDK::WarningWindow, "Warning: The ply file does not contain red, green, and blue color data.\n");
+            colors.resize(vertices.size(), { 255, 255, 255 });
+        }
 
         AZ::Data::Asset<PointcloudAsset> pointcloudAsset;
         pointcloudAsset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
