@@ -88,10 +88,8 @@ namespace Pointcloud
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<PointcloudComponentController>()
-                    ->Version(1)
-                    ->Field("Configuration", &PointcloudComponentController::m_config)
-                    ->Field("Point count", &PointcloudComponentController::m_pointCount);
+                serializeContext->Class<PointcloudComponentController>()->Version(1)->Field(
+                    "Configuration", &PointcloudComponentController::m_config);
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
@@ -107,13 +105,7 @@ namespace Pointcloud
                             &PointcloudComponentController::m_config,
                             "Configuration",
                             "Configuration of the pointcloud")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudComponentController::OnAssetChanged)
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::Default,
-                            &PointcloudComponentController::m_pointCount,
-                            "Point Count",
-                            "Number of points in the pointcloud")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudComponentController::OnAssetChanged);
                 }
             }
         }
@@ -171,7 +163,7 @@ namespace Pointcloud
                     entity, &AZ::ComponentApplicationRequests::FindEntity, m_config.m_editorEntityId);
                 m_featureProcessor->SetTransform(m_config.m_pointcloudHandle, entity->GetTransform()->GetWorldTM());
                 m_featureProcessor->SetPointSize(m_config.m_pointcloudHandle, m_config.m_pointSize);
-                m_pointCount = m_featureProcessor->GetPointCount(m_config.m_pointcloudHandle);
+                m_featureProcessor->SetVisibility(m_config.m_pointcloudHandle, visibility);
             }
         }
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
@@ -200,6 +192,15 @@ namespace Pointcloud
     void PointcloudComponentController::SetPointSize(float pointSize)
     {
         m_config.m_pointSize = pointSize;
+    }
+
+    void PointcloudComponentController::SetVisibility(bool visible)
+    {
+        visibility = visible;
+        if (m_featureProcessor)
+        {
+            m_featureProcessor->SetVisibility(m_config.m_pointcloudHandle, visible);
+        }
     }
 
 } // namespace Pointcloud

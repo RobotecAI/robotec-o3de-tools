@@ -67,6 +67,7 @@ namespace Pointcloud
         // PointcloudEditorComponentConfigurationBus::Handler overrides ...
         void SetPointcloudAsset(AZ::Data::Asset<PointcloudAsset> asset) override;
         void SetPointSize(float pointSize) override;
+        void SetVisibility(bool visible) override;
 
         AZ::Crc32 OnSetPointSize();
         AZ::Crc32 OnAssetChanged();
@@ -75,6 +76,6 @@ namespace Pointcloud
         PointcloudFeatureProcessorInterface* m_featureProcessor = nullptr;
         AZ::RPI::Scene* m_scene = nullptr;
         PointcloudComponentConfig m_config;
-        uint32_t m_pointCount = 0;
+        bool visibility = true;
     };
 } // namespace Pointcloud

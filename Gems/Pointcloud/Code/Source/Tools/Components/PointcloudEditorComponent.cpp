@@ -2,7 +2,12 @@
 #include "Clients/PointcloudComponent.h"
 #include <Atom/RPI.Public/Scene.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Entity/EntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <Render/PointcloudFeatureProcessor.h>
+
 namespace Pointcloud
 {
 
@@ -39,6 +44,10 @@ namespace Pointcloud
         m_controller.SetConfiguration(config);
         AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
+        bool visible = true;
+        AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+            visible, GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsVisible);
+        m_controller.SetVisibility(visible);
     }
 
     void PointcloudEditorComponent::Deactivate()
