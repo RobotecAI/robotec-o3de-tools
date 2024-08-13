@@ -43,13 +43,7 @@ namespace Pointcloud
                         &PointcloudEditorComponent::m_pointcloudAsset,
                         "Pointcloud Asset",
                         "Asset containing the pointcloud data")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnAssetChanged)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &PointcloudEditorComponent::m_numPoints,
-                        "NumPoints",
-                        "Number of points in the pointcloud")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudEditorComponent::OnAssetChanged);
             }
         }
     }
@@ -76,6 +70,10 @@ namespace Pointcloud
                         m_pointcloudHandle = m_featureProcessor->AcquirePointcloudFromAsset(m_pointcloudAsset);
                         m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
                         m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
+                        bool visible = true;
+                        AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                            visible, GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsVisible);
+                        m_featureProcessor->SetVisibility(m_pointcloudHandle, visible);
                     }
                 }
             });
@@ -119,6 +117,10 @@ namespace Pointcloud
                 m_pointcloudHandle = m_featureProcessor->AcquirePointcloudFromAsset(m_pointcloudAsset);
                 m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
                 m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
+                bool visible = true;
+                AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                    visible, GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsVisible);
+                m_featureProcessor->SetVisibility(m_pointcloudHandle, visible);
             }
             else
             {
