@@ -84,9 +84,10 @@ namespace Pointcloud
         happly::PLYData plyIn(request.m_fullPath.c_str());
         const auto elementNames = plyIn.getElementNames();
         auto vertices = plyIn.getVertexPositions();
-        bool hasRed = std::find(elementNames.begin(), elementNames.end(), "red") != elementNames.end();
-        bool hasGreen = std::find(elementNames.begin(), elementNames.end(), "green") != elementNames.end();
-        bool hasBlue = std::find(elementNames.begin(), elementNames.end(), "blue") != elementNames.end();
+        auto& vertexElement = plyIn.getElement("vertex");
+        bool hasRed = vertexElement.hasProperty("red");
+        bool hasGreen = vertexElement.hasProperty("green");
+        bool hasBlue = vertexElement.hasProperty("blue");
         std::vector<std::array<unsigned char, 3>> colors;
         if (hasRed && hasGreen && hasBlue)
         {
