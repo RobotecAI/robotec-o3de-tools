@@ -1,0 +1,80 @@
+/*
+* Copyright (c) Galib Arrieta (aka lumbermixalot@github, aka galibzon@github).
+*
+* SPDX-License-Identifier: Apache-2.0 OR MIT
+*
+*/
+
+ // This is a cosmetic shader. Only useful to visualize a slice
+ // of a Texure3D with gradient noise data.
+ 
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/ParallaxMapping.azsli>
+//#include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
+#include "TileablePerlinNoise_A.azsli"
+#include "kr_utils.azsli"
+#include "CustomObjectSrg.azsli"
+#include <Atom/RPI/Math.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
+
+
+
+
+// ShaderResourceGroup PerDrawSrg : SRG_PerObject
+ShaderResourceGroup PerDrawSrg : SRG_PerDraw
+{ 
+    float m_time;
+}
+
+
+
+
+struct VSInput
+{
+    uint m_vertexID : SV_VertexID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_worldPosition : UV0;
+    float3 m_normal : NORMAL;
+};
+
+
+VSOutput MainVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    const uint vertexIndex = uint(IN.m_vertexID) % uint(ObjectSrg::m_u_vertexCountPerMesh());
+    const uint billboardIndex = uint(IN.m_vertexID) / uint(ObjectSrg::m_u_vertexCountPerMesh());
+    // random value based on billboardId (0-1)
+    const float scale = randomFloat(billboardIndex)/2 + 0.8;
+    const float2 totalHeightWidth = ObjectSrg::TotalHeightAndWidthWithJitter(billboardIndex);
+    
+    float3 translation = ObjectSrg::GetBillboardPosition(billboardIndex);
+    float3 vertexModelPosition = ObjectSrg::GetVertexModelPositionBezier(vertexIndex,totalHeightWidth);
+    //const float3 position[3] = { float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0) };
+    //OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(position[IN.m_vertexID%3]* (ObjectSrg::m_f_totalHeight+1), 1.0));
+    float3 normal = float3(0,0,1);
+
+    // generate wind noise
+    ObjectSrg::GenerateWindNoise(vertexModelPosition, normal, translation, billboardIndex,PerDrawSrg::m_time,totalHeightWidth.x);
+
+
+    float4 vertexWorldPosition = float4(vertexModelPosition + translation, 1.0);
+    
+
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, vertexWorldPosition);
+    OUT.m_normal = normalize(normal);//float3(1,0,0);
+    OUT.m_worldPosition = vertexWorldPosition.xyz;
+
+
+
+
+    return OUT;
+};
+

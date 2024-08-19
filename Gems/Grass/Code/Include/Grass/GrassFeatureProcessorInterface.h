@@ -26,11 +26,10 @@ namespace Grass {
         Texture2D,
     };
 
-    AZ_TYPE_INFO_SPECIALIZE(ParameterType, "{7ebef8a5-b40d-4a9a-8511-162da1dc0222}");
-
+    AZ_TYPE_INFO_SPECIALIZE(ParameterType, "{82a0b767-e308-4584-a1dc-905e1d7bd29b}");
 
     struct ShaderParameterUnion {
-        AZ_TYPE_INFO(ShaderParameterUnion, "{018fba15-560f-78cb-afb4-cf4d00cefc22}");
+        AZ_TYPE_INFO(ShaderParameterUnion, "{d09f02ad-0378-4ce9-ba7d-23c7401a83c5}");
 
         AZ::Name m_parameterName;
         ParameterType m_parameterType;
@@ -68,8 +67,7 @@ namespace Grass {
     class GrassFeatureProcessorInterface
             : public AZ::RPI::FeatureProcessor {
     public:
-        AZ_RTTI(GrassFeatureProcessorInterface, "{8597AF27-EB4E-4363-8889-3BFC2AF5D222}",
-                AZ::RPI::FeatureProcessor);
+        AZ_RTTI(GrassFeatureProcessorInterface, "{7f5ba0cc-8df3-4361-8e4f-e35a14f8569a}", AZ::RPI::FeatureProcessor);
 
         struct CloudVertex {
             AZStd::array<float, 3> m_position;

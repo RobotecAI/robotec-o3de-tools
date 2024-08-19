@@ -11,16 +11,16 @@
 namespace Grass
 {
     // System Component TypeIds
-    inline constexpr const char* GrassSystemComponentTypeId = "{3EBCAD0C-39B7-4782-B9CB-D62F35331D22}";
-    inline constexpr const char* GrassEditorSystemComponentTypeId = "{88835E98-561B-4D74-B7C4-C539E2950E22}";
+    inline constexpr const char* GrassSystemComponentTypeId = "{747f9201-a9cb-4636-965f-edff04dfffed}";
+    inline constexpr const char* GrassEditorSystemComponentTypeId = "{bd3aa3d4-c3d9-4149-8dbf-e58667fff13b}";
 
     // Module derived classes TypeIds
-    inline constexpr const char* GrassModuleInterfaceTypeId = "{8077C268-B445-409C-9BBA-DE557794B222}";
-    inline constexpr const char* GrassModuleTypeId = "{7BFFAD35-81E5-40FF-BE8D-19B0A0392622}";
+    inline constexpr const char* GrassModuleInterfaceTypeId = "{73e4f133-2287-4970-ac6b-1991d977280a}";
+    inline constexpr const char* GrassModuleTypeId = "{91cd974f-87de-4708-b4f6-b96f1523723c}";
     // The Editor Module by default is mutually exclusive with the Client Module
     // so they use the Same TypeId
     inline constexpr const char* GrassEditorModuleTypeId = GrassModuleTypeId;
 
     // Interface TypeIds
-    inline constexpr const char* GrassRequestsTypeId = "{86CA76D8-2225-4C50-86E4-B1C8EFDEA822}";
+    inline constexpr const char* GrassRequestsTypeId = "{d504d3b9-52e0-4197-a54a-cc28200c31e5}";
 } // namespace Grass

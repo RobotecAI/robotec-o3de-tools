@@ -14,7 +14,7 @@ namespace Grass
     class ShaderParameter
     {
     public:
-        AZ_TYPE_INFO(ShaderParameter, "{018fba15-560f-78cb-afb4-cf4d00cefc22}");
+        AZ_TYPE_INFO(ShaderParameter, "{7b27e391-4151-4ca6-b8a5-48355510810a}");
         ShaderParameter() = default;
         ShaderParameter(ShaderParameterUnion shaderParameterUnion);
         ~ShaderParameter() = default;

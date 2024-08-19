@@ -22,10 +22,10 @@ namespace Grass
     class GrassFeatureProcessor
         : public GrassFeatureProcessorInterface
         , protected AZ::RPI::ViewportContextIdNotificationBus::Handler
-        , protected AZ::Data::AssetBus::Handler
+        , protected AZ::Data::AssetBus::MultiHandler
     {
     public:
-        AZ_RTTI(GrassFeatureProcessor, "{B6EF8776-F7F9-432B-8BD9-D43869FFFC22}", GrassFeatureProcessorInterface);
+        AZ_RTTI(GrassFeatureProcessor, "{5e4f90ae-0be4-4863-a5cf-8d95cf0dcd47}", GrassFeatureProcessorInterface);
         AZ_CLASS_ALLOCATOR(GrassFeatureProcessor, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context);
@@ -49,12 +49,20 @@ namespace Grass
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     private:
+        struct ShaderInstance
+        {
+            AZ::Data::Instance<AZ::RPI::Shader> m_shader = nullptr;
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_drawSrg = nullptr;
+            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_objectSrg = nullptr;
+            AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> m_meshPipelineState;
+        };
+
         void UpdateBackgroundClearColor();
 
         // FeatureProcessor overrides
         void Activate() override;
 
-        void LoadShader();
+        void LoadShader(AZStd::string shaderFilePath);
 
         void Deactivate() override;
         void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
@@ -65,19 +73,14 @@ namespace Grass
         AZStd::vector<float> ConvertToBuffer(const AZStd::vector<CloudVertex> &cloudVertexData);
         //! build a draw packet to draw the point cloud
         AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> BuildDrawPacket(
-                const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &drawSrg,
-                const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> &objectSrg,
-                const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw>& pipelineState,
-                const AZ::RHI::DrawListTag& drawListTag,
-                const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
-                uint32_t vertexCount);
+            AZStd::unordered_map<AZ::RHI::DrawListTag, GrassFeatureProcessor::ShaderInstance> shaderInstances,
+            const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
+            uint32_t vertexCount);
 
-        AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> m_meshPipelineState;
         AZ::RHI::DrawListTag m_drawListTag;
         AZ::RHI::ConstPtr<AZ::RHI::DrawPacket> m_drawPacket;
-        AZ::Data::Instance<AZ::RPI::Shader> m_shader = nullptr;
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_drawSrg = nullptr;
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_objectSrg = nullptr;
+
+        AZStd::unordered_map<AZ::RHI::DrawListTag, ShaderInstance> m_shaderInstances;
 
         AZStd::array<AZ::RHI::StreamBufferView,1> m_meshStreamBufferViews;
         
