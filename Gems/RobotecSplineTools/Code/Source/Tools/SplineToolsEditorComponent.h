@@ -39,7 +39,8 @@ namespace SplineTools
 
     private:
         bool m_isLocalCoordinates = true;
-        bool m_isLatLonAlt = false;
+        bool m_isCoordinateXY = false;
+        bool m_isCoordinateLatLon = false;
 
         void ReloadCSVAsset();
         AZStd::vector<AZ::Vector3> GetSplinePointsFromCsv(const AZStd::string& csvFilePath);

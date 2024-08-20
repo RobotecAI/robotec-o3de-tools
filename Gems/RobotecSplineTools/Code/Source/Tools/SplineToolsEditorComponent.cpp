@@ -122,7 +122,7 @@ namespace SplineTools
         }
 
         AZ::Transform worldInvTm(AZ::Transform::Identity());
-        if (m_isLocalCoordinates && m_isLatLonAlt)
+        if (m_isLocalCoordinates && m_isCoordinateLatLon)
         {
             AZ_Error("SplineToolsEditorComponent", false, "Cannot use lat, lon, alt coordinates in local coordinates");
             QMessageBox::warning(
@@ -178,6 +178,15 @@ namespace SplineTools
 
     AZStd::vector<AZ::Vector3> SplineToolsEditorComponent::GetSplinePointsFromCsv(const AZStd::string& csvFilePath)
     {
+        auto getOptionalColumn = [](int column) -> AZStd::optional<int>
+        {
+            if (column < 0)
+            {
+                return AZStd::nullopt;
+            }
+            return column;
+        };
+
         try
         {
             AZStd::vector<AZ::Vector3> ret;
@@ -185,54 +194,60 @@ namespace SplineTools
             csv::CSVReader reader(csvFilePath.c_str());
             reader.get_col_names();
 
-            const int index_X = reader.index_of("x");
-            const int index_Y = reader.index_of("y");
-            const int index_Z = reader.index_of("z");
+            const auto indexX = getOptionalColumn(reader.index_of("x"));
+            const auto indexY = getOptionalColumn(reader.index_of("y"));
+            const auto indexZ = getOptionalColumn(reader.index_of("z"));
 
-            const int index_Lat = reader.index_of("lat");
-            const int index_Lon = reader.index_of("lon");
-            const int index_Alt = reader.index_of("alt");
+            const auto indexLat = getOptionalColumn(reader.index_of("lat"));
+            const auto indexLon = getOptionalColumn(reader.index_of("lon"));
+            const auto indexAlt = getOptionalColumn(reader.index_of("alt"));
 
-            const bool isCoordinateXY = !(index_X < 0 || index_Y < 0);
-            const bool isCoordinateLatLon = !(index_Lat < 0 || index_Lon < 0 || index_Alt < 0);
-            const bool isCoordinateCorrect = isCoordinateXY || isCoordinateLatLon;
+            m_isCoordinateXY = indexX && indexY;
+            m_isCoordinateLatLon = indexLat && indexLon && indexAlt;
+            const bool isCoordinateCorrect = (m_isCoordinateLatLon || m_isCoordinateXY);
 
             if (!isCoordinateCorrect)
             {
-                AZ_Error("SplineToolsEditorComponent", false, "CSV file must have columns named x, y or lat, lon");
+                AZ_Error("SplineToolsEditorComponent", false, "CSV file must have columns named x, y or lat, lon, alt");
+                AZStd::string columns;
+                for (const auto& columnName : reader.get_col_names())
+                {
+                    columns += AZStd::string(columnName.c_str()) + ", ";
+                }
+                AZ_Printf("SplineToolsEditorComponent", "CSV file columns: %s", columns.c_str());
                 QMessageBox::warning(
-                    AzToolsFramework::GetActiveWindow(), "Error", "CSV file must have columns named x, y or lat, lon", QMessageBox::Ok);
+                    AzToolsFramework::GetActiveWindow(),
+                    "Error",
+                    "CSV file must have columns named x, y or lat, lon, alt",
+                    QMessageBox::Ok);
                 return {};
             }
 
-            if (isCoordinateXY)
+            if (m_isCoordinateXY)
             {
-                m_isLatLonAlt = false;
                 for (csv::CSVRow& row : reader)
                 {
-                    AZ::Vector3 point = AZ::Vector3(row[index_X].get<float>(), row[index_Y].get<float>(), 0);
+                    AZ::Vector3 point = AZ::Vector3(row[*indexX].get<float>(), row[*indexY].get<float>(), 0);
 
-                    // handle Z column
-                    if (index_Z > 0)
+                    if (indexZ > 0)
                     {
-                        point.SetZ(row[index_Z].get<float>());
+                        point.SetZ(row[*indexZ].get<float>());
                     }
 
                     ret.emplace_back(AZStd::move(point));
                 }
             }
-            else if (isCoordinateLatLon)
+            else if (m_isCoordinateLatLon)
             {
-                m_isLatLonAlt = true;
                 for (csv::CSVRow& row : reader)
                 {
                     ROS2::WGS::WGS84Coordinate coordinate;
-                    coordinate.m_latitude = row[index_Lat].get<double>();
-                    coordinate.m_longitude = row[index_Lon].get<double>();
-                    coordinate.m_altitude = row[index_Alt].get<float>();
-                    AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
+                    coordinate.m_latitude = row[*indexLat].get<double>();
+                    coordinate.m_longitude = row[*indexLon].get<double>();
+                    coordinate.m_altitude = row[*indexAlt].get<float>();
+                    auto coordinateInLevel = AZ::Vector3(-1);
                     ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                        coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWSG84ToLevel, coordinate);
+                        coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
 
                     ret.emplace_back(AZStd::move(coordinateInLevel));
                 }
