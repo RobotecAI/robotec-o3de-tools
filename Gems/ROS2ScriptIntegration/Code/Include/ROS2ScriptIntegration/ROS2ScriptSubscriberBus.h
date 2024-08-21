@@ -34,11 +34,12 @@ namespace ROS2ScriptIntegration
         virtual void SubscribeToStdMsgBool(const AZStd::string& topicName) = 0;
         virtual void SubscribeToSensorMsgJoy(const AZStd::string& topicName) = 0;
         virtual void SubscribeToGeometryMsgPoseStamped(const AZStd::string& topicName) = 0;
-        virtual void SubscribeToString(const AZStd::string& topicName) = 0;
-        virtual void SubscribeToFloat32(const AZStd::string& topicName) = 0;
-        virtual void SubscribeToUInt32(const AZStd::string& topicName) = 0;
-        virtual void SubscribeToInt32(const AZStd::string& topicName) = 0;
-        virtual void SubscribeToVector3(const AZStd::string& topicName) = 0;
+        virtual void SubscribeToStdMsgString(const AZStd::string& topicName) = 0;
+        virtual void SubscribeToStdMsgFloat32(const AZStd::string& topicName) = 0;
+        virtual void SubscribeToStdMsgUInt32(const AZStd::string& topicName) = 0;
+        virtual void SubscribeToStdMsgInt32(const AZStd::string& topicName) = 0;
+        virtual void SubscribeToGeometryMsgVector3(const AZStd::string& topicName) = 0;
+        virtual void SubscribeToGeometryMsgQuaternion(const AZStd::string& topicName) = 0;
 
         static void Reflect(AZ::ReflectContext* context);
     };
@@ -62,6 +63,7 @@ namespace ROS2ScriptIntegration
         virtual void OnStdMsgUInt32(const uint32_t value) = 0;
         virtual void OnStdMsgInt32(const int32_t value) = 0;
         virtual void OnGeometryMsgVector3(const AZ::Vector3& value) = 0;
+        virtual void OnGeometryMsgQuaternion(const AZ::Quaternion& value) = 0;
     };
 
     using SubscriberNotificationsBus = AZ::EBus<SubscriberNotifications>;
@@ -82,7 +84,8 @@ namespace ROS2ScriptIntegration
             OnStdMsgFloat32,
             OnStdMsgUInt32,
             OnStdMsgInt32,
-            OnGeometryMsgVector3);
+            OnGeometryMsgVector3,
+            OnGeometryMsgQuaternion);
 
         void OnStdMsgBool(bool value) override;
         void OnSensorMsgJoy(bool b0, bool b1, bool b2, bool b3, float f0, float f1, float f2, float f3) override;
@@ -92,6 +95,7 @@ namespace ROS2ScriptIntegration
         void OnStdMsgUInt32(const uint32_t value) override;
         void OnStdMsgInt32(const int32_t value) override;
         void OnGeometryMsgVector3(const AZ::Vector3& value) override;
+        void OnGeometryMsgQuaternion(const AZ::Quaternion& value) override;
 
         static void Reflect(AZ::ReflectContext* context);
     };

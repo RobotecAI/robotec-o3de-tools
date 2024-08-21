@@ -139,7 +139,7 @@ namespace ROS2ScriptIntegration
             });
     }
 
-    void SubscriberSystemComponent::SubscribeToString(const AZStd::string& topicName)
+    void SubscriberSystemComponent::SubscribeToStdMsgString(const AZStd::string& topicName)
     {
         using TypeName = std_msgs::msg::String;
         SubscribeToTopic<TypeName>(
@@ -151,7 +151,7 @@ namespace ROS2ScriptIntegration
             });
     }
 
-    void SubscriberSystemComponent::SubscribeToFloat32(const AZStd::string& topicName)
+    void SubscriberSystemComponent::SubscribeToStdMsgFloat32(const AZStd::string& topicName)
     {
         using TypeName = std_msgs::msg::Float32;
         SubscribeToTopic<TypeName>(
@@ -162,7 +162,7 @@ namespace ROS2ScriptIntegration
             });
     }
 
-    void SubscriberSystemComponent::SubscribeToUInt32(const AZStd::string& topicName)
+    void SubscriberSystemComponent::SubscribeToStdMsgUInt32(const AZStd::string& topicName)
     {
         using TypeName = std_msgs::msg::UInt32;
         SubscribeToTopic<TypeName>(
@@ -173,7 +173,7 @@ namespace ROS2ScriptIntegration
             });
     };
 
-    void SubscriberSystemComponent::SubscribeToInt32(const AZStd::string& topicName)
+    void SubscriberSystemComponent::SubscribeToStdMsgInt32(const AZStd::string& topicName)
     {
         using TypeName = std_msgs::msg::Int32;
         SubscribeToTopic<TypeName>(
@@ -184,15 +184,27 @@ namespace ROS2ScriptIntegration
             });
     };
 
-    void SubscriberSystemComponent::SubscribeToVector3(const AZStd::string& topicName)
+    void SubscriberSystemComponent::SubscribeToGeometryMsgVector3(const AZStd::string& topicName)
     {
         using TypeName = geometry_msgs::msg::Vector3;
         SubscribeToTopic<TypeName>(
             topicName,
             [topicName](const TypeName& msg)
             {
-                const auto vector3 = AZ::Vector3(msg.x, msg.y, msg.z);
-                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnGeometryMsgVector3, vector3);
+                const auto data = AZ::Vector3(msg.x, msg.y, msg.z);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnGeometryMsgVector3, data);
+            });
+    }
+
+    void SubscriberSystemComponent::SubscribeToGeometryMsgQuaternion(const AZStd::string& topicName)
+    {
+        using TypeName = geometry_msgs::msg::Quaternion;
+        SubscribeToTopic<TypeName>(
+            topicName,
+            [topicName](const TypeName& msg)
+            {
+                const auto data = AZ::Quaternion(msg.x, msg.y, msg.z, msg.w);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnGeometryMsgQuaternion, data);
             });
     }
 

@@ -41,11 +41,12 @@ namespace ROS2ScriptIntegration
         void SubscribeToStdMsgBool(const AZStd::string& topicName) override;
         void SubscribeToSensorMsgJoy(const AZStd::string& topicName) override;
         void SubscribeToGeometryMsgPoseStamped(const AZStd::string& topicName) override;
-        void SubscribeToString(const AZStd::string& topicName) override;
-        void SubscribeToFloat32(const AZStd::string& topicName) override;
-        void SubscribeToUInt32(const AZStd::string& topicName) override;
-        void SubscribeToInt32(const AZStd::string& topicName) override;
-        void SubscribeToVector3(const AZStd::string& topicName) override;
+        void SubscribeToStdMsgString(const AZStd::string& topicName) override;
+        void SubscribeToStdMsgFloat32(const AZStd::string& topicName) override;
+        void SubscribeToStdMsgUInt32(const AZStd::string& topicName) override;
+        void SubscribeToStdMsgInt32(const AZStd::string& topicName) override;
+        void SubscribeToGeometryMsgVector3(const AZStd::string& topicName) override;
+        void SubscribeToGeometryMsgQuaternion(const AZStd::string& topicName) override;
 
         // AZ::Component overrides ...
         void Init() override;
