@@ -45,6 +45,7 @@ namespace ROS2ScriptIntegration
         void SubscribeToFloat32(const AZStd::string& topicName) override;
         void SubscribeToUInt32(const AZStd::string& topicName) override;
         void SubscribeToInt32(const AZStd::string& topicName) override;
+        void SubscribeToVector3(const AZStd::string& topicName) override;
 
         // AZ::Component overrides ...
         void Init() override;

@@ -169,7 +169,7 @@ namespace ROS2ScriptIntegration
             topicName,
             [topicName](const TypeName& msg)
             {
-                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnStdMsgInt32, msg.data);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnStdMsgUInt32, msg.data);
             });
     };
 
@@ -183,6 +183,18 @@ namespace ROS2ScriptIntegration
                 SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnStdMsgInt32, msg.data);
             });
     };
+
+    void SubscriberSystemComponent::SubscribeToVector3(const AZStd::string& topicName)
+    {
+        using TypeName = geometry_msgs::msg::Vector3;
+        SubscribeToTopic<TypeName>(
+            topicName,
+            [topicName](const TypeName& msg)
+            {
+                const auto vector3 = AZ::Vector3(msg.x, msg.y, msg.z);
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnGeometryMsgVector3, vector3);
+            });
+    }
 
     template<typename MessageType>
     void SubscriberSystemComponent::SubscribeToTopic(

@@ -41,6 +41,11 @@ namespace ROS2ScriptIntegration
         Call(FN_OnStdMsgInt32, value);
     }
 
+    void SubscriberNotificationHandler::OnGeometryMsgVector3(const AZ::Vector3& value)
+    {
+        Call(FN_OnGeometryMsgVector3, value);
+    }
+
     void SubscriberNotificationHandler::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -58,7 +63,8 @@ namespace ROS2ScriptIntegration
                 ->Event("SubscribeToString", &SubscriberRequestBus::Events::SubscribeToString, { { { "Topic", "" } } })
                 ->Event("SubscribeToFloat32", &SubscriberRequestBus::Events::SubscribeToFloat32, { { { "Topic", "" } } })
                 ->Event("SubscribeToUInt32", &SubscriberRequestBus::Events::SubscribeToUInt32, { { { "Topic", "" } } })
-                ->Event("SubscribeToInt32", &SubscriberRequestBus::Events::SubscribeToInt32, { { { "Topic", "" } } });
+                ->Event("SubscribeToInt32", &SubscriberRequestBus::Events::SubscribeToInt32, { { { "Topic", "" } } })
+                ->Event("SubscribeToVector3", &SubscriberRequestBus::Events::SubscribeToVector3, { { { "Topic", "" } } });
         }
     }
 
@@ -87,7 +93,8 @@ namespace ROS2ScriptIntegration
                 ->Event("OnStdMsgString", &SubscriberNotificationsBus::Events::OnStdMsgString)
                 ->Event("OnStdMsgFloat32", &SubscriberNotificationsBus::Events::OnStdMsgFloat32)
                 ->Event("OnStdMsgUInt32", &SubscriberNotificationsBus::Events::OnStdMsgUInt32)
-                ->Event("OnStdMsgInt32", &SubscriberNotificationsBus::Events::OnStdMsgInt32);
+                ->Event("OnStdMsgInt32", &SubscriberNotificationsBus::Events::OnStdMsgInt32)
+                ->Event("OnGeometryMsgVector3", &SubscriberNotificationsBus::Events::OnGeometryMsgVector3);
         }
     }
 } // namespace ROS2ScriptIntegration
