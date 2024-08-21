@@ -208,6 +208,22 @@ namespace ROS2ScriptIntegration
             });
     }
 
+    void SubscriberSystemComponent::SubscribeToGeometryMsgTransform(const AZStd::string& topicName)
+    {
+        using TypeName = geometry_msgs::msg::Transform;
+        SubscribeToTopic<TypeName>(
+            topicName,
+            [topicName](const TypeName& msg)
+            {
+                const auto& position = msg.translation;
+                const auto& orientation = msg.rotation;
+                const auto data = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    AZ::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w),
+                    AZ::Vector3(position.x, position.y, position.z));
+                SubscriberNotificationsBus::Event(topicName, &SubscriberNotificationsBus::Events::OnGeometryMsgTransform, data);
+            });
+    }
+
     template<typename MessageType>
     void SubscriberSystemComponent::SubscribeToTopic(
         const AZStd::string& topicName, const std::function<void(const MessageType&)>& callback)

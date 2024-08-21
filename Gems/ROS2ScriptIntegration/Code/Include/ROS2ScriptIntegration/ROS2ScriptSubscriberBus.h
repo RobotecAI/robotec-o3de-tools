@@ -40,6 +40,7 @@ namespace ROS2ScriptIntegration
         virtual void SubscribeToStdMsgInt32(const AZStd::string& topicName) = 0;
         virtual void SubscribeToGeometryMsgVector3(const AZStd::string& topicName) = 0;
         virtual void SubscribeToGeometryMsgQuaternion(const AZStd::string& topicName) = 0;
+        virtual void SubscribeToGeometryMsgTransform(const AZStd::string& topicName) = 0;
 
         static void Reflect(AZ::ReflectContext* context);
     };
@@ -64,6 +65,7 @@ namespace ROS2ScriptIntegration
         virtual void OnStdMsgInt32(const int32_t value) = 0;
         virtual void OnGeometryMsgVector3(const AZ::Vector3& value) = 0;
         virtual void OnGeometryMsgQuaternion(const AZ::Quaternion& value) = 0;
+        virtual void OnGeometryMsgTransform(const AZ::Transform& value) = 0;
     };
 
     using SubscriberNotificationsBus = AZ::EBus<SubscriberNotifications>;
@@ -85,7 +87,8 @@ namespace ROS2ScriptIntegration
             OnStdMsgUInt32,
             OnStdMsgInt32,
             OnGeometryMsgVector3,
-            OnGeometryMsgQuaternion);
+            OnGeometryMsgQuaternion,
+            OnGeometryMsgTransform);
 
         void OnStdMsgBool(bool value) override;
         void OnSensorMsgJoy(bool b0, bool b1, bool b2, bool b3, float f0, float f1, float f2, float f3) override;
@@ -96,6 +99,7 @@ namespace ROS2ScriptIntegration
         void OnStdMsgInt32(const int32_t value) override;
         void OnGeometryMsgVector3(const AZ::Vector3& value) override;
         void OnGeometryMsgQuaternion(const AZ::Quaternion& value) override;
+        void OnGeometryMsgTransform(const AZ::Transform& value) override;
 
         static void Reflect(AZ::ReflectContext* context);
     };

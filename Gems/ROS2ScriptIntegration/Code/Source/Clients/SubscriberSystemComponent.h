@@ -47,6 +47,7 @@ namespace ROS2ScriptIntegration
         void SubscribeToStdMsgInt32(const AZStd::string& topicName) override;
         void SubscribeToGeometryMsgVector3(const AZStd::string& topicName) override;
         void SubscribeToGeometryMsgQuaternion(const AZStd::string& topicName) override;
+        void SubscribeToGeometryMsgTransform(const AZStd::string& topicName) override;
 
         // AZ::Component overrides ...
         void Init() override;
