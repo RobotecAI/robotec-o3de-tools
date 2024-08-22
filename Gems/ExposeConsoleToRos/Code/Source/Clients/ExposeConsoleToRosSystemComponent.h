@@ -1,10 +1,10 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
 #include "ROS2/ROS2Bus.h"
 #include "std_msgs/msg/string.hpp"
+#include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Components/ConsoleBus.h>
 
 namespace ExposeConsoleToRos
