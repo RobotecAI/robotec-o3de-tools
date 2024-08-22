@@ -16,4 +16,6 @@ set(FILES
     Source/Clients/PointcloudAsset.cpp
     Source/Clients/PointcloudComponent.cpp
     Source/Clients/PointcloudComponent.h
+        Source/Tools/Components/PointcloudComponentController.h
+        Source/Tools/Components/PointcloudComponentController.cpp
 )

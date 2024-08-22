@@ -10,61 +10,41 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Pointcloud/PointcloudComponentControllerConfigurationBus.h>
 #include <Pointcloud/PointcloudTypeIds.h>
 #include <Render/PointcloudFeatureProcessor.h>
 
 namespace Pointcloud
 {
-    PointcloudComponent::PointcloudComponent(const AZ::Data::Asset<PointcloudAsset>& pointcloudAsset, const float pointSize)
-        : m_pointcloudAsset(pointcloudAsset)
-        , m_pointSize(pointSize)
+
+    PointcloudComponent::PointcloudComponent(const PointcloudComponentConfig& config)
+        : PointcloudComponentBase(config)
     {
     }
 
     void PointcloudComponent::Reflect(AZ::ReflectContext* context)
     {
+        PointcloudComponentBase::Reflect(context);
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<PointcloudComponent, AZ::Component>()
-                ->Version(0)
-                ->Field("PointcloudAsset", &PointcloudComponent::m_pointcloudAsset)
-                ->Field("PointSize", &PointcloudComponent::m_pointSize);
+            serializeContext->Class<PointcloudComponent, PointcloudComponentBase>()->Version(1);
         }
     }
 
     void PointcloudComponent::Activate()
     {
-        AZ::SystemTickBus::QueueFunction(
-            [this]()
-            {
-                m_scene = AZ::RPI::Scene::GetSceneForEntityId(GetEntityId());
-                if (m_scene && m_pointcloudAsset)
-                {
-                    m_featureProcessor = m_scene->EnableFeatureProcessor<PointcloudFeatureProcessor>();
-                    AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
-                    m_pointcloudHandle = m_featureProcessor->AcquirePointcloudFromAsset(m_pointcloudAsset);
-                    m_featureProcessor->SetTransform(m_pointcloudHandle, m_entity->GetTransform()->GetWorldTM());
-                    m_featureProcessor->SetPointSize(m_pointcloudHandle, m_pointSize);
-                }
-            });
+        PointcloudComponentBase::Activate();
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
     }
 
     void PointcloudComponent::Deactivate()
     {
+        PointcloudComponentBase::Deactivate();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
-        if (m_featureProcessor)
-        {
-            m_featureProcessor->ReleasePointcloud(m_pointcloudHandle);
-        }
     }
 
     void PointcloudComponent::OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world)
     {
-        AZ_UNUSED(local);
-        if (m_pointcloudHandle != PointcloudFeatureProcessorInterface::InvalidPointcloudHandle)
-        {
-            m_featureProcessor->SetTransform(m_pointcloudHandle, world);
-        }
+        m_controller.OnTransformChanged(local, world);
     }
 } // namespace Pointcloud
