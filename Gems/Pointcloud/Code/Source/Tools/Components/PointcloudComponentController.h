@@ -39,7 +39,7 @@ namespace Pointcloud
     };
 
     class PointcloudComponentController
-        : public PointcloudComponentControllerConfigurationBus::Handler
+        : public PointcloudConfigurationBus::Handler
         , private AZ::TransformNotificationBus::Handler
     {
     public:

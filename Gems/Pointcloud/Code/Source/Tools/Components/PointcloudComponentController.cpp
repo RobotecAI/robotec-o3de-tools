@@ -115,7 +115,7 @@ namespace Pointcloud
     {
         m_config.m_editorEntityId = entityId;
         AZ::TransformNotificationBus::Handler::BusConnect(m_config.m_editorEntityId);
-        PointcloudComponentControllerConfigurationBus::Handler::BusConnect(m_config.m_editorEntityId);
+        PointcloudConfigurationBus::Handler::BusConnect(m_config.m_editorEntityId);
         AZ::SystemTickBus::QueueFunction(
             [this]()
             {
@@ -132,7 +132,7 @@ namespace Pointcloud
 
     void PointcloudComponentController::Deactivate()
     {
-        PointcloudComponentControllerConfigurationBus::Handler::BusDisconnect();
+        PointcloudConfigurationBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         if (m_featureProcessor)
         {
