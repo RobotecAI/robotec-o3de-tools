@@ -42,22 +42,14 @@ namespace ExposeConsoleToRos
         BaseSystemComponent::GetRequiredServices(required);
     }
 
-    void ExposeConsoleToRosEditorSystemComponent::GetDependentServices(
-        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-        BaseSystemComponent::GetDependentServices(dependent);
-    }
-
     void ExposeConsoleToRosEditorSystemComponent::Activate()
     {
-        ExposeConsoleToRosSystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void ExposeConsoleToRosEditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        ExposeConsoleToRosSystemComponent::Deactivate();
     }
 
 } // namespace ExposeConsoleToRos
