@@ -41,6 +41,21 @@ namespace ROS2ScriptIntegration
         Call(FN_OnStdMsgInt32, value);
     }
 
+    void SubscriberNotificationHandler::OnGeometryMsgVector3(const AZ::Vector3& value)
+    {
+        Call(FN_OnGeometryMsgVector3, value);
+    }
+
+    void SubscriberNotificationHandler::OnGeometryMsgQuaternion(const AZ::Quaternion& value)
+    {
+        Call(FN_OnGeometryMsgQuaternion, value);
+    }
+
+    void SubscriberNotificationHandler::OnGeometryMsgTransform(const AZ::Transform& value)
+    {
+        Call(FN_OnGeometryMsgTransform, value);
+    }
+
     void SubscriberNotificationHandler::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -55,10 +70,20 @@ namespace ROS2ScriptIntegration
                     "SubscribeToGeometryMsgPoseStamped",
                     &SubscriberRequestBus::Events::SubscribeToGeometryMsgPoseStamped,
                     { { { "Topic", "" } } })
-                ->Event("SubscribeToString", &SubscriberRequestBus::Events::SubscribeToString, { { { "Topic", "" } } })
-                ->Event("SubscribeToFloat32", &SubscriberRequestBus::Events::SubscribeToFloat32, { { { "Topic", "" } } })
-                ->Event("SubscribeToUInt32", &SubscriberRequestBus::Events::SubscribeToUInt32, { { { "Topic", "" } } })
-                ->Event("SubscribeToInt32", &SubscriberRequestBus::Events::SubscribeToInt32, { { { "Topic", "" } } });
+                ->Event("SubscribeToStdMsgString", &SubscriberRequestBus::Events::SubscribeToStdMsgString, { { { "Topic", "" } } })
+                ->Event("SubscribeToStdMsgFloat32", &SubscriberRequestBus::Events::SubscribeToStdMsgFloat32, { { { "Topic", "" } } })
+                ->Event("SubscribeToStdMsgUInt32", &SubscriberRequestBus::Events::SubscribeToStdMsgUInt32, { { { "Topic", "" } } })
+                ->Event("SubscribeToStdMsgInt32", &SubscriberRequestBus::Events::SubscribeToStdMsgInt32, { { { "Topic", "" } } })
+                ->Event(
+                    "SubscribeToGeometryMsgVector3", &SubscriberRequestBus::Events::SubscribeToGeometryMsgVector3, { { { "Topic", "" } } })
+                ->Event(
+                    "SubscribeToGeometryMsgQuaternion",
+                    &SubscriberRequestBus::Events::SubscribeToGeometryMsgQuaternion,
+                    { { { "Topic", "" } } })
+                ->Event(
+                    "SubscribeToGeometryMsgTransform",
+                    &SubscriberRequestBus::Events::SubscribeToGeometryMsgTransform,
+                    { { { "Topic", "" } } });
         }
     }
 
@@ -87,7 +112,10 @@ namespace ROS2ScriptIntegration
                 ->Event("OnStdMsgString", &SubscriberNotificationsBus::Events::OnStdMsgString)
                 ->Event("OnStdMsgFloat32", &SubscriberNotificationsBus::Events::OnStdMsgFloat32)
                 ->Event("OnStdMsgUInt32", &SubscriberNotificationsBus::Events::OnStdMsgUInt32)
-                ->Event("OnStdMsgInt32", &SubscriberNotificationsBus::Events::OnStdMsgInt32);
+                ->Event("OnStdMsgInt32", &SubscriberNotificationsBus::Events::OnStdMsgInt32)
+                ->Event("OnGeometryMsgVector3", &SubscriberNotificationsBus::Events::OnGeometryMsgVector3)
+                ->Event("OnGeometryMsgQuaternion", &SubscriberNotificationsBus::Events::OnGeometryMsgQuaternion)
+                ->Event("OnGeometryMsgTransform", &SubscriberNotificationsBus::Events::OnGeometryMsgTransform);
         }
     }
 } // namespace ROS2ScriptIntegration

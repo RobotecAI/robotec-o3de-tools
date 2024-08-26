@@ -53,7 +53,7 @@ Let us subscribe to the string message topic from ROS 2.
 
 **Explanation:**
 The "OnGraphStart" node is called on the component being activated. 
-It activates a 'SubscribeToString` node, which triggers the subscription to a topic with the given name.
+It activates a 'SubscribeToStdMsgString` node, which triggers the subscription to a topic with the given name.
 Next, the Event Handler for `SubscriberNotificationBus` is activated. It generates a pulse and exposes received data on its input.
 
 To send a message to the ROS 2 system copy the following line to the terminal:
@@ -73,7 +73,7 @@ Please find the code snippet below, in which the subscription happens in the cla
 ```lua
 function myscript:OnActivate()
 	self.ros2BusHandler = SubscriberNotificationsBus.Connect(self, /input)
-	SubscriberRequestBus.Broadcast.SubscribeToString("/input")
+	SubscriberRequestBus.Broadcast.SubscribeToStdMsgString("/input")
 end
 
 function myscript:OnStdMsgString(message)
