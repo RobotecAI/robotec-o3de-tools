@@ -15,6 +15,7 @@ namespace Pointcloud
         virtual void SetPointcloudAsset(AZ::Data::Asset<PointcloudAsset> asset) = 0;
         virtual void SetPointSize(float pointSize) = 0;
         virtual void SetVisibility(bool visible) = 0;
+        virtual AZ::Aabb GetBounds() const = 0;
     };
 
     using PointcloudConfigurationBus = AZ::EBus<PointcloudConfigurationRequests>;

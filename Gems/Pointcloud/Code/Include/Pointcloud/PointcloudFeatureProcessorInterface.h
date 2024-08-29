@@ -10,9 +10,11 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/base.h>
 #include <Pointcloud/PointcloudAsset.h>
+
 namespace Pointcloud
 {
     class Pointcloud;
@@ -61,5 +63,9 @@ namespace Pointcloud
         //! Get the number of points in a pointcloud
         //! @param handle The handle of the pointcloud obtained from AcquirePointcloud
         virtual uint32_t GetPointCount(const PointcloudHandle& handle) const = 0;
+
+        //! Get the bounds of a pointcloud
+        //! @param handle The handle of the pointcloud obtained from AcquirePointcloud
+        virtual AZStd::optional<AZ::Aabb> GetBounds(const PointcloudHandle& handle) const = 0;
     };
 } // namespace Pointcloud

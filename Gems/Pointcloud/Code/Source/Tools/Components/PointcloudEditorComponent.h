@@ -3,6 +3,10 @@
 #include "PointcloudComponentController.h"
 
 #include "../../Clients/PointcloudComponent.h"
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+
+#include <AzFramework/Visibility/BoundsBus.h>
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -27,6 +31,8 @@ namespace Pointcloud
         : public PointcloudEditorComponentBase
         , private AZ::TransformNotificationBus::Handler
         , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
+        , public AzFramework::BoundsRequestBus::Handler
+        , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -42,6 +48,16 @@ namespace Pointcloud
         void Activate() override;
         void Deactivate() override;
         bool ShouldActivateController() const override;
+
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
+
+        AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
+        bool EditorSelectionIntersectRayViewport(
+            const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+
+        bool SupportsEditorRayIntersect() override;
+        bool SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo) override;
 
     private:
         // AZ::TransformNotificationBus::Handler overrides ...

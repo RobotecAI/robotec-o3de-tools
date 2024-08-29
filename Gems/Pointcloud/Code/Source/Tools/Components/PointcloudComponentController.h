@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "AzCore/Math/Aabb.h"
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TransformBus.h>
@@ -68,6 +70,7 @@ namespace Pointcloud
         void SetPointcloudAsset(AZ::Data::Asset<PointcloudAsset> asset) override;
         void SetPointSize(float pointSize) override;
         void SetVisibility(bool visible) override;
+        AZ::Aabb GetBounds() const override;
 
         AZ::Crc32 OnSetPointSize();
         AZ::Crc32 OnAssetChanged();
