@@ -31,6 +31,7 @@ namespace Pointcloud
         : public PointcloudEditorComponentBase
         , private AZ::TransformNotificationBus::Handler
         , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
+        , private AzFramework::EntityDebugDisplayEventBus::Handler
         , public AzFramework::BoundsRequestBus::Handler
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
     {
@@ -49,8 +50,8 @@ namespace Pointcloud
         void Deactivate() override;
         bool ShouldActivateController() const override;
 
-        AZ::Aabb GetWorldBounds() const override;
-        AZ::Aabb GetLocalBounds() const override;
+        AZ::Aabb GetWorldBounds() override;
+        AZ::Aabb GetLocalBounds() override;
 
         AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
         bool EditorSelectionIntersectRayViewport(
@@ -58,6 +59,8 @@ namespace Pointcloud
 
         bool SupportsEditorRayIntersect() override;
         bool SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo) override;
+
+        void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
     private:
         // AZ::TransformNotificationBus::Handler overrides ...

@@ -1,12 +1,12 @@
 #include "PointcloudEditorComponent.h"
 #include "Clients/PointcloudComponent.h"
+
 #include <Atom/RPI.Public/Scene.h>
-#include <AzFramework/Entity/EntityContext.h>
-#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <Render/PointcloudFeatureProcessor.h>
+#include <Viewport/ViewportMessages.h>
+#include <ViewportSelection/EditorSelectionUtil.h>
 
 namespace Pointcloud
 {
@@ -26,7 +26,7 @@ namespace Pointcloud
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<PointcloudEditorComponent>("PointcloudEditorComponent", "PointcloudEditorComponent")
+                editContext->Class<PointcloudEditorComponent>("Pointcloud", "Visualize a point cloud data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "PointcloudEditorComponent")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "RobotecTools")
@@ -50,10 +50,12 @@ namespace Pointcloud
         m_controller.SetVisibility(visible);
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
     }
 
     void PointcloudEditorComponent::Deactivate()
     {
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         PointcloudEditorComponentBase::Deactivate();
         AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
@@ -64,7 +66,7 @@ namespace Pointcloud
         return false;
     }
 
-    AZ::Aabb PointcloudEditorComponent::GetWorldBounds() const
+    AZ::Aabb PointcloudEditorComponent::GetWorldBounds()
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -73,7 +75,7 @@ namespace Pointcloud
         return bounds;
     }
 
-    AZ::Aabb PointcloudEditorComponent::GetLocalBounds() const
+    AZ::Aabb PointcloudEditorComponent::GetLocalBounds()
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetLocalTM);
@@ -82,106 +84,23 @@ namespace Pointcloud
         return bounds;
     }
 
-    AZ::Aabb PointcloudEditorComponent::GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo)
+    AZ::Aabb PointcloudEditorComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
     {
         return GetWorldBounds();
     }
 
-    // Based on https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
     bool PointcloudEditorComponent::EditorSelectionIntersectRayViewport(
-        const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
-        bool inside = true;
-        bool quadrant[3];
-        int whichPlane;
-        AZ::Vector3 minB = m_controller.GetBounds().GetMin();
-        AZ::Vector3 maxB = m_controller.GetBounds().GetMax();
-        AZ::Vector3 origin = src;
-        AZ::Vector3 candidatePlane;
-        AZ::Vector3 maxT;
-        AZ::Vector3 coord;
-
-        for (int i = 0; i < 3; i++)
-        {
-            if (origin.GetElement(i) < minB.GetElement(i))
-            {
-                quadrant[i] = false;
-                candidatePlane.SetElement(i, minB.GetElement(i));
-                inside = false;
-            }
-            else if (origin.GetElement(i) > maxB.GetElement(i))
-            {
-                quadrant[i] = true;
-                candidatePlane.SetElement(i, maxB.GetElement(i));
-                inside = false;
-            }
-            else
-            {
-                quadrant[i] = true;
-            }
-        }
-
-        if (inside)
-        {
-            coord = origin;
-            // When inside the bounding box, compute distance from ray origin to a point on the box
-            distance = (origin - (minB + (maxB - minB) * 0.5f)).GetLength();
-            return true;
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-            if (!quadrant[i] && dir.GetElement(i) != 0)
-            {
-                maxT.SetElement(i, (candidatePlane.GetElement(i) - origin.GetElement(i)) / dir.GetElement(i));
-            }
-            else
-            {
-                maxT.SetElement(i, -1);
-            }
-        }
-
-        whichPlane = 0;
-        for (int i = 1; i < 3; i++)
-        {
-            if (maxT.GetElement(whichPlane) < maxT.GetElement(i))
-            {
-                whichPlane = i;
-            }
-        }
-
-        if (maxT.GetElement(whichPlane) < 0)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-            if (whichPlane != i)
-            {
-                coord.SetElement(i, origin.GetElement(i) + maxT.GetElement(whichPlane) * dir.GetElement(i));
-                if (coord.GetElement(i) < minB.GetElement(i) || coord.GetElement(i) > maxB.GetElement(i))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                coord.SetElement(i, candidatePlane.GetElement(i));
-            }
-        }
-
-        // Compute distance from ray origin to intersection point
-        distance = (coord - origin).GetLength();
-
-        return true;
+        return AzToolsFramework::AabbIntersectRay(src, dir, GetWorldBounds(), distance);
     }
 
     bool PointcloudEditorComponent::SupportsEditorRayIntersect()
     {
         return true;
     }
-    bool PointcloudEditorComponent::SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo)
+
+    bool PointcloudEditorComponent::SupportsEditorRayIntersectViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
     {
         return true;
     }
@@ -194,6 +113,29 @@ namespace Pointcloud
     void PointcloudEditorComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
         m_controller.OnTransformChanged(local, world);
+    }
+
+    void PointcloudEditorComponent::DisplayEntityViewport(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        if (!IsSelected())
+        {
+            return;
+        }
+
+        const AZ::Aabb bounds = m_controller.GetBounds();
+        if (!bounds.IsValid())
+        {
+            return;
+        }
+
+        AZ::Transform worldTM = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
+        debugDisplay.PushMatrix(worldTM);
+        debugDisplay.SetColor(AZ::Colors::White);
+        debugDisplay.DrawWireBox(bounds.GetMin(), bounds.GetMax());
+        debugDisplay.PopMatrix();
     }
 
 } // namespace Pointcloud
