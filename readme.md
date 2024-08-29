@@ -52,3 +52,7 @@ TBD
 # SensorDebug
 
 A tool that allows to adjust frequency, activate and deactive sensor during game mode.
+
+# ROS2PoseControl
+
+This gem introduces a component that allows for control for the pose of the objects using ROS2 messages. For detail documentation look [here](./doc/UserGuide/PoseControl.md).
