@@ -14,8 +14,6 @@ namespace ROS2ScriptIntegration
     void ROS2ScriptIntegrationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         SubscriberNotificationHandler::Reflect(context);
-        SubscriberRequests::Reflect(context);
-        PublisherRequests::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
