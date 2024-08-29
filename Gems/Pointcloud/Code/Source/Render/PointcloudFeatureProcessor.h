@@ -43,6 +43,7 @@ namespace Pointcloud
         void SetVisibility(const PointcloudHandle& handle, bool visible) override;
         void ReleasePointcloud(const PointcloudHandle& handle) override;
         uint32_t GetPointCount(const PointcloudHandle& handle) const override;
+        AZStd::optional<AZ::Aabb> GetBounds(const PointcloudHandle& handle) const override;
 
     protected:
         // RPI::SceneNotificationBus overrides
@@ -69,6 +70,7 @@ namespace Pointcloud
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_drawSrg = nullptr;
             bool m_visible = true;
             bool m_needSrgUpdate = true;
+            AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
             AZ::Data::AssetId m_assetId; //! AssetId of the pointcloud asset, if pointcloud was acquired from an asset
             AZ::Data::Asset<AZ::Data::AssetData> m_assetData; //! Pointcloud asset data, if pointcloud was acquired from an asset
         };

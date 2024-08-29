@@ -203,4 +203,17 @@ namespace Pointcloud
         }
     }
 
+    AZ::Aabb PointcloudComponentController::GetBounds() const
+    {
+        if (m_featureProcessor)
+        {
+            auto bounds = m_featureProcessor->GetBounds(m_config.m_pointcloudHandle);
+            if (bounds.has_value())
+            {
+                return bounds.value();
+            }
+        }
+        return AZ::Aabb::CreateNull();
+    }
+
 } // namespace Pointcloud

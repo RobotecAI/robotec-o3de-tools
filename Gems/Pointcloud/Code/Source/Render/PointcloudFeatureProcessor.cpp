@@ -118,6 +118,15 @@ namespace Pointcloud
             m_modelMatrixIndex.Reset();
         }
 
+        // Update bounds
+        AZ::Aabb aabb = AZ::Aabb::CreateNull();
+        for (const auto& vertex : cloudVertexData)
+        {
+            AZ::Vector3 position = AZ::Vector3(vertex.m_position[0], vertex.m_position[1], vertex.m_position[2]);
+            aabb.AddPoint(position);
+        }
+        pcData.m_bounds = aabb;
+
         UpdateDrawPacket();
     }
 
@@ -347,5 +356,14 @@ namespace Pointcloud
             return it->second.m_vertices;
         }
         return 0;
+    }
+
+    AZStd::optional<AZ::Aabb> PointcloudFeatureProcessor::GetBounds(const PointcloudHandle& handle) const
+    {
+        if (auto it = m_pointcloudData.find(handle); it != m_pointcloudData.end())
+        {
+            return it->second.m_bounds;
+        }
+        return AZStd::nullopt;
     }
 } // namespace Pointcloud
