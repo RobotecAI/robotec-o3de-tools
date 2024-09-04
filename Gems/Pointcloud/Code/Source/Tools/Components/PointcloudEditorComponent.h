@@ -36,8 +36,7 @@ namespace Pointcloud
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(
-            PointcloudEditorComponent, "{5950AC6B-75F3-4E0F-BA5C-17C877013722}", AzToolsFramework::Components::EditorComponentBase);
+        AZ_EDITOR_COMPONENT(PointcloudEditorComponent, PointcloudEditorComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
         PointcloudEditorComponent() = default;
         explicit PointcloudEditorComponent(const PointcloudComponentConfig& configuration);
         ~PointcloudEditorComponent() = default;
