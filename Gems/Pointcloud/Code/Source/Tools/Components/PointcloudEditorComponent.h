@@ -2,18 +2,12 @@
 
 #include "PointcloudComponentController.h"
 
-#include "../../Clients/PointcloudComponent.h"
-#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include "Clients/PointcloudComponent.h"
 
-#include <AzFramework/Visibility/BoundsBus.h>
-
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Visibility/BoundsBus.h>
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -47,9 +41,11 @@ namespace Pointcloud
         void Activate() override;
         void Deactivate() override;
 
+        // AzFramework::BoundsRequestBus overrides ...
         AZ::Aabb GetWorldBounds() override;
         AZ::Aabb GetLocalBounds() override;
 
+        // AzToolsFramework::EditorComponentSelectionRequestsBus overrides ...
         AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
         bool EditorSelectionIntersectRayViewport(
             const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
@@ -57,6 +53,7 @@ namespace Pointcloud
         bool SupportsEditorRayIntersect() override;
         bool SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo) override;
 
+        // AzFramework::EntityDebugDisplayEventBus overrides ...
         void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
     private:

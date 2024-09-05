@@ -153,7 +153,6 @@ namespace Pointcloud
     {
         if (m_featureProcessor)
         {
-            printf("Feature processor exists\n");
             m_featureProcessor->ReleasePointcloud(m_config.m_pointcloudHandle);
             if (m_config.m_pointcloudAsset.GetId().IsValid())
             {
@@ -189,6 +188,7 @@ namespace Pointcloud
     {
         m_config.m_pointcloudAsset = asset;
     }
+
     void PointcloudComponentController::SetPointSize(float pointSize)
     {
         m_config.m_pointSize = pointSize;

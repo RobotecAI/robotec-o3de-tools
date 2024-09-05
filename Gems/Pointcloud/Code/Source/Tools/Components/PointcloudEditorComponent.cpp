@@ -1,7 +1,6 @@
 #include "PointcloudEditorComponent.h"
 #include "Clients/PointcloudComponent.h"
 
-#include <Atom/RPI.Public/Scene.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Render/PointcloudFeatureProcessor.h>
