@@ -61,10 +61,6 @@ namespace Pointcloud
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
     }
-    bool PointcloudEditorComponent::ShouldActivateController() const
-    {
-        return false;
-    }
 
     AZ::Aabb PointcloudEditorComponent::GetWorldBounds()
     {

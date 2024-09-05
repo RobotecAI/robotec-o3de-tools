@@ -17,7 +17,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <Pointcloud/PointcloudComponentControllerConfigurationBus.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
 #include <Pointcloud/PointcloudTypeIds.h>
 
@@ -47,7 +46,6 @@ namespace Pointcloud
         // EditorComponentBase interface overrides ...
         void Activate() override;
         void Deactivate() override;
-        bool ShouldActivateController() const override;
 
         AZ::Aabb GetWorldBounds() override;
         AZ::Aabb GetLocalBounds() override;
