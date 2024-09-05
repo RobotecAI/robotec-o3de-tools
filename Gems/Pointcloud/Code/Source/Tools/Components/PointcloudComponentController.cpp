@@ -28,14 +28,16 @@ namespace Pointcloud
         AZ::SystemTickBus::QueueFunction(
             [this]()
             {
-                m_scene = AZ::RPI::Scene::GetSceneForEntityId(m_config.m_editorEntityId);
-                if (m_scene)
+                m_featureProcessor = AZ::RPI::Scene::GetFeatureProcessorForEntity<PointcloudFeatureProcessor>(m_config.m_editorEntityId);
+                if (!m_featureProcessor)
                 {
-                    m_featureProcessor = m_scene->EnableFeatureProcessor<PointcloudFeatureProcessor>();
-
-                    AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
-                    OnAssetChanged();
+                    if (auto* scene = AZ::RPI::Scene::GetSceneForEntityId(m_config.m_editorEntityId))
+                    {
+                        m_featureProcessor = scene->EnableFeatureProcessor<PointcloudFeatureProcessor>();
+                        AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
+                    }
                 }
+                OnAssetChanged();
             });
     }
 
@@ -119,14 +121,16 @@ namespace Pointcloud
         AZ::SystemTickBus::QueueFunction(
             [this]()
             {
-                m_scene = AZ::RPI::Scene::GetSceneForEntityId(m_config.m_editorEntityId);
-                if (m_scene)
+                m_featureProcessor = AZ::RPI::Scene::GetFeatureProcessorForEntity<PointcloudFeatureProcessor>(m_config.m_editorEntityId);
+                if (!m_featureProcessor)
                 {
-                    m_featureProcessor = m_scene->EnableFeatureProcessor<PointcloudFeatureProcessor>();
-
-                    AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
-                    OnAssetChanged();
+                    if (auto* scene = AZ::RPI::Scene::GetSceneForEntityId(m_config.m_editorEntityId))
+                    {
+                        m_featureProcessor = scene->EnableFeatureProcessor<PointcloudFeatureProcessor>();
+                        AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
+                    }
                 }
+                OnAssetChanged();
             });
     }
 

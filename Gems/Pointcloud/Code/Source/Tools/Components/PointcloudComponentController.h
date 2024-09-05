@@ -72,7 +72,6 @@ namespace Pointcloud
 
     private:
         PointcloudFeatureProcessorInterface* m_featureProcessor = nullptr;
-        AZ::RPI::Scene* m_scene = nullptr;
         PointcloudComponentConfig m_config;
         bool visibility = true;
     };
