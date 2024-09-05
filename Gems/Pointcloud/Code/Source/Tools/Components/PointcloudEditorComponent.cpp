@@ -66,7 +66,10 @@ namespace Pointcloud
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         AZ::Aabb bounds = m_controller.GetBounds();
-        bounds.ApplyTransform(transform);
+        if (bounds.IsValid())
+        {
+            bounds.ApplyTransform(transform);
+        }
         return bounds;
     }
 
@@ -75,7 +78,10 @@ namespace Pointcloud
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetLocalTM);
         AZ::Aabb bounds = m_controller.GetBounds();
-        bounds.ApplyTransform(transform);
+        if (bounds.IsValid())
+        {
+            bounds.ApplyTransform(transform);
+        }
         return bounds;
     }
 
