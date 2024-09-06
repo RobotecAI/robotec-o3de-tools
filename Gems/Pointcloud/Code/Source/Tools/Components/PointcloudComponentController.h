@@ -12,7 +12,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Aabb.h>
-#include <Pointcloud/PointcloudComponentControllerConfigurationBus.h>
+#include <Pointcloud/PointcloudConfigurationBus.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
 
 namespace Pointcloud

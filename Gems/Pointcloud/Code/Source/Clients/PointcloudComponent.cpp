@@ -8,11 +8,7 @@
 
 #include "PointcloudComponent.h"
 #include <Atom/RPI.Public/Scene.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Pointcloud/PointcloudComponentControllerConfigurationBus.h>
-#include <Pointcloud/PointcloudTypeIds.h>
-#include <Render/PointcloudFeatureProcessor.h>
 
 namespace Pointcloud
 {
