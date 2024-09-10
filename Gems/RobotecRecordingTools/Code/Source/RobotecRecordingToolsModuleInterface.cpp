@@ -7,6 +7,7 @@
 #include <Cameras/CameraJoystick.h>
 #include <Cameras/SplineCameraAnimation.h>
 #include <Clients/RobotecRecordingToolsSystemComponent.h>
+#include "ScreenRecorder/ScreenRecorderComponent.h"
 
 namespace RobotecRecordingTools
 {
@@ -27,6 +28,7 @@ namespace RobotecRecordingTools
                 RobotecRecordingToolsSystemComponent::CreateDescriptor(),
                 ROS2::Demo::SplineCameraAnimation::CreateDescriptor(),
                 ROS2::Demo::CameraJoystick::CreateDescriptor(),
+                ScreenRecorderComponent::CreateDescriptor(),
             });
     }
 
