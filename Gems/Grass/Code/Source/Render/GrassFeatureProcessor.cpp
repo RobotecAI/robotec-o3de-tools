@@ -67,11 +67,11 @@ namespace Grass {
         {
             static const AZ::Name valueTrue = AZ::Name("true");
             static const AZ::Name valueFalse = AZ::Name("false");
-            shaderOptions.SetValue(AZ::Name("o_enablePunctualLights"), valueTrue);
-            shaderOptions.SetValue(AZ::Name("o_enableAreaLights"), valueTrue);
-            shaderOptions.SetValue(AZ::Name("o_enableDirectionalLights"), valueTrue);
-            shaderOptions.SetValue(AZ::Name("o_enableIBL"), valueTrue);
-            shaderOptions.SetValue(AZ::Name("o_enableShadows"), valueTrue);
+            // shaderOptions.SetValue(AZ::Name("o_enablePunctualLights"), valueTrue);
+            // shaderOptions.SetValue(AZ::Name("o_enableAreaLights"), valueTrue);
+            // shaderOptions.SetValue(AZ::Name("o_enableDirectionalLights"), valueTrue);
+            // shaderOptions.SetValue(AZ::Name("o_enableIBL"), valueTrue);
+            // shaderOptions.SetValue(AZ::Name("o_enableShadows"), valueTrue);
 
             // static const AZ::Name none = AZ::Name("TransmissionMode::None");
             // static const AZ::Name thinObj = AZ::Name("TransmissionMode::ThinObject");
@@ -174,7 +174,8 @@ namespace Grass {
         return m_shaderParameters;
     }
 
-    AZ::Outcome<ParameterType,AZStd::string> GrassFeatureProcessor::ExtractParameterType(const AZ::Name &parameterName) {
+    AZ::Outcome<ParameterType, AZStd::string> GrassFeatureProcessor::ExtractParameterType(const AZ::Name& parameterName)
+    {
         // all look for u_ , f_ , f2_ , f3_
         // but frist there will be m_
         if (parameterName.GetStringView().starts_with("m_")) {
@@ -187,12 +188,15 @@ namespace Grass {
             } else if (parameterName.GetStringView().starts_with("m_u_")) {
                 return ParameterType::uint;
             } else if (parameterName.GetStringView().starts_with("m_t2_")) {
-                 return ParameterType::Texture2D;
-            AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with any of m_f_, m_f2_, m_f3_, or m_u_";
+                return ParameterType::Texture2D;
+                AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) +
+                    "' does not start with any of m_f_, m_f2_, m_f3_, or m_u_";
+                return AZ::Failure(error);
+            }
+            AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with m_";
             return AZ::Failure(error);
         }
-        AZStd::string error = "Parameter name '" + AZStd::string(parameterName.GetCStr()) + "' does not start with m_";
-        return AZ::Failure(error);
+        return {};
     }
 
     void GrassFeatureProcessor::UpdateDrawPacket() {

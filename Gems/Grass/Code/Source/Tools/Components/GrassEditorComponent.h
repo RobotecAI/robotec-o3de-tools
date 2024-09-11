@@ -17,7 +17,7 @@ namespace Grass
         // private AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(GrassEditorComponent, "{018fba15-560f-78cb-afb4-cf4d00cefc22}");
+        AZ_EDITOR_COMPONENT(GrassEditorComponent, "{018fba15-560f-78cb-afb4-cf4d00cef111}");
         GrassEditorComponent() = default;
         ~GrassEditorComponent() = default;
 

@@ -179,7 +179,7 @@ ForwardPassOutput MainPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
     LightingData lightingData;
 
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear,ViewSrg::m_worldPosition.xyz);
     
     // Diffuse and Specular response (used in IBL calculations)
     real3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
