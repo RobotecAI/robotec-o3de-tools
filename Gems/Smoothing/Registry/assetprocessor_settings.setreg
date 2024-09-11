@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder Smoothing/Assets": {
+                    "watch": "@GEMROOT:Smoothing@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder Smoothing/Registry": {
+                    "watch": "@GEMROOT:Smoothing@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
