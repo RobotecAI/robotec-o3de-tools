@@ -14,8 +14,7 @@ namespace ROS2ScriptIntegration
                 ->Attribute(AZ::Script::Attributes::Category, "ROS2")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "ROS2")
-                ->Event(
-                    "PublishStdMsgsString", &PublisherRequestBus::Events::PublishStdMsgsString, { { { "Topic", "" }, { "Value", "" } } })
+                ->Event("PublishStdMsgString", &PublisherRequestBus::Events::PublishStdMsgString, { { { "Topic", "" }, { "Value", "" } } })
                 ->Event("PublishStdMsgEmpty", &PublisherRequestBus::Events::PublishStdMsgEmpty, { { { "Topic", "" } } })
                 ->Event("PublishStdMsgUInt32", &PublisherRequestBus::Events::PublishStdMsgUInt32, { { { "Topic", "" }, { "Value", "" } } })
                 ->Event("PublishStdMsgInt32", &PublisherRequestBus::Events::PublishStdMsgInt32, { { { "Topic", "" }, { "Value", "" } } })

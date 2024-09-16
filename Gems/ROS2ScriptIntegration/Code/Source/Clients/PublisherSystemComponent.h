@@ -38,7 +38,7 @@ namespace ROS2ScriptIntegration
 
     protected:
         // ROS2ScriptIntegrationRequestBus::Handler overrides ...
-        void PublishStdMsgsString(const AZStd::string& topicName, const AZStd::string& value) override;
+        void PublishStdMsgString(const AZStd::string& topicName, const AZStd::string& value) override;
 
         void PublishStdMsgEmpty(const AZStd::string& topicName) override;
 

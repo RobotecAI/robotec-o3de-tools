@@ -25,7 +25,7 @@ namespace ROS2ScriptIntegration
         AZ_RTTI(PublisherRequests, "{b8356874-f7ba-4436-8d98-a342d7c720d9}");
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        virtual void PublishStdMsgsString(const AZStd::string& topicName, const AZStd::string& value) = 0;
+        virtual void PublishStdMsgString(const AZStd::string& topicName, const AZStd::string& value) = 0;
         virtual void PublishStdMsgEmpty(const AZStd::string& topicName) = 0;
         virtual void PublishStdMsgUInt32(const AZStd::string& topicName, const uint32_t value) = 0;
         virtual void PublishStdMsgInt32(const AZStd::string& topicName, const int32_t value) = 0;

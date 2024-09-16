@@ -24,7 +24,7 @@ Let us write a simple publisher using Script Canvas.
 The "OnGraphStart" node is called on the component being activated. 
 It activates a "Heart Beat" node.
 The "Heart Beat" node is configured to issue a pulse every 100 milliseconds.
-Finally, pulse cause the publication message by node `PublishStdMsgsString`.
+Finally, pulse cause the publication message by node `PublishStdMsgString`.
 
 **Note** that the publisher is initialized on the first pulse.
 To see your messages, start the simulation and type in the terminal:
@@ -37,9 +37,9 @@ You should see new messages arriving with a frequency of 10 Hertz.
 
 The message can be published from LUA scripting language using a single call:
 ```lua
-PublisherRequestBus.Broadcast.PublishStdMsgsString("/hello", "Hello world from Lua")
+PublisherRequestBus.Broadcast.PublishStdMsgString("/hello", "Hello world from Lua")
 ```
-in which the first parameter is a topic name and the rest of the parameters form the message (only one string in `PublishStdMsgsString` method).
+in which the first parameter is a topic name and the rest of the parameters form the message (only one string in `PublishStdMsgString` method).
 
 ## Subscriber
 
