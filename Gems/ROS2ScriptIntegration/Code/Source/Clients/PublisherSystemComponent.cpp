@@ -86,7 +86,7 @@ namespace ROS2ScriptIntegration
     }
 
     // Publishers overrides ...
-    void PublisherSystemComponent::PublishStdMsgsString(const AZStd::string& topicName, const AZStd::string& value)
+    void PublisherSystemComponent::PublishStdMsgString(const AZStd::string& topicName, const AZStd::string& value)
     {
         std_msgs::msg::String message;
         message.data = std::string(value.c_str());
