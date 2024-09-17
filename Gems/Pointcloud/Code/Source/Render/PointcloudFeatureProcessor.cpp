@@ -128,6 +128,7 @@ namespace Pointcloud
         pcData.m_bounds = aabb;
 
         UpdateDrawPacket();
+        m_pointcloudChangedEvent.Signal(PointcloudDataIndex);
     }
 
     PointcloudFeatureProcessorInterface::PointcloudHandle PointcloudFeatureProcessor::AcquirePointcloudFromAsset(
@@ -365,5 +366,13 @@ namespace Pointcloud
             return it->second.m_bounds;
         }
         return AZStd::nullopt;
+    }
+    void PointcloudFeatureProcessor::ConnectChangeEventHandler(
+        const PointcloudHandle& pointcloudHandle, PointcloudChangedEvent::Handler& handler)
+    {
+        if (pointcloudHandle != InvalidPointcloudHandle)
+        {
+            handler.Connect(m_pointcloudChangedEvent);
+        }
     }
 } // namespace Pointcloud

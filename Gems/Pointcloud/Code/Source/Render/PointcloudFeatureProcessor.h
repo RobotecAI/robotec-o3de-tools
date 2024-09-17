@@ -45,6 +45,8 @@ namespace Pointcloud
         uint32_t GetPointCount(const PointcloudHandle& handle) const override;
         AZStd::optional<AZ::Aabb> GetBounds(const PointcloudHandle& handle) const override;
 
+        void ConnectChangeEventHandler(const PointcloudHandle& meshHandle, PointcloudChangedEvent::Handler& handler) override;
+
     protected:
         // RPI::SceneNotificationBus overrides
         void OnRenderPipelineChanged(
@@ -101,5 +103,6 @@ namespace Pointcloud
         AZStd::unordered_map<PointcloudHandle, PointcloudData> m_pointcloudData; //!< Map of pointcloud data
         PointcloudHandle m_currentPointcloudDataIndex = 0; //!< Index to the next pointcloud data to be created
         AZStd::unordered_map<AZ::Data::AssetId, PointcloudHandle> m_pointcloudAssets;
+        PointcloudChangedEvent m_pointcloudChangedEvent;
     };
 } // namespace Pointcloud

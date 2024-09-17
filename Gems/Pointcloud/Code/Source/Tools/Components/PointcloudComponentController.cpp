@@ -1,4 +1,5 @@
 #include "PointcloudComponentController.h"
+
 #include "Clients/PointcloudComponent.h"
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -8,6 +9,7 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <Render/PointcloudFeatureProcessor.h>
 
 namespace Pointcloud
@@ -25,6 +27,12 @@ namespace Pointcloud
 
     void PointcloudComponentController::Init()
     {
+        m_changeEventHandler = AZ::EventHandler<PointcloudFeatureProcessorInterface::PointcloudHandle>(
+            [&](PointcloudFeatureProcessorInterface::PointcloudHandle handle)
+            {
+                this->HandleChange(handle);
+            });
+
         AZ::SystemTickBus::QueueFunction(
             [this]()
             {
@@ -130,6 +138,7 @@ namespace Pointcloud
                         AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
                     }
                 }
+                m_featureProcessor->ConnectChangeEventHandler(m_config.m_pointcloudHandle, m_changeEventHandler);
                 OnAssetChanged();
             });
     }
@@ -170,6 +179,15 @@ namespace Pointcloud
             }
         }
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    void PointcloudComponentController::HandleChange(PointcloudFeatureProcessorInterface::PointcloudHandle handle)
+    {
+        if (m_config.m_pointcloudHandle == handle)
+        {
+            // Refresh cached local bounds
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_config.m_editorEntityId);
+        }
     }
 
     void PointcloudComponentController::OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool visible)

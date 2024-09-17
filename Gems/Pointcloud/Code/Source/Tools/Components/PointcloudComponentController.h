@@ -71,6 +71,9 @@ namespace Pointcloud
         AZ::Crc32 OnAssetChanged();
 
     private:
+        PointcloudFeatureProcessorInterface::PointcloudChangedEvent::Handler m_changeEventHandler;
+        void HandleChange(PointcloudFeatureProcessorInterface::PointcloudHandle handle);
+
         PointcloudFeatureProcessorInterface* m_featureProcessor = nullptr;
         PointcloudComponentConfig m_config;
         bool visibility = true;
