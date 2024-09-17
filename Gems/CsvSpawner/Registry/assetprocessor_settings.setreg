@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder CsvSpawner/Assets": {
+                    "watch": "@GEMROOT:CsvSpawner@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder CsvSpawner/Registry": {
+                    "watch": "@GEMROOT:CsvSpawner@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
