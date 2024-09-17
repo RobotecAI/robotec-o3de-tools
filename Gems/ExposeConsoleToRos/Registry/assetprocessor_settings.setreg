@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder ExposeConsoleToRos/Assets": {
+                    "watch": "@GEMROOT:ExposeConsoleToRos@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder ExposeConsoleToRos/Registry": {
+                    "watch": "@GEMROOT:ExposeConsoleToRos@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}

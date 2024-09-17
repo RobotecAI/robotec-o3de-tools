@@ -1,0 +1,28 @@
+{
+    "gem_name": "ExposeConsoleToRos",
+    "version": "1.0.0",
+    "display_name": "ExposeConsoleToRos",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.ai",
+    "origin_url": "https://robotec.ai",
+    "type": "Code",
+    "summary": "This gem exposes the O3DE console to ROS",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "ExposeConsoleToRos"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "User's caution is advised",
+    "documentation_url": "https://github.com/RobotecAI/robotec-o3de-tools/blob/main/readme.md",
+    "dependencies": ["ROS2"],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "ExposeConsoleToRos"
+}
