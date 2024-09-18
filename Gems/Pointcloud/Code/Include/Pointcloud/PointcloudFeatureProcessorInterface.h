@@ -24,6 +24,7 @@ namespace Pointcloud
     {
     public:
         using PointcloudHandle = int;
+        using PointcloudChangedEvent = AZ::Event<PointcloudHandle>;
         constexpr static PointcloudHandle InvalidPointcloudHandle = -1;
         AZ_RTTI(PointcloudFeatureProcessorInterface, "{8597AF27-EB4E-4363-8889-3BFC2AF5D2EC}", AZ::RPI::FeatureProcessor);
 
@@ -67,5 +68,8 @@ namespace Pointcloud
         //! Get the bounds of a pointcloud
         //! @param handle The handle of the pointcloud obtained from AcquirePointcloud
         virtual AZStd::optional<AZ::Aabb> GetBounds(const PointcloudHandle& handle) const = 0;
+
+        //! Connects a handler to any changes to a Pointcloud. Changes include loading and reloading
+        virtual void ConnectChangeEventHandler(const PointcloudHandle& meshHandle, PointcloudChangedEvent::Handler& handler) = 0;
     };
 } // namespace Pointcloud

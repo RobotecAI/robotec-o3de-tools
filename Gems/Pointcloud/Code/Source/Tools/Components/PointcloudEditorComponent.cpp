@@ -1,7 +1,6 @@
 #include "PointcloudEditorComponent.h"
 #include "Clients/PointcloudComponent.h"
 
-#include <Atom/RPI.Public/Scene.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Render/PointcloudFeatureProcessor.h>
@@ -61,17 +60,16 @@ namespace Pointcloud
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
     }
-    bool PointcloudEditorComponent::ShouldActivateController() const
-    {
-        return false;
-    }
 
     AZ::Aabb PointcloudEditorComponent::GetWorldBounds()
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         AZ::Aabb bounds = m_controller.GetBounds();
-        bounds.ApplyTransform(transform);
+        if (bounds.IsValid())
+        {
+            bounds.ApplyTransform(transform);
+        }
         return bounds;
     }
 
@@ -80,7 +78,10 @@ namespace Pointcloud
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetLocalTM);
         AZ::Aabb bounds = m_controller.GetBounds();
-        bounds.ApplyTransform(transform);
+        if (bounds.IsValid())
+        {
+            bounds.ApplyTransform(transform);
+        }
         return bounds;
     }
 

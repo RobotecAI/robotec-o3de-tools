@@ -8,18 +8,12 @@
 
 #pragma once
 
-#include "AzCore/Math/Aabb.h"
-
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Memory/Memory_fwd.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/base.h>
-#include <AzFramework/Spawnable/Spawnable.h>
-#include <Pointcloud/PointcloudComponentControllerConfigurationBus.h>
+#include <AzCore/Math/Aabb.h>
+#include <Pointcloud/PointcloudConfigurationBus.h>
 #include <Pointcloud/PointcloudFeatureProcessorInterface.h>
-#include <Pointcloud/PointcloudTypeIds.h>
 
 namespace Pointcloud
 {
@@ -37,7 +31,7 @@ namespace Pointcloud
         float m_pointSize = 1.0f;
         PointcloudFeatureProcessorInterface::PointcloudHandle m_pointcloudHandle =
             PointcloudFeatureProcessorInterface::InvalidPointcloudHandle;
-        AZ::Data::Asset<PointcloudAsset> m_pointcloudAsset;
+        AZ::Data::Asset<PointcloudAsset> m_pointcloudAsset = {};
     };
 
     class PointcloudComponentController
@@ -61,7 +55,8 @@ namespace Pointcloud
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world);
+        // AZ::TransformNotificationBus::Handler overrides ...
+        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // AzToolsFramework::EditorEntityInfoNotificationBus overrides ...
         void OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool visible);
@@ -76,8 +71,10 @@ namespace Pointcloud
         AZ::Crc32 OnAssetChanged();
 
     private:
+        PointcloudFeatureProcessorInterface::PointcloudChangedEvent::Handler m_changeEventHandler;
+        void HandleChange(PointcloudFeatureProcessorInterface::PointcloudHandle handle);
+
         PointcloudFeatureProcessorInterface* m_featureProcessor = nullptr;
-        AZ::RPI::Scene* m_scene = nullptr;
         PointcloudComponentConfig m_config;
         bool visibility = true;
     };
