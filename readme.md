@@ -1,7 +1,7 @@
 # robotec-o3de-tools
 
 This repository is a collection of useful gems that are usable in O3DE.
-Those gems are open source, but refer to the license of every gem.
+Those gems are open source but refer to the license of every gem.
 Note that this is not a "Canonical" part of O3DE - those gems are third-party contributions and are not tested against any particular version of the O3DE engine.
 
 # RobotecRecordingTools
@@ -10,8 +10,8 @@ Toolset for joystick-controlled cameras and spline animation tools.
 # SplineTools
 The tools for expanding the usability of the Spline component in O3DE. 
 It allows to:
-## Load spline from CSV file
-
+ - Import spline from CSV file
+ - Export spline to a CSV file
 Having a CSV file formatted as :
 ```csv
 x,y,z
@@ -52,17 +52,23 @@ A component that allows to look at an entity from 3rd person perspective and to 
 
 # RobotecWatchdogTools
 
-Minimal dependency Gem that allows to setup runtime checks and prevents starting the Editor/GameLauncher if the requirements are not met
+Minimal dependency Gem that allows the setup runtime checks and prevents starting the Editor/GameLauncher if the requirements are not met
 Refer to [readme](Gems/RobotecWatchdogTools/readme.md)
 
+# Disable the main view
+
+Deprecated, please use `-console-mode` switch available in o3de 2409. 
+The description of said feature is in the original [PR](https://github.com/o3de/o3de/pull/18093).
 
 # LevelModificationTools
 
-TBD
+The level modification tool contains a component called PrefabVariantEditorComponent. 
+This component allows the change a variant of loaded prefab during game mode.
+It exposes PrefabVariantRequestsBus to Script Canvas or LUA.
 
 # SensorDebug
 
-A tool that allows to adjust frequency, activate and deactive sensor during game mode.
+A tool that allows the adjusted frequency, activate and deactivate sensor during the game mode.
 
 # Smoothing
 
@@ -102,3 +108,31 @@ alt	lat	lon	name
 0	12.5897646831551	30.1933927129084	ball
 
 ```
+
+# ExposeConsoleToRos
+
+Simple utility Gem that exposes the O3DE console to ROS 2 topics.
+It has two std_msgs/msg/String topics:
+```
+\o3de_console_out
+\o3de_console_in
+```
+Currently `o3de_console_in` is usable only.
+The gem functionality is available only in Profile/Debug.
+
+# Pointcloud
+
+A Gem that introduces point clouds to O3DE.
+It offers:
+- PointcloudFeatureProcessor with public API
+- Pointcloud product asset 
+- A public API for configuration (`PointcloudConfigurationBus`)
+
+At this moment it accepts [PLY](https://en.wikipedia.org/wiki/PLY_(file_format)) as a source asset.
+
+![](doc/Pointcloud.png)\
+Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
+
+# ROS2PoseControl
+
+A utility gem that introduces a way to control robots in simulation as puppets with Pose messages or TFs.
