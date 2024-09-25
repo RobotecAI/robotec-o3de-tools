@@ -115,6 +115,10 @@ namespace RobotecSpectatorCamera
                 // Capture the initial mouse position and cursor state
                 m_initialMousePosition = GetCurrentMousePosition();
                 m_ignoreNextMovement = true; // Flag to ignore the next mouse movement preventing jump on re-centering
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id,
+                    &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    AzFramework::SystemCursorState::ConstrainedAndHidden);
             }
             else if (inputChannel.IsStateEnded())
             {
@@ -128,6 +132,10 @@ namespace RobotecSpectatorCamera
 
                 // Update m_lastMousePosition to the restored position to prevent the jump on the next rotation start
                 m_lastMousePosition = m_initialMousePosition;
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id,
+                    &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    AzFramework::SystemCursorState::ConstrainedAndVisible);
             }
         }
 
