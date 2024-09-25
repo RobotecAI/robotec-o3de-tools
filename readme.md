@@ -38,6 +38,11 @@ If you switch `Local Coordinates` to true, the component will interpret coordina
 Simple, but extremely useful tool that exposes ROS 2 subscription/publication to Script Canvas and LUA.
 Refer to [readme](Gems/ROS2ScriptIntegration/readme.md)
 
+# RobotecSpectatorCamera
+
+A component that allows to look at an entity from 3rd person perspective and to switch camera mode to the free flying mode (to switch mode press the `C` key). It also allows to enable/disable following the target's rotation and to add a vertical offset to change the `look at` point of the target entity.  
+![](doc/RobotecSpectatorCamera.png)
+
 
 # RobotecWatchdogTools
 
@@ -56,5 +61,5 @@ A tool that allows to adjust frequency, activate and deactive sensor during game
 # Smoothing
 
 Gem contains a smoothing component that will mimic the movement of an attached entity with the tracked entity. It offers multiple smoothing methods. It allows the lock Z axis to point up direction.
-Useful for robots' movement smoothing.
-![alt text](doc/Smoothing.png) 
+Useful for robots' movement smoothing.  
+![alt text](doc/Smoothing.png)
