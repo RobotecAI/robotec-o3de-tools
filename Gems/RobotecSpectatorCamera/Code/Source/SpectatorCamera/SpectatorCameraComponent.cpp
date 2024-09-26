@@ -108,6 +108,12 @@ namespace RobotecSpectatorCamera
 
         if (channelId == AzFramework::InputDeviceMouse::Button::Right || m_configuration.m_cameraMode == CameraMode::FreeFlying)
         {
+            AzFramework::SystemCursorState currentCursorState;
+            AzFramework::InputSystemCursorRequestBus::EventResult(
+                currentCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+            const bool isConstrained = // flag to do not lose information whether the cursor is constrained or not
+                (currentCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden ||
+                 currentCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible);
             if (inputChannel.IsStateBegan())
             {
                 m_isRightMouseButtonPressed = true;
@@ -118,7 +124,8 @@ namespace RobotecSpectatorCamera
                 AzFramework::InputSystemCursorRequestBus::Event(
                     AzFramework::InputDeviceMouse::Id,
                     &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::ConstrainedAndHidden);
+                    isConstrained ? AzFramework::SystemCursorState::ConstrainedAndHidden
+                                  : AzFramework::SystemCursorState::UnconstrainedAndHidden);
             }
             else if (inputChannel.IsStateEnded())
             {
@@ -135,7 +142,8 @@ namespace RobotecSpectatorCamera
                 AzFramework::InputSystemCursorRequestBus::Event(
                     AzFramework::InputDeviceMouse::Id,
                     &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::ConstrainedAndVisible);
+                    isConstrained ? AzFramework::SystemCursorState::ConstrainedAndVisible
+                                  : AzFramework::SystemCursorState::UnconstrainedAndVisible);
             }
         }
 
