@@ -1,5 +1,4 @@
 
-#include "CsvSpawnerEditorSystemComponent.h"
 #include <CsvSpawner/CsvSpawnerEditorComponent.h>
 #include <CsvSpawner/CsvSpawnerTypeIds.h>
 #include <CsvSpawnerModuleInterface.h>
@@ -21,7 +20,6 @@ namespace CsvSpawner
             m_descriptors.insert(
                 m_descriptors.end(),
                 {
-                    CsvSpawnerEditorSystemComponent::CreateDescriptor(),
                     CsvSpawnerEditorComponent::CreateDescriptor(),
                 });
         }
@@ -32,9 +30,7 @@ namespace CsvSpawner
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList{
-                azrtti_typeid<CsvSpawnerEditorSystemComponent>(),
-            };
+            return AZ::ComponentTypeList{};
         }
     };
 } // namespace CsvSpawner

@@ -5,9 +5,9 @@
   "license": "Apache-2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "origin": "Robotec.ai",
-  "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+  "origin_url": "https://www.robotec.ai",
   "type": "Code",
-  "summary": "Component that spawns prefabs using coordinates stored in csv file. It supports XYZ format as well as WGS84 coordinate system.",
+  "summary": "Component that spawns prefabs using coordinates stored in CSV file. It supports XYZ format as well as WGS84 coordinate system.",
   "canonical_tags": [
     "Gem"
   ],
@@ -21,7 +21,7 @@
   "requirements": "Requires ROS2 Gem",
   "documentation_url": "",
   "dependencies": [
-    "ROS2"
+    "ROS2==3.1.0"
   ],
   "repo_uri": "",
   "compatible_engines": [],

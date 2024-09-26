@@ -5,8 +5,6 @@
 #include <CsvSpawner/CsvSpawnerComponent.h>
 #include <CsvSpawner/CsvSpawnerTypeIds.h>
 
-#include <Clients/CsvSpawnerSystemComponent.h>
-
 namespace CsvSpawner
 {
     AZ_TYPE_INFO_WITH_NAME_IMPL(CsvSpawnerModuleInterface, "CsvSpawnerModuleInterface", CsvSpawnerModuleInterfaceTypeId);
@@ -22,15 +20,12 @@ namespace CsvSpawner
         m_descriptors.insert(
             m_descriptors.end(),
             {
-                CsvSpawnerSystemComponent::CreateDescriptor(),
                 CsvSpawnerComponent::CreateDescriptor(),
             });
     }
 
     AZ::ComponentTypeList CsvSpawnerModuleInterface::GetRequiredSystemComponents() const
     {
-        return AZ::ComponentTypeList{
-            azrtti_typeid<CsvSpawnerSystemComponent>(),
-        };
+        return AZ::ComponentTypeList{};
     }
 } // namespace CsvSpawner

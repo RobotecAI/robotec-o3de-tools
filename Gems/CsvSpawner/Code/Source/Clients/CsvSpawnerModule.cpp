@@ -1,5 +1,4 @@
 
-#include "CsvSpawnerSystemComponent.h"
 #include <CsvSpawner/CsvSpawnerTypeIds.h>
 #include <CsvSpawnerModuleInterface.h>
 
