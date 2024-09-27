@@ -103,7 +103,7 @@ namespace BillboardComponent
         }
     }
 
-    void BillboardComponent::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time)
+    void BillboardComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         LookAtZUp(GetTargetPosition());
     }
