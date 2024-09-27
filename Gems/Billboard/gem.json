@@ -1,0 +1,28 @@
+{
+    "gem_name": "Billboard",
+    "version": "1.0.0",
+    "display_name": "Billboard",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.ai",
+    "origin_url": "https://www.robotec.ai",
+    "type": "Code",
+    "summary": "Component that rotates the entity to ensure it always faces the target position",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Billboard"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": [],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "Billboard"
+}
