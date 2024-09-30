@@ -1,0 +1,1 @@
+The "CSV for C++" library is Open Source, MIT-licensed contribution by Vincent La available at https://github.com/vincentlaucsb/csv-parser/blob/master/single_include/csv.hpp.
