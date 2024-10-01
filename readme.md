@@ -32,6 +32,12 @@ Add SplineToolsEditorComponent next to the [Spline component](https://docs.o3de.
 If you switch `Local Coordinates` to true, the component will interpret coordinates as local to entity origin.
 ![](doc/SplineToolsEditorComponent.png)
 
+## Using geo-referenced data
+
+The CSV file can contain the following columns: `lat`, `lon`, `alt` where every row contains the WGS-84 coordinate of the spline's node.
+It can be loaded to a georeferenced level as explained in [Georeference section of O3DE documentation]
+(https://development--o3deorg.netlify.app/docs/user-guide/interactivity/robotics/georeference/).
+It is useful for visualizing paths, roads, and other things at the O3DE level.
 
 # ROS2ScriptIntegration
 

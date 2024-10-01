@@ -38,8 +38,9 @@ namespace SplineTools
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
-        AZ::Data::AssetId m_csvAssetId; //!< Asset ID of the CSV
         bool m_isLocalCoordinates = true;
+        bool m_isCoordinateXY = false;
+        bool m_isCoordinateLatLon = false;
 
         void ReloadCSVAsset();
         AZStd::vector<AZ::Vector3> GetSplinePointsFromCsv(const AZStd::string& csvFilePath);
