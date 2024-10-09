@@ -1,13 +1,13 @@
 {
     "gem_name": "Pointcloud",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "display_name": "Pointcloud",
-    "license": "License used i.e. Apache-2.0 or MIT",
-    "license_url": "Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0",
-    "origin": "The name of the originator or creator",
-    "origin_url": "The website for this Gem",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.AI",
+    "origin_url": "https://www.robotec.ai",
     "type": "Code",
-    "summary": "A short description of this Gem",
+    "summary": "Tool Gem to visualize point clouds",
     "canonical_tags": [
         "Gem"
     ],
@@ -24,8 +24,8 @@
         "Atom_RPI",
         "Atom"
     ],
-    "repo_uri": "",
-    "compatible_engines": [],
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "compatible_engines": ["o3de>=2.3.0"],
     "engine_api_dependencies": [],
     "restricted": "Pointcloud"
 }
