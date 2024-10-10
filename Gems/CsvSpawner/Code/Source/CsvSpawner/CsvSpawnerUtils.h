@@ -1,35 +1,36 @@
 /**
- * Copyright (C) Robotec AI - All Rights Reserved
- *
- * This source code is protected under international copyright law.  All rights
- * reserved and protected by the copyright holders.
- * This file is confidential and only available to authorized individuals with the
- * permission of the copyright holders.  If you encounter this file and do not have
- * permission, please contact the copyright holders and delete this file.
- */
+* Copyright (C) Robotec AI - All Rights Reserved
+*
+* This source code is protected under international copyright law.  All rights
+* reserved and protected by the copyright holders.
+* This file is confidential and only available to authorized individuals with the
+* permission of the copyright holders.  If you encounter this file and do not have
+* permission, please contact the copyright holders and delete this file.
+*/
 
 #pragma once
 
-#include "CsvSpawner/CsvSpawnerTypeIds.h"
+#include "AzFramework/Physics/Collision/CollisionLayers.h"
+#include "AzFramework/Physics/Common/PhysicsEvents.h"
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Physics/PropertyTypes.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
-namespace CsvSpawner::CsvSpawnerUtils
+namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
 {
 
     //! Information about a locations to spawn an entity.
     //! This information is generated from CSV file and is used to spawn the entity.
-    //! @param m_name is the name of the spawnable entity configuration and should be identical to name in @class
-    //! SpawnableAssetConfiguration.
+    //! @param m_name is the name of the spawnable entity configuration and should be identical to name in @class SpawnableAssetConfiguration.
     class CsvSpawnableEntityInfo
     {
     public:
-        AZ_RTTI(CsvSpawnableEntityInfo, CsvSpawnableEntityInfoTypeId);
+        AZ_RTTI(CsvSpawnableEntityInfo, "{6acce47e-9cac-4a6e-8726-ea614fb2d30d}");
         static void Reflect(AZ::ReflectContext* context);
         CsvSpawnableEntityInfo() = default;
         virtual ~CsvSpawnableEntityInfo() = default;
@@ -43,13 +44,12 @@ namespace CsvSpawner::CsvSpawnerUtils
     //! Configuration for a spawnable asset
     //! This configuration is used to configure the spawnable asset before spawning it.
     //! The @param m_name is used to identify the spawnable asset configuration and should be identical to name given in CSV file.
-    //! The class allows user to specify multiple spawnable assets for a given name and randomization parameters for position, rotation and
-    //! scale. If more then one spawnable asset is specified for a given name, then one of the spawnable assets is randomly selected for
-    //! spawning.
+    //! The class allows user to specify multiple spawnable assets for a given name and randomization parameters for position, rotation and scale.
+    //! If more then one spawnable asset is specified for a given name, then one of the spawnable assets is randomly selected for spawning.
     class CsvSpawnableAssetConfiguration
     {
     public:
-        AZ_RTTI(CsvSpawnableAssetConfiguration, CsvSpawnableAssetConfigurationTypeId);
+        AZ_RTTI(CsvSpawnableAssetConfiguration, "{d04ea4de-b4dc-4e76-b742-c1d77203bc3e}");
         static void Reflect(AZ::ReflectContext* context);
         CsvSpawnableAssetConfiguration() = default;
         virtual ~CsvSpawnableAssetConfiguration() = default;
@@ -58,8 +58,13 @@ namespace CsvSpawner::CsvSpawnerUtils
         AZStd::vector<AZ::Data::Asset<AzFramework::Spawnable>> m_spawnables; //!< List of spawnable assets
         AZ::Vector3 m_positionStdDev{ 0.f }; //!< Standard deviation for position
         AZ::Vector3 m_rotationStdDev{ 0.f }; //!< Standard deviation for rotation
-        float m_scaleStdDev{ 0.1f }; //!< Standard deviation for scale
-        bool m_placeOnTerrain{ false }; //!< Whether to raytrace to terrain and place the entity on the terrain
+        float m_scaleStdDev { 0.1f }; //!< Standard deviation for scale
+        bool m_placeOnTerrain { false }; //!< Whether to raytrace to terrain and place the entity on the terrain
+        AzPhysics::CollisionLayer m_selectedCollisionLayer; //!< To which collision layer this target will be attached
+
+    private:
+        bool bIsCollisionLayerEnabled() const;
+        AZ::Crc32 OnPlaceOnTerrainChanged();
     };
 
     //! This function create map of spawnable asset configuration from vector of spawnable asset configuration, where
@@ -83,4 +88,4 @@ namespace CsvSpawner::CsvSpawnerUtils
         const AZStd::string& physicsSceneName = AZStd::string(),
         AZ::EntityId parentId = AZ::EntityId());
 
-}; // namespace CsvSpawner::CsvSpawnerUtils
+}; // namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
