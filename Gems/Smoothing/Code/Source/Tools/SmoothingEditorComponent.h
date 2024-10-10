@@ -23,5 +23,9 @@ namespace Smoothing
         void Activate() override;
         void Deactivate() override;
         bool ShouldActivateController() const override;
+
+    private:
+        bool m_activeInEditor = false;
+        void OnActiveInEditorChanged();
     };
 } // namespace Smoothing

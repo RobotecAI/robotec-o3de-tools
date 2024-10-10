@@ -132,6 +132,10 @@ namespace Smoothing
     void SmoothingComponentController::OnTick(float deltaTime, AZ::ScriptTimePoint time)
     {
         AZ_UNUSED(time);
+        if (!m_smoothingEnabled)
+        {
+            return;
+        }
         // get transform of entity to track
         AZ::Transform targetTransform = AZ::Transform::CreateIdentity();
         AZ::Transform ourTransform = AZ::Transform::CreateIdentity();
@@ -254,5 +258,15 @@ namespace Smoothing
     void SmoothingComponent::Deactivate()
     {
         SmoothingComponentBase::Deactivate();
+    }
+
+    void SmoothingComponentController::SetSmoothingEnabled(bool enabled)
+    {
+        m_smoothingEnabled = enabled;
+    }
+
+    bool SmoothingComponentController::GetSmoothingEnabled() const
+    {
+        return m_smoothingEnabled;
     }
 } // namespace Smoothing

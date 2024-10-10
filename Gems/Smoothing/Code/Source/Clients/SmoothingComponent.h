@@ -63,6 +63,9 @@ namespace Smoothing
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
 
+        void SetSmoothingEnabled(bool enabled);
+        bool GetSmoothingEnabled() const;
+
     protected:
         SmoothingConfig m_config;
         SmoothingUtils::SmoothingCache m_smoothingCache;
@@ -72,6 +75,7 @@ namespace Smoothing
         AZ::Vector3 m_ourLastVelocity;
         AZ::Vector3 m_ourLastAngularVelocity;
         bool m_isFirstTick = true;
+        bool m_smoothingEnabled = true;
     };
     using SmoothingComponentBase = AzFramework::Components::ComponentAdapter<SmoothingComponentController, SmoothingConfig>;
 
