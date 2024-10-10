@@ -1,18 +1,15 @@
 /**
-* Copyright (C) Robotec AI - All Rights Reserved
-*
-* This source code is protected under international copyright law.  All rights
-* reserved and protected by the copyright holders.
-* This file is confidential and only available to authorized individuals with the
-* permission of the copyright holders.  If you encounter this file and do not have
-* permission, please contact the copyright holders and delete this file.
-*/
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders.  If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 
 #include "CsvSpawnerUtils.h"
-
-#include "AzCore/StringFunc/StringFunc.h"
-#include "AzFramework/Physics/Shape.h"
-
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -20,13 +17,13 @@
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
-#include <cstdlib>
-#include <random>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <cstdlib>
+#include <random>
 
-namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
+namespace CsvSpawner::CsvSpawnerUtils
 {
 
     void CsvSpawnableEntityInfo::Reflect(AZ::ReflectContext* context)
@@ -60,7 +57,7 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
                 editContext->Class<CsvSpawnableAssetConfiguration>("SpawnableAssetConfiguration", "SpawnableAssetConfiguration")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "SpawnableAssetConfiguration")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->Attribute(AZ::Edit::Attributes::Category, "RobotecEnvironmentSpawner")
+                    ->Attribute(AZ::Edit::Attributes::Category, "CsvSpawner")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &CsvSpawnableAssetConfiguration::m_name, "Name", "Name of the spawnable field")
@@ -92,12 +89,12 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
                         &CsvSpawnableAssetConfiguration::m_selectedCollisionLayer,
                         "Collision Layer",
                         "To which collision layer this target will be attached")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnableAssetConfiguration::bIsCollisionLayerEnabled);
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnableAssetConfiguration::IsCollisionLayerEnabled);
             }
         }
     }
 
-    bool CsvSpawnableAssetConfiguration::bIsCollisionLayerEnabled() const
+    bool CsvSpawnableAssetConfiguration::IsCollisionLayerEnabled() const
     {
         return !m_placeOnTerrain;
     }
@@ -125,7 +122,8 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
         return vec.at(distribution(gen));
     }
 
-    AZ::Transform GetRandomTransform(const AZ::Vector3& stdDevTranslation, const AZ::Vector3& stdDevRotation, float stdDevScale, std::mt19937& gen)
+    AZ::Transform GetRandomTransform(
+        const AZ::Vector3& stdDevTranslation, const AZ::Vector3& stdDevRotation, float stdDevScale, std::mt19937& gen)
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZStd::vector<std::normal_distribution<float>> distributions;
@@ -141,11 +139,12 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
         const AZ::Quaternion rotation =
             AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(distributions[3](gen), distributions[4](gen), distributions[5](gen)));
         transform.SetRotation(rotation);
-        transform.SetUniformScale(AZStd::max(0.0f,distributions[6](gen)));
+        transform.SetUniformScale(AZStd::max(0.0f, distributions[6](gen)));
         return transform;
     }
 
-    AZStd::optional<AZ::Vector3> RaytraceTerrain(const AZ::Vector3& location,  const AzPhysics::SceneHandle sceneHandle,  const AZ::Vector3& gravityDirection, float maxDistance)
+    AZStd::optional<AZ::Vector3> RaytraceTerrain(
+        const AZ::Vector3& location, const AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& gravityDirection, float maxDistance)
     {
         AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
 
@@ -179,7 +178,8 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
         return hitPosition;
     }
 
-    AZStd::optional<AZ::Vector3> RaytraceTerrain(const AZ::Vector3& location,  const AzPhysics::SceneHandle sceneHandle,  const AZ::Vector3& gravityDirection, float maxDistance, AzPhysics::CollisionLayer collisionLayer)
+    AZStd::optional<AZ::Vector3> RaytraceTerrain(
+        const AZ::Vector3& location, const AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& gravityDirection, float maxDistance, AzPhysics::CollisionLayer collisionLayer)
     {
         AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
 
@@ -244,7 +244,6 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
             }
         }
 
-
         for (const auto& entityConfig : entitiesToSpawn)
         {
             if (!spawnableAssetConfiguration.contains(entityConfig.m_name))
@@ -263,19 +262,19 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
             AZ::Transform transform = parentTransform * entityConfig.m_transform *
                 GetRandomTransform(spawnConfig.m_positionStdDev, spawnConfig.m_rotationStdDev, spawnConfig.m_scaleStdDev, gen);
 
-
             if (spawnConfig.m_placeOnTerrain)
             {
-                const AZStd::optional<AZ::Vector3> hitPosition = RaytraceTerrain(transform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f, spawnConfig.m_selectedCollisionLayer);
+                const AZStd::optional<AZ::Vector3> hitPosition =
+                    RaytraceTerrain(transform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f, spawnConfig.m_selectedCollisionLayer);
                 if (hitPosition.has_value())
                 {
                     transform.SetTranslation(hitPosition.value());
                 }
-                else{
+                else
+                {
                     continue; // Skip this entity if we can't find a valid position and place on terrain is enabled.
                 }
             }
-
             AZ_Assert(spawner, "Unable to get spawnable entities definition");
             AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
             AzFramework::EntitySpawnTicket ticket(spawnable);
@@ -292,8 +291,9 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
                 auto* transformInterface = root->FindComponent<AzFramework::TransformComponent>();
                 transformInterface->SetWorldTM(transform);
             };
-
-            optionalArgs.m_completionCallback = [parentId]([[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableConstEntityContainerView view)
+            optionalArgs.m_completionCallback =
+                [parentId](
+                    [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableConstEntityContainerView view)
             {
                 if (view.empty())
                 {
@@ -302,7 +302,6 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
                 const AZ::Entity* root = *view.begin();
                 AZ::TransformBus::Event(root->GetId(), &AZ::TransformBus::Events::SetParent, parentId);
             };
-
             optionalArgs.m_priority = AzFramework::SpawnablePriority_Lowest;
             spawner->SpawnAllEntities(ticket, optionalArgs);
             tickets[entityConfig.m_id] = AZStd::move(ticket);
@@ -310,4 +309,4 @@ namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
         return tickets;
     }
 
-} // namespace RobotecEnvironmentSpawner::CsvSpawnerUtils
+} // namespace CsvSpawner::CsvSpawnerUtils
