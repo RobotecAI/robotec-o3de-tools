@@ -13,8 +13,4 @@ namespace ExposeConsoleToRos
     };
 } // namespace ExposeConsoleToRos
 
-#if defined(O3DE_GEM_NAME)
-AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ExposeConsoleToRos::ExposeConsoleToRosModule)
-#else
 AZ_DECLARE_MODULE_CLASS(Gem_ExposeConsoleToRos, ExposeConsoleToRos::ExposeConsoleToRosModule)
-#endif
