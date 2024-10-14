@@ -90,7 +90,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                     coordinate.m_altitude = row[index_alt.value()].get<double>();
                     AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
                     ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                        coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
+                        coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWSG84ToLevel, coordinate);
                     AZ_Printf(
                         "TreeSpawnerEditorComponent",
                         "Converted WGS84 coordinate to level coordinate: %f, %f, %f WGS84: %f, %f, %f\n",
