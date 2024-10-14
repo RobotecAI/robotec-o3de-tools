@@ -38,8 +38,4 @@ namespace Smoothing
     };
 } // namespace Smoothing
 
-#if defined(O3DE_GEM_NAME)
-AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), Smoothing::SmoothingEditorModule)
-#else
 AZ_DECLARE_MODULE_CLASS(Gem_Smoothing_Editor, Smoothing::SmoothingEditorModule)
-#endif
