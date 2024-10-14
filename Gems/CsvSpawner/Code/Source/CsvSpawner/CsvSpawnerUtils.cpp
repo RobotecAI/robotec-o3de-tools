@@ -49,7 +49,8 @@ namespace CsvSpawner::CsvSpawnerUtils
                 ->Field("PositionStdDev", &CsvSpawnableAssetConfiguration::m_positionStdDev)
                 ->Field("RotationStdDev", &CsvSpawnableAssetConfiguration::m_rotationStdDev)
                 ->Field("ScaleStdDev", &CsvSpawnableAssetConfiguration::m_scaleStdDev)
-                ->Field("PlaceOnTerrain", &CsvSpawnableAssetConfiguration::m_placeOnTerrain);
+                ->Field("PlaceOnTerrain", &CsvSpawnableAssetConfiguration::m_placeOnTerrain)
+                ->Field("CollisionLayer", &CsvSpawnableAssetConfiguration::m_selectedCollisionLayer);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -78,13 +79,29 @@ namespace CsvSpawner::CsvSpawnerUtils
                         &CsvSpawnableAssetConfiguration::m_placeOnTerrain,
                         "Place on Terrain",
                         "Perform scene query raytrace to place on terrain")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnableAssetConfiguration::OnPlaceOnTerrainChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnableAssetConfiguration::m_scaleStdDev,
                         "Scale Std. Dev.",
-                        "Scale standard deviation, in meters");
+                        "Scale standard deviation, in meters")
+                    ->DataElement(AZ::Edit::UIHandlers::Default,
+                        &CsvSpawnableAssetConfiguration::m_selectedCollisionLayer,
+                        "Collision Layer",
+                        "To which collision layer this target will be attached")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnableAssetConfiguration::IsCollisionLayerEnabled);
             }
         }
+    }
+
+    bool CsvSpawnableAssetConfiguration::IsCollisionLayerEnabled() const
+    {
+        return !m_placeOnTerrain;
+    }
+
+    AZ::Crc32 CsvSpawnableAssetConfiguration::OnPlaceOnTerrainChanged()
+    {
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     AZStd::unordered_map<AZStd::string, CsvSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
@@ -161,6 +178,42 @@ namespace CsvSpawner::CsvSpawnerUtils
         return hitPosition;
     }
 
+    AZStd::optional<AZ::Vector3> RaytraceTerrain(
+        const AZ::Vector3& location, const AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& gravityDirection, float maxDistance, AzPhysics::CollisionLayer collisionLayer)
+    {
+        AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
+
+        if (sceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            return hitPosition;
+        }
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AZ_Assert(physicsSystem, "Unable to get physics system interface");
+        AZ_Assert(sceneInterface, "Unable to get physics scene interface");
+
+        if (!sceneInterface || !physicsSystem)
+        {
+            return hitPosition;
+        }
+
+        AzPhysics::RayCastRequest request;
+        request.m_start = location;
+        request.m_direction = gravityDirection;
+        request.m_distance = maxDistance;
+        request.m_collisionGroup.SetLayer(collisionLayer, true);
+
+        AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
+
+        if (!result.m_hits.empty())
+        {
+            hitPosition = result.m_hits.front().m_position;
+        }
+
+        return hitPosition;
+    }
+
     AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> SpawnEntities(
         const AZStd::vector<CsvSpawnableEntityInfo>& entitiesToSpawn,
         const AZStd::unordered_map<AZStd::string, CsvSpawnableAssetConfiguration>& spawnableAssetConfiguration,
@@ -212,7 +265,7 @@ namespace CsvSpawner::CsvSpawnerUtils
             if (spawnConfig.m_placeOnTerrain)
             {
                 const AZStd::optional<AZ::Vector3> hitPosition =
-                    RaytraceTerrain(transform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f);
+                    RaytraceTerrain(transform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f, spawnConfig.m_selectedCollisionLayer);
                 if (hitPosition.has_value())
                 {
                     transform.SetTranslation(hitPosition.value());

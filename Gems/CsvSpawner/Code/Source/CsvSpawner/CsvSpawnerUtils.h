@@ -60,6 +60,11 @@ namespace CsvSpawner::CsvSpawnerUtils
         AZ::Vector3 m_rotationStdDev{ 0.f }; //!< Standard deviation for rotation
         float m_scaleStdDev{ 0.1f }; //!< Standard deviation for scale
         bool m_placeOnTerrain{ false }; //!< Whether to raytrace to terrain and place the entity on the terrain
+		AzPhysics::CollisionLayer m_selectedCollisionLayer; //!< To which collision layer this target will be attached
+
+    private:
+        bool IsCollisionLayerEnabled() const;
+        AZ::Crc32 OnPlaceOnTerrainChanged();
     };
 
     //! This function create map of spawnable asset configuration from vector of spawnable asset configuration, where
