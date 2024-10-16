@@ -42,8 +42,8 @@ namespace Pointcloud
         void Deactivate() override;
 
         // AzFramework::BoundsRequestBus overrides ...
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
         // AzToolsFramework::EditorComponentSelectionRequestsBus overrides ...
         AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
