@@ -183,6 +183,7 @@ namespace CsvSpawner::CsvSpawnerUtils
     {
         AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
 
+        AZ_Assert(sceneHandle == AzPhysics::InvalidSceneHandle, "Unable to get  scene handle");
         if (sceneHandle == AzPhysics::InvalidSceneHandle)
         {
             return hitPosition;

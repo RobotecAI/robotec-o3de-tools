@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "AzFramework/Physics/Collision/CollisionLayers.h"
 #include "CsvSpawner/CsvSpawnerTypeIds.h"
 
 #include <AzCore/Asset/AssetCommon.h>
