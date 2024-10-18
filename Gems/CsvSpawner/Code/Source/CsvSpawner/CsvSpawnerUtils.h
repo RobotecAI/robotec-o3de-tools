@@ -64,8 +64,8 @@ namespace CsvSpawner::CsvSpawnerUtils
 		AzPhysics::CollisionLayer m_selectedCollisionLayer; //!< To which collision layer this target will be attached
 
     private:
-        bool IsCollisionLayerEnabled() const;
-        AZ::Crc32 OnPlaceOnTerrainChanged();
+        [[nodiscard]] bool IsCollisionLayerEnabled() const;
+        static AZ::Crc32 OnPlaceOnTerrainChanged();
     };
 
     //! This function create map of spawnable asset configuration from vector of spawnable asset configuration, where
