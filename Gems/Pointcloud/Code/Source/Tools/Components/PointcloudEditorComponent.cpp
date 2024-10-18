@@ -61,7 +61,7 @@ namespace Pointcloud
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
     }
 
-    AZ::Aabb PointcloudEditorComponent::GetWorldBounds()
+    AZ::Aabb PointcloudEditorComponent::GetWorldBounds() const
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -73,7 +73,7 @@ namespace Pointcloud
         return bounds;
     }
 
-    AZ::Aabb PointcloudEditorComponent::GetLocalBounds()
+    AZ::Aabb PointcloudEditorComponent::GetLocalBounds() const
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetLocalTM);
