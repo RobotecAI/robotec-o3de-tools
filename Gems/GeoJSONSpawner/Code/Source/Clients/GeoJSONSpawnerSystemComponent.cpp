@@ -40,18 +40,10 @@ namespace GeoJSONSpawner
 
     GeoJSONSpawnerSystemComponent::GeoJSONSpawnerSystemComponent()
     {
-        if (GeoJSONSpawnerInterface::Get() == nullptr)
-        {
-            GeoJSONSpawnerInterface::Register(this);
-        }
     }
 
     GeoJSONSpawnerSystemComponent::~GeoJSONSpawnerSystemComponent()
     {
-        if (GeoJSONSpawnerInterface::Get() == this)
-        {
-            GeoJSONSpawnerInterface::Unregister(this);
-        }
     }
 
     void GeoJSONSpawnerSystemComponent::Init()
@@ -60,14 +52,12 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerSystemComponent::Activate()
     {
-        GeoJSONSpawnerRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
     }
 
     void GeoJSONSpawnerSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        GeoJSONSpawnerRequestBus::Handler::BusDisconnect();
     }
 
     void GeoJSONSpawnerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)

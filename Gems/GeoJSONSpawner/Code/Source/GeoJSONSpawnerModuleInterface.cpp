@@ -1,5 +1,8 @@
 
 #include "GeoJSONSpawnerModuleInterface.h"
+
+#include "GeoJSONSpawner/GeoJSONSpawnerComponent.h"
+
 #include <AzCore/Memory/Memory.h>
 
 #include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
@@ -21,6 +24,7 @@ namespace GeoJSONSpawner
         // This happens through the [MyComponent]::Reflect() function.
         m_descriptors.insert(m_descriptors.end(), {
             GeoJSONSpawnerSystemComponent::CreateDescriptor(),
+            GeoJSONSpawnerComponent::CreateDescriptor(),
             });
     }
 

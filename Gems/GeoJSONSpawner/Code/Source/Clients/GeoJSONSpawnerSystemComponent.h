@@ -3,13 +3,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <GeoJSONSpawner/GeoJSONSpawnerBus.h>
 
 namespace GeoJSONSpawner
 {
     class GeoJSONSpawnerSystemComponent
         : public AZ::Component
-        , protected GeoJSONSpawnerRequestBus::Handler
         , public AZ::TickBus::Handler
     {
     public:
