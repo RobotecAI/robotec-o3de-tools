@@ -14,6 +14,8 @@ namespace GeoJSONSpawner
         AZ_RTTI(GeoJSONSpawnerRequests, GeoJSONSpawnerRequestsTypeId);
         virtual ~GeoJSONSpawnerRequests() = default;
         // Put your public methods here
+
+        virtual void Spawn(const AZStd::string& rawJsonString) = 0;
     };
 
     class GeoJSONSpawnerBusTraits
@@ -23,7 +25,8 @@ namespace GeoJSONSpawner
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityId;
         //////////////////////////////////////////////////////////////////////////
     };
 
