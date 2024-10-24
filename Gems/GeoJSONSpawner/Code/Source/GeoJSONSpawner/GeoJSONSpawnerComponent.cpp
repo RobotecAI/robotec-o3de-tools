@@ -1,12 +1,15 @@
 
 #include "GeoJSONSpawnerComponent.h"
 
+#include "AzCore/Asset/AssetManagerBus.h"
+#include "AzCore/IO/FileIO.h"
+#include "AzFramework/Asset/AssetCatalogBus.h"
+
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <ROS2/Georeference/GeoreferenceBus.h>
 #include <ROS2/Georeference/GeoreferenceStructures.h>
-#include "Schemas/GeoJSONSchema.h"
 
 #include <AzCore/Serialization/EditContext.h>
 #include <fstream>
@@ -20,15 +23,11 @@
 
 namespace GeoJSONSpawner
 {
+    inline constexpr const char* GeoJSONSchemaFileName = "geojson_schema.json";
+
     void GeoJSONSpawnerComponent::Activate()
     {
         GeoJSONSpawnerRequestBus::Handler::BusConnect(GetEntityId());
-
-        AZ::TickBus::QueueFunction(
-    [this]()
-    {
-        OnSpawnButton();
-    });
     }
 
     void GeoJSONSpawnerComponent::Deactivate()
@@ -47,16 +46,12 @@ namespace GeoJSONSpawner
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GeoJSONSpawnerComponent>("GeoJSONSpawnerComponent", "GeoJSON Spawner component")
+                editContext->Class<GeoJSONSpawnerComponent>("GeoJSONSpawnerComponent", "GeoJSON Spawner Component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Spawners")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerComponent::m_spawnableAssets, "SpawnableAssets", "Spawnable assets")
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Reload Csv", "Reload Csv")
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Spawn")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerComponent::OnSpawnButton)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerComponent::m_longitude, "Longitude", "Longitude");
             }
         }
@@ -106,9 +101,6 @@ namespace GeoJSONSpawner
                 ROS2::GeoreferenceRequestsBus::BroadcastResult(
                     coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
 
-                AZ_Printf(
-                    "GeoJSON", "Spawn at X: %f Y: %f Z: %F", coordinateInLevel.GetX(), coordinateInLevel.GetY(), coordinateInLevel.GetZ());
-
                 transform = { coordinateInLevel, rotation, 1.0f };
 
                 optionalArgs.m_preInsertionCallback = [transform](auto id, auto view)
@@ -138,10 +130,64 @@ namespace GeoJSONSpawner
         }
     }
 
+    AZStd::string GeoJSONSpawnerComponent::FindAssetPath(const AZStd::string& assetName) const
+    {
+        AZStd::string assetPath = "";
+        AZStd::vector<AZStd::string> assetsPaths;
+
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetsPaths, &AZ::Data::AssetCatalogRequestBus::Events::GetRegisteredAssetPaths);
+        auto assetPathIt = find_if(
+            assetsPaths.begin(),
+            assetsPaths.end(),
+            [assetName](const AZStd::string& path)
+            {
+                return path.find(assetName) != path.npos;
+            });
+
+        if (assetPathIt != nullptr)
+        {
+            assetPath = *assetPathIt;
+        }
+
+        return assetPath;
+    }
+
+    AZStd::string GeoJSONSpawnerComponent::LoadJSONSchema() const
+    {
+        const AZStd::string schemaAssetPath = FindAssetPath(GeoJSONSchemaFileName);
+        AZStd::string schemaJsonRawStr = "";
+        if (schemaAssetPath.empty())
+        {
+            AZ_Error("GeoJSONSpawner", false, "Cannot find schema asset with name %s", GeoJSONSchemaFileName);
+            return schemaJsonRawStr;
+        }
+
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        if (!fileIO)
+        {
+            AZ_Error("GeoJSONSpawner", false, "Cannot get FileIO pointer");
+            return schemaJsonRawStr;
+        }
+
+        AZ::IO::HandleType fileHandle;
+        if (fileIO->Open(schemaAssetPath.c_str(), AZ::IO::OpenMode::ModeRead, fileHandle))
+        {
+            AZ::IO::FileIOStream fileStream(fileHandle, AZ::IO::OpenMode::ModeRead, true);
+            const size_t fileSize = fileStream.GetLength();
+            schemaJsonRawStr.resize(fileSize);
+
+            fileStream.Read(fileSize, schemaJsonRawStr.data());
+            fileIO->Close(fileHandle);
+        }
+
+        return schemaJsonRawStr;
+    }
+
     bool GeoJSONSpawnerComponent::ValidateGeoJSON(const rapidjson::Document& geoJsonDocument)
     {
+        const AZStd::string geoJSONSchema = LoadJSONSchema();
         rapidjson::Document schemaDocument;
-        if (schemaDocument.Parse(GeoJSONSchema).HasParseError())
+        if (schemaDocument.Parse(geoJSONSchema.c_str()).HasParseError())
         {
             AZ_Error("GeoJSONSpawner", false, "Unable to parse schema");
             return false;
@@ -299,140 +345,4 @@ namespace GeoJSONSpawner
 
         return GeometryType::Unknown;
     }
-
-    void GeoJSONSpawnerComponent::OnSpawnButton()
-    {
-        const AZStd::string rawString = R"({
-          "type": "FeatureCollection",
-          "features": [
-            {
-              "type": "Feature",
-              "properties": {
-                "spawnable_name": "ball"
-              },
-              "geometry": {
-                "type": "Point",
-                "coordinates": [35.19412345678901, 32.58987654321098]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "spawnable_name": "ball"
-              },
-              "geometry": {
-                "type": "MultiPoint",
-                "coordinates": [
-                  [35.19423456789012, 32.58976543210987],
-                  [35.19454321098765, 32.58923456789012]
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "spawnable_name": "ball"
-              },
-              "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                  [35.19434567890123, 32.59012345678901],
-                  [35.19509876543210, 32.58854321098765]
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "spawnable_name": "bone"
-              },
-              "geometry": {
-                "type": "MultiLineString",
-                "coordinates": [
-                  [
-                    [35.19445678901234, 32.59023456789012],
-                    [35.19487654321098, 32.58943210987654]
-                  ],
-                  [
-                    [35.19523456789012, 32.58987654321098],
-                    [35.19421098765432, 32.58909876543210]
-                  ]
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "spawnable_name": "ball"
-              },
-              "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                  [
-                    [35.193873045770886, 32.59006804908384],
-                    [35.19421172430049, 32.5894936845538],
-                    [35.194952040827246, 32.58824067909447],
-                    [35.19521256277355, 32.58836140739032],
-                    [35.19574880377729, 32.588985167661406],
-                    [35.19482829290433, 32.590470467899834],
-                    [35.193873045770886, 32.59006804908384]
-                  ]
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "spawnable_name": "ball"
-              },
-              "geometry": {
-                "type": "MultiPolygon",
-                "coordinates": [
-                  [
-                    [
-                      [35.19398765432109, 32.59009876543210],
-                      [35.19429876543210, 32.58949876543210],
-                      [35.19498765432109, 32.58829876543210],
-                      [35.19398765432109, 32.59009876543210]
-                    ]
-                  ],
-                  [
-                    [
-                      [35.19454321098765, 32.58974321098765],
-                      [35.19521098765432, 32.58836543210987],
-                      [35.19576543210987, 32.58906543210987],
-                      [35.19454321098765, 32.58974321098765]
-                    ]
-                  ]
-                ]
-              }
-            },
-            {
-              "type": "Feature",
-              "properties": {
-                "spawnable_name": "ball"
-              },
-              "geometry": {
-                "type": "GeometryCollection",
-                "geometries": [
-                  {
-                    "type": "Point",
-                    "coordinates": [35.19434567890123, 32.58976543210987]
-                  },
-                  {
-                    "type": "LineString",
-                    "coordinates": [
-                      [35.19454321098765, 32.59023456789012],
-                      [35.19512345678901, 32.58865432109876]
-                    ]
-                  }
-                ]
-              }
-            }
-          ]
-        })";
-        // Spawn(rawString);
-        GeoJSONSpawnerRequestBus::Event(GetEntityId(), &GeoJSONSpawnerRequestBus::Events::Spawn, rawString);
-    }
-
 } // namespace GeoJSONSpawner

@@ -45,10 +45,11 @@ namespace GeoJSONSpawner
         void Spawn(const AZStd::string& rawJsonString) override;
 
     private:
+        AZStd::string FindAssetPath(const AZStd::string& assetName) const;
+        AZStd::string LoadJSONSchema() const;
         bool ValidateGeoJSON(const rapidjson::Document& geoJsonDocument);
         SpawnableCoordinatesMap ParseGeoJSON(const AZStd::string& rawJsonString);
         Coordinates ExtractPoints(const rapidjson::Value& geometry);
-        void OnSpawnButton();
 
         GeometryType GetGeometryType(const AZStd::string& geometryType);
 

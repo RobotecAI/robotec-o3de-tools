@@ -6,5 +6,5 @@ set(FILES
     Source/Clients/GeoJSONSpawnerSystemComponent.h
     Source/GeoJSONSpawner/GeoJSONSpawnerComponent.cpp
     Source/GeoJSONSpawner/GeoJSONSpawnerComponent.h
-
+    Source/GeoJSONSpawner/Schemas/GeoJSONSchema.h
 )
