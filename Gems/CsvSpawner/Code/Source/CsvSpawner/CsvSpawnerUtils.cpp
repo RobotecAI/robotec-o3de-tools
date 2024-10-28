@@ -185,7 +185,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         const AzPhysics::SceneHandle sceneHandle,
         const AZ::Vector3& gravityDirection,
         float maxDistance,
-        AzPhysics::CollisionLayer collisionLayer)
+        const AzPhysics::CollisionLayer& collisionLayer)
     {
         AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
 
