@@ -73,13 +73,13 @@ namespace CsvSpawner::CsvSpawnerUtils
                     // handle Z column
                     if (index_Z)
                     {
-                        info.m_transform.SetTranslation(
-                            AZ::Vector3(row[index_X.value()].get<float>(), row[index_Y.value()].get<float>(), 0));
+                        info.m_transform.SetTranslation(AZ::Vector3(
+                            row[index_X.value()].get<float>(), row[index_Y.value()].get<float>(), row[index_Z.value()].get<float>()));
                     }
                     else
                     {
-                        info.m_transform.SetTranslation(AZ::Vector3(
-                            row[index_X.value()].get<float>(), row[index_Y.value()].get<float>(), row[index_Z.value()].get<float>()));
+                        info.m_transform.SetTranslation(
+                            AZ::Vector3(row[index_X.value()].get<float>(), row[index_Y.value()].get<float>(), 0));
                     }
                 }
                 else if (isWGSCoordinates)
