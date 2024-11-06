@@ -10,6 +10,9 @@
  */
 
 #include "CsvSpawnerUtils.h"
+
+#include "AzFramework/Physics/CollisionBus.h"
+
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -51,7 +54,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 ->Field("RotationStdDev", &CsvSpawnableAssetConfiguration::m_rotationStdDev)
                 ->Field("ScaleStdDev", &CsvSpawnableAssetConfiguration::m_scaleStdDev)
                 ->Field("PlaceOnTerrain", &CsvSpawnableAssetConfiguration::m_placeOnTerrain)
-                ->Field("CollisionLayer", &CsvSpawnableAssetConfiguration::m_selectedCollisionLayer);
+                ->Field("CollisionGroup", &CsvSpawnableAssetConfiguration::m_selectedCollisionGroup);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -88,9 +91,9 @@ namespace CsvSpawner::CsvSpawnerUtils
                         "Scale standard deviation, in meters")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &CsvSpawnableAssetConfiguration::m_selectedCollisionLayer,
-                        "Collision Layer",
-                        "To which collision layer this target will be attached")
+                        &CsvSpawnableAssetConfiguration::m_selectedCollisionGroup,
+                        "Collision Group",
+                        "To which collision group this target will be attached")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnableAssetConfiguration::IsCollisionLayerEnabled);
             }
         }
@@ -185,7 +188,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         const AzPhysics::SceneHandle sceneHandle,
         const AZ::Vector3& gravityDirection,
         float maxDistance,
-        const AzPhysics::CollisionLayer& collisionLayer)
+        const AzPhysics::CollisionGroup& collisionGroup)
     {
         AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
 
@@ -209,7 +212,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         request.m_start = location;
         request.m_direction = gravityDirection;
         request.m_distance = maxDistance;
-        request.m_collisionGroup.SetLayer(collisionLayer, true);
+        request.m_collisionGroup = collisionGroup;
 
         AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
 
@@ -271,8 +274,14 @@ namespace CsvSpawner::CsvSpawnerUtils
 
             if (spawnConfig.m_placeOnTerrain)
             {
+                // Get collision group chosen from editor
+                AzPhysics::CollisionGroup collisionGroup;
+                Physics::CollisionRequestBus::BroadcastResult(collisionGroup,
+                          &Physics::CollisionRequests::GetCollisionGroupById, spawnConfig.m_selectedCollisionGroup);
+
                 const AZStd::optional<AZ::Vector3> hitPosition = RaytraceTerrain(
-                    transform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f, spawnConfig.m_selectedCollisionLayer);
+                    transform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f, collisionGroup);
+
                 if (hitPosition.has_value())
                 {
                     transform.SetTranslation(hitPosition.value());

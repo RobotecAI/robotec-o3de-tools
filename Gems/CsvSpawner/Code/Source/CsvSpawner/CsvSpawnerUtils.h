@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "AzFramework/Physics/Collision/CollisionGroups.h"
 #include "AzFramework/Physics/Collision/CollisionLayers.h"
 #include "CsvSpawner/CsvSpawnerTypeIds.h"
 
@@ -66,7 +67,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         float m_scaleStdDev{ 0.1f }; //!< Standard deviation for scale
         bool m_placeOnTerrain{ false }; //!< Whether to raytrace to terrain and place
                                         //!< the entity on the terrain
-        AzPhysics::CollisionLayer m_selectedCollisionLayer; //!< To which collision layer this target will
+        AzPhysics::CollisionGroups::Id m_selectedCollisionGroup; //!< To which collision group this target will
                                                             //!< be attached
 
     private:
