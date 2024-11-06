@@ -149,41 +149,6 @@ namespace CsvSpawner::CsvSpawnerUtils
     }
 
     AZStd::optional<AZ::Vector3> RaytraceTerrain(
-        const AZ::Vector3& location, const AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& gravityDirection, float maxDistance)
-    {
-        AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
-
-        if (sceneHandle == AzPhysics::InvalidSceneHandle)
-        {
-            return hitPosition;
-        }
-
-        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        AZ_Assert(physicsSystem, "Unable to get physics system interface");
-        AZ_Assert(sceneInterface, "Unable to get physics scene interface");
-
-        if (!sceneInterface || !physicsSystem)
-        {
-            return hitPosition;
-        }
-
-        AzPhysics::RayCastRequest request;
-        request.m_start = location;
-        request.m_direction = gravityDirection;
-        request.m_distance = maxDistance;
-
-        AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
-
-        if (!result.m_hits.empty())
-        {
-            hitPosition = result.m_hits.front().m_position;
-        }
-
-        return hitPosition;
-    }
-
-    AZStd::optional<AZ::Vector3> RaytraceTerrain(
         const AZ::Vector3& location,
         const AzPhysics::SceneHandle sceneHandle,
         const AZ::Vector3& gravityDirection,
