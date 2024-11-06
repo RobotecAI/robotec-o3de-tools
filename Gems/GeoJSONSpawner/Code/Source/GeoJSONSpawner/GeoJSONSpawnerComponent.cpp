@@ -1,10 +1,7 @@
 
 #include "GeoJSONSpawnerComponent.h"
 
-#include "AzCore/Asset/AssetManagerBus.h"
-#include "AzCore/IO/FileIO.h"
-#include "AzFramework/Asset/AssetCatalogBus.h"
-
+#include "Schemas/GeoJSONSchema.h"
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -23,8 +20,6 @@
 
 namespace GeoJSONSpawner
 {
-    inline constexpr const char* GeoJSONSchemaFileName = "geojson_schema.json";
-
     void GeoJSONSpawnerComponent::Activate()
     {
         GeoJSONSpawnerRequestBus::Handler::BusConnect(GetEntityId());
@@ -42,44 +37,44 @@ namespace GeoJSONSpawner
             serializeContext->Class<GeoJSONSpawnerComponent, AZ::Component>()
                 ->Version(0)
                 ->Field("SpawnableAssets", &GeoJSONSpawnerComponent::m_spawnableAssets)
-                ->Field("Longitude", &GeoJSONSpawnerComponent::m_longitude);
+                ->Field("Altitude", &GeoJSONSpawnerComponent::m_altitude);
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GeoJSONSpawnerComponent>("GeoJSONSpawnerComponent", "GeoJSON Spawner Component")
+                editContext->Class<GeoJSONSpawnerComponent>("GeoJSONSpawnerComponent", "GeoJSON Spawner component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Spawners")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerComponent::m_spawnableAssets, "SpawnableAssets", "Spawnable assets")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerComponent::m_longitude, "Longitude", "Longitude");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerComponent::m_altitude, "Altitude", "Altitude");
             }
         }
     }
 
     void GeoJSONSpawnerComponent::Spawn(const AZStd::string& rawJsonString)
     {
-        auto parentId = GetEntityId();
+        const auto parentId = GetEntityId();
         auto result = ParseGeoJSON(rawJsonString);
 
         m_spawnableTickets.clear();
 
-        for (auto& el : m_spawnableAssets)
+        for (auto& nameSpawnablePair : m_spawnableAssets)
         {
-            el.second.QueueLoad();
+            nameSpawnablePair.second.QueueLoad();
         }
 
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        AZ_Assert(sceneInterface, "Unable to get physics scene interface");
+        AZ_Assert(sceneInterface, "Unable to get physics scene interface.");
 
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
-        AZ_Assert(spawner, "Unable to get spawnable entities definition");
+        AZ_Assert(spawner, "Unable to get spawner.");
 
         for (const auto& element : result)
         {
             if (!m_spawnableAssets.contains(element.first))
             {
-                AZ_Error("GeoJSONSpawner", false, "SpawnableAssets not found");
+                AZ_Error("GeoJSONSpawner", false, "Spawnable with name [%s] not found.", element.first.c_str());
                 continue;
             }
 
@@ -96,14 +91,14 @@ namespace GeoJSONSpawner
                 AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
                 coordinate.m_longitude = point[0];
                 coordinate.m_latitude = point[1];
-                coordinate.m_altitude = m_longitude;
+                coordinate.m_altitude = m_altitude;
 
                 ROS2::GeoreferenceRequestsBus::BroadcastResult(
                     coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
 
                 transform = { coordinateInLevel, rotation, 1.0f };
 
-                optionalArgs.m_preInsertionCallback = [transform](auto id, auto view)
+                optionalArgs.m_preInsertionCallback = [transform]([[maybe_unused]] auto id, auto view)
                 {
                     if (view.empty())
                     {
@@ -114,7 +109,7 @@ namespace GeoJSONSpawner
                     auto* transformInterface = root->FindComponent<AzFramework::TransformComponent>();
                     transformInterface->SetWorldTM(transform);
                 };
-                optionalArgs.m_completionCallback = [parentId](auto id, auto view)
+                optionalArgs.m_completionCallback = [parentId]([[maybe_unused]] auto id, auto view)
                 {
                     if (view.empty())
                     {
@@ -130,64 +125,10 @@ namespace GeoJSONSpawner
         }
     }
 
-    AZStd::string GeoJSONSpawnerComponent::FindAssetPath(const AZStd::string& assetName) const
-    {
-        AZStd::string assetPath = "";
-        AZStd::vector<AZStd::string> assetsPaths;
-
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetsPaths, &AZ::Data::AssetCatalogRequestBus::Events::GetRegisteredAssetPaths);
-        auto assetPathIt = find_if(
-            assetsPaths.begin(),
-            assetsPaths.end(),
-            [assetName](const AZStd::string& path)
-            {
-                return path.find(assetName) != path.npos;
-            });
-
-        if (assetPathIt != nullptr)
-        {
-            assetPath = *assetPathIt;
-        }
-
-        return assetPath;
-    }
-
-    AZStd::string GeoJSONSpawnerComponent::LoadJSONSchema() const
-    {
-        const AZStd::string schemaAssetPath = FindAssetPath(GeoJSONSchemaFileName);
-        AZStd::string schemaJsonRawStr = "";
-        if (schemaAssetPath.empty())
-        {
-            AZ_Error("GeoJSONSpawner", false, "Cannot find schema asset with name %s", GeoJSONSchemaFileName);
-            return schemaJsonRawStr;
-        }
-
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        if (!fileIO)
-        {
-            AZ_Error("GeoJSONSpawner", false, "Cannot get FileIO pointer");
-            return schemaJsonRawStr;
-        }
-
-        AZ::IO::HandleType fileHandle;
-        if (fileIO->Open(schemaAssetPath.c_str(), AZ::IO::OpenMode::ModeRead, fileHandle))
-        {
-            AZ::IO::FileIOStream fileStream(fileHandle, AZ::IO::OpenMode::ModeRead, true);
-            const size_t fileSize = fileStream.GetLength();
-            schemaJsonRawStr.resize(fileSize);
-
-            fileStream.Read(fileSize, schemaJsonRawStr.data());
-            fileIO->Close(fileHandle);
-        }
-
-        return schemaJsonRawStr;
-    }
-
     bool GeoJSONSpawnerComponent::ValidateGeoJSON(const rapidjson::Document& geoJsonDocument)
     {
-        const AZStd::string geoJSONSchema = LoadJSONSchema();
         rapidjson::Document schemaDocument;
-        if (schemaDocument.Parse(geoJSONSchema.c_str()).HasParseError())
+        if (schemaDocument.Parse(GeoJSONSchema).HasParseError())
         {
             AZ_Error("GeoJSONSpawner", false, "Unable to parse schema");
             return false;

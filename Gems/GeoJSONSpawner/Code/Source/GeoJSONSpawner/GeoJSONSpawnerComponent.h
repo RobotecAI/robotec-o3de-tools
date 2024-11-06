@@ -45,8 +45,6 @@ namespace GeoJSONSpawner
         void Spawn(const AZStd::string& rawJsonString) override;
 
     private:
-        AZStd::string FindAssetPath(const AZStd::string& assetName) const;
-        AZStd::string LoadJSONSchema() const;
         bool ValidateGeoJSON(const rapidjson::Document& geoJsonDocument);
         SpawnableCoordinatesMap ParseGeoJSON(const AZStd::string& rawJsonString);
         Coordinates ExtractPoints(const rapidjson::Value& geometry);
@@ -55,6 +53,6 @@ namespace GeoJSONSpawner
 
         AZStd::unordered_map<AZStd::string, AZ::Data::Asset<AzFramework::Spawnable>> m_spawnableAssets;
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnableTickets;
-        double m_longitude{ 0.0f };
+        double m_altitude{ 0.0f };
     };
 } // namespace GeoJSONSpawner
