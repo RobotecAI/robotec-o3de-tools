@@ -42,7 +42,7 @@ It is useful for visualizing paths, roads, and other things at the O3DE level.
 # ROS2ScriptIntegration
 
 Simple, but extremely useful tool that exposes ROS 2 subscription/publication to Script Canvas and LUA.
-Refer to [readme](Gems/ROS2ScriptIntegration/readme.md)
+Refer to [readme](https://github.com/RobotecAI/robotec-o3de-tools/tree/main/Gems/ROS2ScriptIntegration#readme).
 
 # RobotecSpectatorCamera
 
