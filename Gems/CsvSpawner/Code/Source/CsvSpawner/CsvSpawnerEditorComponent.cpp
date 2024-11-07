@@ -86,12 +86,6 @@ namespace CsvSpawner
         }
 
         AZ::TickBus::Handler::BusConnect();
-        AZ::TickBus::QueueFunction(
-            [this]()
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                SpawnEntities();
-            });
     }
 
     void CsvSpawnerEditorComponent::Deactivate()
@@ -129,18 +123,12 @@ namespace CsvSpawner
 
     void CsvSpawnerEditorComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
     {
-        if (m_entitiesSpawnedOnce)
-        {
-            return;
-        }
-
         ++m_frameCounter;
 
         if (m_frameCounter == 2)
         {
             SpawnEntities();
             AZ::TickBus::Handler::BusDisconnect();
-            m_entitiesSpawnedOnce = true;
         }
     }
 

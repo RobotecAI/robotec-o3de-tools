@@ -55,7 +55,6 @@ namespace CsvSpawner
         void OnOnShowLabelsChanged();
 
         void SpawnEntities();
-        bool m_entitiesSpawnedOnce = false;
         int m_frameCounter;
 
         AZStd::vector<CsvSpawnerUtils::CsvSpawnableAssetConfiguration>
