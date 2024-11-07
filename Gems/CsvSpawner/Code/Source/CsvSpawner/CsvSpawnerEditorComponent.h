@@ -10,7 +10,9 @@
 
 #pragma once
 
+#include "API/ToolsApplicationAPI.h"
 #include "CsvSpawnerUtils.h"
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
@@ -28,6 +30,7 @@ namespace CsvSpawner
     class CsvSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
+        , protected AZ::TickBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(CsvSpawnerEditorComponent, CsvSpawnerEditorComponentTypeId);
@@ -40,6 +43,8 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        int GetTickOrder() override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
@@ -50,6 +55,8 @@ namespace CsvSpawner
         void OnOnShowLabelsChanged();
 
         void SpawnEntities();
+        bool m_entitiesSpawnedOnce = false;
+        int m_frameCounter;
 
         AZStd::vector<CsvSpawnerUtils::CsvSpawnableAssetConfiguration>
             m_spawnableAssetConfigurations; //!< List of spawnable "types" (e.g. pineCsv, oakTre, mapleCsv, etc.)

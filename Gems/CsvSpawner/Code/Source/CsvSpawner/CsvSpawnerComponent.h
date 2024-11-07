@@ -48,6 +48,7 @@ namespace CsvSpawner
     private:
         // AZ::TickBus::Handler overrides
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        int GetTickOrder() override;
 
         AZStd::unordered_map<AZStd::string, CsvSpawnableAssetConfiguration> m_spawnableAssetConfigurations; //!< List of assets to spawn
         AZStd::vector<CsvSpawnableEntityInfo> m_spawnableEntityInfo; //!< List of entities to spawn

@@ -13,12 +13,14 @@
 #include "CsvSpawnerComponent.h"
 #include "CsvSpawnerCsvParser.h"
 #include "CsvSpawnerUtils.h"
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <thread>
 
 namespace CsvSpawner
 {
@@ -83,9 +85,11 @@ namespace CsvSpawner
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
+        AZ::TickBus::Handler::BusConnect();
         AZ::TickBus::QueueFunction(
             [this]()
             {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 SpawnEntities();
             });
     }
@@ -95,6 +99,7 @@ namespace CsvSpawner
         m_spawnedTickets.clear();
 
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
 
@@ -120,6 +125,28 @@ namespace CsvSpawner
         gameEntity->CreateComponent<CsvSpawnerComponent>(config, spawnableEntityInfo, m_defaultSeed);
         // Destroy Editor's spawned entities
         m_spawnedTickets.clear();
+    }
+
+    void CsvSpawnerEditorComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    {
+        if (m_entitiesSpawnedOnce)
+        {
+            return;
+        }
+
+        ++m_frameCounter;
+
+        if (m_frameCounter == 2)
+        {
+            SpawnEntities();
+            AZ::TickBus::Handler::BusDisconnect();
+            m_entitiesSpawnedOnce = true;
+        }
+    }
+
+    int CsvSpawnerEditorComponent::GetTickOrder()
+    {
+        return AZ::TICK_LAST;
     }
 
     void CsvSpawnerEditorComponent::SpawnEntities()

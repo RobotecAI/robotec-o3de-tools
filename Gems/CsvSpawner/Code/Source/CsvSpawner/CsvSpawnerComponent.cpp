@@ -47,14 +47,19 @@ namespace CsvSpawner
         AZ::TickBus ::Handler::BusDisconnect();
     }
 
+    int CsvSpawnerComponent::GetTickOrder()
+    {
+        return AZ::TICK_LAST;
+    }
+
     void CsvSpawnerComponent::Activate()
     {
-        AZ::TickBus ::Handler::BusConnect();
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void CsvSpawnerComponent::Deactivate()
     {
-        AZ::TickBus ::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
 } // namespace CsvSpawner
