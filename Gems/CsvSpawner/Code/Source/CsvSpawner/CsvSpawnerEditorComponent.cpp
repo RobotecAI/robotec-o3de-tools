@@ -129,6 +129,7 @@ namespace CsvSpawner
         {
             SpawnEntities();
             AZ::TickBus::Handler::BusDisconnect();
+            m_frameCounter = 0;
         }
     }
 
