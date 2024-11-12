@@ -3,12 +3,16 @@
  *
  * This source code is protected under international copyright law.  All rights
  * reserved and protected by the copyright holders.
- * This file is confidential and only available to authorized individuals with the
- * permission of the copyright holders.  If you encounter this file and do not have
- * permission, please contact the copyright holders and delete this file.
+ * This file is confidential and only available to authorized individuals with
+ * the permission of the copyright holders.  If you encounter this file and do
+ * not have permission, please contact the copyright holders and delete this
+ * file.
  */
 
 #include "CsvSpawnerUtils.h"
+
+#include "AzFramework/Physics/CollisionBus.h"
+
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -49,7 +53,8 @@ namespace CsvSpawner::CsvSpawnerUtils
                 ->Field("PositionStdDev", &CsvSpawnableAssetConfiguration::m_positionStdDev)
                 ->Field("RotationStdDev", &CsvSpawnableAssetConfiguration::m_rotationStdDev)
                 ->Field("ScaleStdDev", &CsvSpawnableAssetConfiguration::m_scaleStdDev)
-                ->Field("PlaceOnTerrain", &CsvSpawnableAssetConfiguration::m_placeOnTerrain);
+                ->Field("PlaceOnTerrain", &CsvSpawnableAssetConfiguration::m_placeOnTerrain)
+                ->Field("CollisionGroup", &CsvSpawnableAssetConfiguration::m_selectedCollisionGroup);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -78,13 +83,30 @@ namespace CsvSpawner::CsvSpawnerUtils
                         &CsvSpawnableAssetConfiguration::m_placeOnTerrain,
                         "Place on Terrain",
                         "Perform scene query raytrace to place on terrain")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnableAssetConfiguration::OnPlaceOnTerrainChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnableAssetConfiguration::m_scaleStdDev,
                         "Scale Std. Dev.",
-                        "Scale standard deviation, in meters");
+                        "Scale standard deviation, in meters")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CsvSpawnableAssetConfiguration::m_selectedCollisionGroup,
+                        "Collision Group",
+                        "To which collision group this target will be attached")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnableAssetConfiguration::IsCollisionLayerEnabled);
             }
         }
+    }
+
+    bool CsvSpawnableAssetConfiguration::IsCollisionLayerEnabled() const
+    {
+        return !m_placeOnTerrain;
+    }
+
+    AZ::Crc32 CsvSpawnableAssetConfiguration::OnPlaceOnTerrainChanged()
+    {
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     AZStd::unordered_map<AZStd::string, CsvSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
@@ -127,10 +149,15 @@ namespace CsvSpawner::CsvSpawnerUtils
     }
 
     AZStd::optional<AZ::Vector3> RaytraceTerrain(
-        const AZ::Vector3& location, const AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& gravityDirection, float maxDistance)
+        const AZ::Vector3& location,
+        const AzPhysics::SceneHandle sceneHandle,
+        const AZ::Vector3& gravityDirection,
+        float maxDistance,
+        const AzPhysics::CollisionGroup& collisionGroup)
     {
         AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
 
+        AZ_Assert(sceneHandle == AzPhysics::InvalidSceneHandle, "Unable to get  scene handle");
         if (sceneHandle == AzPhysics::InvalidSceneHandle)
         {
             return hitPosition;
@@ -150,6 +177,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         request.m_start = location;
         request.m_direction = gravityDirection;
         request.m_distance = maxDistance;
+        request.m_collisionGroup = collisionGroup;
 
         AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
 
@@ -211,21 +239,29 @@ namespace CsvSpawner::CsvSpawnerUtils
 
             if (spawnConfig.m_placeOnTerrain)
             {
+                // Get collision group chosen from editor
+                AzPhysics::CollisionGroup collisionGroup;
+                Physics::CollisionRequestBus::BroadcastResult(
+                    collisionGroup, &Physics::CollisionRequests::GetCollisionGroupById, spawnConfig.m_selectedCollisionGroup);
+
                 const AZStd::optional<AZ::Vector3> hitPosition =
-                    RaytraceTerrain(transform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f);
+                    RaytraceTerrain(transform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f, collisionGroup);
+
                 if (hitPosition.has_value())
                 {
                     transform.SetTranslation(hitPosition.value());
                 }
                 else
                 {
-                    continue; // Skip this entity if we can't find a valid position and place on terrain is enabled.
+                    continue; // Skip this entity if we can't find a valid position and
+                              // place on terrain is enabled.
                 }
             }
             AZ_Assert(spawner, "Unable to get spawnable entities definition");
             AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
             AzFramework::EntitySpawnTicket ticket(spawnable);
-            // Set the pre-spawn callback to set the name of the root entity to the name of the spawnable
+            // Set the pre-spawn callback to set the name of the root entity to the name
+            // of the spawnable
             optionalArgs.m_preInsertionCallback = [transform](auto id, auto view)
             {
                 if (view.empty())
