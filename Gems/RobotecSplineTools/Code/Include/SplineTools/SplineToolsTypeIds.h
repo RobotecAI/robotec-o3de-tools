@@ -16,4 +16,6 @@ namespace SplineTools
 
     // Interface TypeIds
     inline constexpr const char* SplineToolsRequestsTypeId = "{8D969183-259F-4790-9C5C-4F25BD2746FD}";
+
+    inline constexpr const char* VisualizeSplineComponentTypeId = "{5D69075B-BB8A-4336-829A-B3A84FB6DCE8}";
 } // namespace SplineTools

@@ -50,6 +50,9 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzFramework
+            Gem::Atom_RPI.Public
+            Gem::AtomLyIntegration_CommonFeatures.Static
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
