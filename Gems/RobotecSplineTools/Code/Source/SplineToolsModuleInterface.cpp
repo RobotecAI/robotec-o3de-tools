@@ -6,6 +6,7 @@
 
 #include <Clients/SplineToolsSystemComponent.h>
 #include <Clients/VisualizeSplineComponent.h>
+#include <Clients/SplineSubscriber.h>
 
 namespace SplineTools
 {
@@ -24,6 +25,7 @@ namespace SplineTools
             {
                 SplineToolsSystemComponent::CreateDescriptor(),
                 VisualizeSplineComponent::CreateDescriptor(),
+                SplineSubscriber::CreateDescriptor()
             });
     }
 

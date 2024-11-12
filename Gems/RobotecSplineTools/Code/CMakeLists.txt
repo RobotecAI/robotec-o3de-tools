@@ -53,6 +53,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::AtomLyIntegration_CommonFeatures.Static
+            Gem::ROS2.Static
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
