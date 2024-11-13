@@ -15,6 +15,7 @@ namespace SplineTools
         AZ_TYPE_INFO(SplineSubscriberConfiguration, SplineSubscriberConfigTypeId);
         static void Reflect(AZ::ReflectContext* context);
         ROS2::TopicConfiguration m_topic{ rclcpp::ServicesQoS() };
-        bool m_allowWGS84{ true };
+        bool m_allowWGS84{ true }; //! Allow WGS84 coordinates.
+        bool m_resetOnActivation{ true }; //! Reset entity's spline on activation.
     };
 } // namespace SplineTools

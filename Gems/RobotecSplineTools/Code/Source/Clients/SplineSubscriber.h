@@ -1,10 +1,10 @@
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <SplineTools/SplineToolsTypeIds.h>
 #include "SplineSubscriberConfig.h"
+#include <AzCore/Component/Component.h>
 #include <ROS2/ROS2Bus.h>
-#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <SplineTools/SplineToolsTypeIds.h>
+#include <nav_msgs/msg/path.hpp>
 
 namespace SplineTools
 {
@@ -18,10 +18,11 @@ namespace SplineTools
         // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
+
     private:
-        void OnSplineReceived(const geometry_msgs::msg::PoseStamped& msg);
+        void OnSplineReceived(const nav_msgs::msg::Path& msg);
         SplineSubscriberConfiguration m_config;
-        rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr m_subscription;
+        rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr m_subscription;
     };
 
 } // namespace SplineTools

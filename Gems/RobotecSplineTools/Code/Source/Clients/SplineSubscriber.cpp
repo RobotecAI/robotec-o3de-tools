@@ -2,6 +2,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <ROS2/Georeference/GeoreferenceBus.h>
 
 namespace SplineTools
 {
@@ -36,20 +37,63 @@ namespace SplineTools
 
     void SplineSubscriber::Activate()
     {
+        if (m_config.m_resetOnActivation)
+        {
+            LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::ClearVertices);
+        }
         auto node = ROS2::ROS2Interface::Get()->GetNode();
         AZ_Assert(node, "ROS 2 Node is not available");
-        m_subscription = node->create_subscription<geometry_msgs::msg::PoseStamped>(
+        m_subscription = node->create_subscription<nav_msgs::msg::Path>(
             m_config.m_topic.m_topic.data(),
             m_config.m_topic.GetQoS(),
-            [this](const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+            [this](const nav_msgs::msg::Path::SharedPtr msg)
             {
                 OnSplineReceived(*msg);
             });
     }
 
-    void SplineSubscriber::OnSplineReceived(const geometry_msgs::msg::PoseStamped& msg)
+    void SplineSubscriber::OnSplineReceived(const nav_msgs::msg::Path& msg)
     {
         AZ_Printf("SplineSubscriber", "Received spline message");
+        AZ::SplinePtr splinePtr;
+        LmbrCentral::SplineComponentRequestBus::EventResult(
+            splinePtr, GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::GetSpline);
+        AZ_Assert(splinePtr, "SplineComponentRequestBus::Events::GetSpline failed");
+
+        AZ::Transform worldTm = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(worldTm, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        worldTm.Invert();
+        AZStd::vector<AZ::Vector3> points(msg.poses.size());
+        for (size_t i = 0; i < msg.poses.size(); ++i)
+        {
+            const auto& poseStamped = msg.poses[i];
+            const auto& pose = poseStamped.pose;
+            const AZ::Vector3 posePoint = AZ::Vector3(pose.position.x, pose.position.y, pose.position.z);
+            AZStd::string frame{ poseStamped.header.frame_id.c_str(), poseStamped.header.frame_id.size() };
+            AZStd::to_upper(frame);
+            if (frame.empty())
+            {
+                points[i] = worldTm.TransformPoint(posePoint);
+            }
+            else if (frame.compare("WGS84") && m_config.m_allowWGS84)
+            {
+                ROS2::WGS::WGS84Coordinate currentPositionWGS84;
+                currentPositionWGS84.m_latitude = pose.position.x;
+                currentPositionWGS84.m_longitude = pose.position.y;
+                currentPositionWGS84.m_altitude = pose.position.z;
+                AZ::Vector3 levelPosition{ 0 };
+                ROS2::GeoreferenceRequestsBus::BroadcastResult(
+                    levelPosition, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, currentPositionWGS84);
+                points[i] = worldTm.TransformPoint(levelPosition);
+            }
+            else
+            {
+                AZ_Error("SplineSubscriber", false, "Not implemented with frame %s", frame.data());
+                points[i] = worldTm.TransformPoint(posePoint);
+            }
+        }
+        LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::ClearVertices);
+        LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::SetVertices, points);
     }
     void SplineSubscriber::Deactivate()
     {
