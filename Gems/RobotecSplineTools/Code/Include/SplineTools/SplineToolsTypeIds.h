@@ -22,5 +22,4 @@ namespace SplineTools
     inline constexpr const char* SplineSubscriberComponentTypeId = "{89B8A92A-8F17-4C30-AE0D-6B088C133283}";
     inline constexpr const char* SplineSubscriberConfigTypeId = "{44317FD2-51A1-41CA-BA44-F8BCAE9757CE}";
 
-
 } // namespace SplineTools
