@@ -28,7 +28,7 @@ namespace WatchdogTools
         //! the ability to create a default set of values by using the default constructor.
         //! If we read these in the constructor, serialization would see all of the current values
         //! as default values and would try to prune them from the output by default.
-        void LoadSettings(AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get());
+        void LoadSettings(AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(),  AZStd::string_view modulesKey = "");
 
         AZStd::vector<AZStd::string> m_requiredModules;
     };

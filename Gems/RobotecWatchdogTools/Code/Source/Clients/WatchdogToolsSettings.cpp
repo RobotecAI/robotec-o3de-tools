@@ -50,7 +50,6 @@ namespace WatchdogTools
 
         constexpr WatchdogSettingsRootKeyType WatchdogSettingsRootKey;
 
-        constexpr auto WatchdogRequiredModulesRegistryKey = WatchdogSettingsRootKey("RequiredModules");
     } // namespace
 
     void WatchdogSettings::Reflect(AZ::ReflectContext* context)
@@ -73,7 +72,7 @@ namespace WatchdogTools
         }
     }
 
-    void WatchdogSettings::LoadSettings(AZ::SettingsRegistryInterface* settingsRegistry)
+    void WatchdogSettings::LoadSettings(AZ::SettingsRegistryInterface* settingsRegistry, AZStd::string_view modulesKey)
     {
         if (settingsRegistry == nullptr)
         {
@@ -97,7 +96,7 @@ namespace WatchdogTools
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
         [[maybe_unused]] bool result =
-            AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, CollectRequiredModules, WatchdogRequiredModulesRegistryKey);
+            AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, CollectRequiredModules, WatchdogSettingsRootKey(modulesKey));
         AZ_Warning("WatchdogSettings", result, "Required modules not read. Use defaults");
     }
 } // namespace WatchdogTools

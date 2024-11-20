@@ -12,6 +12,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/string/string.h>
 
 namespace WatchdogTools
 {
@@ -29,7 +30,8 @@ namespace WatchdogTools
         /*
          * Enumerate the dynamic modules used by a project and prevent from start if any required module fails to load
          */
-        virtual void CheckRequiredModules() = 0;
+        virtual AZ::Outcome<bool, AZStd::string> CheckRequiredModules() = 0;
+        virtual AZ::Outcome<bool, AZStd::string> VerifyComponentsLoaded() = 0;
     };
 
     class WatchdogToolsBusTraits : public AZ::EBusTraits
