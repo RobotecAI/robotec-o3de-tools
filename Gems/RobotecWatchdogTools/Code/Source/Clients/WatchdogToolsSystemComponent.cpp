@@ -10,18 +10,18 @@
 
 #include "AzCore/Module/DynamicModuleHandle.h"
 #include "AzCore/Module/ModuleManagerBus.h"
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <Clients/WatchdogToolsSettings.h>
-#include <WatchdogTools/WatchdogToolsTypeIds.h>
-#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Module/ModuleManagerBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/set.h>
-#include <AzCore/Component/Entity.h>
+#include <Clients/WatchdogToolsSettings.h>
+#include <WatchdogTools/WatchdogToolsTypeIds.h>
 
 namespace WatchdogTools
 {
@@ -71,7 +71,7 @@ namespace WatchdogTools
         {
             AZ_Warning("Watchdog", false, allModulesLoaded.GetError().c_str());
         }
-        else if(!allModulesLoaded.GetValue())
+        else if (!allModulesLoaded.GetValue())
         {
             std::terminate();
         }
@@ -111,11 +111,10 @@ namespace WatchdogTools
                     requiredDynamicModules.erase(moduleName);
 
                     return true;
-                }
-            );
+                });
 
             bool allRequiredModulesLoaded = requiredDynamicModules.empty();
-            
+
             if (!allRequiredModulesLoaded)
             {
                 for (auto nonLoadedModule : requiredDynamicModules)
@@ -124,7 +123,7 @@ namespace WatchdogTools
                 }
                 AZ_Fatal("Watchdog", "Some required modules were not loaded. Check the console output for errors");
             }
-            
+
             return AZ::Success(allRequiredModulesLoaded);
         }
         else
@@ -176,7 +175,7 @@ namespace WatchdogTools
         {
             return AZ::Failure("SettingsRegistry for WatchdogTools inaccessible");
         }
-        
+
         return AZ::Success(allComponentsLoaded);
     }
 
