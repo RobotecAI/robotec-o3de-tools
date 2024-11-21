@@ -11,7 +11,7 @@ namespace SplineTools
     class SplineSubscriber : public AZ::Component
     {
     public:
-        AZ_COMPONENT(SplineSubscriber, SplineSubscriberComponentTypeId, AZ::Component);
+        AZ_COMPONENT(SplineSubscriber, SplineSubscriberComponentTypeId);
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
