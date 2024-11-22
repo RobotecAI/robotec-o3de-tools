@@ -4,7 +4,9 @@
 
 #include <SplineTools/SplineToolsTypeIds.h>
 
+#include <Clients/SplineSubscriber.h>
 #include <Clients/SplineToolsSystemComponent.h>
+#include <Clients/VisualizeSplineComponent.h>
 
 namespace SplineTools
 {
@@ -20,9 +22,9 @@ namespace SplineTools
         // This happens through the [MyComponent]::Reflect() function.
         m_descriptors.insert(
             m_descriptors.end(),
-            {
-                SplineToolsSystemComponent::CreateDescriptor(),
-            });
+            { SplineToolsSystemComponent::CreateDescriptor(),
+              VisualizeSplineComponent::CreateDescriptor(),
+              SplineSubscriber::CreateDescriptor() });
     }
 
     AZ::ComponentTypeList SplineToolsModuleInterface::GetRequiredSystemComponents() const
