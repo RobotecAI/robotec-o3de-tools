@@ -1,10 +1,13 @@
+
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 #include <ROS2/Communication/TopicConfiguration.h>
+
 namespace ROS2PoseControl
 {
     //! A structure for a single ROS2 topic, a part of publisher or subscriber configuration.
@@ -20,6 +23,8 @@ namespace ROS2PoseControl
         AZ::Crc32 isTrackingModePoseMessagesVisibility() const;
 
         AZ::Crc32 isGroudOffsetVisible() const;
+
+        AZ::Crc32 isUseTagOffset() const;
 
         enum class TrackingMode
         {
@@ -38,6 +43,7 @@ namespace ROS2PoseControl
         bool m_clampToGround = false;
         float m_groundOffset = 0.0f;
 
+        bool m_useTagOffset = false;
         AZStd::string m_startOffsetTag;
     };
 } // namespace ROS2PoseControl

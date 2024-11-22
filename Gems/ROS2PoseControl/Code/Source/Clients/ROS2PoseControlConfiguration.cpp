@@ -1,5 +1,7 @@
-#include <AzCore/Serialization/EditContext.h>
+
 #include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
+
+#include <AzCore/Serialization/EditContext.h>
 
 namespace ROS2PoseControl
 {
@@ -18,6 +20,11 @@ namespace ROS2PoseControl
         return m_clampToGround ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
+    AZ::Crc32 ROS2PoseControlConfiguration::isUseTagOffset() const
+    {
+        return m_useTagOffset ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
     void ROS2PoseControlConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -29,6 +36,7 @@ namespace ROS2PoseControl
                 ->Field("m_targetFrame", &ROS2PoseControlConfiguration::m_targetFrame)
                 ->Field("m_referenceFrame", &ROS2PoseControlConfiguration::m_referenceFrame)
                 ->Field("lockZAxis", &ROS2PoseControlConfiguration::m_lockZAxis)
+                ->Field("useTagOffset", &ROS2PoseControlConfiguration::m_useTagOffset)
                 ->Field("startOffsetTag", &ROS2PoseControlConfiguration::m_startOffsetTag)
                 ->Field("m_clampToGround", &ROS2PoseControlConfiguration::m_clampToGround)
                 ->Field("m_groundOffset", &ROS2PoseControlConfiguration::m_groundOffset);
@@ -66,9 +74,16 @@ namespace ROS2PoseControl
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_lockZAxis, "Lock Z Axis", "Lock Z axis")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
+                        &ROS2PoseControlConfiguration::m_useTagOffset,
+                        "Use Tag Offset",
+                        "Use a tag that will be used to set the start offset for the entity.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
                         &ROS2PoseControlConfiguration::m_startOffsetTag,
                         "Start Offset Tag",
                         "Tag that will be used to set the start offset for the entity.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isUseTagOffset)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_clampToGround, "Clamp to Ground", "Clamp to ground")
                     ->DataElement(
