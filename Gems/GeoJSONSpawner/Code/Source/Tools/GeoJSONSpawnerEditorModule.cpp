@@ -1,7 +1,8 @@
 
+#include "GeoJSONSpawner/GeoJSONSpawnerEditorComponent.h"
+#include "GeoJSONSpawnerEditorSystemComponent.h"
 #include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
 #include <GeoJSONSpawnerModuleInterface.h>
-#include "GeoJSONSpawnerEditorSystemComponent.h"
 
 namespace GeoJSONSpawner
 {
@@ -20,6 +21,7 @@ namespace GeoJSONSpawner
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
                 GeoJSONSpawnerEditorSystemComponent::CreateDescriptor(),
+                GeoJSONSpawnerEditorComponent::CreateDescriptor()
             });
         }
 

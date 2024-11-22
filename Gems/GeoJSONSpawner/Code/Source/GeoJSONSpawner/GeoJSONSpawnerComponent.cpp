@@ -1,3 +1,12 @@
+/**
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders.  If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 
 #include "GeoJSONSpawnerComponent.h"
 
@@ -9,17 +18,19 @@
 #include <ROS2/Georeference/GeoreferenceStructures.h>
 
 #include <AzCore/Serialization/EditContext.h>
-#include <fstream>
-#include <iostream>
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <bits/fs_fwd.h>
 #include <rapidjson/schema.h>
 
 namespace GeoJSONSpawner
 {
+    GeoJSONSpawnerComponent::GeoJSONSpawnerComponent(const GeoJSONSpawnerConfiguration& configuration)
+        : m_configuration(configuration)
+    {
+    }
+
     void GeoJSONSpawnerComponent::Activate()
     {
         GeoJSONSpawnerRequestBus::Handler::BusConnect(GetEntityId());
@@ -32,23 +43,13 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerComponent::Reflect(AZ::ReflectContext* context)
     {
+        GeoJSONSpawnerConfiguration::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<GeoJSONSpawnerComponent, AZ::Component>()
                 ->Version(0)
-                ->Field("SpawnableAssets", &GeoJSONSpawnerComponent::m_spawnableAssets)
-                ->Field("Altitude", &GeoJSONSpawnerComponent::m_altitude);
-
-            if (auto editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<GeoJSONSpawnerComponent>("GeoJSONSpawnerComponent", "GeoJSON Spawner component")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Spawners")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerComponent::m_spawnableAssets, "SpawnableAssets", "Spawnable assets")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerComponent::m_altitude, "Altitude", "Altitude");
-            }
+                ->Field("Configuration", &GeoJSONSpawnerComponent::m_configuration);
         }
     }
 
@@ -59,7 +60,7 @@ namespace GeoJSONSpawner
 
         m_spawnableTickets.clear();
 
-        for (auto& nameSpawnablePair : m_spawnableAssets)
+        for (auto& nameSpawnablePair : m_configuration.m_spawnableAssets)
         {
             nameSpawnablePair.second.QueueLoad();
         }
@@ -72,26 +73,26 @@ namespace GeoJSONSpawner
 
         for (const auto& element : result)
         {
-            if (!m_spawnableAssets.contains(element.first))
+            if (!m_configuration.m_spawnableAssets.contains(element.first))
             {
                 AZ_Error("GeoJSONSpawner", false, "Spawnable with name [%s] not found.", element.first.c_str());
                 continue;
             }
 
-            const auto& spawnable = m_spawnableAssets.at(element.first);
+            const auto& spawnable = m_configuration.m_spawnableAssets.at(element.first);
 
             for (const auto& point : element.second)
             {
                 AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
                 AzFramework::EntitySpawnTicket ticket(spawnable);
 
-                AZ::Transform transform;
+                AZ::Transform transform = AZ::Transform::CreateIdentity();
                 ROS2::WGS::WGS84Coordinate coordinate;
                 AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
                 AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
                 coordinate.m_longitude = point[0];
                 coordinate.m_latitude = point[1];
-                coordinate.m_altitude = m_altitude;
+                coordinate.m_altitude = m_configuration.m_altitude;
 
                 ROS2::GeoreferenceRequestsBus::BroadcastResult(
                     coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
