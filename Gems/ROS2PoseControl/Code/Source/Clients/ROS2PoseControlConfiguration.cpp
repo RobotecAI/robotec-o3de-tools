@@ -39,7 +39,8 @@ namespace ROS2PoseControl
                 ->Field("useTagOffset", &ROS2PoseControlConfiguration::m_useTagOffset)
                 ->Field("startOffsetTag", &ROS2PoseControlConfiguration::m_startOffsetTag)
                 ->Field("m_clampToGround", &ROS2PoseControlConfiguration::m_clampToGround)
-                ->Field("m_groundOffset", &ROS2PoseControlConfiguration::m_groundOffset);
+                ->Field("m_groundOffset", &ROS2PoseControlConfiguration::m_groundOffset)
+                ->Field("useWGS", &ROS2PoseControlConfiguration::m_useWGS);
 
             if (AZ::EditContext* ec = serializeContext->GetEditContext())
             {
@@ -53,6 +54,12 @@ namespace ROS2PoseControl
                     ->EnumAttribute(TrackingMode::PoseMessages, "Pose Messages")
                     ->EnumAttribute(TrackingMode::TF2, "TF2")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ROS2PoseControlConfiguration::m_useWGS,
+                        "Enable support for WGS84",
+                        "Enable support for WGS84")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isTrackingModePoseMessagesVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ROS2PoseControlConfiguration::m_poseTopicConfiguration,
@@ -86,6 +93,7 @@ namespace ROS2PoseControl
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isUseTagOffset)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &ROS2PoseControlConfiguration::m_clampToGround, "Clamp to Ground", "Clamp to ground")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ROS2PoseControlConfiguration::m_groundOffset,

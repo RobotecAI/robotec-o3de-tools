@@ -45,5 +45,7 @@ namespace ROS2PoseControl
 
         bool m_useTagOffset = false;
         AZStd::string m_startOffsetTag;
+
+        bool m_useWGS = false;
     };
 } // namespace ROS2PoseControl

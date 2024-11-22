@@ -1,5 +1,6 @@
 
 #include "ROS2PoseControl.h"
+#include "AzCore/Debug/Trace.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -13,6 +14,7 @@
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <ROS2/Frame/ROS2FrameComponent.h>
+#include <ROS2/Georeference/GeoreferenceBus.h>
 #include <ROS2/Utilities/ROS2Conversions.h>
 #include <ROS2/Utilities/ROS2Names.h>
 #include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
@@ -183,11 +185,48 @@ namespace ROS2PoseControl
         {
             return;
         }
-        auto targetTransform = GetTransformFromPoseStamped(msg);
-        if (targetTransform.IsSuccess())
+        bool isWGS = m_configuration.m_useWGS && msg->header.frame_id == "wgs84";
+
+        if (isWGS && !ROS2::GeoreferenceRequestsBus::HasHandlers())
         {
-            ApplyTransform(targetTransform.GetValue());
+            AZ_Error(
+                "ROS2PoseControl",
+                false,
+                "Level is not geographically positioned. Cannot convert WGS84 coordinates. Object will not be moved.");
+            return;
         }
+
+        AZ::Transform targetTransform;
+
+        if (isWGS)
+        {
+            ROS2::WGS::WGS84Coordinate coordinate;
+            AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
+            AZ::Quaternion rotationInENU = AZ::Quaternion::CreateIdentity();
+            coordinate.m_latitude = msg->pose.position.x;
+            coordinate.m_longitude = msg->pose.position.y;
+            coordinate.m_altitude = msg->pose.position.z;
+            ROS2::GeoreferenceRequestsBus::BroadcastResult(rotationInENU, &ROS2::GeoreferenceRequests::GetRotationFromLevelToENU);
+            ROS2::GeoreferenceRequestsBus::BroadcastResult(
+                coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
+
+            rotationInENU =
+                (rotationInENU.GetInverseFast() *
+                 AZ::Quaternion(msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w))
+                    .GetNormalized();
+
+            targetTransform = { coordinateInLevel, rotationInENU, 1.0f };
+        }
+        else
+        {
+            auto targetTransformOutcome = GetTransformFromPoseStamped(msg);
+            if (!targetTransformOutcome.IsSuccess())
+            {
+                return;
+            }
+            targetTransform = targetTransformOutcome.GetValue();
+        }
+        ApplyTransform(targetTransform);
     }
 
     void ROS2PoseControl::OnTick(float deltaTime, AZ::ScriptTimePoint time)
@@ -312,6 +351,12 @@ namespace ROS2PoseControl
 
     void ROS2PoseControl::ApplyTransform(const AZ::Transform& transform)
     {
+        if (transform.GetRotation().IsZero())
+        {
+            AZ_Error("ROS2PoseControl", false, "Received invalid rotation. Object will not be moved.");
+            return;
+        }
+
         // Disable physics to allow transform movement.
         DisablePhysics();
 
