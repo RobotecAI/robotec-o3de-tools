@@ -2,6 +2,7 @@
 
 #include "SplineSubscriberConfig.h"
 #include <AzCore/Component/Component.h>
+#include <AzCore/Math/Transform.h>
 #include <ROS2/ROS2Bus.h>
 #include <SplineTools/SplineToolsTypeIds.h>
 #include <nav_msgs/msg/path.hpp>
@@ -20,6 +21,7 @@ namespace SplineTools
         void Deactivate() override;
 
     private:
+        bool GetOffsetTransform(AZ::Transform& transform);
         void OnSplineReceived(const nav_msgs::msg::Path& msg);
         SplineSubscriberConfiguration m_config;
         rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr m_subscription;
