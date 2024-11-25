@@ -11,9 +11,10 @@
 #pragma once
 
 #include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
-#include "GeoJSONSpawnerConfiguration.h"
+#include "GeoJSONSpawnerUtils.h"
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace GeoJSONSpawner
 {
@@ -28,7 +29,12 @@ namespace GeoJSONSpawner
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
-        GeoJSONSpawnerConfiguration m_configuration;
+        void SpawnEntities();
+
+        void OnSpawnButton();
+
+        GeoJSONUtils::GeoJSONSpawnerConfiguration m_configuration;
+        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_spawnedTicketsGroups;
     };
 
 } // namespace GeoJSONSpawner

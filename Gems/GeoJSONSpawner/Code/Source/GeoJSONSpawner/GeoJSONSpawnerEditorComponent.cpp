@@ -13,6 +13,7 @@
 #include "GeoJSONSpawnerComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace GeoJSONSpawner
 {
@@ -33,9 +34,52 @@ namespace GeoJSONSpawner
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerEditorComponent::m_configuration,
                         "GeoJSONSpawner Configuration",
-                        "GeoJSONSpawner Configuration");
+                        "GeoJSONSpawner Configuration")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "Reload GeoJSON", "Reload GeoJSON")
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Spawn")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorComponent::OnSpawnButton);
             }
         }
+    }
+
+    void GeoJSONSpawnerEditorComponent::SpawnEntities()
+    {
+        if (!m_configuration.m_geoJsonAssetId.IsValid())
+        {
+            AZ_Error("GeoJSONSpawnerEditorComponent", false, "JSON asset is not set.");
+            return;
+        }
+
+        m_spawnedTicketsGroups.clear();
+        AZ::Data::AssetInfo sourceAssetInfo;
+        bool ok{ false };
+        AZStd::string watchFolder;
+
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            ok,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID,
+            m_configuration.m_geoJsonAssetId.m_guid,
+            sourceAssetInfo,
+            watchFolder);
+
+        if (!ok)
+        {
+            AZ_Error("GeoJSONSpawnerEditorComponent", false, "Cannot find asset source.");
+            return;
+        }
+
+        const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
+
+        AZ_Printf("GeoJSONSpawnerEditorComponent", "Source of GeoJSON file path: %s", sourcePath.c_str());
+
+        auto result = GeoJSONUtils::ParseJSONFromFile(sourcePath.c_str());
+        m_spawnedTicketsGroups = GeoJSONUtils::SpawnEntities(result, m_configuration.m_spawnableAssets, GetEntityId());
+    }
+
+    void GeoJSONSpawnerEditorComponent::OnSpawnButton()
+    {
+        SpawnEntities();
     }
 
     void GeoJSONSpawnerEditorComponent::BuildGameEntity(AZ::Entity* gameEntity)

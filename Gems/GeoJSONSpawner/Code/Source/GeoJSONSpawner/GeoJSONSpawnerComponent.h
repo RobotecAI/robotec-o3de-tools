@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "GeoJSONSpawnerConfiguration.h"
+#include "GeoJSONSpawnerUtils.h"
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
@@ -22,30 +22,16 @@
 
 namespace GeoJSONSpawner
 {
-    enum class GeometryType
-    {
-        Point = 0,
-        MultiPoint,
-        LineString,
-        MultiLineString,
-        Polygon,
-        MultiPolygon,
-        GeometryCollection,
-        Unknown
-    };
 
     class GeoJSONSpawnerComponent
         : public AZ::Component
         , public GeoJSONSpawnerRequestBus::Handler
     {
     public:
-        using Coordinates = AZStd::vector<AZStd::array<double, 2>>;
-        using SpawnableCoordinatesMap = AZStd::unordered_map<AZStd::string, Coordinates>;
-
         AZ_COMPONENT(GeoJSONSpawnerComponent, GeoJSONSpawnerComponentTypeId);
 
         GeoJSONSpawnerComponent() = default;
-        GeoJSONSpawnerComponent(const GeoJSONSpawnerConfiguration& configuration);
+        GeoJSONSpawnerComponent(const GeoJSONUtils::GeoJSONSpawnerConfiguration& configuration);
         ~GeoJSONSpawnerComponent() = default;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -57,13 +43,7 @@ namespace GeoJSONSpawner
         void Spawn(const AZStd::string& rawJsonString) override;
 
     private:
-        bool ValidateGeoJSON(const rapidjson::Document& geoJsonDocument);
-        SpawnableCoordinatesMap ParseGeoJSON(const AZStd::string& rawJsonString);
-        Coordinates ExtractPoints(const rapidjson::Value& geometry);
-
-        GeometryType GetGeometryType(const AZStd::string& geometryType);
-
-        AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnableTickets;
-        GeoJSONSpawnerConfiguration m_configuration;
+        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_spawnableTickets;
+        GeoJSONUtils::GeoJSONSpawnerConfiguration m_configuration;
     };
 } // namespace GeoJSONSpawner

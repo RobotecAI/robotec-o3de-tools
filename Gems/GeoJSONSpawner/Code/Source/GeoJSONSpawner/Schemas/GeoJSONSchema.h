@@ -4,7 +4,7 @@ namespace GeoJSONSpawner
 {
     inline constexpr const char* GeoJSONSchema = R"({
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Extended GeoJSON with Spawnable Name in Properties",
+  "title": "Extended GeoJSON with Spawnable Name and ID in Properties",
   "type": "object",
   "properties": {
     "type": {
@@ -122,9 +122,12 @@ namespace GeoJSONSpawner
             "properties": {
               "spawnable_name": {
                 "type": "string"
+              },
+              "id": {
+                "type": "integer"
               }
             },
-            "required": ["spawnable_name"]
+            "required": ["spawnable_name", "id"]
           }
         },
         "required": ["type", "geometry", "properties"]
