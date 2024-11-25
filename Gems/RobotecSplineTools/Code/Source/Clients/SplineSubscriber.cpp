@@ -20,7 +20,7 @@ namespace SplineTools
         SplineSubscriberConfiguration::Reflect(context);
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SplineSubscriber>()->Version(0)->Field("m_config", &SplineSubscriber::m_config);
+            serializeContext->Class<SplineSubscriber, AZ::Component>()->Version(0)->Field("m_config", &SplineSubscriber::m_config);
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<SplineSubscriber>("SplineSubscriber", "Configuration for the SplineSubscriber component")
