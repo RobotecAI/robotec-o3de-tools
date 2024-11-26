@@ -31,7 +31,10 @@ namespace GeoJSONSpawner
         AZ_COMPONENT(GeoJSONSpawnerComponent, GeoJSONSpawnerComponentTypeId);
 
         GeoJSONSpawnerComponent() = default;
-        GeoJSONSpawnerComponent(const GeoJSONUtils::GeoJSONSpawnerConfiguration& configuration);
+        explicit GeoJSONSpawnerComponent(
+            const AZStd::unordered_map<AZStd::string, GeoJSONUtils::GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations,
+            const AZStd::string& geoJsonFilePath,
+            AZ::u64 defaultSeed);
         ~GeoJSONSpawnerComponent() = default;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -43,7 +46,13 @@ namespace GeoJSONSpawner
         void Spawn(const AZStd::string& rawJsonString) override;
 
     private:
+        void SpawnEntities();
+
+        AZStd::unordered_map<AZStd::string, GeoJSONUtils::GeoJSONSpawnableAssetConfiguration> m_spawnableAssetConfigurations;
+        AZ::u64 m_defaultSeed;
+        AZStd::string m_geoJsonFilePath;
+
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_spawnableTickets;
-        GeoJSONUtils::GeoJSONSpawnerConfiguration m_configuration;
+        AZStd::vector<GeoJSONUtils::GeoJSONSpawnableEntityInfo> m_spawnableEntityInfo;
     };
 } // namespace GeoJSONSpawner

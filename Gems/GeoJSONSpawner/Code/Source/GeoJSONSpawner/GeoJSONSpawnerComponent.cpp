@@ -15,17 +15,27 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/PhysicsScene.h>
-#include <rapidjson/schema.h>
 
 namespace GeoJSONSpawner
 {
-    GeoJSONSpawnerComponent::GeoJSONSpawnerComponent(const GeoJSONUtils::GeoJSONSpawnerConfiguration& configuration)
-        : m_configuration(configuration)
+    GeoJSONSpawnerComponent::GeoJSONSpawnerComponent(
+        const AZStd::unordered_map<AZStd::string, GeoJSONUtils::GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations,
+        const AZStd::string& geoJsonFilePath,
+        AZ::u64 defaultSeed)
+        : m_spawnableAssetConfigurations(spawnableAssetConfigurations)
+        , m_geoJsonFilePath(geoJsonFilePath)
+        , m_defaultSeed(defaultSeed)
     {
     }
 
     void GeoJSONSpawnerComponent::Activate()
     {
+        AZ::TickBus::QueueFunction(
+            [this]()
+            {
+                SpawnEntities();
+            });
+
         GeoJSONSpawnerRequestBus::Handler::BusConnect(GetEntityId());
     }
 
@@ -36,18 +46,36 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerComponent::Reflect(AZ::ReflectContext* context)
     {
-        GeoJSONUtils::GeoJSONSpawnerConfiguration::Reflect(context);
+        GeoJSONUtils::GeoJSONSpawnableAssetConfiguration::Reflect(context);
+        GeoJSONUtils::GeoJSONSpawnableEntityInfo::Reflect(context);
+        GeoJSONUtils::GeometryObjectInfo::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GeoJSONSpawnerComponent, AZ::Component>()->Version(0)->Field(
-                "Configuration", &GeoJSONSpawnerComponent::m_configuration);
+            serializeContext->Class<GeoJSONSpawnerComponent, AZ::Component>()
+                ->Version(0)
+                ->Field("SpawnableAssetConfigurations", &GeoJSONSpawnerComponent::m_spawnableAssetConfigurations)
+                ->Field("GeoJsonFilePath", &GeoJSONSpawnerComponent::m_geoJsonFilePath)
+                ->Field("DefaultSeed", &GeoJSONSpawnerComponent::m_defaultSeed);
         }
+    }
+
+    void GeoJSONSpawnerComponent::SpawnEntities()
+    {
+        m_spawnableTickets.clear();
+        const auto geometryObjectInfo = GeoJSONUtils::ParseJSONFromFile(m_geoJsonFilePath.c_str());
+        m_spawnableEntityInfo =
+            GeoJSONUtils::GetSpawnableEntitiesFromGeometryObjectVector(geometryObjectInfo, m_spawnableAssetConfigurations);
+        m_spawnableTickets = GeoJSONUtils::SpawnEntities(
+            m_spawnableEntityInfo, m_spawnableAssetConfigurations, m_defaultSeed, AzPhysics::DefaultPhysicsSceneName, GetEntityId());
     }
 
     void GeoJSONSpawnerComponent::Spawn(const AZStd::string& rawJsonString)
     {
         const auto result = GeoJSONUtils::ParseJSONFromRawString(rawJsonString);
-        m_spawnableTickets = GeoJSONUtils::SpawnEntities(result, m_configuration.m_spawnableAssets, GetEntityId());
+        m_spawnableEntityInfo = GeoJSONUtils::GetSpawnableEntitiesFromGeometryObjectVector(result, m_spawnableAssetConfigurations);
+        m_spawnableTickets.clear();
+        m_spawnableTickets = GeoJSONUtils::SpawnEntities(
+            m_spawnableEntityInfo, m_spawnableAssetConfigurations, m_defaultSeed, AzPhysics::EditorPhysicsSceneName, GetEntityId());
     }
 } // namespace GeoJSONSpawner

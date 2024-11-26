@@ -12,13 +12,14 @@
 
 #include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace GeoJSONSpawner::GeoJSONUtils
 {
-    using Coordinates = AZStd::vector<AZStd::array<double, 2>>;
+    using Coordinates = AZStd::vector<AZStd::array<double, 3>>;
     using SpawnableCoordinatesMap = AZStd::unordered_map<AZStd::string, Coordinates>;
 
     enum class GeometryType
@@ -33,34 +34,67 @@ namespace GeoJSONSpawner::GeoJSONUtils
         Unknown
     };
 
-    struct GeometryObjectInfo
-    {
-        int m_id;
-        AZStd::string m_name;
-        Coordinates m_coordinates;
-    };
-
-    class GeoJSONSpawnerConfiguration
+    class GeometryObjectInfo
     {
     public:
-        AZ_TYPE_INFO(GeoJSONSpawnerConfiguration, GeoJSONSpawnerConfigurationTypeId);
+        AZ_RTTI(GeometryObjectInfo, GeometryObjectInfoTypeId);
+        static void Reflect(AZ::ReflectContext* context);
+        GeometryObjectInfo() = default;
+        virtual ~GeometryObjectInfo() = default;
+
+        int m_id;
+        AZStd::string m_name;
+        Coordinates m_coordinates; // WGS84
+    };
+
+    class GeoJSONSpawnableEntityInfo
+    {
+    public:
+        AZ_RTTI(GeoJSONSpawnableEntityInfo, GeoJSONSpawnableEntityInfoTypeId);
+        static void Reflect(AZ::ReflectContext* context);
+        GeoJSONSpawnableEntityInfo() = default;
+        virtual ~GeoJSONSpawnableEntityInfo() = default;
+
+        int m_id;
+        AZStd::string m_name;
+        AZStd::vector<AZ::Vector3> m_positions; // coordinates in level (X, Y, Z)
+    };
+
+    class GeoJSONSpawnableAssetConfiguration
+    {
+    public:
+        AZ_RTTI(GeoJSONSpawnableAssetConfiguration, GeoJSONSpawnableAssetConfigurationTypeId);
 
         static void Reflect(AZ::ReflectContext* context);
+        GeoJSONSpawnableAssetConfiguration() = default;
+        virtual ~GeoJSONSpawnableAssetConfiguration() = default;
 
-        AZStd::unordered_map<AZStd::string, AZ::Data::Asset<AzFramework::Spawnable>> m_spawnableAssets;
-        double m_altitude{ 0.0f };
-        AZ::Data::AssetId m_geoJsonAssetId;
+        AZStd::string m_name;
+        AZ::Data::Asset<AzFramework::Spawnable> m_spawnable;
+        AZ::Vector3 m_positionStdDev{ 0.0f };
+        AZ::Vector3 m_rotationStdDev{ 0.0f };
+        float m_scaleStdDev{ 0.1f };
+        bool m_placeOnTerrain{ false };
+        float m_raycastStartingHeight{ 0.0f };
     };
 
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
-        const AZStd::vector<GeometryObjectInfo>& entitiesToSpawn,
-        const AZStd::unordered_map<AZStd::string, AZ::Data::Asset<AzFramework::Spawnable>>& spawnableAssetConfiguration,
-        AZ::EntityId parentId);
+        AZStd::vector<GeoJSONSpawnableEntityInfo>& entitiesToSpawn,
+        const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations,
+        AZ::u64 defaultSeed,
+        const AZStd::string& physicsSceneName = AZStd::string(),
+        AZ::EntityId parentId = AZ::EntityId());
+
+    AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
+        const AZStd::vector<GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations);
+
+    AZStd::vector<GeoJSONSpawnableEntityInfo> GetSpawnableEntitiesFromGeometryObjectVector(
+        const AZStd::vector<GeometryObjectInfo>& geometryObjects,
+        const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations);
 
     bool ValidateGeoJSON(const rapidjson::Document& geoJsonDocument);
     AZStd::vector<GeometryObjectInfo> ParseJSONFromFile(const AZStd::string& filePath);
     AZStd::vector<GeometryObjectInfo> ParseJSONFromRawString(const AZStd::string& rawGeoJson);
-    AZStd::vector<GeometryObjectInfo> ParseGeoJSON(const rapidjson::Document& geoJsonDocument);
     Coordinates ExtractPoints(const rapidjson::Value& geometry);
     GeometryType GetGeometryType(const AZStd::string& geometryType);
 } // namespace GeoJSONSpawner::GeoJSONUtils

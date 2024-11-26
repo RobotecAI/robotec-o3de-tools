@@ -18,82 +18,211 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <ROS2/Georeference/GeoreferenceBus.h>
+#include <random>
 #include <rapidjson/schema.h>
+
+#include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace GeoJSONSpawner::GeoJSONUtils
 {
-    void GeoJSONSpawnerConfiguration::Reflect(AZ::ReflectContext* context)
+    void GeometryObjectInfo::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GeoJSONSpawnerConfiguration>()
+            serializeContext->Class<GeometryObjectInfo>()
                 ->Version(0)
-                ->Field("GeoJSONAssetId", &GeoJSONSpawnerConfiguration::m_geoJsonAssetId)
-                ->Field("SpawnableAssets", &GeoJSONSpawnerConfiguration::m_spawnableAssets)
-                ->Field("Altitude", &GeoJSONSpawnerConfiguration::m_altitude);
+                ->Field("Id", &GeometryObjectInfo::m_id)
+                ->Field("Name", &GeometryObjectInfo::m_name)
+                ->Field("Coordinates", &GeometryObjectInfo::m_coordinates);
+        }
+    }
+
+    void GeoJSONSpawnableEntityInfo::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<GeoJSONSpawnableEntityInfo>()
+                ->Version(0)
+                ->Field("Id", &GeoJSONSpawnableEntityInfo::m_id)
+                ->Field("Name", &GeoJSONSpawnableEntityInfo::m_name)
+                ->Field("Positions", &GeoJSONSpawnableEntityInfo::m_positions);
+        }
+    }
+
+    void GeoJSONSpawnableAssetConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<GeoJSONSpawnableAssetConfiguration>()
+                ->Version(0)
+                ->Field("Name", &GeoJSONSpawnableAssetConfiguration::m_name)
+                ->Field("Spawnable", &GeoJSONSpawnableAssetConfiguration::m_spawnable)
+                ->Field("PositionStdDev", &GeoJSONSpawnableAssetConfiguration::m_positionStdDev)
+                ->Field("RotationStdDev", &GeoJSONSpawnableAssetConfiguration::m_rotationStdDev)
+                ->Field("ScaleStdDev", &GeoJSONSpawnableAssetConfiguration::m_scaleStdDev)
+                ->Field("PlaceOnTerrain", &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain)
+                ->Field("RaycastStartingHeight", &GeoJSONSpawnableAssetConfiguration::m_raycastStartingHeight);
+
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GeoJSONSpawnerConfiguration>("GeoJSONSpawnerConfiguration", "GeoJSON Spawner Configuration")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                editContext->Class<GeoJSONSpawnableAssetConfiguration>("GeoJSONSpawnerConfiguration", "GeoJSON Spawner Configuration")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "GeoJSONSpawnerConfiguration")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(AZ::Edit::Attributes::Category, "Spawners")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerConfiguration::m_geoJsonAssetId, "GeoJSON asset", "GeoJSON asset")
+                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnableAssetConfiguration::m_name, "Name", "Name of the spawnable")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GeoJSONSpawnableAssetConfiguration::m_spawnable, "Spawnable", "Spawnable")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerConfiguration::m_spawnableAssets,
-                        "SpawnableAssets",
-                        "Spawnable Assets")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerConfiguration::m_altitude, "Altitude", "Altitude");
+                        &GeoJSONSpawnableAssetConfiguration::m_positionStdDev,
+                        "Position std dev",
+                        "Position std dev")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &GeoJSONSpawnableAssetConfiguration::m_rotationStdDev,
+                        "Rotation std dev",
+                        "Rotation std dev")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnableAssetConfiguration::m_scaleStdDev, "Scale std dev", "Scale std dev")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain,
+                        "Place on terrain",
+                        "Place on terrain")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &GeoJSONSpawnableAssetConfiguration::m_raycastStartingHeight,
+                        "Raycast starting height",
+                        "Raycast starting height");
             }
         }
     }
 
+    AZStd::optional<AZ::Vector3> RaytraceTerrain(
+        const AZ::Vector3& location, const AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& gravityDirection, float maxDistance)
+    {
+        AZStd::optional<AZ::Vector3> hitPosition = AZStd::nullopt;
+
+        if (sceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            return hitPosition;
+        }
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AZ_Assert(physicsSystem, "Unable to get physics system interface");
+        AZ_Assert(sceneInterface, "Unable to get physics scene interface");
+
+        if (!sceneInterface || !physicsSystem)
+        {
+            return hitPosition;
+        }
+
+        AzPhysics::RayCastRequest request;
+        request.m_start = location;
+        request.m_direction = gravityDirection;
+        request.m_distance = maxDistance;
+
+        AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
+
+        if (!result.m_hits.empty())
+        {
+            hitPosition = result.m_hits.front().m_position;
+        }
+
+        return hitPosition;
+    }
+
+    AZ::Transform GetRandomTransform(
+        const AZ::Vector3& stdDevTranslation, const AZ::Vector3& stdDevRotation, float stdDevScale, std::mt19937& gen)
+    {
+        AZ::Transform transform = AZ::Transform::CreateIdentity();
+        AZStd::vector<std::normal_distribution<float>> distributions;
+        distributions.emplace_back(0.0f, stdDevTranslation.GetX());
+        distributions.emplace_back(0.0f, stdDevTranslation.GetY());
+        distributions.emplace_back(0.0f, stdDevTranslation.GetZ());
+        distributions.emplace_back(0.0f, stdDevRotation.GetX());
+        distributions.emplace_back(0.0f, stdDevRotation.GetY());
+        distributions.emplace_back(0.0f, stdDevRotation.GetZ());
+        distributions.emplace_back(1.0f, stdDevScale);
+
+        transform.SetTranslation(AZ::Vector3(distributions[0](gen), distributions[1](gen), distributions[2](gen)));
+        const AZ::Quaternion rotation =
+            AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(distributions[3](gen), distributions[4](gen), distributions[5](gen)));
+        transform.SetRotation(rotation);
+        transform.SetUniformScale(AZStd::max(0.0f, distributions[6](gen)));
+        return transform;
+    }
+
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
-        const AZStd::vector<GeometryObjectInfo>& entitiesToSpawn,
-        const AZStd::unordered_map<AZStd::string, AZ::Data::Asset<AzFramework::Spawnable>>& spawnableAssetConfiguration,
+        AZStd::vector<GeoJSONSpawnableEntityInfo>& entitiesToSpawn,
+        const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations,
+        AZ::u64 defaultSeed,
+        const AZStd::string& physicsSceneName,
         AZ::EntityId parentId)
     {
+        auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AZ_Assert(sceneInterface, "Unable to get physics scene interface");
+        const auto sceneHandle = sceneInterface->GetSceneHandle(physicsSceneName);
+
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> groupIdToTicketsMap;
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
         AZ_Assert(spawner, "Unable to get spawnable entities definition.");
 
-        for (auto spawnablePair : spawnableAssetConfiguration)
+        for (auto spawnableAsset : spawnableAssetConfigurations)
         {
-            spawnablePair.second.QueueLoad();
+            spawnableAsset.second.m_spawnable.QueueLoad();
         }
 
-        for (const auto& entityToSpawn : entitiesToSpawn)
+        for (auto& entityToSpawn : entitiesToSpawn)
         {
-            if (!spawnableAssetConfiguration.contains(entityToSpawn.m_name))
+            if (!spawnableAssetConfigurations.contains(entityToSpawn.m_name))
             {
                 AZ_Error("GeoJSONSpawnerUtils", false, "Spawnable with name [%s] not found.", entityToSpawn.m_name.c_str());
                 continue;
             }
 
-            const auto& spawnable = spawnableAssetConfiguration.at(entityToSpawn.m_name);
+            const auto& spawnableAssetConfiguration = spawnableAssetConfigurations.at(entityToSpawn.m_name);
             if (!groupIdToTicketsMap.contains(entityToSpawn.m_id))
             {
                 groupIdToTicketsMap[entityToSpawn.m_id] = {};
             }
 
-            for (const auto& point : entityToSpawn.m_coordinates)
+            for (auto& point : entityToSpawn.m_positions)
             {
                 AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
-                AzFramework::EntitySpawnTicket ticket(spawnable);
+                AzFramework::EntitySpawnTicket ticket(spawnableAssetConfiguration.m_spawnable);
 
-                AZ::Transform transform = AZ::Transform::CreateIdentity();
-                ROS2::WGS::WGS84Coordinate coordinate;
-                AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
+                [[maybe_unused]] std::mt19937 gen = std::mt19937(defaultSeed++);
+
                 AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
-                coordinate.m_longitude = point[0];
-                coordinate.m_latitude = point[1];
-                coordinate.m_altitude = 145.0;
+                AZ::Transform pointTransform{ point, rotation, 1.0f };
+                pointTransform *= GetRandomTransform(
+                    spawnableAssetConfiguration.m_positionStdDev,
+                    spawnableAssetConfiguration.m_rotationStdDev,
+                    spawnableAssetConfiguration.m_scaleStdDev,
+                    gen);
 
-                ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                    coordinateInLevel, &ROS2::GeoreferenceRequestsBus::Events::ConvertFromWGS84ToLevel, coordinate);
+                if (spawnableAssetConfiguration.m_placeOnTerrain)
+                {
+                    const AZStd::optional<AZ::Vector3> hitPosition =
+                        RaytraceTerrain(pointTransform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f);
 
-                transform = { coordinateInLevel, rotation, 1.0f };
+                    if (hitPosition.has_value())
+                    {
+                        pointTransform.SetTranslation(hitPosition.value());
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                point = pointTransform.GetTranslation(); // Update point coords to use it to show labels
 
-                optionalArgs.m_preInsertionCallback = [transform]([[maybe_unused]] auto id, auto view)
+                optionalArgs.m_preInsertionCallback = [pointTransform]([[maybe_unused]] auto id, auto view)
                 {
                     if (view.empty())
                     {
@@ -103,7 +232,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
                     AZ_Assert(root, "Invalid root entity.");
 
                     auto* transformInterface = root->FindComponent<AzFramework::TransformComponent>();
-                    transformInterface->SetWorldTM(transform);
+                    transformInterface->SetWorldTM(pointTransform);
                 };
 
                 optionalArgs.m_completionCallback = [parentId]([[maybe_unused]] auto id, auto view)
@@ -124,6 +253,53 @@ namespace GeoJSONSpawner::GeoJSONUtils
         }
 
         return groupIdToTicketsMap;
+    }
+
+    AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
+        const AZStd::vector<GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations)
+    {
+        AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> spawnableAssetMap;
+        for (auto& spawnableAssetConfigurationElement : spawnableAssetConfigurations)
+        {
+            spawnableAssetMap[spawnableAssetConfigurationElement.m_name] = spawnableAssetConfigurationElement;
+        }
+
+        return spawnableAssetMap;
+    }
+
+    AZStd::vector<GeoJSONSpawnableEntityInfo> GetSpawnableEntitiesFromGeometryObjectVector(
+        const AZStd::vector<GeometryObjectInfo>& geometryObjects,
+        const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations)
+    {
+        AZStd::vector<GeoJSONSpawnableEntityInfo> spawnableEntities;
+        for (const auto& geometryObjectInfo : geometryObjects)
+        {
+            if (!spawnableAssetConfigurations.contains(geometryObjectInfo.m_name))
+            {
+                AZ_Error("GeoJSONSpawnerUtils", false, "Spawnable with name [%s] not found.", geometryObjectInfo.m_name.c_str());
+                continue;
+            }
+            const auto& spawnableAssetConfig = spawnableAssetConfigurations.at(geometryObjectInfo.m_name);
+            GeoJSONSpawnableEntityInfo spawnableEntityInfo;
+            spawnableEntityInfo.m_name = geometryObjectInfo.m_name;
+            spawnableEntityInfo.m_id = geometryObjectInfo.m_id;
+            for (const auto& point : geometryObjectInfo.m_coordinates)
+            {
+                ROS2::WGS::WGS84Coordinate coordinate;
+                AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
+                coordinate.m_longitude = point[0];
+                coordinate.m_latitude = point[1];
+                coordinate.m_altitude = spawnableAssetConfig.m_raycastStartingHeight;
+
+                ROS2::GeoreferenceRequestsBus::BroadcastResult(
+                    coordinateInLevel, &ROS2::GeoreferenceRequestsBus::Events::ConvertFromWGS84ToLevel, coordinate);
+
+                spawnableEntityInfo.m_positions.emplace_back(AZStd::move(coordinateInLevel));
+            }
+            spawnableEntities.push_back(spawnableEntityInfo);
+        }
+
+        return spawnableEntities;
     }
 
     bool ValidateGeoJSON(const rapidjson::Document& geoJsonDocument)
@@ -175,13 +351,13 @@ namespace GeoJSONSpawner::GeoJSONUtils
         const rapidjson::Value& coordinates = geometry["coordinates"];
         if (geometryType == GeometryType::Point)
         {
-            spawnableCoordinates.push_back({ coordinates[0].GetDouble(), coordinates[1].GetDouble() });
+            spawnableCoordinates.push_back({ coordinates[0].GetDouble(), coordinates[1].GetDouble(), 0.0f });
         }
         else if (geometryType == GeometryType::LineString || geometryType == GeometryType::MultiPoint)
         {
             for (const auto& point : coordinates.GetArray())
             {
-                spawnableCoordinates.push_back({ point[0].GetDouble(), point[1].GetDouble() });
+                spawnableCoordinates.push_back({ point[0].GetDouble(), point[1].GetDouble(), 0.0f });
             }
         }
         else if (geometryType == GeometryType::Polygon || geometryType == GeometryType::MultiLineString)
@@ -190,7 +366,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
             {
                 for (const auto& point : object.GetArray())
                 {
-                    spawnableCoordinates.push_back({ point[0].GetDouble(), point[1].GetDouble() });
+                    spawnableCoordinates.push_back({ point[0].GetDouble(), point[1].GetDouble(), 0.0f });
                 }
 
                 if (geometryType == GeometryType::Polygon)
@@ -207,20 +383,11 @@ namespace GeoJSONSpawner::GeoJSONUtils
                 {
                     for (const auto& point : object.GetArray())
                     {
-                        spawnableCoordinates.push_back({ point[0].GetDouble(), point[1].GetDouble() });
+                        spawnableCoordinates.push_back({ point[0].GetDouble(), point[1].GetDouble(), 0.0f });
                     }
 
                     spawnableCoordinates.pop_back();
                 }
-            }
-        }
-        else if (geometryType == GeometryType::GeometryCollection)
-        {
-            const rapidjson::Value& geometries = geometry["geometries"];
-            for (const auto& geometry : geometries.GetArray())
-            {
-                Coordinates geometryCoordinates = ExtractPoints(geometry);
-                spawnableCoordinates.insert(spawnableCoordinates.end(), geometryCoordinates.begin(), geometryCoordinates.end());
             }
         }
         else if (geometryType == GeometryType::Unknown)
