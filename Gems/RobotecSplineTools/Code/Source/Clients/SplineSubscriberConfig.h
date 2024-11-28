@@ -17,5 +17,6 @@ namespace SplineTools
         ROS2::TopicConfiguration m_topic{ rclcpp::ServicesQoS() };
         bool m_allowWGS84{ true }; //! Allow WGS84 coordinates.
         bool m_resetOnActivation{ true }; //! Reset entity's spline on activation.
+        AZStd::string m_startOffsetTag; //! Tag of the entity to use for the spline points offset.
     };
 } // namespace SplineTools

@@ -19,7 +19,8 @@ namespace SplineTools
                 ->Version(0)
                 ->Field("m_topicName", &SplineSubscriberConfiguration::m_topic)
                 ->Field("m_allowWGS84", &SplineSubscriberConfiguration::m_allowWGS84)
-                ->Field("m_resetOnActivation", &SplineSubscriberConfiguration::m_resetOnActivation);
+                ->Field("m_resetOnActivation", &SplineSubscriberConfiguration::m_resetOnActivation)
+                ->Field("m_startOffsetTag", &SplineSubscriberConfiguration::m_startOffsetTag);
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext
@@ -32,7 +33,12 @@ namespace SplineTools
                         AZ::Edit::UIHandlers::Default,
                         &SplineSubscriberConfiguration::m_resetOnActivation,
                         "Reset On Activation",
-                        "Reset On Activation");
+                        "Reset On Activation")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SplineSubscriberConfiguration::m_startOffsetTag,
+                        "Start Offset Tag",
+                        "Tag that will be used to set the start offset for the spline.");
             }
         }
     }
