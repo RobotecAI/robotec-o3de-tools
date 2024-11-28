@@ -55,7 +55,7 @@ namespace SplineTools
             });
     }
 
-    bool SplineSubscriber::GetOffsetTransform(AZ::Transform& transform)
+    AZ::Transform SplineSubscriber::GetOffsetTransform()
     {
         AZ::EBusAggregateResults<AZ::EntityId> aggregator;
         const LmbrCentral::Tag tag = AZ::Crc32(m_config.m_startOffsetTag);
@@ -67,18 +67,17 @@ namespace SplineTools
             "Multiple entities found with tag %s. The first entity will be used.",
             m_config.m_startOffsetTag.c_str());
 
-        AZ_Warning("SplineSubscriber", !aggregator.values.empty(), "No entity with tag found %s.", m_config.m_startOffsetTag.c_str());
+        AZ_Warning("SplineSubscriber", !aggregator.values.empty(), "No entity with tag found %s.", m_config.m_startOffsetTag.c_str())
 
-        if (!aggregator.values.empty())
+            if (!aggregator.values.empty())
         {
             AZ::Transform offsetTransform = AZ::Transform::CreateIdentity();
             const AZ::EntityId& entityId = aggregator.values[0];
             AZ::TransformBus::EventResult(offsetTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
-            transform = offsetTransform;
-            return true;
+            return offsetTransform;
         }
 
-        return false;
+        return AZ::Transform::CreateIdentity();
     }
 
     void SplineSubscriber::OnSplineReceived(const nav_msgs::msg::Path& msg)
@@ -93,7 +92,7 @@ namespace SplineTools
         worldTm.Invert();
 
         AZ::Transform offsetTransform = AZ::Transform::CreateIdentity();
-        auto hasOffset = GetOffsetTransform(offsetTransform);
+        offsetTransform = GetOffsetTransform();
 
         AZStd::string frame{ msg.header.frame_id.c_str(), msg.header.frame_id.size() };
         AZStd::to_upper(frame.begin(), frame.end());
@@ -107,15 +106,8 @@ namespace SplineTools
 
             if (frame.empty())
             {
-                if (hasOffset)
-                {
-                    auto referenceTranslation = offsetTransform.TransformPoint(posePoint);
-                    points[i] = worldTm.TransformPoint(referenceTranslation);
-                }
-                else
-                {
-                    points[i] = worldTm.TransformPoint(posePoint);
-                }
+                auto referenceTranslation = offsetTransform.TransformPoint(posePoint);
+                points[i] = worldTm.TransformPoint(referenceTranslation);
             }
             else if (frame == "LOCAL")
             {

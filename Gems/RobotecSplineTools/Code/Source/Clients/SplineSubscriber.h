@@ -21,7 +21,9 @@ namespace SplineTools
         void Deactivate() override;
 
     private:
-        bool GetOffsetTransform(AZ::Transform& transform);
+        //! Gets the offset transform for the entity, if offset is not available, returns identity transform
+        AZ::Transform GetOffsetTransform();
+
         void OnSplineReceived(const nav_msgs::msg::Path& msg);
         SplineSubscriberConfiguration m_config;
         rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr m_subscription;
