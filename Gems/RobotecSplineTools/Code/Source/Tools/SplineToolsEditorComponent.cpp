@@ -62,7 +62,6 @@ namespace SplineTools
 
     void SplineToolsEditorComponent::BuildGameEntity([[maybe_unused]] AZ::Entity* gameEntity)
     {
-        ReloadCSVAsset();
     }
 
     void SplineToolsEditorComponent::SaveCsvAsset()
