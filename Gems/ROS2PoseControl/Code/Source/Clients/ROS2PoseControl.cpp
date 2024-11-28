@@ -165,7 +165,11 @@ namespace ROS2PoseControl
 
         // Get the transform from the PoseStamped message
         AZ::Transform transform = ROS2::ROS2Conversions::FromROS2Pose(msg->pose);
-
+        if (msg->header.frame_id.empty())
+        {
+            return AZ::Success(transform);
+        }
+        
         // Get the transform from the global frame to the frame in the PoseStamped message
         const auto globalFrameTransform = GetTF2Transform(m_odomFrameId, msg->header.frame_id.c_str());
         if (!globalFrameTransform.IsSuccess())
