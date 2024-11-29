@@ -31,7 +31,8 @@ namespace WatchdogTools
 
         ~WatchdogToolsSystemComponent();
 
-        void CheckRequiredModules() override;
+        AZ::Outcome<bool, AZStd::string> CheckRequiredModules() override;
+        AZ::Outcome<bool, AZStd::string> VerifyComponentsLoaded() override;
 
     protected:
         // AZ::Component overrides ...
