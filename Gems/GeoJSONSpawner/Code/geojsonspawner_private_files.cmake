@@ -9,4 +9,7 @@ set(FILES
     Source/GeoJSONSpawner/Schemas/GeoJSONSchema.h
     Source/GeoJSONSpawner/GeoJSONSpawnerUtils.cpp
     Source/GeoJSONSpawner/GeoJSONSpawnerUtils.h
+    Source/GeoJSONSpawner/ROS2Interface/SubscriptionHandler.h
+    Source/GeoJSONSpawner/ROS2Interface/GeoJSONSpawnerROS2Interface.cpp
+    Source/GeoJSONSpawner/ROS2Interface/GeoJSONSpawnerROS2Interface.h
 )

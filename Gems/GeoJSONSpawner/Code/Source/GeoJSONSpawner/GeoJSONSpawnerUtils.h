@@ -21,6 +21,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
 {
     using Coordinates = AZStd::vector<AZStd::array<double, 3>>;
     using SpawnableCoordinatesMap = AZStd::unordered_map<AZStd::string, Coordinates>;
+    using DespawnCallback = AZStd::function<void(AzFramework::EntitySpawnTicket::Id)>;
+    using Ids = AZStd::unordered_set<int>;
 
     enum class GeometryType
     {
@@ -85,6 +87,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
         const AZStd::string& physicsSceneName = AZStd::string(),
         AZ::EntityId parentId = AZ::EntityId());
 
+    void DespawnEntity(AzFramework::EntitySpawnTicket& ticket, DespawnCallback callback);
+
     AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
         const AZStd::vector<GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations);
 
@@ -96,5 +100,6 @@ namespace GeoJSONSpawner::GeoJSONUtils
     AZStd::vector<GeometryObjectInfo> ParseJSONFromFile(const AZStd::string& filePath);
     AZStd::vector<GeometryObjectInfo> ParseJSONFromRawString(const AZStd::string& rawGeoJson);
     Coordinates ExtractPoints(const rapidjson::Value& geometry);
+    Ids ExtractIdsFromRawString(const AZStd::string& rawGeoJson);
     GeometryType GetGeometryType(const AZStd::string& geometryType);
 } // namespace GeoJSONSpawner::GeoJSONUtils

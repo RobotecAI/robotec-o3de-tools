@@ -8,29 +8,19 @@
 
 namespace GeoJSONSpawner
 {
-    class GeoJSONSpawnerRequests
+    class GeoJSONSpawnerRequests : public AZ::ComponentBus
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerRequests, GeoJSONSpawnerRequestsTypeId);
-        virtual ~GeoJSONSpawnerRequests() = default;
-        // Put your public methods here
+        using BusIdType = AZ::EntityId;
 
         virtual void Spawn(const AZStd::string& rawJsonString) = 0;
+        virtual void Modify(const AZStd::string& rawJsonString) = 0;
+        virtual void DeleteAll() = 0;
+        virtual void DeleteById(const AZStd::string& rawJsonString) = 0;
+        virtual AZStd::string GetIds() const = 0;
     };
 
-    class GeoJSONSpawnerBusTraits
-        : public AZ::EBusTraits
-    {
-    public:
-        //////////////////////////////////////////////////////////////////////////
-        // EBusTraits overrides
-        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::EntityId;
-        //////////////////////////////////////////////////////////////////////////
-    };
 
-    using GeoJSONSpawnerRequestBus = AZ::EBus<GeoJSONSpawnerRequests, GeoJSONSpawnerBusTraits>;
-    using GeoJSONSpawnerInterface = AZ::Interface<GeoJSONSpawnerRequests>;
+    using GeoJSONSpawnerRequestBus = AZ::EBus<GeoJSONSpawnerRequests>;
 
 } // namespace GeoJSONSpawner

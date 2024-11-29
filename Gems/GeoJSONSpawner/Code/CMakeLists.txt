@@ -52,6 +52,7 @@ ly_add_target(
             AZ::AzFramework
         PRIVATE
             Gem::ROS2.Static
+            Gem::ROS2.API
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -72,6 +73,8 @@ ly_add_target(
         PRIVATE
             Gem::${gem_name}.Private.Object
 )
+
+target_depends_on_ros2_packages(${gem_name}.Private.Object std_msgs std_srvs)
 
 # By default, we will specify that the above target ${gem_name} would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
@@ -126,6 +129,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
             PRIVATE
                 Gem::ROS2.Editor.Static
+                Gem::ROS2.Static
     )
 
     ly_add_target(
@@ -144,7 +148,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Editor.API
             PRIVATE
                 Gem::${gem_name}.Editor.Private.Object
+                Gem::ROS2.Static
     )
+
+    target_depends_on_ros2_packages(${gem_name}.Editor.Private.Object std_srvs)
 
     # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it

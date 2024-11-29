@@ -255,6 +255,17 @@ namespace GeoJSONSpawner::GeoJSONUtils
         return groupIdToTicketsMap;
     }
 
+    void DespawnEntity(AzFramework::EntitySpawnTicket& ticket, DespawnCallback callback)
+    {
+        auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
+        AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs;
+        optionalArgs.m_completionCallback = [callback](auto id)
+        {
+            callback(id);
+        };
+        spawner->DespawnAllEntities(ticket, optionalArgs);
+    }
+
     AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
         const AZStd::vector<GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations)
     {
@@ -396,6 +407,38 @@ namespace GeoJSONSpawner::GeoJSONUtils
         }
 
         return spawnableCoordinates;
+    }
+
+    Ids ExtractIds(const rapidjson::Document& geoJsonDocument)
+    {
+        AZStd::unordered_set<int> ids;
+        if (!ValidateGeoJSON(geoJsonDocument))
+        {
+            AZ_Error("GeoJSONSpawner", false, "Failed to validate JSON string.");
+            return ids;
+        }
+
+        const rapidjson::Value& featureCollection = geoJsonDocument["features"];
+        for (const auto& feature : featureCollection.GetArray())
+        {
+            const rapidjson::Value& properties = feature["properties"];
+            ids.insert(properties["id"].GetInt());
+        }
+
+        return ids;
+    }
+
+    Ids ExtractIdsFromRawString(const AZStd::string& rawGeoJson)
+    {
+        auto loadResult = AZ::JsonSerializationUtils::ReadJsonString(rawGeoJson);
+
+        if (!loadResult.IsSuccess())
+        {
+            AZ_Error("GeoJSONSpawnerUtils", false, "%s", loadResult.GetError().c_str());
+            return {};
+        }
+
+        return ExtractIds(loadResult.GetValue<rapidjson::Document>());
     }
 
     AZStd::vector<GeometryObjectInfo> ParseGeoJSON(const rapidjson::Document& geoJsonDocument)

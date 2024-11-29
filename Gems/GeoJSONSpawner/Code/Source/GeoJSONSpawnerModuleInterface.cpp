@@ -2,6 +2,8 @@
 #include "GeoJSONSpawnerModuleInterface.h"
 
 #include "GeoJSONSpawner/GeoJSONSpawnerComponent.h"
+#include "GeoJSONSpawner/ROS2Interface/GeoJSONSpawnerROS2Interface.h"
+#include "ROS2/ROS2Bus.h"
 
 #include <AzCore/Memory/Memory.h>
 
@@ -11,8 +13,7 @@
 
 namespace GeoJSONSpawner
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(GeoJSONSpawnerModuleInterface,
-        "GeoJSONSpawnerModuleInterface", GeoJSONSpawnerModuleInterfaceTypeId);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(GeoJSONSpawnerModuleInterface, "GeoJSONSpawnerModuleInterface", GeoJSONSpawnerModuleInterfaceTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL(GeoJSONSpawnerModuleInterface, AZ::Module);
     AZ_CLASS_ALLOCATOR_IMPL(GeoJSONSpawnerModuleInterface, AZ::SystemAllocator);
 
@@ -22,9 +23,12 @@ namespace GeoJSONSpawner
         // Add ALL components descriptors associated with this gem to m_descriptors.
         // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
         // This happens through the [MyComponent]::Reflect() function.
-        m_descriptors.insert(m_descriptors.end(), {
-            GeoJSONSpawnerSystemComponent::CreateDescriptor(),
-            GeoJSONSpawnerComponent::CreateDescriptor(),
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                GeoJSONSpawnerSystemComponent::CreateDescriptor(),
+                GeoJSONSpawnerComponent::CreateDescriptor(),
+                ROS2Interface::GeoJSONSpawnerROS2Interface::CreateDescriptor(),
             });
     }
 

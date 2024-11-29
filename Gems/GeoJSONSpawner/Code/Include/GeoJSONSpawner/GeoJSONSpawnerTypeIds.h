@@ -16,14 +16,17 @@ namespace GeoJSONSpawner
 
     // Editor Components TypeIds
     inline constexpr const char* GeoJSONSpawnerEditorComponentTypeId = "{97d8cdeb-8a82-4bb0-adc3-c42a3eac21c7}";
+    inline constexpr const char* GeoJSONSpawnerROS2InterfaceEditorComponentTypeId = "{e73adfb4-d45e-49de-a863-b20877300e99}";
 
     // Configurations TypeIds
     inline constexpr const char* GeoJSONSpawnableAssetConfigurationTypeId = "{cee254bb-edc8-45b1-b85a-aaf19ec3af83}";
     inline constexpr const char* GeoJSONSpawnableEntityInfoTypeId = "{170bb487-fbae-4394-8176-069045a3a316}";
     inline constexpr const char* GeometryObjectInfoTypeId = "{00f38302-9f4d-4bac-805b-72a29e42a704}";
+    inline constexpr const char* GeoJSONSpawnerROS2InterfaceConfigurationTypeId = "{a023282f-5ec5-4af1-902d-74772f024339}";
 
     // Components TypeIds
     inline constexpr const char* GeoJSONSpawnerComponentTypeId = "{839ede69-92f1-45b0-a60e-035d0b84e1fd}";
+    inline constexpr const char* GeoJSONSpawnerROS2InterfaceTypeId = "{a302588e-10c5-443b-a9ec-5edc33c56ef2}";
 
     // Interface TypeIds
     inline constexpr const char* GeoJSONSpawnerRequestsTypeId = "{EE523E9E-CFDF-4590-BBDE-054848BBA790}";
