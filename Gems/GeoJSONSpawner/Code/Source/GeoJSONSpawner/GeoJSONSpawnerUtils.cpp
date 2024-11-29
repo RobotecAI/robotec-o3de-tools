@@ -63,7 +63,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
                 ->Field("RotationStdDev", &GeoJSONSpawnableAssetConfiguration::m_rotationStdDev)
                 ->Field("ScaleStdDev", &GeoJSONSpawnableAssetConfiguration::m_scaleStdDev)
                 ->Field("PlaceOnTerrain", &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain)
-                ->Field("RaycastStartingHeight", &GeoJSONSpawnableAssetConfiguration::m_raycastStartingHeight);
+                ->Field("RaycastStartingHeight", &GeoJSONSpawnableAssetConfiguration::m_raytraceStartingHeight);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -78,25 +78,26 @@ namespace GeoJSONSpawner::GeoJSONUtils
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_positionStdDev,
-                        "Position std dev",
-                        "Position std dev")
+                        "Position std. dev",
+                        "Position standard deviation, in meters.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_rotationStdDev,
-                        "Rotation std dev",
-                        "Rotation std dev")
+                        "Rotation std. dev",
+                        "Rotation standard deviation, in degrees.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnableAssetConfiguration::m_scaleStdDev, "Scale std dev", "Scale std dev")
+                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnableAssetConfiguration::m_scaleStdDev, "Scale std. dev", "Scale standard deviation.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain,
                         "Place on terrain",
-                        "Place on terrain")
+                        "Performscene query raytrace to place spawnable on terrain.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnableAssetConfiguration::m_raycastStartingHeight,
-                        "Raycast starting height",
-                        "Raycast starting height");
+                        &GeoJSONSpawnableAssetConfiguration::m_raytraceStartingHeight,
+                        "Raytrace starting height",
+                        "Height at which raytrace will start downwards. If Place on terrain option is set to false, this value is used as "
+                        "an altitude coordinate.");
             }
         }
     }
@@ -113,8 +114,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        AZ_Assert(physicsSystem, "Unable to get physics system interface");
-        AZ_Assert(sceneInterface, "Unable to get physics scene interface");
+        AZ_Assert(physicsSystem, "Unable to get physics system interface.");
 
         if (!sceneInterface || !physicsSystem)
         {
@@ -165,7 +165,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         AZ::EntityId parentId)
     {
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        AZ_Assert(sceneInterface, "Unable to get physics scene interface");
+        AZ_Assert(sceneInterface, "Unable to get physics scene interface.");
         const auto sceneHandle = sceneInterface->GetSceneHandle(physicsSceneName);
 
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> groupIdToTicketsMap;
@@ -220,7 +220,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
                         continue;
                     }
                 }
-                point = pointTransform.GetTranslation(); // Update point coords to use it to show labels
+                point = pointTransform.GetTranslation(); // Update point coords to use it to show labels in proper place
 
                 optionalArgs.m_preInsertionCallback = [pointTransform]([[maybe_unused]] auto id, auto view)
                 {
@@ -300,7 +300,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
                 AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
                 coordinate.m_longitude = point[0];
                 coordinate.m_latitude = point[1];
-                coordinate.m_altitude = spawnableAssetConfig.m_raycastStartingHeight;
+                coordinate.m_altitude = spawnableAssetConfig.m_raytraceStartingHeight;
 
                 ROS2::GeoreferenceRequestsBus::BroadcastResult(
                     coordinateInLevel, &ROS2::GeoreferenceRequestsBus::Events::ConvertFromWGS84ToLevel, coordinate);
@@ -318,7 +318,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         rapidjson::Document schemaDocument;
         if (schemaDocument.Parse(GeoJSONSchema).HasParseError())
         {
-            AZ_Error("GeoJSONSpawner", false, "Unable to parse schema");
+            AZ_Error("GeoJSONSpawner", false, "Unable to parse schema.");
             return false;
         }
 
@@ -329,7 +329,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         {
             rapidjson::StringBuffer buffer;
             validator.GetInvalidSchemaPointer().StringifyUriFragment(buffer);
-            AZ_Error("GeoJSONSpawner", false, "Invalid code: %s. Invalid key: %s", buffer.GetString(), validator.GetInvalidSchemaKeyword());
+            AZ_Error("GeoJSONSpawner", false, "Invalid code: %s. Invalid key: %s.", buffer.GetString(), validator.GetInvalidSchemaKeyword());
             return false;
         }
 

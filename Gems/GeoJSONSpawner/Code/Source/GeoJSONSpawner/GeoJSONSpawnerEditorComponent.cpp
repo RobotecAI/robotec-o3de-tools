@@ -43,7 +43,7 @@ namespace GeoJSONSpawner
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerEditorComponent::m_geoJsonAssetId,
                         "GeoJSON Asset Id",
-                        "GeoJSON Asset Id")
+                        "ID of the asset containing GeoJSON that will be spawned.")
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Reload GeoJSON", "Reload GeoJSON")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Spawn")
@@ -52,14 +52,14 @@ namespace GeoJSONSpawner
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerEditorComponent::m_spawnableAssetConfigurations,
                         "Spawnable Asset Configurations",
-                        "Spawnable Asset Configurations")
+                        "Spawnable Asset Configurations.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerEditorComponent::m_defaultSeed, "Default seed", "Default seed")
+                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerEditorComponent::m_defaultSeed, "Default seed", "Default seed used for randomization.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerEditorComponent::m_showLabels,
                         "Show labels in Editor",
-                        "Show labels in Editor")
+                        "Show labels in Editor.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorComponent::OnShowLabelsChanged);
             }
         }

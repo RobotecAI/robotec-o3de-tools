@@ -77,7 +77,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         AZ::Vector3 m_rotationStdDev{ 0.0f };
         float m_scaleStdDev{ 0.1f };
         bool m_placeOnTerrain{ false };
-        float m_raycastStartingHeight{ 0.0f };
+        float m_raytraceStartingHeight{ 0.0f };
     };
 
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
