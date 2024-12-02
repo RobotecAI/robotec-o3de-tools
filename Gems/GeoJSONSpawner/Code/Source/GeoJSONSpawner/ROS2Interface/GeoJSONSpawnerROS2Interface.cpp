@@ -22,11 +22,11 @@ namespace GeoJSONSpawner::ROS2Interface
         {
             serialize->Class<GeoJSONSpawnerROS2InterfaceConfiguration>()
                 ->Version(0)
+                ->Field("GetIdsServiceTopicName", &GeoJSONSpawnerROS2InterfaceConfiguration::m_getIdsServiceTopicName)
                 ->Field("SpawnTopicConfiguration", &GeoJSONSpawnerROS2InterfaceConfiguration::m_spawnTopicConfiguration)
                 ->Field("ModifyTopicConfiguration", &GeoJSONSpawnerROS2InterfaceConfiguration::m_modifyTopicConfiguration)
                 ->Field("DeleteAllTopicConfiguration", &GeoJSONSpawnerROS2InterfaceConfiguration::m_deleteAllTopicConfiguration)
-                ->Field("DeleteByIdTopicConfiguration", &GeoJSONSpawnerROS2InterfaceConfiguration::m_deleteByIdTopicConfiguration)
-                ->Field("GetIdsServiceTopicName", &GeoJSONSpawnerROS2InterfaceConfiguration::m_getIdsServiceTopicName);
+                ->Field("DeleteByIdTopicConfiguration", &GeoJSONSpawnerROS2InterfaceConfiguration::m_deleteByIdTopicConfiguration);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
@@ -36,6 +36,11 @@ namespace GeoJSONSpawner::ROS2Interface
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "GeoJSONSpawnerROS2InterfaceConfiguration")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "Spawners")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &GeoJSONSpawnerROS2InterfaceConfiguration::m_getIdsServiceTopicName,
+                        "Get Ids Service Name",
+                        "The name of the get ids service.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerROS2InterfaceConfiguration::m_spawnTopicConfiguration,
@@ -55,12 +60,7 @@ namespace GeoJSONSpawner::ROS2Interface
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerROS2InterfaceConfiguration::m_deleteByIdTopicConfiguration,
                         "Delete By Id Topic Configuration",
-                        "The delete group of entities by id topic configuration.")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerROS2InterfaceConfiguration::m_getIdsServiceTopicName,
-                        "Get Ids Service Topic Name",
-                        "The name of the service topic.");
+                        "The delete group of entities by id topic configuration.");
             }
         }
     }
@@ -185,6 +185,5 @@ namespace GeoJSONSpawner::ROS2Interface
         GeoJSONSpawnerRequestBus::BroadcastResult(result, &GeoJSONSpawnerRequestBus::Events::GetIds);
         return result;
     }
-
 
 } // namespace GeoJSONSpawner::ROS2Interface

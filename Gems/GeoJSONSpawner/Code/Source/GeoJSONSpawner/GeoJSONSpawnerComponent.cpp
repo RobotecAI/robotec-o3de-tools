@@ -167,7 +167,7 @@ namespace GeoJSONSpawner
             const int id = pair.first;
             const size_t objCount = pair.second.size();
 
-            result += AZStd::string::format("[GroupID: %d: %zu Ticket(s)],", id, objCount);
+            result += AZStd::string::format("[GroupID: %d: %zu Ticket(s)], ", id, objCount);
         }
 
         return result;
