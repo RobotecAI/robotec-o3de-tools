@@ -63,6 +63,27 @@ namespace GeoJSONSpawner
         }
     }
 
+    void GeoJSONSpawnerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        if (m_isInSpawningProcess)
+        {
+            if (m_spawnableTickets.empty())
+            {
+                m_isInSpawningProcess = false;
+                Spawn(m_cachedGeoJson);
+            }
+        }
+
+        if (m_isInModifyProcess)
+        {
+            if (m_ticketsToDespawn == 0)
+            {
+                m_isInModifyProcess = false;
+                SpawnModifiedEntities(m_cachedGeoJson);
+            }
+        }
+    }
+
     void GeoJSONSpawnerComponent::SpawnEntities()
     {
         m_spawnableTickets.clear();
@@ -184,27 +205,6 @@ namespace GeoJSONSpawner
         }
     }
 
-    void GeoJSONSpawnerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-        if (m_isInSpawningProcess)
-        {
-            if (m_spawnableTickets.empty())
-            {
-                m_isInSpawningProcess = false;
-                Spawn(m_cachedGeoJson);
-            }
-        }
-
-        if (m_isInModifyProcess)
-        {
-            if (m_ticketsToDespawn == 0)
-            {
-                m_isInModifyProcess = false;
-                SpawnModifiedEntities(m_cachedGeoJson);
-            }
-        }
-    }
-
     void GeoJSONSpawnerComponent::Despawn(AzFramework::EntitySpawnTicket& ticketToDespawn)
     {
         GeoJSONUtils::DespawnEntity(
@@ -213,7 +213,7 @@ namespace GeoJSONSpawner
             {
                 for (auto& pair : m_spawnableTicketsIds)
                 {
-                    if (auto it = AZStd::find(pair.second.begin(), pair.second.end(), id); it != pair.second.end())
+                    if (auto it = pair.second.find(id); it != pair.second.end())
                     {
                         pair.second.erase(it);
                     }
