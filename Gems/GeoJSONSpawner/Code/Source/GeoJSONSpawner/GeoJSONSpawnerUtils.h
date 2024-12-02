@@ -36,6 +36,12 @@ namespace GeoJSONSpawner::GeoJSONUtils
         Unknown
     };
 
+    //! Information about a location to spawn an entity.
+    //! This information is generated from the GeoJSON string with coordinates in the WGS84 system. This object is then converted to the
+    //! @class GeoJSONSpawnableEntityInfo, which uses coordinates converted form the WGS84 system to the level coordinates using @class
+    //! GeoreferenceRequestsBus.
+    //! @param m_name is the name of the spawnable entity configuration and should be identical to name in the @class
+    //! GeoJSONSpawnableAssetConfiguration
     class GeometryObjectInfo
     {
     public:
@@ -44,11 +50,16 @@ namespace GeoJSONSpawner::GeoJSONUtils
         GeometryObjectInfo() = default;
         virtual ~GeometryObjectInfo() = default;
 
-        int m_id;
-        AZStd::string m_name;
-        Coordinates m_coordinates; // WGS84
+        int m_id; //!< Required ID for the spawdned entities group that are connected with this ID. This param is needed to modify and
+                  //!< delete groups by id
+        AZStd::string m_name; //!< Required name of the spawnable entity configuration
+        Coordinates m_coordinates; //!< Vector containing coordinates (in WGS84 system) of the entities connected with m_id
     };
 
+    //! Information about a location to spawn an entity.
+    //! This information is generated from the @class GeometryObjectInfo object with level coordinates system.
+    //! @param m_name is the name of the spawnable entity configuration and should be identical to name in the @class
+    //! GeoJSONSpawnableAssetConfiguration
     class GeoJSONSpawnableEntityInfo
     {
     public:
@@ -57,11 +68,17 @@ namespace GeoJSONSpawner::GeoJSONUtils
         GeoJSONSpawnableEntityInfo() = default;
         virtual ~GeoJSONSpawnableEntityInfo() = default;
 
-        int m_id;
-        AZStd::string m_name;
-        AZStd::vector<AZ::Vector3> m_positions; // coordinates in level (X, Y, Z)
+        int m_id; //!< Required ID for the spawdned entities group that are connected with this ID. This param is needed to modify and
+                  //!< delete groups by id
+        AZStd::string m_name; //!< Required name of the spawnable entity configuration
+        AZStd::vector<AZ::Vector3> m_positions; //!< Vector containing level coordinates of the entities connected with m_id
     };
 
+    //! Configuration for a spawnable asset.
+    //! This configuration is used to configure the spawnable asset before spawning it.
+    //! The @param m_name is used to identify the spawnable asset configuration and should be identical to `spawnable_name` passed with
+    //! GeoJSON.
+    //! The class allows user to randomize parameters for position, rotation and scale.
     class GeoJSONSpawnableAssetConfiguration
     {
     public:
@@ -71,15 +88,23 @@ namespace GeoJSONSpawner::GeoJSONUtils
         GeoJSONSpawnableAssetConfiguration() = default;
         virtual ~GeoJSONSpawnableAssetConfiguration() = default;
 
-        AZStd::string m_name;
-        AZ::Data::Asset<AzFramework::Spawnable> m_spawnable;
-        AZ::Vector3 m_positionStdDev{ 0.0f };
-        AZ::Vector3 m_rotationStdDev{ 0.0f };
-        float m_scaleStdDev{ 0.1f };
-        bool m_placeOnTerrain{ false };
-        float m_raytraceStartingHeight{ 0.0f };
+        AZStd::string m_name; //!< Name of the spawnable field
+        AZ::Data::Asset<AzFramework::Spawnable> m_spawnable; //!< Spawnable asset
+        AZ::Vector3 m_positionStdDev{ 0.0f }; //!< Standard deviation for position
+        AZ::Vector3 m_rotationStdDev{ 0.0f }; //!< Standard deviation for rotation
+        float m_scaleStdDev{ 0.1f }; //!< Standard deviation for scale
+        bool m_placeOnTerrain{ false }; //!< Whether to raytrace to terrain and place the entity on the terrain
+        float m_raytraceStartingHeight{ 0.0f }; //! Height at which raytrace will start (downwards) if the `m_placeOnTerrain` is set to
+                                                //! true. If it is set to false, then this value is used as an altitude for spawned asset
     };
 
+    //! Spawn entities from the vector of spawnable entity info
+    //! @param entitiesToSpawn - vector of spawnable entity info
+    //! @param spawnableAssetConfigurations - map of spawnable asset configuration
+    //! @param defaultSeed - default seed value
+    //! @param parentId - parent entity id to set for new entities
+    //! @param physicsSceneName - physics scene name (AzPhysics::DefaultPhysicsSceneName or AzPhysics::EditorPhysicsSceneName)
+    //! @return map of spawn created tickets
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
         AZStd::vector<GeoJSONSpawnableEntityInfo>& entitiesToSpawn,
         const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations,
@@ -87,19 +112,54 @@ namespace GeoJSONSpawner::GeoJSONUtils
         const AZStd::string& physicsSceneName = AZStd::string(),
         AZ::EntityId parentId = AZ::EntityId());
 
+    //! Despawn entities connected with given ticket. When ticked is despawned successfully then callback is called.
+    //! @param ticket - ticket connected with spawned entities, which will be removed from the scene
+    //! @param callback - function that is called when ticket is successfully despawned
     void DespawnEntity(AzFramework::EntitySpawnTicket& ticket, DespawnCallback callback);
 
+    //! This function create map of spawnable asset configuration from vector of spawnable asset configuration, where
+    //! the key is the name of the spawnable asset configuration
+    //! @param spawnableAssetConfigurations - vector of spawnable asset configuration
+    //! @return map of the spawnable asset configuration
     AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
         const AZStd::vector<GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations);
 
+    //! This function converts vector of the @class GeometryObjectInfo to the vector of the @class GeoJSONSpawnableEntityInfo
+    //! @param geometryObjects - vector of the @class GeometryObjectInfo which will be converted
+    //! @param spawnableAssetConfigurations - map of the spawnable asset configuration used to get additional info for the converting
+    //! process
+    //! @return vector of the converted @class GeoJSONSpawnableEntityInfo
     AZStd::vector<GeoJSONSpawnableEntityInfo> GetSpawnableEntitiesFromGeometryObjectVector(
         const AZStd::vector<GeometryObjectInfo>& geometryObjects,
         const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations);
 
+    //! This function validates passed rapidjson::Document with the GeoJSON schema
+    //! @param geoJsonDocument - rapidjson::Document object with GeoJSON that should be validated against correctness with the schema
+    //! @return boolean value indicating whether the passed json object is valid or not
     bool ValidateGeoJSON(const rapidjson::Document& geoJsonDocument);
+
+    //! This function loads and parses json file from given path
+    //! @param filePath - path to a json file
+    //! @return vector of the @class GeometryObjectInfo read from the file
     AZStd::vector<GeometryObjectInfo> ParseJSONFromFile(const AZStd::string& filePath);
+
+    //! This function parses json from raw string
+    //! @param rawGeoJson - raw string containing GeoJSON
+    //! @return vector of the @class GeometryObjectInfo read from the string
     AZStd::vector<GeometryObjectInfo> ParseJSONFromRawString(const AZStd::string& rawGeoJson);
+
+    //! This function extracts raw points from `geometry` field, based on the given object type
+    //! @param geometry - reference to the `geometry` field in the loaded rapidjson::Document GeoJSON
+    //! @return vector of the coordinates in the WGS84 system
     Coordinates ExtractPoints(const rapidjson::Value& geometry);
+
+    //! This function extracts value of the field `id` from the given raw json string
+    //! @param rawGeoJson - raw string containing GeoJSON
+    //! @return - unordered set of the extracted ids
     Ids ExtractIdsFromRawString(const AZStd::string& rawGeoJson);
+
+    //! This function converts string geometry type to the @enum GeometryType
+    //! @param geometryType - string with type of the geometry object
+    //! @return enum connected with the given geometry type
     GeometryType GetGeometryType(const AZStd::string& geometryType);
 } // namespace GeoJSONSpawner::GeoJSONUtils

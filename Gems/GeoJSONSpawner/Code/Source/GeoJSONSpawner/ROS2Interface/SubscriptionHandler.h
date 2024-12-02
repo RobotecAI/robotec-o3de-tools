@@ -16,6 +16,8 @@
 
 namespace GeoJSONSpawner::ROS2Interface
 {
+
+    //! Auxiliary class that wraps subscriber for a ROS2 topic
     template<typename MsgType>
     class SubscriptionHandler : public ROS2::ControlSubscriptionHandler<MsgType>
     {

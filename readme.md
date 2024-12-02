@@ -136,3 +136,59 @@ Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
 # ROS2PoseControl
 
 A utility gem that introduces a way to control robots in simulation as puppets with Pose messages or TFs.
+
+# GeoJSONSpawner
+
+Component that spawns prefabs using coordinates stored in the GeoJSON format (either in a file or in a raw string). It supports WGS84 coordinate system.
+This component supports spawning prefabs using GeoJSON stored in the file or stored in the raw string and passed via the ROS2 interface.
+
+![](doc/GeoJSONSpawner.png)
+
+To get all needed information, supported GeoJSON format is extended by a two additional fields (but this format is still correct with a GeoJSON standard) - `spawnable_name` and `id`. `spawnable_name` is used to match spawn coordinates with a prefab name in a `Spawnable Asset Configuration`. `id` is used to delete/modify spawned object.
+Example of supported GeoJSON:
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.19412345678901, 32.58987654321098]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 1
+      },
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [35.19423456789012, 32.58976543210987],
+          [35.19454321098765, 32.58923456789012]
+        ]
+      }
+    }
+  ]
+}
+
+```
+
+To provide ROS2 interface support gem inlucdes an additional component. This component provides 4 topics and 1 service that allows to control GeoJSONSpawner with ROS2 messages.
+
+![](doc/GeoJSONSpawnerROS2Interface.png)
+
+Topics:
+- `geojson/spawn [std_msgs::msg:String]` - topic that allows to spawn entities using a passed raw string with a GeoJSON.
+- `geojson/modify [std_msgs::msg::String]`  - topic that allows to modify spawned entities using the id passed with a spawn request. Usage example (using `Example of supported GeoJSON`): if you want to modify the position of the spawnable with id: 0, then modify the `coordinates` field to the desired position and remove the `Feature` object with id: 1. Send such prepared GeoJSON to the `geojson/modify` topic.
+- `geojson/delete_all [std_msgs::msg::Empty]` - topic that despawns all entities spawned with GeoJSONSpawner.
+- `geojson/delete_by_id [std_msgs::msg::String]`  - topic that despawns all entities associated with a given id. The usage is the same as modifying spawned entities - the only difference is the fact that found entities are despawned, not modified.
+
+Service:
+`geojson/get_spawned_groups_ids [std_srvs/srv/Trigger]` - service that returns all spawned ids together with the number of prefabs associated with each id.

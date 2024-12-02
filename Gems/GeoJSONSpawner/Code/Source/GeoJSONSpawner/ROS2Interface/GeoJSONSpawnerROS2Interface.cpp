@@ -39,27 +39,27 @@ namespace GeoJSONSpawner::ROS2Interface
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerROS2InterfaceConfiguration::m_spawnTopicConfiguration,
-                        "SpawnTopicConfiguration",
+                        "Spawn Topic Configuration",
                         "The spawn topic configuration.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerROS2InterfaceConfiguration::m_modifyTopicConfiguration,
-                        "ModifyTopicConfiguration",
+                        "Modify Topic Configuration",
                         "The modify topic configuration.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerROS2InterfaceConfiguration::m_deleteAllTopicConfiguration,
-                        "DeleteAllTopicConfiguration",
+                        "Delete All Topic Configuration",
                         "The delete all enitities topic configuration.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerROS2InterfaceConfiguration::m_deleteByIdTopicConfiguration,
-                        "DeleteByIdTopicConfiguration",
+                        "Delete By Id Topic Configuration",
                         "The delete group of entities by id topic configuration.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerROS2InterfaceConfiguration::m_getIdsServiceTopicName,
-                        "GetIdsServiceTopicName",
+                        "Get Ids Service Topic Name",
                         "The name of the service topic.");
             }
         }

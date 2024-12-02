@@ -19,7 +19,11 @@
 
 namespace GeoJSONSpawner
 {
-
+    //! Editor component for the GeoJSONSpawner component.
+    //! This component is used to spawn using GeoJSON in the editor.
+    //! It loads a GeoJSON file that contains WGS84 coordinates to spawn entities.
+    //! It also allows the user to set configuration parameters for the GeoJSON to spawn (@see
+    //! GeoJSONSpawnerUtils::GeoJSONSpawnableAssetConfiguration).
     class GeoJSONSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler

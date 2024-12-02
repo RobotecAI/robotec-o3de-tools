@@ -24,6 +24,8 @@
 namespace GeoJSONSpawner
 {
 
+    //! Game component that spawns entities from a GeoJSON.
+    //! This component is used to spawn various spawnables, on the first tick.
     class GeoJSONSpawnerComponent
         : public AZ::Component
         , public GeoJSONSpawnerRequestBus::Handler
@@ -41,6 +43,7 @@ namespace GeoJSONSpawner
 
         static void Reflect(AZ::ReflectContext* context);
 
+        // AZ::Component overrides
         void Activate() override;
         void Deactivate() override;
 
@@ -51,9 +54,10 @@ namespace GeoJSONSpawner
         void DeleteById(const AZStd::string& rawJsonString) override;
         AZStd::string GetIds() const override;
 
+    private:
+        // AZ::TickBus::Handler overrides
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-    private:
         void SpawnEntities();
         void SpawnModifiedEntities(const AZStd::string& rawJsonString);
 
