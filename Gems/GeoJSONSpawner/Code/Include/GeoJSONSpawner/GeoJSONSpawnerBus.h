@@ -10,10 +10,7 @@
 
 #pragma once
 
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
-
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/Interface/Interface.h>
 
 namespace GeoJSONSpawner
 {

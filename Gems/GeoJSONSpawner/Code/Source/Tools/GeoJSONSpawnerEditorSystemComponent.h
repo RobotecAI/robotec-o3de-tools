@@ -18,8 +18,8 @@ namespace GeoJSONSpawner
 
         static void Reflect(AZ::ReflectContext* context);
 
-        GeoJSONSpawnerEditorSystemComponent();
-        ~GeoJSONSpawnerEditorSystemComponent();
+        GeoJSONSpawnerEditorSystemComponent() = default;
+        ~GeoJSONSpawnerEditorSystemComponent() = default;
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);

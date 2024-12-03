@@ -18,10 +18,6 @@ namespace GeoJSONSpawner
         }
     }
 
-    GeoJSONSpawnerEditorSystemComponent::GeoJSONSpawnerEditorSystemComponent() = default;
-
-    GeoJSONSpawnerEditorSystemComponent::~GeoJSONSpawnerEditorSystemComponent() = default;
-
     void GeoJSONSpawnerEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         BaseSystemComponent::GetProvidedServices(provided);
