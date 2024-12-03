@@ -24,7 +24,11 @@ namespace GeoJSONSpawner::ROS2Interface
     public:
         using MessageCallback = AZStd::function<void(const MsgType&)>;
 
-        explicit SubscriptionHandler(MessageCallback callback) : m_messageCallback(callback) {}
+        explicit SubscriptionHandler(MessageCallback callback)
+            : m_messageCallback(callback)
+        {
+        }
+
     private:
         // ROS2::ControlSubscriptionHandler overrides
         void SendToBus(const MsgType& message) override

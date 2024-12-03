@@ -86,7 +86,10 @@ namespace GeoJSONSpawner::GeoJSONUtils
                         "Rotation std. dev",
                         "Rotation standard deviation, in degrees.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnableAssetConfiguration::m_scaleStdDev, "Scale std. dev", "Scale standard deviation.")
+                        AZ::Edit::UIHandlers::Default,
+                        &GeoJSONSpawnableAssetConfiguration::m_scaleStdDev,
+                        "Scale std. dev",
+                        "Scale standard deviation.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain,
@@ -329,7 +332,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
         {
             rapidjson::StringBuffer buffer;
             validator.GetInvalidSchemaPointer().StringifyUriFragment(buffer);
-            AZ_Error("GeoJSONSpawner", false, "Invalid code: %s. Invalid key: %s.", buffer.GetString(), validator.GetInvalidSchemaKeyword());
+            AZ_Error(
+                "GeoJSONSpawner", false, "Invalid code: %s. Invalid key: %s.", buffer.GetString(), validator.GetInvalidSchemaKeyword());
             return false;
         }
 

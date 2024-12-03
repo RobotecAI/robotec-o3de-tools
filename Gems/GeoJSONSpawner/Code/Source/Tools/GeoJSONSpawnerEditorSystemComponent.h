@@ -13,6 +13,7 @@ namespace GeoJSONSpawner
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = GeoJSONSpawnerSystemComponent;
+
     public:
         AZ_COMPONENT_DECL(GeoJSONSpawnerEditorSystemComponent);
 

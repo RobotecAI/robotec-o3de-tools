@@ -54,7 +54,10 @@ namespace GeoJSONSpawner
                         "Spawnable Asset Configurations",
                         "Spawnable Asset Configurations.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GeoJSONSpawnerEditorComponent::m_defaultSeed, "Default seed", "Default seed used for randomization.")
+                        AZ::Edit::UIHandlers::Default,
+                        &GeoJSONSpawnerEditorComponent::m_defaultSeed,
+                        "Default seed",
+                        "Default seed used for randomization.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnerEditorComponent::m_showLabels,

@@ -1,20 +1,22 @@
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include "GeoJSONSpawnerEditorSystemComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
 
 namespace GeoJSONSpawner
 {
-    AZ_COMPONENT_IMPL(GeoJSONSpawnerEditorSystemComponent, "GeoJSONSpawnerEditorSystemComponent",
-        GeoJSONSpawnerEditorSystemComponentTypeId, BaseSystemComponent);
+    AZ_COMPONENT_IMPL(
+        GeoJSONSpawnerEditorSystemComponent,
+        "GeoJSONSpawnerEditorSystemComponent",
+        GeoJSONSpawnerEditorSystemComponentTypeId,
+        BaseSystemComponent);
 
     void GeoJSONSpawnerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GeoJSONSpawnerEditorSystemComponent, GeoJSONSpawnerSystemComponent>()
-                ->Version(0);
+            serializeContext->Class<GeoJSONSpawnerEditorSystemComponent, GeoJSONSpawnerSystemComponent>()->Version(0);
         }
     }
 

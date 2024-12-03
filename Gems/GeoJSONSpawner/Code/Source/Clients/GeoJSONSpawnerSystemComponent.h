@@ -5,8 +5,7 @@
 
 namespace GeoJSONSpawner
 {
-    class GeoJSONSpawnerSystemComponent
-        : public AZ::Component
+    class GeoJSONSpawnerSystemComponent : public AZ::Component
     {
     public:
         AZ_COMPONENT_DECL(GeoJSONSpawnerSystemComponent);

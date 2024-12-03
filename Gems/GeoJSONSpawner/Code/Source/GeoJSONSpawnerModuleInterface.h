@@ -6,8 +6,7 @@
 
 namespace GeoJSONSpawner
 {
-    class GeoJSONSpawnerModuleInterface
-        : public AZ::Module
+    class GeoJSONSpawnerModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(GeoJSONSpawnerModuleInterface)
@@ -21,4 +20,4 @@ namespace GeoJSONSpawner
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace GeoJSONSpawner
+} // namespace GeoJSONSpawner
