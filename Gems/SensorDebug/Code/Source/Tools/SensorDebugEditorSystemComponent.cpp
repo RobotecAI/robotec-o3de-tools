@@ -19,23 +19,25 @@ namespace SensorDebug
 
     void SensorDebugEditorSystemComponent::Activate()
     {
-        SensorDebugSystemComponent::Activate();
+
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
     void SensorDebugEditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        SensorDebugSystemComponent::Deactivate();
+
     }
 
     void SensorDebugEditorSystemComponent::OnStartPlayInEditorBegin()
     {
         ClearSensors();
+        SensorDebugSystemComponent::Activate();
     }
 
     void SensorDebugEditorSystemComponent::OnStopPlayInEditor()
     {
         ClearSensors();
+        SensorDebugSystemComponent::Deactivate();
     }
 } // namespace SensorDebug
