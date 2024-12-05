@@ -168,7 +168,7 @@ namespace SensorDebug
         auto* physicsSystemConfigurationPtr = physicsSystem->GetConfiguration();
         auto* physicsSystemConfiguration = azdynamic_cast<const PhysX::PhysXSystemConfiguration*>(physicsSystemConfigurationPtr);
         AZ_Assert(physicsSystemConfiguration, "Invalid physics system configuration pointer, a new Physics system in O3DE????");
-        physicsSystem->UpdateConfiguration(&ModifiedPhysXConfig, true);
+        physicsSystem->UpdateConfiguration(&m_modifiedPhysXConfig, true);
     }
 
     void SensorDebugSystemComponent::GetPhysXConfig()
@@ -178,33 +178,45 @@ namespace SensorDebug
         auto* physicsSystemConfigurationPtr = physicsSystem->GetConfiguration();
         auto* physicsSystemConfiguration = azdynamic_cast<const PhysX::PhysXSystemConfiguration*>(physicsSystemConfigurationPtr);
         AZ_Assert(physicsSystemConfiguration, "Invalid physics system configuration pointer, a new Physics system in O3DE????");
-        ModifiedPhysXConfig = *physicsSystemConfiguration;
+        m_modifiedPhysXConfig = *physicsSystemConfiguration;
     }
 
+    AZStd::string GetSecondAnimation(double value)
+    {
+        double part = value - AZStd::floor(value);
+        size_t numStars = static_cast<size_t>(part * 60);
+
+        AZStd::string anim (61, ' ');
+        numStars = AZStd::min(numStars, anim.length());
+        for (size_t i = 0; i <numStars; i++)
+        {
+            anim[i] = '*';
+        }
+        return anim;
+    }
     void SensorDebugSystemComponent::OnImGuiUpdate()
     {
         ImGui::Begin("ROS2 SensorDebugger");
         ImGui::Separator();
         ImGui::Text("TimeyWimey Stuff");
-
-        auto ros2ts = ROS2::ROS2Interface::Get()->GetROSTimestamp();
+        const auto ros2Intreface = ROS2::ROS2Interface::Get();
+        auto ros2ts = ros2Intreface ? ROS2::ROS2Interface::Get()->GetROSTimestamp() : builtin_interfaces::msg::Time();
         const float ros2tsSec = ros2ts.sec + ros2ts.nanosec / 1e9;
-        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
-
-        auto nodeTime = ros2Node->now();
-        const float ros2nodetsSec = nodeTime.seconds() + nodeTime.nanoseconds() / 1e9;
+        auto ros2Node = ros2Intreface ? ROS2::ROS2Interface::Get()->GetNode() : nullptr;
+        auto nodeTime = ros2Node ? ros2Node->now() : rclcpp::Time(0, 0);
+        const double ros2nodetsSec = nodeTime.seconds() + nodeTime.nanoseconds() / 1e9;
 
         auto timeSystem = AZ::Interface<AZ::ITime>::Get();
         const auto elapsedTime = timeSystem ? static_cast<double>(timeSystem->GetElapsedTimeUs()) / 1e6 : 0.0;
 
-        ImGui::Text("Current ROS 2 time (Gem)  : %f", ros2tsSec);
-        ImGui::Text("Current ROS 2 time (Node) : %f", ros2nodetsSec);
-        ImGui::Text("Current O3DE time         : %f", elapsedTime);
+        ImGui::Text("Current ROS 2 time (Gem)  : %f %s", ros2tsSec, GetSecondAnimation(ros2tsSec).c_str());
+        ImGui::Text("Current ROS 2 time (Node) : %f %s", ros2nodetsSec, GetSecondAnimation(ros2nodetsSec).c_str());
+        ImGui::Text("Current O3DE time         : %f %s", elapsedTime, GetSecondAnimation(elapsedTime).c_str());
 
         ImGui::Separator();
         ImGui::Text("PhysX");
-        ImGui::InputFloat("Fixed timestamp", &ModifiedPhysXConfig.m_fixedTimestep, 0.0f, 0.0f, "%.6f");
-        ImGui::InputFloat("Max timestamp", &ModifiedPhysXConfig.m_maxTimestep, 0.0f, 0.0f, "%.6f"git a);
+        ImGui::InputFloat("Fixed timestamp", &m_modifiedPhysXConfig.m_fixedTimestep, 0.0f, 0.0f, "%.6f");
+        ImGui::InputFloat("Max timestamp", &m_modifiedPhysXConfig.m_maxTimestep, 0.0f, 0.0f, "%.6f");
         if (ImGui::Button("Update PhysX Config"))
         {
             UpdatePhysXConfig();
