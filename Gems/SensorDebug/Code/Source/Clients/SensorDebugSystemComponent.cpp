@@ -4,7 +4,7 @@
 #include <SensorDebug/SensorDebugTypeIds.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
-
+#include <AzFramework/Components/ConsoleBus.h>
 namespace SensorDebug
 {
     AZ_COMPONENT_IMPL(SensorDebugSystemComponent, "SensorDebugSystemComponent", SensorDebugSystemComponentTypeId);
@@ -20,10 +20,12 @@ namespace SensorDebug
     void SensorDebugSystemComponent::Activate()
     {
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void SensorDebugSystemComponent::Deactivate()
     {
+        AZ::TickBus::Handler::BusDisconnect();
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
     }
 
@@ -129,6 +131,41 @@ namespace SensorDebug
     void SensorDebugSystemComponent::OnImGuiUpdate()
     {
         ImGui::Begin("ROS2 SensorDebugger");
+
+        ImGui::InputFloat("Application Max FPS", &m_maxFPS);
+        ImGui::SameLine();
+        if (ImGui::Button("Set sys_MaxFPS"))
+        {
+            //disable vsync
+            AZStd::string commandVsync = AZStd::string::format("vsync_interval=0");
+            AzFramework::ConsoleRequestBus::Broadcast(&AzFramework::ConsoleRequests::ExecuteConsoleCommand, commandVsync.c_str());
+            AZStd::string commandMaxFps = AZStd::string::format("sys_MaxFPS=%f", m_maxFPS);
+            AzFramework::ConsoleRequestBus::Broadcast(&AzFramework::ConsoleRequests::ExecuteConsoleCommand, commandMaxFps.c_str());
+            m_appFrequencies.clear();
+        }
+
+        float freqencySum = 0.0f;
+        for (const auto& freq : m_appFrequencies)
+        {
+            freqencySum += freq;
+        }
+        const float averageFrequency = freqencySum / static_cast<float>(m_appFrequencies.size());
+        // compute std deviation
+        float variance = 0.0f;
+        for (const auto& freq : m_appFrequencies)
+        {
+            variance += (freq - averageFrequency) * (freq - averageFrequency);
+        }
+        float stdDeviation = sqrt(variance / static_cast<float>(m_appFrequencies.size()));
+        ImGui::Separator();
+        ImGui::PlotHistogram("App Actual Frequency", m_appFrequencies.data(), static_cast<int>(m_appFrequencies.size()), 0);
+        ImGui::Text("App Actual Frequency: %.2f Hz [ std_dev = %.2f ]", averageFrequency, stdDeviation);
+        ImGui::SameLine();
+        if (ImGui::Button("reset stats"))
+        {
+            m_appFrequencies.clear();
+        }
+        ImGui::Separator();
         if (ImGui::Button("Refresh with EnumerateHandlers(o3de bus API)"))
         {
             FindSensorsWithBusAPI();
@@ -178,7 +215,7 @@ namespace SensorDebug
         {
             FindSensorsWithGivenType(ROS2::ROS2OdometrySensorComponent);
         }
-
+        ImGui::InputInt("History Size", &m_historySize);
         for (auto& sensorEntity : m_sensorEntities)
         {
             ImGui::Separator();
@@ -189,7 +226,42 @@ namespace SensorDebug
             float frequency = 0.0f;
             ROS2::SensorConfigurationRequestBus::EventResult(
                 frequency, sensorEntity, &ROS2::SensorConfigurationRequest::GetEffectiveFrequency);
-            ImGui::Text("%s : %s effective Freq: %f Hz", entityName.c_str(), sensorName.c_str(), frequency);
+
+            m_sensorFrequencyHistory[sensorEntity].push_back(frequency);
+            auto &sensorFrequencyHistory = m_sensorFrequencyHistory[sensorEntity];
+            if (sensorFrequencyHistory.size() > m_historySize)
+            {
+                sensorFrequencyHistory.erase(sensorFrequencyHistory.begin());
+            }
+            float freqencySum = 0.0f;
+            for (const auto& freq : sensorFrequencyHistory)
+            {
+                    freqencySum += freq;
+            }
+            const float averageFrequency = freqencySum / static_cast<float>(sensorFrequencyHistory.size());
+            // compute std deviation
+            float variance = 0.0f;
+            for (const auto& freq : sensorFrequencyHistory)
+            {
+                    variance += (freq - averageFrequency) * (freq - averageFrequency);
+            }
+            float stdDeviation = sqrt(variance / static_cast<float>(sensorFrequencyHistory.size()));
+            const AZStd::string histogramNameWithCookie = AZStd::string::format("Histogram%s", cookie.c_str());
+
+            ImGui::PlotHistogram(
+                histogramNameWithCookie.c_str(), sensorFrequencyHistory.data(), static_cast<int>(sensorFrequencyHistory.size()), 0);
+            ImGui::SameLine();
+            const AZStd::string resetButton = AZStd::string::format("reset stats%s", cookie.c_str());
+            if (ImGui::Button(resetButton.c_str()))
+            {
+                    sensorFrequencyHistory.clear();
+            }
+            ImGui::Text(
+                "%s : %s effective Freq: %.2f Hz [ std_dev = %.2f ]",
+                entityName.c_str(),
+                sensorName.c_str(),
+                averageFrequency,
+                stdDeviation);
 
             AZStd::string buttonNameEna = AZStd::string::format("Enable%s", cookie.c_str());
             AZStd::string buttonNameDis = AZStd::string::format("Disable%s", cookie.c_str());
@@ -230,7 +302,7 @@ namespace SensorDebug
                 ROS2::SensorConfigurationRequestBus::Event(sensorEntity, &ROS2::SensorConfigurationRequest::SetVisualizeEnabled, false);
             }
             AZStd::string freqName = AZStd::string::format("Frequency%s", cookie.c_str());
-            ImGui::DragFloat(freqName.c_str(), &m_sensorFrequencies[sensorEntity], 0.1f, 0.1f, 500.0f);
+            ImGui::InputFloat(freqName.c_str(), &m_sensorFrequencies[sensorEntity]);
             ImGui::SameLine();
             AZStd::string buttonSetFreq = AZStd::string::format("Set Frequency%s", cookie.c_str());
             if (ImGui::Button(buttonSetFreq.c_str()))
@@ -241,5 +313,14 @@ namespace SensorDebug
         }
 
         ImGui::End();
+    }
+
+    void SensorDebugSystemComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    {
+        m_appFrequencies.push_back(1.0f / deltaTime);
+        if (m_appFrequencies.size() > m_historySize)
+        {
+            m_appFrequencies.erase(m_appFrequencies.begin());
+        }
     }
 } // namespace SensorDebug
