@@ -4,15 +4,21 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 
+#include <AzCore/Component/TickBus.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 #include <ImGuiBus.h>
+#include <PhysX/Configuration/PhysXConfiguration.h>
 #include <ROS2/Sensor/Events/TickBasedSource.h>
 #include <ROS2/Sensor/ROS2SensorComponentBase.h>
 #include <ROS2/Sensor/SensorConfigurationRequestBus.h>
 #include <ROS2/Sensor/SensorHelper.h>
 #include <imgui/imgui.h>
-#include <AzCore/Component/TickBus.h>
+
 namespace SensorDebug
 {
+    // Hate to do this global, but we need to access this config after this component is deactivated and destroyed
+    static PhysX::PhysXSystemConfiguration ModifiedPhysXConfig;
+
     class SensorDebugSystemComponent
         : public AZ::Component
         , public ImGui::ImGuiUpdateListenerBus::Handler
@@ -40,6 +46,11 @@ namespace SensorDebug
         // AZ::TickBus::Handler interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
+        void UpdatePhysXConfig();
+        void GetPhysXConfig();
+        void Pause(bool isPaused);
+        AzPhysics::Scene* GetScene();
+
         void FindSensorsWithBusAPI();
         void FindSensorsWithComponentAPI();
         void FindSensorsWithGivenType(const char* typeId);
@@ -51,5 +62,10 @@ namespace SensorDebug
         AZStd::vector<float> m_appFrequencies;
         float m_maxFPS = 60.0f;
         int m_historySize = 1000;
+
+
+
+
+        AzPhysics::Scene* m_scene = nullptr;
     };
 } // namespace SensorDebug

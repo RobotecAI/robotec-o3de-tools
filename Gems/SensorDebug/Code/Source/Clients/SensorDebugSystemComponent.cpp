@@ -5,6 +5,10 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/ConsoleBus.h>
+
+#include <AzCore/Time/ITime.h>
+#include <PhysX/Configuration/PhysXConfiguration.h>
+
 namespace SensorDebug
 {
     AZ_COMPONENT_IMPL(SensorDebugSystemComponent, "SensorDebugSystemComponent", SensorDebugSystemComponentTypeId);
@@ -21,6 +25,7 @@ namespace SensorDebug
     {
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
+        GetPhysXConfig();
     }
 
     void SensorDebugSystemComponent::Deactivate()
@@ -98,6 +103,29 @@ namespace SensorDebug
         AZ_Printf("TestComponent", "Found %d sensor entities", m_sensorEntities.size());
     }
 
+    AzPhysics::Scene* SensorDebugSystemComponent::GetScene()
+    {
+        if (m_scene)
+        {
+            return m_scene;
+        }
+        AzPhysics::SystemInterface* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        AZ_Assert(physicsSystem, "No physics system.");
+
+        AzPhysics::SceneInterface* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AZ_Assert(sceneInterface, "No scene intreface.");
+
+        AzPhysics::SceneHandle defaultSceneHandle = sceneInterface->GetSceneHandle(AzPhysics::DefaultPhysicsSceneName);
+        if (defaultSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            return nullptr;
+        }
+        AzPhysics::Scene* scene = sceneInterface->GetScene(defaultSceneHandle);
+        AZ_Assert(defaultSceneHandle != AzPhysics::InvalidSceneHandle, "Invalid default physics scene pointer.");
+        m_scene = scene;
+        return scene;
+    }
+
     void SensorDebugSystemComponent::FindSensorsWithGivenType(const char* typeId)
     {
         ClearSensors();
@@ -128,15 +156,77 @@ namespace SensorDebug
         AZ_Printf("TestComponent", "Found %d sensor entities", m_sensorEntities.size());
     }
 
+    void SensorDebugSystemComponent::Pause(bool isPaused)
+    {
+        GetScene()->SetEnabled(!isPaused);
+    }
+
+    void SensorDebugSystemComponent::UpdatePhysXConfig()
+    {
+        AzPhysics::SystemInterface* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        AZ_Assert(physicsSystem, "No physics system.");
+        auto* physicsSystemConfigurationPtr = physicsSystem->GetConfiguration();
+        auto* physicsSystemConfiguration = azdynamic_cast<const PhysX::PhysXSystemConfiguration*>(physicsSystemConfigurationPtr);
+        AZ_Assert(physicsSystemConfiguration, "Invalid physics system configuration pointer, a new Physics system in O3DE????");
+        physicsSystem->UpdateConfiguration(&ModifiedPhysXConfig, true);
+    }
+
+    void SensorDebugSystemComponent::GetPhysXConfig()
+    {
+        AzPhysics::SystemInterface* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        AZ_Assert(physicsSystem, "No physics system.");
+        auto* physicsSystemConfigurationPtr = physicsSystem->GetConfiguration();
+        auto* physicsSystemConfiguration = azdynamic_cast<const PhysX::PhysXSystemConfiguration*>(physicsSystemConfigurationPtr);
+        AZ_Assert(physicsSystemConfiguration, "Invalid physics system configuration pointer, a new Physics system in O3DE????");
+        ModifiedPhysXConfig = *physicsSystemConfiguration;
+    }
+
     void SensorDebugSystemComponent::OnImGuiUpdate()
     {
         ImGui::Begin("ROS2 SensorDebugger");
+        ImGui::Separator();
+        ImGui::Text("TimeyWimey Stuff");
+
+        auto ros2ts = ROS2::ROS2Interface::Get()->GetROSTimestamp();
+        const float ros2tsSec = ros2ts.sec + ros2ts.nanosec / 1e9;
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+
+        auto nodeTime = ros2Node->now();
+        const float ros2nodetsSec = nodeTime.seconds() + nodeTime.nanoseconds() / 1e9;
+
+        auto timeSystem = AZ::Interface<AZ::ITime>::Get();
+        const auto elapsedTime = timeSystem ? static_cast<double>(timeSystem->GetElapsedTimeUs()) / 1e6 : 0.0;
+
+        ImGui::Text("Current ROS 2 time (Gem)  : %f", ros2tsSec);
+        ImGui::Text("Current ROS 2 time (Node) : %f", ros2nodetsSec);
+        ImGui::Text("Current O3DE time         : %f", elapsedTime);
+
+        ImGui::Separator();
+        ImGui::Text("PhysX");
+        ImGui::InputFloat("Fixed timestamp", &ModifiedPhysXConfig.m_fixedTimestep, 0.0f, 0.0f, "%.6f");
+        ImGui::InputFloat("Max timestamp", &ModifiedPhysXConfig.m_maxTimestep, 0.0f, 0.0f, "%.6f"git a);
+        if (ImGui::Button("Update PhysX Config"))
+        {
+            UpdatePhysXConfig();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Pause"))
+        {
+            Pause(true);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Unpause"))
+        {
+            Pause(false);
+        }
+        ImGui::Separator();
+        ImGui::Text("Atom");
 
         ImGui::InputFloat("Application Max FPS", &m_maxFPS);
         ImGui::SameLine();
         if (ImGui::Button("Set sys_MaxFPS"))
         {
-            //disable vsync
+            // disable vsync
             AZStd::string commandVsync = AZStd::string::format("vsync_interval=0");
             AzFramework::ConsoleRequestBus::Broadcast(&AzFramework::ConsoleRequests::ExecuteConsoleCommand, commandVsync.c_str());
             AZStd::string commandMaxFps = AZStd::string::format("sys_MaxFPS=%f", m_maxFPS);
@@ -228,7 +318,7 @@ namespace SensorDebug
                 frequency, sensorEntity, &ROS2::SensorConfigurationRequest::GetEffectiveFrequency);
 
             m_sensorFrequencyHistory[sensorEntity].push_back(frequency);
-            auto &sensorFrequencyHistory = m_sensorFrequencyHistory[sensorEntity];
+            auto& sensorFrequencyHistory = m_sensorFrequencyHistory[sensorEntity];
             if (sensorFrequencyHistory.size() > m_historySize)
             {
                 sensorFrequencyHistory.erase(sensorFrequencyHistory.begin());
@@ -236,14 +326,14 @@ namespace SensorDebug
             float freqencySum = 0.0f;
             for (const auto& freq : sensorFrequencyHistory)
             {
-                    freqencySum += freq;
+                freqencySum += freq;
             }
             const float averageFrequency = freqencySum / static_cast<float>(sensorFrequencyHistory.size());
             // compute std deviation
             float variance = 0.0f;
             for (const auto& freq : sensorFrequencyHistory)
             {
-                    variance += (freq - averageFrequency) * (freq - averageFrequency);
+                variance += (freq - averageFrequency) * (freq - averageFrequency);
             }
             float stdDeviation = sqrt(variance / static_cast<float>(sensorFrequencyHistory.size()));
             const AZStd::string histogramNameWithCookie = AZStd::string::format("Histogram%s", cookie.c_str());
@@ -254,7 +344,7 @@ namespace SensorDebug
             const AZStd::string resetButton = AZStd::string::format("reset stats%s", cookie.c_str());
             if (ImGui::Button(resetButton.c_str()))
             {
-                    sensorFrequencyHistory.clear();
+                sensorFrequencyHistory.clear();
             }
             ImGui::Text(
                 "%s : %s effective Freq: %.2f Hz [ std_dev = %.2f ]",
