@@ -16,8 +16,7 @@
 
 namespace SensorDebug
 {
-    // Hate to do this global, but we need to access this config after this component is deactivated and destroyed
-    static PhysX::PhysXSystemConfiguration ModifiedPhysXConfig;
+
 
     class SensorDebugSystemComponent
         : public AZ::Component
@@ -62,10 +61,10 @@ namespace SensorDebug
         AZStd::vector<float> m_appFrequencies;
         float m_maxFPS = 60.0f;
         int m_historySize = 1000;
-
-
-
-
         AzPhysics::Scene* m_scene = nullptr;
+        PhysX::PhysXSystemConfiguration m_modifiedPhysXConfig;
+        float m_lastROS2Time = 0.0;
+        double m_lastRos2NodeTime = 0.0;
+        float m_lastElapsed = 0.0f;
     };
 } // namespace SensorDebug
