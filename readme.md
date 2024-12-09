@@ -79,7 +79,11 @@ Useful for robots' movement smoothing.
 # CsvSpawner
 
 Component that spawns prefabs using coordinates stored in CSV file. It supports XYZ format as well as WGS84 coordinate system.   
-![](doc/CsvSpawner.png)
+![](doc/CsvSpawner.png)  
+By default CsvSpawner spawns entities after 2 frame ticks (applicable only for the Editor) - delay is added to give Terrain Gem time to generate terrain colliders (needed to place entities to terrain).  
+You can change the delay via the `framedelay.setreg` file by changing the `FrameDelay` parameter to the desired value.
+You can change the delay via the console by adding the `--regset=` flag to the call to the Editor binary file, e.g:  
+`./buil/linux/bin/profile/Editor --regset="/O3DE/CsvSpawner/FrameDelay=10"`
 
 ## Load object from CSV file
 
