@@ -55,7 +55,6 @@ namespace CsvSpawner
         void OnOnShowLabelsChanged();
 
         void SpawnEntities();
-        int m_frameCounter;
 
         AZStd::vector<CsvSpawnerUtils::CsvSpawnableAssetConfiguration>
             m_spawnableAssetConfigurations; //!< List of spawnable "types" (e.g. pineCsv, oakTre, mapleCsv, etc.)
@@ -66,5 +65,8 @@ namespace CsvSpawner
 
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
         int m_numberOfEntries{ 0 }; //! Number of entries in the csv file
+
+        int m_frameCounter{ 0 };
+        signed long long m_frameDelay{ 2 };
     };
 } // namespace CsvSpawner

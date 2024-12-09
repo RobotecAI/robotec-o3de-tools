@@ -17,6 +17,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -24,6 +25,7 @@
 
 namespace CsvSpawner
 {
+    constexpr AZStd::string_view FrameDelayConfigurationKey = "/O3DE/CsvSpawner/FrameDelay";
 
     void CsvSpawnerEditorComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -85,6 +87,13 @@ namespace CsvSpawner
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
+        auto* registry = AZ::SettingsRegistry::Get();
+        AZ_Assert(registry, "No Registry available.");
+        if (registry)
+        {
+            registry->Get(m_frameDelay, FrameDelayConfigurationKey);
+        }
+
         AZ::TickBus::Handler::BusConnect();
     }
 
@@ -123,9 +132,7 @@ namespace CsvSpawner
 
     void CsvSpawnerEditorComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
     {
-        ++m_frameCounter;
-
-        if (m_frameCounter == 2)
+        if (++m_frameCounter == m_frameDelay)
         {
             SpawnEntities();
             AZ::TickBus::Handler::BusDisconnect();
