@@ -204,7 +204,7 @@ namespace SensorDebug
         const float ros2tsSec = ros2ts.sec + ros2ts.nanosec / 1e9;
         auto ros2Node = ros2Intreface ? ROS2::ROS2Interface::Get()->GetNode() : nullptr;
         auto nodeTime = ros2Node ? ros2Node->now() : rclcpp::Time(0, 0);
-        const double ros2nodetsSec = nodeTime.seconds();tus
+        const double ros2nodetsSec = nodeTime.seconds();
 
         auto timeSystem = AZ::Interface<AZ::ITime>::Get();
         const auto elapsedTime = timeSystem ? static_cast<double>(timeSystem->GetElapsedTimeUs()) / 1e6 : 0.0;
@@ -217,6 +217,8 @@ namespace SensorDebug
         ImGui::Text("Tick ROS 2 time (Node)    : %f", ros2nodetsSec-m_lastRos2NodeTime);
         ImGui::Text("Tick O3DE time            : %f", elapsedTime-m_lastElapsed);
 
+
+
         m_lastElapsed = elapsedTime;
         m_lastROS2Time = ros2tsSec;
         m_lastRos2NodeTime = ros2nodetsSec;
@@ -224,6 +226,7 @@ namespace SensorDebug
         ImGui::Text("PhysX");
         ImGui::InputFloat("Fixed timestamp", &m_modifiedPhysXConfig.m_fixedTimestep, 0.0f, 0.0f, "%.6f");
         ImGui::InputFloat("Max timestamp", &m_modifiedPhysXConfig.m_maxTimestep, 0.0f, 0.0f, "%.6f");
+        ImGui::InputFloat("RealTime factor", &m_modifiedPhysXConfig.m_realTimeFactor, 0.0f, 0.0f, "%.1f");
         if (ImGui::Button("Update PhysX Config"))
         {
             UpdatePhysXConfig();
