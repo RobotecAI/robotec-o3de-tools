@@ -1,28 +1,30 @@
 {
-    "gem_name": "GeoJSONSpawner",
-    "version": "1.0.0",
-    "display_name": "GeoJSONSpawner",
-    "license": "License used i.e. Apache-2.0 or MIT",
-    "license_url": "Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0",
-    "origin": "The name of the originator or creator",
-    "origin_url": "The website for this Gem",
-    "type": "Code",
-    "summary": "A short description of this Gem",
-    "canonical_tags": [
-        "Gem"
-    ],
-    "user_tags": [
-        "GeoJSONSpawner"
-    ],
-    "platforms": [
-        ""
-    ],
-    "icon_path": "preview.png",
-    "requirements": "Notice of any requirements for this Gem i.e. This requires X other gem",
-    "documentation_url": "Link to any documentation of your Gem",
-    "dependencies": ["ROS2"],
-    "repo_uri": "",
-    "compatible_engines": [],
-    "engine_api_dependencies": [],
-    "restricted": "GeoJSONSpawner"
+  "gem_name": "GeoJSONSpawner",
+  "version": "1.0.0",
+  "display_name": "GeoJSONSpawner",
+  "license": "Apache-2.0",
+  "license_url": "https://opensource.org/licenses/Apache-2.0",
+  "origin": "Robotec.ai",
+  "origin_url": "https://www.robotec.ai",
+  "type": "Code",
+  "summary": "Component that spawns prefabs using coordinates stored in the GeoJSON format. It supports only WGS84 coordinate system.",
+  "canonical_tags": [
+    "Gem"
+  ],
+  "user_tags": [
+    "GeoJSONSpawner"
+  ],
+  "platforms": [
+    ""
+  ],
+  "icon_path": "preview.png",
+  "requirements": "Requires ROS2 Gem",
+  "documentation_url": "",
+  "dependencies": [
+    "ROS2"
+  ],
+  "repo_uri": "",
+  "compatible_engines": [],
+  "engine_api_dependencies": [],
+  "restricted": "GeoJSONSpawner"
 }

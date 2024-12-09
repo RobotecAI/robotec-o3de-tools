@@ -4,16 +4,16 @@
  * This source code is protected under international copyright law.  All rights
  * reserved and protected by the copyright holders.
  * This file is confidential and only available to authorized individuals with the
- * permission of the copyright holders.  If you encounter this file and do not have
+ * permission of the copyright holders. If you encounter this file and do not have
  * permission, please contact the copyright holders and delete this file.
  */
 
 #include "GeoJSONSpawnerEditorComponent.h"
 
-#include "AzCore/Component/TransformBus.h"
 #include "GeoJSONSpawnerComponent.h"
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -122,12 +122,20 @@ namespace GeoJSONSpawner
         AZ_Printf("GeoJSONSpawnerEditorComponent", "Source of GeoJSON file path: %s", sourcePath.c_str());
 
         auto spawnableAssetConfigurationsMap = GeoJSONUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
-        const auto geometryObjectInfo = GeoJSONUtils::ParseJSONFromFile(sourcePath.c_str());
+        const auto featureObjectInfo = GeoJSONUtils::ParseJSONFromFile(sourcePath.c_str());
         m_spawnableEntityInfo =
-            GeoJSONUtils::GetSpawnableEntitiesFromGeometryObjectVector(geometryObjectInfo, spawnableAssetConfigurationsMap);
+            GeoJSONUtils::GetSpawnableEntitiesFromFeatureObjectVector(featureObjectInfo, spawnableAssetConfigurationsMap);
 
-        m_spawnedTicketsGroups = GeoJSONUtils::SpawnEntities(
-            m_spawnableEntityInfo, spawnableAssetConfigurationsMap, m_defaultSeed, AzPhysics::EditorPhysicsSceneName, GetEntityId());
+        auto ticketsToSpawn = GeoJSONUtils::PrepareTicketsToSpawn(
+            m_spawnableEntityInfo,
+            spawnableAssetConfigurationsMap,
+            m_defaultSeed,
+            []() // empty lambda as Editor Component does not need to care about ticket spawn/despawn confirmation
+            {
+            },
+            AzPhysics::EditorPhysicsSceneName,
+            GetEntityId());
+        m_spawnedTicketsGroups = GeoJSONUtils::SpawnEntities(ticketsToSpawn);
     }
 
     void GeoJSONSpawnerEditorComponent::OnSpawnButton()
@@ -150,17 +158,17 @@ namespace GeoJSONSpawner
     void GeoJSONSpawnerEditorComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         AZ::Data::AssetInfo sourceAssetInfo;
-        bool ok{ false };
+        bool isSourceFound{ false };
         AZStd::string watchFolder;
 
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            ok,
+            isSourceFound,
             &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID,
             m_geoJsonAssetId.m_guid,
             sourceAssetInfo,
             watchFolder);
 
-        if (!ok)
+        if (!isSourceFound)
         {
             AZ_Error("GeoJSONSpawnerEditorComponent", false, "Cannot find asset source.");
             return;
@@ -171,9 +179,9 @@ namespace GeoJSONSpawner
         AZ_Printf("GeoJSONSpawnerEditorComponent", "Source of GeoJSON file path: %s", sourcePath.c_str());
 
         auto spawnableAssetConfigurationsMap = GeoJSONUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
-        const auto geometryObjectInfo = GeoJSONUtils::ParseJSONFromFile(sourcePath.c_str());
+        const auto featureObjectInfo = GeoJSONUtils::ParseJSONFromFile(sourcePath.c_str());
         auto spawnableEntitiesInfo =
-            GeoJSONUtils::GetSpawnableEntitiesFromGeometryObjectVector(geometryObjectInfo, spawnableAssetConfigurationsMap);
+            GeoJSONUtils::GetSpawnableEntitiesFromFeatureObjectVector(featureObjectInfo, spawnableAssetConfigurationsMap);
         gameEntity->CreateComponent<GeoJSONSpawnerComponent>(spawnableAssetConfigurationsMap, sourcePath.c_str(), m_defaultSeed);
         m_spawnedTicketsGroups.clear();
     }
@@ -189,15 +197,15 @@ namespace GeoJSONSpawner
         debugDisplay.SetLineWidth(2.0f);
 
         debugDisplay.PushMatrix(transform);
-        for (const auto& geometryObject : m_spawnableEntityInfo)
+        for (const auto& entityInfo : m_spawnableEntityInfo)
         {
-            const AZStd::string name = geometryObject.m_name;
-            const int id = geometryObject.m_id;
-            for (const auto& point : geometryObject.m_positions)
+            const AZStd::string name = entityInfo.m_name;
+            const int id = entityInfo.m_id;
+            for (const auto& point : entityInfo.m_positions)
             {
-                const AZ::Vector3 labelPosition = point + AZ::Vector3(0.0f, 0.0f, 3.0f);
+                const AZ::Vector3 labelPosition = point.GetTranslation() + AZ::Vector3(0.0f, 0.0f, 3.0f);
                 debugDisplay.SetColor(AZ::Colors::White);
-                debugDisplay.DrawLine(point, labelPosition);
+                debugDisplay.DrawLine(point.GetTranslation(), labelPosition);
                 AZStd::string labelText = AZStd::string::format("%d,%s", id, name.c_str());
                 debugDisplay.DrawTextLabel(labelPosition, 1.0f, labelText.c_str());
             }

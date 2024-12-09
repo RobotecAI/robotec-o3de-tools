@@ -185,10 +185,64 @@ To provide ROS2 interface support gem inlucdes an additional component. This com
 ![](doc/GeoJSONSpawnerROS2Interface.png)
 
 Topics:
-- `geojson/spawn [std_msgs::msg:String]` - topic that allows to spawn entities using a passed raw string with a GeoJSON.
-- `geojson/modify [std_msgs::msg::String]`  - topic that allows to modify spawned entities using the id passed with a spawn request. Usage example (using `Example of supported GeoJSON`): if you want to modify the position of the spawnable with id: 0, then modify the `coordinates` field to the desired position and remove the `Feature` object with id: 1. Send such prepared GeoJSON to the `geojson/modify` topic.
+- `geojson/spawn_with_asset_path [std_msgs::msg:String]` - topic that allows to spawn entities using a passed path to asset with GeoJSON.
+- `geojson/spawn_with_raw_string [std_msgs::msg:String]` - topic that allows to spawn entities using a passed raw string with a GeoJSON.
+- `geojson/modify [std_msgs::msg::String]`  - topic that allows to modify spawned entities using the id passed with a spawn request. Usage example:
+Lets suppose that user spawned prefabs using such GeoJSON:
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.19412345678901, 32.58987654321098]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 1
+      },
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [35.19423456789012, 32.58976543210987],
+          [35.19454321098765, 32.58923456789012]
+        ]
+      }
+    }
+  ]
+}
+```
+Suppose the user wants to move the Feature Object assigned to ID 0. To do this, remove the Feature Object with ID 1 from the original json, then apply the necessary corrections to the coordinates of the Feature Object with ID 0 and send the GeoJSON thus prepared to the topic `geojson/modify`.
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [135.19412345678901, 132.58987654321098]
+      }
+    }
+  ]
+}
+
+```
 - `geojson/delete_all [std_msgs::msg::Empty]` - topic that despawns all entities spawned with GeoJSONSpawner.
-- `geojson/delete_by_id [std_msgs::msg::String]`  - topic that despawns all entities associated with a given id. The usage is the same as modifying spawned entities - the only difference is the fact that found entities are despawned, not modified.
+- `geojson/delete_by_id [std_msgs/msg/Int32MultiArray]`  - topic that despawns all entities associated with a given ids.
 
 Service:
 `geojson/get_spawned_groups_ids [std_srvs/srv/Trigger]` - service that returns all spawned ids together with the number of prefabs associated with each id.

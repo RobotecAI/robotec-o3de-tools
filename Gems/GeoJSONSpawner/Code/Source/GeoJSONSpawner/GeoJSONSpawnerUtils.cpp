@@ -4,7 +4,7 @@
  * This source code is protected under international copyright law.  All rights
  * reserved and protected by the copyright holders.
  * This file is confidential and only available to authorized individuals with the
- * permission of the copyright holders.  If you encounter this file and do not have
+ * permission of the copyright holders. If you encounter this file and do not have
  * permission, please contact the copyright holders and delete this file.
  */
 
@@ -27,15 +27,15 @@
 
 namespace GeoJSONSpawner::GeoJSONUtils
 {
-    void GeometryObjectInfo::Reflect(AZ::ReflectContext* context)
+    void FeatureObjectInfo::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GeometryObjectInfo>()
+            serializeContext->Class<FeatureObjectInfo>()
                 ->Version(0)
-                ->Field("Id", &GeometryObjectInfo::m_id)
-                ->Field("Name", &GeometryObjectInfo::m_name)
-                ->Field("Coordinates", &GeometryObjectInfo::m_coordinates);
+                ->Field("Id", &FeatureObjectInfo::m_id)
+                ->Field("Name", &FeatureObjectInfo::m_name)
+                ->Field("Coordinates", &FeatureObjectInfo::m_coordinates);
         }
     }
 
@@ -116,8 +116,9 @@ namespace GeoJSONSpawner::GeoJSONUtils
         }
 
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        AZ_Assert(physicsSystem, "Unable to get pointer to physics system interface.");
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        AZ_Assert(physicsSystem, "Unable to get physics system interface.");
+        AZ_Assert(sceneInterface, "Unable to get pointer to scene interface.");
 
         if (!sceneInterface || !physicsSystem)
         {
@@ -160,10 +161,11 @@ namespace GeoJSONSpawner::GeoJSONUtils
         return transform;
     }
 
-    AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
+    AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>> PrepareTicketsToSpawn(
         AZStd::vector<GeoJSONSpawnableEntityInfo>& entitiesToSpawn,
         const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations,
         AZ::u64 defaultSeed,
+        SpawnCompletionCallback spawnCompletionCallback,
         const AZStd::string& physicsSceneName,
         AZ::EntityId parentId)
     {
@@ -171,9 +173,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         AZ_Assert(sceneInterface, "Unable to get physics scene interface.");
         const auto sceneHandle = sceneInterface->GetSceneHandle(physicsSceneName);
 
-        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> groupIdToTicketsMap;
-        auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
-        AZ_Assert(spawner, "Unable to get spawnable entities definition.");
+        AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>> groupIdToTicketsMap;
 
         for (auto spawnableAsset : spawnableAssetConfigurations)
         {
@@ -189,21 +189,12 @@ namespace GeoJSONSpawner::GeoJSONUtils
             }
 
             const auto& spawnableAssetConfiguration = spawnableAssetConfigurations.at(entityToSpawn.m_name);
-            if (!groupIdToTicketsMap.contains(entityToSpawn.m_id))
-            {
-                groupIdToTicketsMap[entityToSpawn.m_id] = {};
-            }
 
             for (auto& point : entityToSpawn.m_positions)
             {
-                AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
-                AzFramework::EntitySpawnTicket ticket(spawnableAssetConfiguration.m_spawnable);
-
                 [[maybe_unused]] std::mt19937 gen = std::mt19937(defaultSeed++);
 
-                AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
-                AZ::Transform pointTransform{ point, rotation, 1.0f };
-                pointTransform *= GetRandomTransform(
+                point *= GetRandomTransform(
                     spawnableAssetConfiguration.m_positionStdDev,
                     spawnableAssetConfiguration.m_rotationStdDev,
                     spawnableAssetConfiguration.m_scaleStdDev,
@@ -211,21 +202,23 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
                 if (spawnableAssetConfiguration.m_placeOnTerrain)
                 {
+                    constexpr float maxRaycastDistance = 1000.0f;
                     const AZStd::optional<AZ::Vector3> hitPosition =
-                        RaytraceTerrain(pointTransform.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), 1000.0f);
+                        RaytraceTerrain(point.GetTranslation(), sceneHandle, -AZ::Vector3::CreateAxisZ(), maxRaycastDistance);
 
                     if (hitPosition.has_value())
                     {
-                        pointTransform.SetTranslation(hitPosition.value());
+                        point.SetTranslation(hitPosition.value());
                     }
                     else
                     {
                         continue;
                     }
                 }
-                point = pointTransform.GetTranslation(); // Update point coords to use it to show labels in proper place
 
-                optionalArgs.m_preInsertionCallback = [pointTransform]([[maybe_unused]] auto id, auto view)
+                AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+                AzFramework::EntitySpawnTicket ticket(spawnableAssetConfiguration.m_spawnable);
+                optionalArgs.m_preInsertionCallback = [point]([[maybe_unused]] auto id, auto view)
                 {
                     if (view.empty())
                     {
@@ -235,11 +228,12 @@ namespace GeoJSONSpawner::GeoJSONUtils
                     AZ_Assert(root, "Invalid root entity.");
 
                     auto* transformInterface = root->FindComponent<AzFramework::TransformComponent>();
-                    transformInterface->SetWorldTM(pointTransform);
+                    transformInterface->SetWorldTM(point);
                 };
 
-                optionalArgs.m_completionCallback = [parentId]([[maybe_unused]] auto id, auto view)
+                optionalArgs.m_completionCallback = [parentId, spawnCompletionCallback]([[maybe_unused]] auto id, auto view)
                 {
+                    spawnCompletionCallback();
                     if (view.empty())
                     {
                         return;
@@ -250,8 +244,35 @@ namespace GeoJSONSpawner::GeoJSONUtils
                 };
 
                 optionalArgs.m_priority = AzFramework::SpawnablePriority_Lowest;
-                spawner->SpawnAllEntities(ticket, optionalArgs);
-                groupIdToTicketsMap.at(entityToSpawn.m_id).push_back(AZStd::move(ticket));
+
+                if (!groupIdToTicketsMap.contains(entityToSpawn.m_id))
+                {
+                    groupIdToTicketsMap[entityToSpawn.m_id] = {};
+                }
+                groupIdToTicketsMap.at(entityToSpawn.m_id).emplace_back(AZStd::make_pair(AZStd::move(ticket), AZStd::move(optionalArgs)));
+            }
+        }
+
+        return groupIdToTicketsMap;
+    }
+
+    AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
+        AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>>& ticketsToSpawn)
+    {
+        auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
+        AZ_Assert(spawner, "Unable to get spawnable entities definition.");
+
+        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> groupIdToTicketsMap;
+        for (auto& groupIdToSpawn : ticketsToSpawn)
+        {
+            if (!groupIdToTicketsMap.contains(groupIdToSpawn.first))
+            {
+                groupIdToTicketsMap[groupIdToSpawn.first] = {};
+            }
+            for (auto& ticketToSpawn : groupIdToSpawn.second)
+            {
+                spawner->SpawnAllEntities(ticketToSpawn.first, ticketToSpawn.second);
+                groupIdToTicketsMap.at(groupIdToSpawn.first).emplace_back(AZStd::move(ticketToSpawn.first));
             }
         }
 
@@ -261,6 +282,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
     void DespawnEntity(AzFramework::EntitySpawnTicket& ticket, DespawnCallback callback)
     {
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
+        AZ_Assert(spawner, "Unable to get spawnable entities definition.");
         AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = [callback](auto id)
         {
@@ -281,24 +303,32 @@ namespace GeoJSONSpawner::GeoJSONUtils
         return spawnableAssetMap;
     }
 
-    AZStd::vector<GeoJSONSpawnableEntityInfo> GetSpawnableEntitiesFromGeometryObjectVector(
-        const AZStd::vector<GeometryObjectInfo>& geometryObjects,
+    AZStd::vector<GeoJSONSpawnableEntityInfo> GetSpawnableEntitiesFromFeatureObjectVector(
+        const AZStd::vector<FeatureObjectInfo>& featureObjects,
         const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations)
     {
-        AZStd::vector<GeoJSONSpawnableEntityInfo> spawnableEntities;
-        for (const auto& geometryObjectInfo : geometryObjects)
+        if (!ROS2::GeoreferenceRequestsBus::HasHandlers())
         {
-            if (!spawnableAssetConfigurations.contains(geometryObjectInfo.m_name))
+            AZ_Error("GeoJSONSpawnerUtils", false, "Cannot convert WGS84 coordinates - Level is not geographically positioned.");
+            return {};
+        }
+
+        AZStd::vector<GeoJSONSpawnableEntityInfo> spawnableEntities;
+        for (const auto& featureObjectInfo : featureObjects)
+        {
+            if (!spawnableAssetConfigurations.contains(featureObjectInfo.m_name))
             {
-                AZ_Error("GeoJSONSpawnerUtils", false, "Spawnable with name [%s] not found.", geometryObjectInfo.m_name.c_str());
+                AZ_Error("GeoJSONSpawnerUtils", false, "Spawnable with name [%s] not found.", featureObjectInfo.m_name.c_str());
                 continue;
             }
-            const auto& spawnableAssetConfig = spawnableAssetConfigurations.at(geometryObjectInfo.m_name);
+            const auto& spawnableAssetConfig = spawnableAssetConfigurations.at(featureObjectInfo.m_name);
             GeoJSONSpawnableEntityInfo spawnableEntityInfo;
-            spawnableEntityInfo.m_name = geometryObjectInfo.m_name;
-            spawnableEntityInfo.m_id = geometryObjectInfo.m_id;
-            for (const auto& point : geometryObjectInfo.m_coordinates)
+            spawnableEntityInfo.m_name = featureObjectInfo.m_name;
+            spawnableEntityInfo.m_id = featureObjectInfo.m_id;
+            for (const auto& point : featureObjectInfo.m_coordinates)
             {
+                constexpr float defaultScale = 1.0f;
+                const AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
                 ROS2::WGS::WGS84Coordinate coordinate;
                 AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
                 coordinate.m_longitude = point[0];
@@ -308,7 +338,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
                 ROS2::GeoreferenceRequestsBus::BroadcastResult(
                     coordinateInLevel, &ROS2::GeoreferenceRequestsBus::Events::ConvertFromWGS84ToLevel, coordinate);
 
-                spawnableEntityInfo.m_positions.emplace_back(AZStd::move(coordinateInLevel));
+                AZ::Transform transform{ coordinateInLevel, rotation, defaultScale };
+                spawnableEntityInfo.m_positions.emplace_back(AZStd::move(transform));
             }
             spawnableEntities.push_back(spawnableEntityInfo);
         }
@@ -445,9 +476,9 @@ namespace GeoJSONSpawner::GeoJSONUtils
         return ExtractIds(loadResult.GetValue<rapidjson::Document>());
     }
 
-    AZStd::vector<GeometryObjectInfo> ParseGeoJSON(const rapidjson::Document& geoJsonDocument)
+    AZStd::vector<FeatureObjectInfo> ParseGeoJSON(const rapidjson::Document& geoJsonDocument)
     {
-        AZStd::vector<GeometryObjectInfo> spawnableInfoContainer;
+        AZStd::vector<FeatureObjectInfo> spawnableInfoContainer;
 
         if (!ValidateGeoJSON(geoJsonDocument))
         {
@@ -460,19 +491,18 @@ namespace GeoJSONSpawner::GeoJSONUtils
         {
             const rapidjson::Value& properties = feature["properties"];
             const rapidjson::Value& geometry = feature["geometry"];
-            GeometryObjectInfo geometryObjectInfo;
-            geometryObjectInfo.m_name = properties["spawnable_name"].GetString();
-            ;
-            geometryObjectInfo.m_id = properties["id"].GetInt();
-            geometryObjectInfo.m_coordinates = ExtractPoints(geometry);
+            FeatureObjectInfo featureObjectInfo;
+            featureObjectInfo.m_name = properties["spawnable_name"].GetString();
+            featureObjectInfo.m_id = properties["id"].GetInt();
+            featureObjectInfo.m_coordinates = ExtractPoints(geometry);
 
-            spawnableInfoContainer.push_back(geometryObjectInfo);
+            spawnableInfoContainer.push_back(featureObjectInfo);
         }
 
         return spawnableInfoContainer;
     }
 
-    AZStd::vector<GeometryObjectInfo> ParseJSONFromFile(const AZStd::string& filePath)
+    AZStd::vector<FeatureObjectInfo> ParseJSONFromFile(const AZStd::string& filePath)
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         if (!fileIO || !fileIO->Exists(filePath.c_str()))
@@ -492,7 +522,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         return ParseGeoJSON(loadResult.GetValue<rapidjson::Document>());
     }
 
-    AZStd::vector<GeometryObjectInfo> ParseJSONFromRawString(const AZStd::string& rawGeoJson)
+    AZStd::vector<FeatureObjectInfo> ParseJSONFromRawString(const AZStd::string& rawGeoJson)
     {
         auto loadResult = AZ::JsonSerializationUtils::ReadJsonString(rawGeoJson);
 

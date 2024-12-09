@@ -1,6 +1,14 @@
+/**
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders. If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 
 #include "GeoJSONSpawner/GeoJSONSpawnerEditorComponent.h"
-#include "GeoJSONSpawner/ROS2Interface/GeoJSONSpawnerROS2InterfaceEditorComponent.h"
 #include "GeoJSONSpawnerEditorSystemComponent.h"
 #include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
 #include <GeoJSONSpawnerModuleInterface.h>
@@ -15,21 +23,11 @@ namespace GeoJSONSpawner
 
         GeoJSONSpawnerEditorModule()
         {
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            // Add ALL components descriptors associated with this gem to m_descriptors.
-            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and
-            // EditContext. This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(
                 m_descriptors.end(),
-                { GeoJSONSpawnerEditorSystemComponent::CreateDescriptor(),
-                  GeoJSONSpawnerEditorComponent::CreateDescriptor(),
-                  ROS2Interface::GeoJSONSpawnerROS2InterfaceEditorComponent::CreateDescriptor() });
+                { GeoJSONSpawnerEditorSystemComponent::CreateDescriptor(), GeoJSONSpawnerEditorComponent::CreateDescriptor() });
         }
 
-        /**
-         * Add required SystemComponents to the SystemEntity.
-         * Non-SystemComponents should not be added here
-         */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{

@@ -1,8 +1,16 @@
+/**
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders. If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 
 #include "GeoJSONSpawnerModuleInterface.h"
 
 #include "GeoJSONSpawner/GeoJSONSpawnerComponent.h"
-#include "GeoJSONSpawner/ROS2Interface/GeoJSONSpawnerROS2Interface.h"
 #include "ROS2/ROS2Bus.h"
 
 #include <AzCore/Memory/Memory.h>
@@ -19,17 +27,8 @@ namespace GeoJSONSpawner
 
     GeoJSONSpawnerModuleInterface::GeoJSONSpawnerModuleInterface()
     {
-        // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-        // Add ALL components descriptors associated with this gem to m_descriptors.
-        // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
-        // This happens through the [MyComponent]::Reflect() function.
         m_descriptors.insert(
-            m_descriptors.end(),
-            {
-                GeoJSONSpawnerSystemComponent::CreateDescriptor(),
-                GeoJSONSpawnerComponent::CreateDescriptor(),
-                ROS2Interface::GeoJSONSpawnerROS2Interface::CreateDescriptor(),
-            });
+            m_descriptors.end(), { GeoJSONSpawnerSystemComponent::CreateDescriptor(), GeoJSONSpawnerComponent::CreateDescriptor() });
     }
 
     AZ::ComponentTypeList GeoJSONSpawnerModuleInterface::GetRequiredSystemComponents() const

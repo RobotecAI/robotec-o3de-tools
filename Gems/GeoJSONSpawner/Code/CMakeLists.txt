@@ -52,7 +52,6 @@ ly_add_target(
             AZ::AzFramework
         PRIVATE
             Gem::ROS2.Static
-            Gem::ROS2.API
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -129,7 +128,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
             PRIVATE
                 Gem::ROS2.Editor.Static
-                Gem::ROS2.Static
     )
 
     ly_add_target(
@@ -148,7 +146,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::${gem_name}.Editor.API
             PRIVATE
                 Gem::${gem_name}.Editor.Private.Object
-                Gem::ROS2.Static
+                Gem::ROS2.Editor.Static
     )
 
     target_depends_on_ros2_packages(${gem_name}.Editor.Private.Object std_srvs)
