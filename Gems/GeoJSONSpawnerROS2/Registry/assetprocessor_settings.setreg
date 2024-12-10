@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder GeoJSONSpawnerROS2/Assets": {
+                    "watch": "@GEMROOT:GeoJSONSpawnerROS2@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder GeoJSONSpawnerROS2/Registry": {
+                    "watch": "@GEMROOT:GeoJSONSpawnerROS2@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
