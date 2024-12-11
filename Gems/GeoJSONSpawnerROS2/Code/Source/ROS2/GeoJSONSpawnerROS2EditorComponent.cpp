@@ -50,7 +50,6 @@ namespace GeoJSONSpawnerROS2
     void GeoJSONSpawnerROS2EditorComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("ROS2Frame"));
-        required.push_back(AZ_CRC_CE("GeoJSONSpawner"));
     }
 
     void GeoJSONSpawnerROS2EditorComponent::BuildGameEntity(AZ::Entity* gameEntity)
