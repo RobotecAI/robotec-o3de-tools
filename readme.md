@@ -136,3 +136,46 @@ Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
 # ROS2PoseControl
 
 A utility gem that introduces a way to control robots in simulation as puppets with Pose messages or TFs.
+
+# GeoJSONSpawner
+
+Component that spawns prefabs using coordinates stored in the GeoJSON format (either in a file or in a raw string). It supports WGS84 coordinate system.
+This component supports spawning prefabs using GeoJSON stored in the file or stored in the raw string and passed via the ROS2 interface.
+
+![](doc/GeoJSONSpawner.png)
+
+To get all the necessary information, the supported GeoJSON format is extended by a two additional fields (although this format is still correct with a GeoJSON standard) - `spawnable_name` and `id`. The `spawnable_name` is used to match spawn coordinates to a prefab name in a `Spawnable Asset Configuration`. The `id` is used to delete/modify the spawned object.
+Example of supported GeoJSON:
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.19412345678901, 32.58987654321098]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 1
+      },
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [35.19423456789012, 32.58976543210987],
+          [35.19454321098765, 32.58923456789012]
+        ]
+      }
+    }
+  ]
+}
+
+```
