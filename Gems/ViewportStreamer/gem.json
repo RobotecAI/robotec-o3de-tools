@@ -1,0 +1,28 @@
+{
+    "gem_name": "ViewportStreamer",
+    "version": "1.0.0",
+    "display_name": "ViewportStreamer",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "RobotecAI",
+    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "type": "Code",
+    "summary": "Application viewport streaming on ROS2 topic",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "ViewportStreamer"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "No requirements",
+    "documentation_url": "",
+    "dependencies": ["ROS2"],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "ViewportStreamer"
+}
