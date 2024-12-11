@@ -85,8 +85,8 @@ namespace GeoJSONSpawner
 
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_spawnableTickets;
         AZStd::unordered_map<int, AZStd::unordered_set<AzFramework::EntitySpawnTicket::Id>> m_spawnableTicketsIds;
-        unsigned int m_ticketsToDespawn{ 0 };
-        unsigned int m_ticketsToSpawn{ 0 };
+        AZStd::atomic<unsigned int> m_ticketsToDespawn{ 0 };
+        AZStd::atomic<unsigned int> m_ticketsToSpawn{ 0 };
         AZStd::vector<GeoJSONUtils::GeoJSONSpawnableEntityInfo> m_spawnableEntityInfo;
 
         SpawnerState m_spawnerState{ SpawnerState::Idle };
