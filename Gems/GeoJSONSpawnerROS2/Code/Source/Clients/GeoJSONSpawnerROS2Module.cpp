@@ -22,8 +22,4 @@ namespace GeoJSONSpawnerROS2
     };
 } // namespace GeoJSONSpawnerROS2
 
-#if defined(O3DE_GEM_NAME)
-AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), GeoJSONSpawnerROS2::GeoJSONSpawnerROS2Module)
-#else
 AZ_DECLARE_MODULE_CLASS(Gem_GeoJSONSpawnerROS2, GeoJSONSpawnerROS2::GeoJSONSpawnerROS2Module)
-#endif
