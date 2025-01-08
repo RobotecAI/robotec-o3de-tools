@@ -153,7 +153,7 @@ namespace GeoJSONSpawner
 
     Result GeoJSONSpawnerComponent::SpawnWithRawString(const AZStd::string& rawJsonString)
     {
-        if (m_spawnerState != SpawnerState::Idle && !m_spawnerStateQueue.empty())
+        if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
             return AZ::Failure(AZStd::string("Spawner is handling previous request. Action aborted."));
         }
@@ -179,7 +179,7 @@ namespace GeoJSONSpawner
 
     Result GeoJSONSpawnerComponent::SpawnWithAssetPath(const AZ::IO::Path& assetPath)
     {
-        if (m_spawnerState != SpawnerState::Idle && !m_spawnerStateQueue.empty())
+        if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
             return AZ::Failure(AZStd::string("Spawner is handling previous request. Action aborted."));
         }
@@ -205,7 +205,7 @@ namespace GeoJSONSpawner
 
     Result GeoJSONSpawnerComponent::Modify(const AZStd::string& rawJsonString)
     {
-        if (m_spawnerState != SpawnerState::Idle && !m_spawnerStateQueue.empty())
+        if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
             return AZ::Failure(AZStd::string("Spawner is handling previous request. Action aborted."));
         }
@@ -232,7 +232,7 @@ namespace GeoJSONSpawner
 
     Result GeoJSONSpawnerComponent::DeleteById(const AZStd::unordered_set<int>& idsToDelete)
     {
-        if (m_spawnerState != SpawnerState::Idle && !m_spawnerStateQueue.empty())
+        if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
             return AZ::Failure(AZStd::string("Spawner is handling previous request. Action aborted."));
         }
@@ -245,7 +245,7 @@ namespace GeoJSONSpawner
 
     Result GeoJSONSpawnerComponent::DeleteAll()
     {
-        if (m_spawnerState != SpawnerState::Idle && !m_spawnerStateQueue.empty())
+        if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
             return AZ::Failure(AZStd::string("Spawner is handling previous request. Action aborted."));
         }
