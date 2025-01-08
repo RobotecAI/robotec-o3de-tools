@@ -144,6 +144,17 @@ This component supports spawning prefabs using GeoJSON stored in the file or sto
 
 ![](doc/GeoJSONSpawner.png)
 
+Configuration:
+- Name - the name that is associated with the spawnable. This parameter is passed as `spawnable_name` in the GeoJSON message.
+- Spawnable - prefab (spawnable) associated with the `Name`.
+- Position std. dev - maximum value of the position standard deviation [metres].
+- Rotation std. dev - maximum value of the rotation standard deviation [degrees].
+- Scale std. dev - maximum value of the scale standard deviation.
+- Place on terrain  - switch indicating whether the spawner should perform scene query raytrace to place the spawnable on the terrain (or any other collider).
+- Raytrace starting height - WGS84 altitude. If `Place on terrain` is set to false, this value will be used as a fixed Z-axis value for the spawn. Otherwise the raytrace will start at this height (converted from WGS84 altitude to Z-axis value using the `GeoReference Level Editor Component`).
+- Default seed  - seed for randomization.
+- Show labels in Editor - switch to enable/disable labels in the Editor for spawned prefabs.
+
 To get all the necessary information, the supported GeoJSON format is extended by a two additional fields (although this format is still correct with a GeoJSON standard) - `spawnable_name` and `id`. The `spawnable_name` is used to match spawn coordinates to a prefab name in a `Spawnable Asset Configuration`. The `id` is used to delete/modify the spawned object.
 Example of supported GeoJSON:
 ```
@@ -170,8 +181,8 @@ Example of supported GeoJSON:
       "geometry": {
         "type": "MultiPoint",
         "coordinates": [
-          [35.19423456789012, 32.58976543210987],
-          [35.19454321098765, 32.58923456789012]
+          [12.19423456789012, 21.58976543210987],
+          [12.19454321098765, 21.58923456789012]
         ]
       }
     }
@@ -215,8 +226,8 @@ Lets suppose that user spawned prefabs using such GeoJSON:
       "geometry": {
         "type": "MultiPoint",
         "coordinates": [
-          [35.19423456789012, 32.58976543210987],
-          [35.19454321098765, 32.58923456789012]
+          [12.19423456789012, 21.58976543210987],
+          [12.19454321098765, 21.58923456789012]
         ]
       }
     }
@@ -248,3 +259,73 @@ Suppose the user wants to move the Feature Object assigned to ID 0. To do this, 
 
 Service:
 `geojson/get_spawned_groups_ids [std_srvs/srv/Trigger]` - service that returns all spawned ids together with the number of prefabs associated with each id.
+
+## Usage examples:
+
+### Spawn with the raw string
+```
+ros2 topic pub /geojson/spawn_with_raw_string std_msgs/msg/String "data: '{
+  \"type\": \"FeatureCollection\",
+  \"features\": [
+    {
+      \"type\": \"Feature\",
+      \"properties\": {
+        \"spawnable_name\": \"ball\",
+        \"id\": 0
+      },
+      \"geometry\": {
+        \"type\": \"Point\",
+        \"coordinates\": [
+          [12.194254455922405, 21.58976758326028]
+        ]
+      }
+    }
+  ]
+}'" --once
+```
+
+### Spawn with asset path
+```
+ros2 topic pub /geojson/spawn_with_asset_path std_msgs/msg/String "{data: Assets/GeoJSON/output.json}" --once
+```
+
+### Modify
+This request adds 3 more `ball` spawnables to the group with ID 0.
+```
+ros2 topic pub /geojson/modify std_msgs/msg/String "data: '{
+  \"type\": \"FeatureCollection\",
+  \"features\": [
+    {
+      \"type\": \"Feature\",
+      \"properties\": {
+        \"spawnable_name\": \"ball\",
+        \"id\": 0
+      },
+      \"geometry\": {
+        \"type\": \"MultiPoint\",
+        \"coordinates\": [
+          [12.194254455922405, 21.58976758326028],
+          [12.194254455922415, 21.58976758326018],
+          [12.194254455922425, 21.58976758326008],
+          [12.194254455922435, 21.58976758326098]
+        ]
+      }
+    }
+  ]
+}'" --once
+```
+
+### Delete by id
+```
+ros2 topic pub /geojson/delete_by_id std_msgs/msg/Int32MultiArray "{data: [0]}" --once
+```
+
+### Delete all
+```
+ros2 topic pub /geojson/delete_all std_msgs/msg/Empty "{}" --once
+```
+
+### Get spawned groups ids
+```
+ros2 service call /geojson/get_spawned_groups_ids std_srvs/srv/Trigger
+```
