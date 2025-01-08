@@ -3,8 +3,8 @@
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
 # Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
 #       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here in our gem : Gems/GeoJSONSpawner/Code/Platform/<platorm_name>  or
-#            <restricted_folder>/<platform_name>/Gems/GeoJSONSpawner/Code
+#       i.e. It could here in our gem : Gems/GeoJSONSpawnerROS2/Code/Platform/<platorm_name>  or
+#            <restricted_folder>/<platform_name>/Gems/GeoJSONSpawnerROS2/Code
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
@@ -13,7 +13,7 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # Check to see if building the Gem Modules are supported for the current platform
-if(NOT PAL_TRAIT_GEOJSONSPAWNER_SUPPORTED)
+if(NOT PAL_TRAIT_GEOJSONSPAWNERROS2_SUPPORTED)
     return()
 endif()
 
@@ -22,8 +22,8 @@ ly_add_target(
     NAME ${gem_name}.API INTERFACE
     NAMESPACE Gem
     FILES_CMAKE
-        geojsonspawner_api_files.cmake
-        ${pal_dir}/geojsonspawner_api_files.cmake
+        geojsonspawnerros2_api_files.cmake
+        ${pal_dir}/geojsonspawnerros2_api_files.cmake
     INCLUDE_DIRECTORIES
         INTERFACE
             Include
@@ -38,8 +38,8 @@ ly_add_target(
     NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        geojsonspawner_private_files.cmake
-        ${pal_dir}/geojsonspawner_private_files.cmake
+        geojsonspawnerros2_private_files.cmake
+        ${pal_dir}/geojsonspawnerros2_private_files.cmake
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
@@ -51,6 +51,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
         PRIVATE
+            Gem::GeoJSONSpawner.API
             Gem::ROS2.Static
 )
 
@@ -59,8 +60,8 @@ ly_add_target(
     NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
-        geojsonspawner_shared_files.cmake
-        ${pal_dir}/geojsonspawner_shared_files.cmake
+        geojsonspawnerros2_shared_files.cmake
+        ${pal_dir}/geojsonspawnerros2_shared_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -72,6 +73,21 @@ ly_add_target(
         PRIVATE
             Gem::${gem_name}.Private.Object
 )
+
+target_depends_on_ros2_packages(${gem_name}.Private.Object std_msgs std_srvs)
+
+# Include the gem name into the Client Module source file
+# for use with the AZ_DECLARE_MODULE_CLASS macro
+# This is to allow renaming of the gem to also cause
+# the CreateModuleClass_Gem_<gem-name> function which
+# is used to bootstrap the gem in monolithic builds to link to the new gem name
+ly_add_source_properties(
+SOURCES
+    Source/Clients/GeoJSONSpawnerROS2Module.cpp
+PROPERTY COMPILE_DEFINITIONS
+    VALUES
+        O3DE_GEM_NAME=${gem_name}
+        O3DE_GEM_VERSION=${gem_version})
 
 # By default, we will specify that the above target ${gem_name} would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
@@ -96,8 +112,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${gem_name}.Editor.API INTERFACE
         NAMESPACE Gem
         FILES_CMAKE
-            geojsonspawner_editor_api_files.cmake
-            ${pal_dir}/geojsonspawner_editor_api_files.cmake
+            geojsonspawnerros2_editor_api_files.cmake
+            ${pal_dir}/geojsonspawnerros2_editor_api_files.cmake
         INCLUDE_DIRECTORIES
             INTERFACE
                 Include
@@ -113,7 +129,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         FILES_CMAKE
-            geojsonspawner_editor_private_files.cmake
+            geojsonspawnerros2_editor_private_files.cmake
         TARGET_PROPERTIES
             O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
@@ -123,9 +139,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
-            PRIVATE
+                ${gem_name}.Private.Object
                 Gem::ROS2.Editor.Static
+                Gem::GeoJSONSpawner.API
     )
 
     ly_add_target(
@@ -133,7 +149,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
-            geojsonspawner_editor_shared_files.cmake
+            geojsonspawnerros2_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -145,9 +161,21 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::${gem_name}.Editor.Private.Object
                 Gem::ROS2.Editor.Static
+                Gem::GeoJSONSpawner.API
     )
 
-    target_depends_on_ros2_packages(${gem_name}.Editor.Private.Object std_srvs)
+    # Include the gem name into the Editor Module source file
+    # for use with the AZ_DECLARE_MODULE_CLASS macro
+    # This is to allow renaming of the gem to also cause
+    # the CreateModuleClass_Gem_<gem-name> function which
+    # is used to bootstrap the gem in monolithic builds to link to the new gem name
+    ly_add_source_properties(
+    SOURCES
+        Source/Tools/GeoJSONSpawnerROS2EditorModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
     # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
@@ -170,13 +198,13 @@ endif()
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # We globally support tests, see if we support tests on this platform for ${gem_name}.Tests
-    if(PAL_TRAIT_GEOJSONSPAWNER_TEST_SUPPORTED)
+    if(PAL_TRAIT_GEOJSONSPAWNERROS2_TEST_SUPPORTED)
         # We support ${gem_name}.Tests on this platform, add dependency on the Private Object target
         ly_add_target(
             NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
-                geojsonspawner_tests_files.cmake
+                geojsonspawnerros2_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -198,14 +226,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # If we are a host platform we want to add tools test like editor tests here
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         # We are a host platform, see if Editor tests are supported on this platform
-        if(PAL_TRAIT_GEOJSONSPAWNER_EDITOR_TEST_SUPPORTED)
+        if(PAL_TRAIT_GEOJSONSPAWNERROS2_EDITOR_TEST_SUPPORTED)
             # We support ${gem_name}.Editor.Tests on this platform, add ${gem_name}.Editor.Tests target which depends on
             # private ${gem_name}.Editor.Private.Object target
             ly_add_target(
                 NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
                 NAMESPACE Gem
                 FILES_CMAKE
-                    geojsonspawner_editor_tests_files.cmake
+                    geojsonspawnerros2_editor_tests_files.cmake
                 INCLUDE_DIRECTORIES
                     PRIVATE
                         Tests
