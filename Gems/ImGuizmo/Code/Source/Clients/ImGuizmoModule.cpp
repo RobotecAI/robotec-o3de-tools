@@ -1,18 +1,17 @@
 
+#include "ImGuizmoSystemComponent.h"
 #include <ImGuizmo/ImGuizmoTypeIds.h>
 #include <ImGuizmoModuleInterface.h>
-#include "ImGuizmoSystemComponent.h"
 
 namespace ImGuizmo
 {
-    class ImGuizmoModule
-        : public ImGuizmoModuleInterface
+    class ImGuizmoModule : public ImGuizmoModuleInterface
     {
     public:
         AZ_RTTI(ImGuizmoModule, ImGuizmoModuleTypeId, ImGuizmoModuleInterface);
         AZ_CLASS_ALLOCATOR(ImGuizmoModule, AZ::SystemAllocator);
     };
-}// namespace ImGuizmo
+} // namespace ImGuizmo
 
 #if defined(O3DE_GEM_NAME)
 AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ImGuizmo::ImGuizmoModule)

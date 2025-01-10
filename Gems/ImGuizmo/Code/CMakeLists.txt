@@ -27,6 +27,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         INTERFACE
             Include
+            3rdParty
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
@@ -46,10 +47,13 @@ ly_add_target(
         PRIVATE
             Include
             Source
+            3rdParty
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            Gem::Atom_Feature_Common.Static
+            Gem::ImGui.Static
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -62,6 +66,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
+            3rdParty
         PRIVATE
             Source
     BUILD_DEPENDENCIES
@@ -69,6 +74,7 @@ ly_add_target(
             Gem::${gem_name}.API
         PRIVATE
             Gem::${gem_name}.Private.Object
+
 )
 
 # Include the gem name into the Client Module source file

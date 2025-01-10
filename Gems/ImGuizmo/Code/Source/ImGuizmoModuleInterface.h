@@ -6,8 +6,7 @@
 
 namespace ImGuizmo
 {
-    class ImGuizmoModuleInterface
-        : public AZ::Module
+    class ImGuizmoModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(ImGuizmoModuleInterface)
@@ -21,4 +20,4 @@ namespace ImGuizmo
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace ImGuizmo
+} // namespace ImGuizmo

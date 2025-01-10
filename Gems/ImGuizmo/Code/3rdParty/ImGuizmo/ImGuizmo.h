@@ -25,6 +25,7 @@
 //
 // -------------------------------------------------------------------------------------------
 // History :
+// 2025/01/10 Adjustments in library during integration into O3DE
 // 2019/11/03 View gizmo
 // 2016/09/11 Behind camera culling. Scaling Delta matrix not multiplied by source matrix scales. local/world rotation and translation fixed. Display message is incorrect (X: ... Y:...) in local mode.
 // 2016/09/09 Hatched negative axis. Snapping. Documentation update.
@@ -115,6 +116,7 @@ void EditTransform(const Camera& camera, matrix_t& matrix)
 #define IMGUIZMO_NAMESPACE ImGuizmo
 #endif
 
+#include <ImGuizmo/ImGuizmoModes.h>
 struct ImGuiWindow;
 
 namespace IMGUIZMO_NAMESPACE
@@ -171,46 +173,12 @@ namespace IMGUIZMO_NAMESPACE
 
    // Render a cube with face color corresponding to face normal. Usefull for debug/tests
    IMGUI_API void DrawCubes(const float* view, const float* projection, const float* matrices, int matrixCount);
-   IMGUI_API void DrawGrid(const float* view, const float* projection, const float* matrix, const float gridSize);
+       IMGUI_API void DrawGrid(const float* view, const float* projection, const float* matrix, const float gridSize);
 
    // call it when you want a gizmo
    // Needs view and projection matrices.
    // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
    // translation is applied in world space
-   enum OPERATION
-   {
-      TRANSLATE_X      = (1u << 0),
-      TRANSLATE_Y      = (1u << 1),
-      TRANSLATE_Z      = (1u << 2),
-      ROTATE_X         = (1u << 3),
-      ROTATE_Y         = (1u << 4),
-      ROTATE_Z         = (1u << 5),
-      ROTATE_SCREEN    = (1u << 6),
-      SCALE_X          = (1u << 7),
-      SCALE_Y          = (1u << 8),
-      SCALE_Z          = (1u << 9),
-      BOUNDS           = (1u << 10),
-      SCALE_XU         = (1u << 11),
-      SCALE_YU         = (1u << 12),
-      SCALE_ZU         = (1u << 13),
-
-      TRANSLATE = TRANSLATE_X | TRANSLATE_Y | TRANSLATE_Z,
-      ROTATE = ROTATE_X | ROTATE_Y | ROTATE_Z | ROTATE_SCREEN,
-      SCALE = SCALE_X | SCALE_Y | SCALE_Z,
-      SCALEU = SCALE_XU | SCALE_YU | SCALE_ZU, // universal
-      UNIVERSAL = TRANSLATE | ROTATE | SCALEU
-   };
-
-   inline OPERATION operator|(OPERATION lhs, OPERATION rhs)
-   {
-     return static_cast<OPERATION>(static_cast<int>(lhs) | static_cast<int>(rhs));
-   }
-
-   enum MODE
-   {
-      LOCAL,
-      WORLD
-   };
 
    IMGUI_API bool Manipulate(const float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float* deltaMatrix = NULL, const float* snap = NULL, const float* localBounds = NULL, const float* boundsSnap = NULL);
    //

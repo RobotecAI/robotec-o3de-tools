@@ -1,20 +1,19 @@
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include "ImGuizmoEditorSystemComponent.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <ImGuizmo/ImGuizmoTypeIds.h>
 
 namespace ImGuizmo
 {
-    AZ_COMPONENT_IMPL(ImGuizmoEditorSystemComponent, "ImGuizmoEditorSystemComponent",
-        ImGuizmoEditorSystemComponentTypeId, BaseSystemComponent);
+    AZ_COMPONENT_IMPL(
+        ImGuizmoEditorSystemComponent, "ImGuizmoEditorSystemComponent", ImGuizmoEditorSystemComponentTypeId, BaseSystemComponent);
 
     void ImGuizmoEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ImGuizmoEditorSystemComponent, ImGuizmoSystemComponent>()
-                ->Version(0);
+            serializeContext->Class<ImGuizmoEditorSystemComponent, ImGuizmoSystemComponent>()->Version(0);
         }
     }
 
@@ -44,16 +43,24 @@ namespace ImGuizmo
         BaseSystemComponent::GetDependentServices(dependent);
     }
 
+    // EditorEntityContextNotificationBus overrides
+    void ImGuizmoEditorSystemComponent::OnStartPlayInEditorBegin()
+    {
+        BaseSystemComponent::Activate();
+    }
+    void ImGuizmoEditorSystemComponent::OnStopPlayInEditor()
+    {
+        BaseSystemComponent::Deactivate();
+    }
+
     void ImGuizmoEditorSystemComponent::Activate()
     {
-        ImGuizmoSystemComponent::Activate();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
     void ImGuizmoEditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        ImGuizmoSystemComponent::Deactivate();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
 } // namespace ImGuizmo

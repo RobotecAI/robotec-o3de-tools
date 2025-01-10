@@ -8,8 +8,7 @@
 
 namespace ImGuizmo
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(ImGuizmoModuleInterface,
-        "ImGuizmoModuleInterface", ImGuizmoModuleInterfaceTypeId);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(ImGuizmoModuleInterface, "ImGuizmoModuleInterface", ImGuizmoModuleInterfaceTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL(ImGuizmoModuleInterface, AZ::Module);
     AZ_CLASS_ALLOCATOR_IMPL(ImGuizmoModuleInterface, AZ::SystemAllocator);
 
@@ -19,8 +18,10 @@ namespace ImGuizmo
         // Add ALL components descriptors associated with this gem to m_descriptors.
         // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
         // This happens through the [MyComponent]::Reflect() function.
-        m_descriptors.insert(m_descriptors.end(), {
-            ImGuizmoSystemComponent::CreateDescriptor(),
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                ImGuizmoSystemComponent::CreateDescriptor(),
             });
     }
 
