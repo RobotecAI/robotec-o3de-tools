@@ -31,7 +31,7 @@ namespace CsvSpawner
     class CsvSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
-        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
+        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(CsvSpawnerEditorComponent, CsvSpawnerEditorComponentTypeId);
@@ -44,10 +44,6 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-
-        // Terrain Notify
-        void OnTerrainDataCreateEnd() override;
-        void OnTerrainDataDestroyBegin() override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
@@ -69,6 +65,9 @@ namespace CsvSpawner
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
         int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
 
+        // Terrain Notify
+        void OnTerrainDataCreateEnd() override;
+        void OnTerrainDataDestroyBegin() override;
         bool m_terrainReady{ false }; //!< Is terrain fully generated once
     };
 } // namespace CsvSpawner

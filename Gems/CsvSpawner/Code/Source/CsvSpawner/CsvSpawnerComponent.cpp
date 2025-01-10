@@ -40,26 +40,34 @@ namespace CsvSpawner
     {
     }
 
-    void CsvSpawnerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-        m_spawnedTickets = CsvSpawnerUtils::SpawnEntities(
-            m_spawnableEntityInfo, m_spawnableAssetConfigurations, m_defaultSeed, AzPhysics::DefaultPhysicsSceneName, this->GetEntityId());
-        AZ::TickBus ::Handler::BusDisconnect();
-    }
-
-    int CsvSpawnerComponent::GetTickOrder()
-    {
-        return AZ::TICK_LAST;
-    }
-
     void CsvSpawnerComponent::Activate()
     {
-        AZ::TickBus::Handler::BusConnect();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
     }
 
     void CsvSpawnerComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 
+    void CsvSpawnerComponent::OnTerrainDataCreateEnd()
+    {
+        AZ_Error("Simulation::OnTerrainDataCreateEnd", false, "Terrain Data Created");
+        if (!m_terrainReady) // Init only once, even if level have multiple terrains
+        {
+            AZ::TickBus::QueueFunction([this]()
+            {
+                m_spawnedTickets = CsvSpawnerUtils::SpawnEntities(
+                    m_spawnableEntityInfo, m_spawnableAssetConfigurations, m_defaultSeed, AzPhysics::DefaultPhysicsSceneName, this->GetEntityId());
+            });
+
+            m_terrainReady = true;
+        }
+    }
+
+    void CsvSpawnerComponent::OnTerrainDataDestroyBegin()
+    {
+        m_terrainReady = false;
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+    }
 } // namespace CsvSpawner

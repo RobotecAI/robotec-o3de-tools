@@ -85,8 +85,6 @@ namespace CsvSpawner
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
-        // AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
     }
 
@@ -125,6 +123,7 @@ namespace CsvSpawner
 
     void CsvSpawnerEditorComponent::OnTerrainDataCreateEnd()
     {
+        AZ_Error("Editor::OnTerrainDataCreateEnd", false, "Terrain Data Created");
         if (!m_terrainReady) // Init only once, even if level have multiple terrains
         {
             AZ::TickBus::QueueFunction([this]()
