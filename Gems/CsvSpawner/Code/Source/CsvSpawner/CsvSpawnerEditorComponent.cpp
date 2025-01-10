@@ -123,20 +123,20 @@ namespace CsvSpawner
 
     void CsvSpawnerEditorComponent::OnTerrainDataCreateEnd()
     {
-        if (!m_terrainReady) // Init only once, even if level have multiple terrains
+        if (!m_terrainCreatedOnlyOnce) // Init only once, even if level have multiple terrains
         {
             AZ::TickBus::QueueFunction([this]()
             {
                 SpawnEntities();
             });
 
-            m_terrainReady = true;
+            m_terrainCreatedOnlyOnce = true;
         }
     }
 
     void CsvSpawnerEditorComponent::OnTerrainDataDestroyBegin()
     {
-        m_terrainReady = false;
+        m_terrainCreatedOnlyOnce = false;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 

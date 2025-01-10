@@ -52,7 +52,7 @@ namespace CsvSpawner
 
     void CsvSpawnerComponent::OnTerrainDataCreateEnd()
     {
-        if (!m_terrainReady) // Init only once, even if level have multiple terrains
+        if (!m_terrainCreatedOnlyOnce) // Init only once, even if level have multiple terrains
         {
             AZ::TickBus::QueueFunction([this]()
             {
@@ -60,13 +60,13 @@ namespace CsvSpawner
                     m_spawnableEntityInfo, m_spawnableAssetConfigurations, m_defaultSeed, AzPhysics::DefaultPhysicsSceneName, this->GetEntityId());
             });
 
-            m_terrainReady = true;
+            m_terrainCreatedOnlyOnce = true;
         }
     }
 
     void CsvSpawnerComponent::OnTerrainDataDestroyBegin()
     {
-        m_terrainReady = false;
+        m_terrainCreatedOnlyOnce = false;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 } // namespace CsvSpawner

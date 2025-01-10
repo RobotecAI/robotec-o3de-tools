@@ -68,6 +68,6 @@ namespace CsvSpawner
         // Terrain Notify
         void OnTerrainDataCreateEnd() override;
         void OnTerrainDataDestroyBegin() override;
-        bool m_terrainReady{ false }; //!< Is terrain fully generated once
+        bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
     };
 } // namespace CsvSpawner
