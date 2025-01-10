@@ -86,12 +86,14 @@ namespace CsvSpawner
         }
 
         AZ::TickBus::Handler::BusConnect();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
     }
 
     void CsvSpawnerEditorComponent::Deactivate()
     {
         m_spawnedTickets.clear();
 
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
@@ -123,19 +125,31 @@ namespace CsvSpawner
 
     void CsvSpawnerEditorComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
     {
-        ++m_frameCounter;
 
-        if (m_frameCounter == 2)
-        {
-            SpawnEntities();
-            AZ::TickBus::Handler::BusDisconnect();
-            m_frameCounter = 0;
-        }
     }
 
     int CsvSpawnerEditorComponent::GetTickOrder()
     {
         return AZ::TICK_LAST;
+    }
+
+    void CsvSpawnerEditorComponent::OnTerrainDataCreateEnd()
+    {
+        if (!m_terrainReady) // Init only once, even if level have multiple terrains
+        {
+            AZ::TickBus::QueueFunction([this]()
+            {
+                SpawnEntities();
+            });
+
+            m_terrainReady = true;
+        }
+    }
+
+    void CsvSpawnerEditorComponent::OnTerrainDataDestroyBegin()
+    {
+        m_terrainReady = false;
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 
     void CsvSpawnerEditorComponent::SpawnEntities()

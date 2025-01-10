@@ -12,6 +12,7 @@
 
 #include "API/ToolsApplicationAPI.h"
 #include "CsvSpawnerUtils.h"
+#include "AzFramework/Terrain/TerrainDataRequestBus.h"
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
@@ -31,6 +32,7 @@ namespace CsvSpawner
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
         , protected AZ::TickBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(CsvSpawnerEditorComponent, CsvSpawnerEditorComponentTypeId);
@@ -43,8 +45,13 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
+
+        // Terrain Notify
+        void OnTerrainDataCreateEnd() override;
+        void OnTerrainDataDestroyBegin() override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
@@ -55,7 +62,6 @@ namespace CsvSpawner
         void OnOnShowLabelsChanged();
 
         void SpawnEntities();
-        int m_frameCounter;
 
         AZStd::vector<CsvSpawnerUtils::CsvSpawnableAssetConfiguration>
             m_spawnableAssetConfigurations; //!< List of spawnable "types" (e.g. pineCsv, oakTre, mapleCsv, etc.)
@@ -65,6 +71,8 @@ namespace CsvSpawner
         bool m_showLabels{ true }; //!< Whether to show labels or not in Editorullq
 
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
-        int m_numberOfEntries{ 0 }; //! Number of entries in the csv file
+        int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
+
+        bool m_terrainReady{ false }; //!< Is terrain fully generated
     };
 } // namespace CsvSpawner
