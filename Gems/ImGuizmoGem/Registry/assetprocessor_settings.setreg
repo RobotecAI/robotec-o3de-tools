@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder ImGuizmoGem/Assets": {
+                    "watch": "@GEMROOT:ImGuizmoGem@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder ImGuizmoGem/Registry": {
+                    "watch": "@GEMROOT:ImGuizmoGem@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}

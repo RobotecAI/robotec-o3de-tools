@@ -1,0 +1,28 @@
+{
+    "gem_name": "ImGuizmo",
+    "version": "1.0.0",
+    "display_name": "ImGuizmo",
+    "license": "MIT",
+    "license_url": "https://opensource.org/licenses/MIT",
+    "origin": "Robotec.AI",
+    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "type": "Code",
+    "summary": "Gem introduces gizmos in runtime. It is based on ImGuizmo by Cedric Guillemet",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "ImGuizmo"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "ImGui",
+    "documentation_url": "",
+    "dependencies": ["ImGui"],
+    "repo_uri": "",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "ImGuizmo"
+}
