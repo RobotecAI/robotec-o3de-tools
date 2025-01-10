@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include "API/ToolsApplicationAPI.h"
 #include "CsvSpawnerUtils.h"
+#include "API/ToolsApplicationAPI.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -31,7 +31,6 @@ namespace CsvSpawner
     class CsvSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
-        , protected AZ::TickBus::Handler
         , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
@@ -45,9 +44,6 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
 
         // Terrain Notify
         void OnTerrainDataCreateEnd() override;
@@ -73,6 +69,6 @@ namespace CsvSpawner
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
         int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
 
-        bool m_terrainReady{ false }; //!< Is terrain fully generated
+        bool m_terrainReady{ false }; //!< Is terrain fully generated once
     };
 } // namespace CsvSpawner

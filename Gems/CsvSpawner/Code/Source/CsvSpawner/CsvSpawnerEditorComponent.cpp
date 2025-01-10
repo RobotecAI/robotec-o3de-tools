@@ -85,7 +85,8 @@ namespace CsvSpawner
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
-        AZ::TickBus::Handler::BusConnect();
+        // AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
     }
 
@@ -95,7 +96,6 @@ namespace CsvSpawner
 
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
 
@@ -121,16 +121,6 @@ namespace CsvSpawner
         gameEntity->CreateComponent<CsvSpawnerComponent>(config, spawnableEntityInfo, m_defaultSeed);
         // Destroy Editor's spawned entities
         m_spawnedTickets.clear();
-    }
-
-    void CsvSpawnerEditorComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
-    {
-
-    }
-
-    int CsvSpawnerEditorComponent::GetTickOrder()
-    {
-        return AZ::TICK_LAST;
     }
 
     void CsvSpawnerEditorComponent::OnTerrainDataCreateEnd()
