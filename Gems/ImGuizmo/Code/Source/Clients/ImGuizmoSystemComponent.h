@@ -89,6 +89,7 @@ namespace ImGuizmo
             MODE m_mode;
             bool m_gizmoVisible = false;
             bool m_manipulated = false;
+            AZ::Vector2 m_screenLocation;
             float m_gizmoMatrix[16];
         };
 
@@ -118,6 +119,9 @@ namespace ImGuizmo
 
         bool m_imguiAvailable = false; //! Flag to check if ImGui is available
         AZStd::unordered_map<GizmoHandle, GizmoData> m_gizmoData; //! Created gizmos' data
+        ImGuizmoRequests::GizmoHandle m_currentlyManipulatedHandle{
+            ImGuizmoRequests::InvalidGizmoHandle
+        }; //! Handle of the currently manipulated gizmo
         ImGuizmoRequests::GizmoHandle m_nextHandle{ 0 }; //! Next available handle
     };
 
