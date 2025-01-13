@@ -28,6 +28,11 @@ namespace ImGuizmo
             mat.StoreToColumnMajorFloat16(matrix);
         }
 
+        AZ::Vector3 Float16ToTranslation3D(const float* matrix)
+        {
+            return AZ::Vector3(matrix[12], matrix[13], matrix[14]);
+        }
+
     } // namespace conversions
 
     AZ_COMPONENT_IMPL(ImGuizmoSystemComponent, "ImGuizmoSystemComponent", ImGuizmoSystemComponentTypeId);
@@ -147,21 +152,27 @@ namespace ImGuizmo
             ImGuizmo::Enable(true);
             ImGuizmo::SetRect(0, 0, viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
 
+            const auto gizmoTranslation = conversions::Float16ToTranslation3D(gizmoData.m_gizmoMatrix);
+            const AZ::Vector4 localPosition = viewportContext->GetCameraViewMatrix() * AZ::Vector4(gizmoTranslation, 1.0f);
+            // Skip gizmos that are behind the camera
+            if (localPosition.GetZ() > 0.0f)
+            {
+                continue;
+            }
+
             float view[16];
             float projection[16];
-
             viewportContext->GetCameraProjectionMatrix().StoreToColumnMajorFloat16(projection);
             viewportContext->GetCameraViewMatrix().StoreToColumnMajorFloat16(view);
             ImGuizmo::AllowAxisFlip(false);
             ImGuizmo::Manipulate(view, projection, gizmoData.m_operation, gizmoData.m_mode, gizmoData.m_gizmoMatrix);
             gizmoData.m_manipulated = ImGuizmo::IsUsing();
 
-            const AZ::Vector3 renderWorldSpace{ gizmoData.m_gizmoMatrix[12], gizmoData.m_gizmoMatrix[13], gizmoData.m_gizmoMatrix[14] };
             const AzFramework::ScreenSize windowSize{ static_cast<int>(viewportContext->GetViewportSize().m_width),
                                                       static_cast<int>(viewportContext->GetViewportSize().m_height) };
 
             AzFramework::ScreenPoint renderScreenpoint = AzFramework::WorldToScreen(
-                renderWorldSpace,
+                gizmoTranslation,
                 viewportContext->GetCameraViewMatrixAsMatrix3x4(),
                 viewportContext->GetCameraProjectionMatrix(),
                 windowSize);
