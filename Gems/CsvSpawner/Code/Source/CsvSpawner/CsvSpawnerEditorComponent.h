@@ -11,12 +11,19 @@
 #pragma once
 
 #include "CsvSpawnerUtils.h"
+#include "API/EditorLevelNotificationBus.h"
 #include "API/ToolsApplicationAPI.h"
+#include "Atom/RPI.Public/SceneBus.h"
+#include "AzFramework/API/ApplicationAPI.h"
+#include "AzFramework/Physics/HeightfieldProviderBus.h"
+#include "AzFramework/Physics/SystemBus.h"
+#include "AzFramework/Physics/Common/PhysicsSimulatedBodyAutomation.h"
+#include "AzFramework/Scene/SceneSystemInterface.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
+#include "GraphCanvas/Components/SceneBus.h"
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
@@ -69,5 +76,6 @@ namespace CsvSpawner
         void OnTerrainDataCreateEnd() override;
         void OnTerrainDataDestroyBegin() override;
         bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
+        [[nodiscard]] static bool IsTerrainAvailableInTheLevel(); //!< @returns true if current level contains terrain
     };
 } // namespace CsvSpawner

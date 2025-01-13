@@ -20,7 +20,6 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <thread>
 
 namespace CsvSpawner
 {
@@ -80,12 +79,26 @@ namespace CsvSpawner
     void CsvSpawnerEditorComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
+
         if (m_showLabels)
         {
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        if (IsTerrainAvailableInTheLevel())
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        }
+        else
+        {
+            AZ::TickBus::QueueFunction([this]()
+            {
+                AZ::TickBus::QueueFunction([this]()
+                {
+                    SpawnEntities();
+                });
+            });
+        }
     }
 
     void CsvSpawnerEditorComponent::Deactivate()
@@ -104,7 +117,7 @@ namespace CsvSpawner
 
         using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
         AZ::Data::AssetInfo sourceAssetInfo;
-        bool ok{ false };
+        bool ok { false };
         AZStd::string watchFolder;
         AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
 
@@ -140,6 +153,11 @@ namespace CsvSpawner
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 
+    bool CsvSpawnerEditorComponent::IsTerrainAvailableInTheLevel()
+    {
+        return true;
+    }
+
     void CsvSpawnerEditorComponent::SpawnEntities()
     {
         if (m_csvAssetId.IsValid() == false)
@@ -150,7 +168,7 @@ namespace CsvSpawner
         m_spawnedTickets.clear();
         using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
         AZ::Data::AssetInfo sourceAssetInfo;
-        bool ok{ false };
+        bool ok { false };
         AZStd::string watchFolder;
         AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
 
@@ -198,5 +216,4 @@ namespace CsvSpawner
         debugDisplay.PopMatrix();
         debugDisplay.SetState(stateBefore);
     }
-
 } // namespace CsvSpawner
