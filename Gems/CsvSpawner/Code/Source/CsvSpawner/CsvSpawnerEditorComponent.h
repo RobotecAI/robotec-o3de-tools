@@ -17,10 +17,13 @@
 #include "AzFramework/API/ApplicationAPI.h"
 #include "AzFramework/Physics/HeightfieldProviderBus.h"
 #include "AzFramework/Physics/SystemBus.h"
+#include "AzFramework/Physics/Common/PhysicsEvents.h"
 #include "AzFramework/Physics/Common/PhysicsSimulatedBodyAutomation.h"
 #include "AzFramework/Scene/SceneSystemInterface.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
+#include "Entity/EditorEntityContextBus.h"
 #include "GraphCanvas/Components/SceneBus.h"
+#include "Prefab/PrefabPublicNotificationBus.h"
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
@@ -38,7 +41,7 @@ namespace CsvSpawner
     class CsvSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
-        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
+        , protected AZ::TickBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(CsvSpawnerEditorComponent, CsvSpawnerEditorComponentTypeId);
@@ -51,6 +54,8 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        int GetTickOrder() override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
@@ -71,11 +76,5 @@ namespace CsvSpawner
 
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
         int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
-
-        // Terrain Notify
-        void OnTerrainDataCreateEnd() override;
-        void OnTerrainDataDestroyBegin() override;
-        bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
-        [[nodiscard]] static bool IsTerrainAvailableInTheLevel(); //!< @returns true if current level contains terrain
     };
 } // namespace CsvSpawner

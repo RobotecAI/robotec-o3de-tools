@@ -13,6 +13,7 @@
 #include "CsvSpawnerComponent.h"
 #include "CsvSpawnerCsvParser.h"
 #include "CsvSpawnerUtils.h"
+#include "AzFramework/Physics/PhysicsScene.h"
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/Path/Path.h>
@@ -79,25 +80,11 @@ namespace CsvSpawner
     void CsvSpawnerEditorComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
+        AZ::TickBus::Handler::BusConnect();
 
         if (m_showLabels)
         {
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
-        }
-
-        if (IsTerrainAvailableInTheLevel())
-        {
-            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-        }
-        else
-        {
-            AZ::TickBus::QueueFunction([this]()
-            {
-                AZ::TickBus::QueueFunction([this]()
-                {
-                    SpawnEntities();
-                });
-            });
         }
     }
 
@@ -105,7 +92,7 @@ namespace CsvSpawner
     {
         m_spawnedTickets.clear();
 
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
@@ -134,28 +121,21 @@ namespace CsvSpawner
         m_spawnedTickets.clear();
     }
 
-    void CsvSpawnerEditorComponent::OnTerrainDataCreateEnd()
+    void CsvSpawnerEditorComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
     {
-        if (!m_terrainCreatedOnlyOnce) // Init only once, even if level have multiple terrains
-        {
-            AZ::TickBus::QueueFunction([this]()
-            {
-                SpawnEntities();
-            });
+        auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        const auto sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
 
-            m_terrainCreatedOnlyOnce = true;
+        if (sceneHandle != AzPhysics::InvalidSceneHandle)
+        {
+            SpawnEntities();
+            AZ::TickBus::Handler::BusDisconnect();
         }
     }
 
-    void CsvSpawnerEditorComponent::OnTerrainDataDestroyBegin()
+    int CsvSpawnerEditorComponent::GetTickOrder()
     {
-        m_terrainCreatedOnlyOnce = false;
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
-    }
-
-    bool CsvSpawnerEditorComponent::IsTerrainAvailableInTheLevel()
-    {
-        return true;
+        return AZ::ComponentTickBus::TICK_LAST;
     }
 
     void CsvSpawnerEditorComponent::SpawnEntities()
@@ -165,6 +145,7 @@ namespace CsvSpawner
             AZ_Error("CsvSpawnerEditorComponent", false, "CSV asset is not set");
             return;
         }
+
         m_spawnedTickets.clear();
         using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
         AZ::Data::AssetInfo sourceAssetInfo;
