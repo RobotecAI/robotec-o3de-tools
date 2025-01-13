@@ -8,6 +8,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <ImGuizmo/ImGuizmo.h>
 
 namespace ImGuizmo
@@ -41,9 +42,15 @@ namespace ImGuizmo
         {
             behaviorContext->EBus<ImGuizmoRequestBus>("ImGuizmoRequestBus")
                 ->Attribute(AZ::Edit::Attributes::Category, "ImGuizmo")
-                ->Event("SetGizmoTransform", &ImGuizmoRequestBus::Events::SetGizmoTransform)
+                ->Event("AcquireHandle", &ImGuizmoRequestBus::Events::AcquireHandle)
+                ->Event("ReleaseHandle", &ImGuizmoRequestBus::Events::ReleaseHandle)
                 ->Event("GetGizmoTransform", &ImGuizmoRequestBus::Events::GetGizmoTransform)
+                ->Event("SetGizmoTransform", &ImGuizmoRequestBus::Events::SetGizmoTransform)
                 ->Event("SetGizmoVisible", &ImGuizmoRequestBus::Events::SetGizmoVisible)
+                ->Event("GetGizmoVisible", &ImGuizmoRequestBus::Events::GetGizmoVisible)
+                ->Event("SetGizmoLabel", &ImGuizmoRequestBus::Events::SetGizmoLabel)
+                ->Event("GetGizmoLabel", &ImGuizmoRequestBus::Events::GetGizmoLabel)
+                ->Event("GetIfManipulated", &ImGuizmoRequestBus::Events::GetIfManipulated)
                 ->Event("SetGizmoModeLocal", &ImGuizmoRequestBus::Events::SetGizmoModeLocal)
                 ->Event("SetGizmoModeWorld", &ImGuizmoRequestBus::Events::SetGizmoModeWorld);
         }
@@ -116,24 +123,26 @@ namespace ImGuizmo
 
     void ImGuizmoSystemComponent::ImGuiRender([[maybe_unused]] float deltaTime)
     {
-        if (m_gizmoVisible)
+        ImGuiContext* imGuiContext = nullptr;
+        AZ::Render::ImGuiSystemRequestBus::BroadcastResult(imGuiContext, &AZ::Render::ImGuiSystemRequests::GetActiveContext);
+        AZ_Assert(imGuiContext, "ImGui context is not available.");
+        if (!imGuiContext)
         {
-            ImGuiContext* imGuiContext = nullptr;
-            AZ::Render::ImGuiSystemRequestBus::BroadcastResult(imGuiContext, &AZ::Render::ImGuiSystemRequests::GetActiveContext);
-            AZ_Assert(imGuiContext, "ImGui context is not available.");
-            if (!imGuiContext)
-            {
-                return;
-            }
-            ImGui::SetCurrentContext(imGuiContext);
+            return;
+        }
+        auto viewportContext = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
+        AZ_Assert(viewportContext, "Viewport context is not available.");
+        if (!viewportContext)
+        {
+            return;
+        }
 
-            auto viewportContext = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
-            AZ_Assert(viewportContext, "Viewport context is not available.");
-            if (!viewportContext)
+        for (auto& [_, gizmoData] : m_gizmoData)
+        {
+            if (!gizmoData.m_gizmoVisible)
             {
-                return;
+                continue;
             }
-
             ImGuizmo::BeginFrame();
             ImGuizmo::Enable(true);
             ImGuizmo::SetRect(0, 0, viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
@@ -144,33 +153,153 @@ namespace ImGuizmo
             viewportContext->GetCameraProjectionMatrix().StoreToColumnMajorFloat16(projection);
             viewportContext->GetCameraViewMatrix().StoreToColumnMajorFloat16(view);
             ImGuizmo::AllowAxisFlip(false);
-            ImGuizmo::Manipulate(view, projection, m_gizmoOperation, m_gizmoMode, m_gizmoMatrix);
+            ImGuizmo::Manipulate(view, projection, gizmoData.m_operation, gizmoData.m_mode, gizmoData.m_gizmoMatrix);
+            gizmoData.m_manipulated = ImGuizmo::IsUsing();
+
+            const AZ::Vector3 renderWorldSpace{ gizmoData.m_gizmoMatrix[12], gizmoData.m_gizmoMatrix[13], gizmoData.m_gizmoMatrix[14] };
+            const AzFramework::ScreenSize windowSize{ static_cast<int>(viewportContext->GetViewportSize().m_width),
+                                                      static_cast<int>(viewportContext->GetViewportSize().m_height) };
+
+            AzFramework::ScreenPoint renderScreenpoint = AzFramework::WorldToScreen(
+                renderWorldSpace,
+                viewportContext->GetCameraViewMatrixAsMatrix3x4(),
+                viewportContext->GetCameraProjectionMatrix(),
+                windowSize);
+
+            ImGui::SetNextWindowPos(
+                ImVec2(renderScreenpoint.m_x, renderScreenpoint.m_y + 2.0f * ImGui::GetFrameHeight())); // Offset text slightly
+            ImGui::Begin(
+                "GizmoLabel",
+                nullptr,
+                ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+            ImGui::Text("%s", gizmoData.m_name.c_str());
+            ImGui::End();
+
+            return;
         }
     }
 
-    AZ::Transform ImGuizmoSystemComponent::GetGizmoTransform()
+    ImGuizmoRequests::GizmoHandle ImGuizmoSystemComponent::AcquireHandle(const AZ::Transform& transform, const AZStd::string& name)
     {
-        return conversions::Float16ToAZTransform(m_gizmoMatrix);
+        ImGuizmoRequests::GizmoHandle handle = m_nextHandle++;
+        GizmoData data;
+        data.m_name = name;
+        data.m_operation = ImGuizmo::OPERATION::ROTATE | ImGuizmo::OPERATION::TRANSLATE | ImGuizmo::OPERATION::SCALE;
+        data.m_mode = ImGuizmo::MODE::LOCAL;
+        conversions::AZTransformToFloat16(transform, data.m_gizmoMatrix);
+        m_gizmoData[handle] = data;
+        return handle;
     }
 
-    void ImGuizmoSystemComponent::SetGizmoTransform(const AZ::Transform& transform)
+    void ImGuizmoSystemComponent::ReleaseHandle(ImGuizmoRequests::GizmoHandle handle)
     {
-        conversions::AZTransformToFloat16(transform, m_gizmoMatrix);
+        m_gizmoData.erase(handle);
     }
 
-    void ImGuizmoSystemComponent::SetGizmoVisible(bool visible)
+    AZ::Transform ImGuizmoSystemComponent::GetGizmoTransform(ImGuizmoRequests::GizmoHandle handle)
     {
-        m_gizmoVisible = visible;
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return AZ::Transform::CreateIdentity();
+        }
+        const float* gizmoMatrix = m_gizmoData[handle].m_gizmoMatrix;
+        return conversions::Float16ToAZTransform(gizmoMatrix);
     }
 
-    void ImGuizmoSystemComponent::SetGizmoOperation(ImGuizmo::OPERATION operation)
+    void ImGuizmoSystemComponent::SetGizmoTransform(GizmoHandle handle, const AZ::Transform& transform)
     {
-        m_gizmoOperation = operation;
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return;
+        }
+
+        conversions::AZTransformToFloat16(transform, m_gizmoData[handle].m_gizmoMatrix);
     }
 
-    void ImGuizmoSystemComponent::SetGizmoMode(ImGuizmo::MODE mode)
+    void ImGuizmoSystemComponent::SetGizmoVisible(ImGuizmoRequests::GizmoHandle handle, bool visible)
     {
-        m_gizmoMode = mode;
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return;
+        }
+        // hide other gizmos
+        for (auto& [_, gizmoData] : m_gizmoData)
+        {
+            gizmoData.m_gizmoVisible = false;
+        }
+        m_gizmoData[handle].m_gizmoVisible = visible;
     }
 
+    bool ImGuizmoSystemComponent::GetGizmoVisible(ImGuizmoRequests::GizmoHandle handle)
+    {
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return false;
+        }
+        return m_gizmoData[handle].m_gizmoVisible;
+    }
+
+    void ImGuizmoSystemComponent::SetGizmoOperation(ImGuizmoRequests::GizmoHandle handle, OPERATION operation)
+    {
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return;
+        }
+        m_gizmoData[handle].m_operation = operation;
+    }
+
+    OPERATION ImGuizmoSystemComponent::GetGizmoOperation(ImGuizmoRequests::GizmoHandle handle)
+    {
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return ImGuizmo::OPERATION::UNIVERSAL;
+        }
+        return m_gizmoData[handle].m_operation;
+    }
+
+    void ImGuizmoSystemComponent::SetGizmoLabel(ImGuizmoRequests::GizmoHandle handle, const AZStd::string& name)
+    {
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return;
+        }
+        m_gizmoData[handle].m_name = name;
+    }
+
+    AZStd::string ImGuizmoSystemComponent::GetGizmoLabel(ImGuizmoRequests::GizmoHandle handle)
+    {
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return "";
+        }
+        return m_gizmoData[handle].m_name;
+    }
+
+    bool ImGuizmoSystemComponent::GetIfManipulated(ImGuizmoRequests::GizmoHandle handle)
+    {
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return false;
+        }
+        return m_gizmoData[handle].m_manipulated;
+    }
+
+    void ImGuizmoSystemComponent::SetGizmoMode(ImGuizmoRequests::GizmoHandle handle, MODE mode)
+    {
+        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        {
+            AZ_Assert(false, "Gizmo handle not found");
+            return;
+        }
+        m_gizmoData[handle].m_mode = mode;
+    }
 } // namespace ImGuizmo

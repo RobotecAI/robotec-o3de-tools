@@ -10,30 +10,51 @@ namespace ImGuizmo
 {
     namespace ImGuizmoConsoleCommands
     {
-        static void imguizmo_show(const AZ::ConsoleCommandContainer& arguments)
+        static ImGuizmoRequests::GizmoHandle ArgumentsToHandle(const AZ::ConsoleCommandContainer& arguments)
+        {
+            if (arguments.size() < 1)
+            {
+                AZ_Printf("ImGuizmo", "No handle provided\n");
+                return ImGuizmoRequests::InvalidGizmoHandle;
+            }
+            return AZStd::stoi(AZStd::string(arguments[0].data(), arguments[0].size()));
+        };
+
+        static void imguizmo_acquire(const AZ::ConsoleCommandContainer& arguments)
         {
             AZ_UNUSED(arguments);
-            ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoVisible, true);
+            // Acquire a gizmo handle
+            ImGuizmoRequests::GizmoHandle handle = ImGuizmoRequests::InvalidGizmoHandle;
+            ImGuizmoRequestBus::BroadcastResult(
+                handle, &ImGuizmoRequestBus::Events::AcquireHandle, AZ::Transform::CreateIdentity(), "TestGizmo");
+            AZ_Printf("ImGuizmo", "Gizmo handle: %d\n", handle);
+        }
+
+        static void imguizmo_show(const AZ::ConsoleCommandContainer& arguments)
+        {
+            auto handle = ArgumentsToHandle(arguments);
+            ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoVisible, handle, true);
         }
 
         static void imguizmo_hide(const AZ::ConsoleCommandContainer& arguments)
         {
-            AZ_UNUSED(arguments);
-            ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoVisible, false);
+            auto handle = ArgumentsToHandle(arguments);
+            ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoVisible, handle, false);
         }
 
         static void imguizmo_local(const AZ::ConsoleCommandContainer& arguments)
         {
-            AZ_UNUSED(arguments);
-            ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoMode, ImGuizmo::MODE::LOCAL);
+            auto handle = ArgumentsToHandle(arguments);
+            ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoMode, handle, ImGuizmo::MODE::LOCAL);
         }
 
         static void imguizmo_world(const AZ::ConsoleCommandContainer& arguments)
         {
-            AZ_UNUSED(arguments);
-            ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoMode, ImGuizmo::MODE::WORLD);
+            auto handle = ArgumentsToHandle(arguments);
+            ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoMode, handle, ImGuizmo::MODE::WORLD);
         }
 
+        AZ_CONSOLEFREEFUNC(imguizmo_acquire, AZ::ConsoleFunctorFlags::DontReplicate, "Show imguizmo gizmo");
         AZ_CONSOLEFREEFUNC(imguizmo_show, AZ::ConsoleFunctorFlags::DontReplicate, "Show imguizmo gizmo");
         AZ_CONSOLEFREEFUNC(imguizmo_hide, AZ::ConsoleFunctorFlags::DontReplicate, "Hide imguizmo gizmo");
         AZ_CONSOLEFREEFUNC(imguizmo_local, AZ::ConsoleFunctorFlags::DontReplicate, "Set imguizmo gizmo to local mode");
@@ -60,12 +81,32 @@ namespace ImGuizmo
         ~ImGuizmoSystemComponent();
 
     protected:
+        //! GizmoData struct to store gizmo data
+        struct GizmoData
+        {
+            AZStd::string m_name;
+            OPERATION m_operation;
+            MODE m_mode;
+            bool m_gizmoVisible = false;
+            bool m_manipulated = false;
+            float m_gizmoMatrix[16];
+        };
+
+        AZStd::unordered_map<GizmoHandle, GizmoData> m_gizmoData;
+
         // ImGuizmoRequestBus overrides ...
-        AZ::Transform GetGizmoTransform() override;
-        void SetGizmoTransform(const AZ::Transform& transform) override;
-        void SetGizmoVisible(bool visible) override;
-        void SetGizmoOperation(ImGuizmo::OPERATION operation) override;
-        void SetGizmoMode(ImGuizmo::MODE mode) override;
+        ImGuizmoRequests::GizmoHandle AcquireHandle(const AZ::Transform& transform, const AZStd::string& name) override;
+        void ReleaseHandle(ImGuizmoRequests::GizmoHandle handle) override;
+        AZ::Transform GetGizmoTransform(ImGuizmoRequests::GizmoHandle handle) override;
+        void SetGizmoTransform(ImGuizmoRequests::GizmoHandle handle, const AZ::Transform& transform) override;
+        void SetGizmoVisible(ImGuizmoRequests::GizmoHandle handle, bool visible) override;
+        bool GetGizmoVisible(ImGuizmoRequests::GizmoHandle handle) override;
+        void SetGizmoOperation(ImGuizmoRequests::GizmoHandle handle, OPERATION operation) override;
+        OPERATION GetGizmoOperation(ImGuizmoRequests::GizmoHandle handle) override;
+        void SetGizmoLabel(ImGuizmoRequests::GizmoHandle handle, const AZStd::string& name) override;
+        AZStd::string GetGizmoLabel(ImGuizmoRequests::GizmoHandle handle) override;
+        bool GetIfManipulated(ImGuizmoRequests::GizmoHandle handle) override;
+        void SetGizmoMode(ImGuizmoRequests::GizmoHandle handle, MODE mode) override;
 
         // AZ::Component overrides ...
         void Init() override;
@@ -78,10 +119,7 @@ namespace ImGuizmo
         void ImGuiRender(float deltaTime);
 
         bool m_imguiAvailable = false;
-        bool m_gizmoVisible = false;
-        float m_gizmoMatrix[16] = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
-        ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::OPERATION::ROTATE | ImGuizmo::OPERATION::TRANSLATE | ImGuizmo::OPERATION::SCALE;
-        ImGuizmo::MODE m_gizmoMode = ImGuizmo::MODE::LOCAL;
+        ImGuizmoRequests::GizmoHandle m_nextHandle{ 0 };
     };
 
 } // namespace ImGuizmo

@@ -337,9 +337,12 @@ It is gemification of existing ImGui extension called [ImGuizmo](https://github.
 This gem comes with only one system component the is active only in game mode.
 To test this gizmo, activate gem and type in O3DE console (in gamelauncher):
 ```
-imguizmo_show
+imguizmo_acquire
+imguizmo_show 0
 ```
 
-There is a simple API that allow you to get / set transform of gizmo. 
+There is an API to work with multiple gizmos using handle.
 Refer to script canvas example below:
 ![alt text](doc/imguizmo.png)
+
+*Note* Only one gizmo can be rendered at the time!
