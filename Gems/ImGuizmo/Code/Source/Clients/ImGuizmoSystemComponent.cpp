@@ -13,7 +13,7 @@
 
 namespace ImGuizmo
 {
-    namespace conversions
+    namespace Conversions
     {
 
         AZ::Transform Float16ToAZTransform(const float* matrix)
@@ -126,7 +126,7 @@ namespace ImGuizmo
         AZ_Assert(m_imguiAvailable, "ImGuizmoComponent requires ImGui to be available. Make sure ImGuiSystemComponent is active.");
     }
 
-    void ImGuizmoSystemComponent::ImGuiRender([[maybe_unused]] float deltaTime)
+    void ImGuizmoSystemComponent::ImGuiRender()
     {
         ImGuiContext* imGuiContext = nullptr;
         AZ::Render::ImGuiSystemRequestBus::BroadcastResult(imGuiContext, &AZ::Render::ImGuiSystemRequests::GetActiveContext);

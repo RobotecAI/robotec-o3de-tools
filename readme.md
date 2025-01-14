@@ -334,7 +334,7 @@ ros2 service call /geojson/get_spawned_groups_ids std_srvs/srv/Trigger
 
 This gem brings gizmo (with some simple API) to be used in game mode.
 It is gemification of existing ImGui extension called [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo).
-This gem comes with only one system component the is active only in game mode.
+This gem comes with only one system component that is active only in game mode.
 To test this gizmo, activate gem and type in O3DE console (in gamelauncher):
 ```
 imguizmo_acquire
