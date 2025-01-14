@@ -28,12 +28,12 @@ namespace ImGuizmo
             mat.StoreToColumnMajorFloat16(matrix);
         }
 
-        AZ::Vector3 Float16ToTranslation3D(const float* matrix)
+        AZ::Vector4 Float16ToTranslation4D(const float* matrix)
         {
-            return AZ::Vector3(matrix[12], matrix[13], matrix[14]);
+            return AZ::Vector4(matrix[12], matrix[13], matrix[14], matrix[15]);
         }
 
-    } // namespace conversions
+    } // namespace Conversions
 
     AZ_COMPONENT_IMPL(ImGuizmoSystemComponent, "ImGuizmoSystemComponent", ImGuizmoSystemComponentTypeId);
 
@@ -117,7 +117,7 @@ namespace ImGuizmo
     {
         if (m_imguiAvailable)
         {
-            ImGuiRender(deltaTime);
+            ImGuiRender();
             return;
         }
         // As I understand, this is a way to poke the ImGuiSystemComponent to make sure that ImGuiContext is created.
@@ -135,13 +135,15 @@ namespace ImGuizmo
         {
             return;
         }
+
         auto viewportContext = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
         AZ_Assert(viewportContext, "Viewport context is not available.");
         if (!viewportContext)
         {
             return;
         }
-
+        ImGuiContext* prevContext = ImGui::GetCurrentContext();
+        ImGui::SetCurrentContext(imGuiContext);
         for (auto& [_, gizmoData] : m_gizmoData)
         {
             if (!gizmoData.m_gizmoVisible)
@@ -152,8 +154,8 @@ namespace ImGuizmo
             ImGuizmo::Enable(true);
             ImGuizmo::SetRect(0, 0, viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
 
-            const auto gizmoTranslation = conversions::Float16ToTranslation3D(gizmoData.m_gizmoMatrix);
-            const AZ::Vector4 localPosition = viewportContext->GetCameraViewMatrix() * AZ::Vector4(gizmoTranslation, 1.0f);
+            const auto gizmoTranslation = Conversions::Float16ToTranslation4D(gizmoData.m_gizmoMatrix);
+            const AZ::Vector4 localPosition = viewportContext->GetCameraViewMatrix() * gizmoTranslation;
             // Skip gizmos that are behind the camera
             if (localPosition.GetZ() > 0.0f)
             {
@@ -172,7 +174,7 @@ namespace ImGuizmo
                                                       static_cast<int>(viewportContext->GetViewportSize().m_height) };
 
             AzFramework::ScreenPoint renderScreenpoint = AzFramework::WorldToScreen(
-                gizmoTranslation,
+                gizmoTranslation.GetAsVector3(),
                 viewportContext->GetCameraViewMatrixAsMatrix3x4(),
                 viewportContext->GetCameraProjectionMatrix(),
                 windowSize);
@@ -185,9 +187,8 @@ namespace ImGuizmo
                 ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
             ImGui::Text("%s", gizmoData.m_name.c_str());
             ImGui::End();
-
-            return;
         }
+        ImGui::SetCurrentContext(prevContext);
     }
 
     ImGuizmoRequests::GizmoHandle ImGuizmoSystemComponent::AcquireHandle(const AZ::Transform& transform, const AZStd::string& name)
@@ -197,7 +198,7 @@ namespace ImGuizmo
         data.m_name = name;
         data.m_operation = ImGuizmo::OPERATION::ROTATE | ImGuizmo::OPERATION::TRANSLATE | ImGuizmo::OPERATION::SCALE;
         data.m_mode = ImGuizmo::MODE::LOCAL;
-        conversions::AZTransformToFloat16(transform, data.m_gizmoMatrix);
+        Conversions::AZTransformToFloat16(transform, data.m_gizmoMatrix);
         m_gizmoData[handle] = data;
         return handle;
     }
@@ -209,13 +210,13 @@ namespace ImGuizmo
 
     AZ::Transform ImGuizmoSystemComponent::GetGizmoTransform(ImGuizmoRequests::GizmoHandle handle)
     {
-        if (m_gizmoData.find(handle) == m_gizmoData.end())
+        const auto gizmoDataIt = m_gizmoData.find(handle);
+        AZ_Assert(gizmoDataIt != m_gizmoData.end(), "Gizmo handle not found");
+        if (gizmoDataIt == m_gizmoData.end())
         {
-            AZ_Assert(false, "Gizmo handle not found");
             return AZ::Transform::CreateIdentity();
         }
-        const float* gizmoMatrix = m_gizmoData[handle].m_gizmoMatrix;
-        return conversions::Float16ToAZTransform(gizmoMatrix);
+        return Conversions::Float16ToAZTransform(gizmoDataIt->second.m_gizmoMatrix);
     }
 
     void ImGuizmoSystemComponent::SetGizmoTransform(GizmoHandle handle, const AZ::Transform& transform)
@@ -226,7 +227,7 @@ namespace ImGuizmo
             return;
         }
 
-        conversions::AZTransformToFloat16(transform, m_gizmoData[handle].m_gizmoMatrix);
+        Conversions::AZTransformToFloat16(transform, m_gizmoData[handle].m_gizmoMatrix);
     }
 
     void ImGuizmoSystemComponent::SetGizmoVisible(ImGuizmoRequests::GizmoHandle handle, bool visible)

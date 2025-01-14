@@ -20,7 +20,7 @@ namespace ImGuizmo
             return AZStd::stoi(AZStd::string(arguments[0].data(), arguments[0].size()));
         };
 
-        static void imguizmo_acquire(const AZ::ConsoleCommandContainer& arguments)
+        static void imguizmo_Acquire(const AZ::ConsoleCommandContainer& arguments)
         {
             AZ_UNUSED(arguments);
             // Acquire a gizmo handle
@@ -30,35 +30,35 @@ namespace ImGuizmo
             AZ_Printf("ImGuizmo", "Gizmo handle: %d\n", handle);
         }
 
-        static void imguizmo_show(const AZ::ConsoleCommandContainer& arguments)
+        static void imguizmo_Show(const AZ::ConsoleCommandContainer& arguments)
         {
             auto handle = ArgumentsToHandle(arguments);
             ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoVisible, handle, true);
         }
 
-        static void imguizmo_hide(const AZ::ConsoleCommandContainer& arguments)
+        static void imguizmo_Hide(const AZ::ConsoleCommandContainer& arguments)
         {
             auto handle = ArgumentsToHandle(arguments);
             ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoVisible, handle, false);
         }
 
-        static void imguizmo_local(const AZ::ConsoleCommandContainer& arguments)
+        static void imguizmo_Local(const AZ::ConsoleCommandContainer& arguments)
         {
             auto handle = ArgumentsToHandle(arguments);
             ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoMode, handle, ImGuizmo::MODE::LOCAL);
         }
 
-        static void imguizmo_world(const AZ::ConsoleCommandContainer& arguments)
+        static void imguizmo_World(const AZ::ConsoleCommandContainer& arguments)
         {
             auto handle = ArgumentsToHandle(arguments);
             ImGuizmoRequestBus::Broadcast(&ImGuizmoRequestBus::Events::SetGizmoMode, handle, ImGuizmo::MODE::WORLD);
         }
 
-        AZ_CONSOLEFREEFUNC(imguizmo_acquire, AZ::ConsoleFunctorFlags::DontReplicate, "Show imguizmo gizmo");
-        AZ_CONSOLEFREEFUNC(imguizmo_show, AZ::ConsoleFunctorFlags::DontReplicate, "Show imguizmo gizmo");
-        AZ_CONSOLEFREEFUNC(imguizmo_hide, AZ::ConsoleFunctorFlags::DontReplicate, "Hide imguizmo gizmo");
-        AZ_CONSOLEFREEFUNC(imguizmo_local, AZ::ConsoleFunctorFlags::DontReplicate, "Set imguizmo gizmo to local mode");
-        AZ_CONSOLEFREEFUNC(imguizmo_world, AZ::ConsoleFunctorFlags::DontReplicate, "Set imguizmo gizmo to world mode");
+        AZ_CONSOLEFREEFUNC(imguizmo_Acquire, AZ::ConsoleFunctorFlags::DontReplicate, "Show imguizmo gizmo");
+        AZ_CONSOLEFREEFUNC(imguizmo_Show, AZ::ConsoleFunctorFlags::DontReplicate, "Show imguizmo gizmo");
+        AZ_CONSOLEFREEFUNC(imguizmo_Hide, AZ::ConsoleFunctorFlags::DontReplicate, "Hide imguizmo gizmo");
+        AZ_CONSOLEFREEFUNC(imguizmo_Local, AZ::ConsoleFunctorFlags::DontReplicate, "Set imguizmo gizmo to local mode");
+        AZ_CONSOLEFREEFUNC(imguizmo_World, AZ::ConsoleFunctorFlags::DontReplicate, "Set imguizmo gizmo to world mode");
 
     } // namespace ImGuizmoConsoleCommands
 
@@ -92,8 +92,6 @@ namespace ImGuizmo
             float m_gizmoMatrix[16];
         };
 
-        AZStd::unordered_map<GizmoHandle, GizmoData> m_gizmoData;
-
         // ImGuizmoRequestBus overrides ...
         ImGuizmoRequests::GizmoHandle AcquireHandle(const AZ::Transform& transform, const AZStd::string& name) override;
         void ReleaseHandle(ImGuizmoRequests::GizmoHandle handle) override;
@@ -116,10 +114,11 @@ namespace ImGuizmo
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        void ImGuiRender(float deltaTime);
+        void ImGuiRender();
 
-        bool m_imguiAvailable = false;
-        ImGuizmoRequests::GizmoHandle m_nextHandle{ 0 };
+        bool m_imguiAvailable = false; //! Flag to check if ImGui is available
+        AZStd::unordered_map<GizmoHandle, GizmoData> m_gizmoData; //! Created gizmos' data
+        ImGuizmoRequests::GizmoHandle m_nextHandle{ 0 }; //! Next available handle
     };
 
 } // namespace ImGuizmo
