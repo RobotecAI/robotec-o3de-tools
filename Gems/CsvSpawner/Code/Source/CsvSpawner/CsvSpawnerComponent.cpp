@@ -52,16 +52,19 @@ namespace CsvSpawner
 
     void CsvSpawnerComponent::OnTerrainDataCreateEnd()
     {
-        if (!m_terrainCreatedOnlyOnce) // Init only once, even if level have multiple terrains
+        if (m_terrainCreatedOnlyOnce)
         {
-            AZ::TickBus::QueueFunction([this]()
-            {
-                m_spawnedTickets = CsvSpawnerUtils::SpawnEntities(
-                    m_spawnableEntityInfo, m_spawnableAssetConfigurations, m_defaultSeed, AzPhysics::DefaultPhysicsSceneName, this->GetEntityId());
-            });
-
-            m_terrainCreatedOnlyOnce = true;
+            return;
         }
+
+        AZ::TickBus::QueueFunction([this]()
+        {
+            m_spawnedTickets = CsvSpawnerUtils::SpawnEntities(
+                m_spawnableEntityInfo, m_spawnableAssetConfigurations, m_defaultSeed, AzPhysics::DefaultPhysicsSceneName, this->GetEntityId());
+        });
+
+        // Init only once, even if level have multiple terrains
+        m_terrainCreatedOnlyOnce = true;
     }
 
     void CsvSpawnerComponent::OnTerrainDataDestroyBegin()
