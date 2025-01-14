@@ -42,7 +42,14 @@ namespace CsvSpawner
 
     void CsvSpawnerComponent::Activate()
     {
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        if (IsTerrainAvailable())
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        }
+        else
+        {
+            OnTerrainDataCreateEnd();
+        }
     }
 
     void CsvSpawnerComponent::Deactivate()
@@ -76,5 +83,10 @@ namespace CsvSpawner
     {
         m_terrainCreatedOnlyOnce = false;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+    }
+
+    bool CsvSpawnerComponent::IsTerrainAvailable()
+    {
+        return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
     }
 } // namespace CsvSpawner
