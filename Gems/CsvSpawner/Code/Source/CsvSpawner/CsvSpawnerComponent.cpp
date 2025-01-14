@@ -54,7 +54,7 @@ namespace CsvSpawner
 
     void CsvSpawnerComponent::Deactivate()
     {
-        OnTerrainDataDestroyEnd();
+        OnTerrainDataDestroyBegin();
     }
 
     void CsvSpawnerComponent::OnTerrainDataCreateEnd()
