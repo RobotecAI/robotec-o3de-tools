@@ -54,7 +54,7 @@ namespace CsvSpawner
 
     void CsvSpawnerComponent::Deactivate()
     {
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
+        OnTerrainDataDestroyEnd();
     }
 
     void CsvSpawnerComponent::OnTerrainDataCreateEnd()

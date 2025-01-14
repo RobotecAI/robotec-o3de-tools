@@ -26,7 +26,7 @@ namespace CsvSpawner
     //! dependent on a CSV file).
     class CsvSpawnerComponent
         : public AZ::Component
-        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(CsvSpawnerComponent, CsvSpawnerComponentTypeId);
@@ -46,6 +46,10 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
 
+        // AzFramework::Terrain::TerrainDataNotificationBus::Handler overrides
+        void OnTerrainDataCreateEnd() override;
+        void OnTerrainDataDestroyBegin() override;
+
     private:
         AZStd::unordered_map<AZStd::string, CsvSpawnableAssetConfiguration> m_spawnableAssetConfigurations; //!< List of assets to spawn
         AZStd::vector<CsvSpawnableEntityInfo> m_spawnableEntityInfo; //!< List of entities to spawn
@@ -54,8 +58,6 @@ namespace CsvSpawner
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets;
 
         // Terrain notify
-        void OnTerrainDataCreateEnd() override;
-        void OnTerrainDataDestroyBegin() override;
         bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
         [[nodiscard]] static bool IsTerrainAvailable(); //!< @returns True if current level has terrain, otherwise false.
     };
