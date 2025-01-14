@@ -117,6 +117,7 @@ namespace CsvSpawner
         auto spawnableEntityInfo = CsvSpawner::CsvSpawnerUtils::GetSpawnableEntityInfoFromCSV(sourcePath.String());
 
         gameEntity->CreateComponent<CsvSpawnerComponent>(config, spawnableEntityInfo, m_defaultSeed);
+
         // Destroy Editor's spawned entities
         m_spawnedTickets.clear();
     }
@@ -126,7 +127,7 @@ namespace CsvSpawner
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         const auto sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
 
-        if (sceneHandle != AzPhysics::InvalidSceneHandle)
+        if (sceneInterface->IsEnabled(sceneHandle) && sceneHandle != AzPhysics::InvalidSceneHandle)
         {
             SpawnEntities();
             AZ::TickBus::Handler::BusDisconnect();

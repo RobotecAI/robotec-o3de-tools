@@ -54,6 +54,8 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        // TickBus interface overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
 
