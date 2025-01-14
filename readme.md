@@ -329,3 +329,20 @@ ros2 topic pub /geojson/delete_all std_msgs/msg/Empty "{}" --once
 ```
 ros2 service call /geojson/get_spawned_groups_ids std_srvs/srv/Trigger
 ```
+
+# ImGuizmo
+
+This gem brings gizmo (with some simple API) to be used in game mode.
+It is gemification of existing ImGui extension called [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo).
+This gem comes with only one system component that is active only in game mode.
+To test this gizmo, activate gem and type in O3DE console (in gamelauncher):
+```
+imguizmo_acquire
+imguizmo_show 0
+```
+
+There is an API to work with multiple gizmos using handle.
+Refer to script canvas example below:
+![alt text](doc/imguizmo.png)
+
+*Note* Only one gizmo can be rendered at the time!
