@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include "CsvSpawnerUtils.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
+#include "CsvSpawnerUtils.h"
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -56,6 +56,6 @@ namespace CsvSpawner
         // Terrain notify
         void OnTerrainDataCreateEnd() override;
         void OnTerrainDataDestroyBegin() override;
-        bool m_terrainCreatedOnlyOnce { false }; //!< Is terrain fully generated once
+        bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
     };
 } // namespace CsvSpawner

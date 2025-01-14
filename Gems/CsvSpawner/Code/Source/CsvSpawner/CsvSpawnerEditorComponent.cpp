@@ -10,10 +10,10 @@
 
 #include "CsvSpawnerEditorComponent.h"
 #include "AzCore/Debug/Trace.h"
+#include "AzFramework/Physics/PhysicsScene.h"
 #include "CsvSpawnerComponent.h"
 #include "CsvSpawnerCsvParser.h"
 #include "CsvSpawnerUtils.h"
-#include "AzFramework/Physics/PhysicsScene.h"
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/Path/Path.h>
@@ -104,7 +104,7 @@ namespace CsvSpawner
 
         using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
         AZ::Data::AssetInfo sourceAssetInfo;
-        bool ok { false };
+        bool ok{ false };
         AZStd::string watchFolder;
         AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
 
@@ -122,7 +122,7 @@ namespace CsvSpawner
         m_spawnedTickets.clear();
     }
 
-    void CsvSpawnerEditorComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    void CsvSpawnerEditorComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         const auto sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
@@ -150,7 +150,7 @@ namespace CsvSpawner
         m_spawnedTickets.clear();
         using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
         AZ::Data::AssetInfo sourceAssetInfo;
-        bool ok { false };
+        bool ok{ false };
         AZStd::string watchFolder;
         AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
 
