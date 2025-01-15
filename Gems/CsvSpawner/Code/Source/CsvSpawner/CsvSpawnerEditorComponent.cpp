@@ -68,13 +68,13 @@ namespace CsvSpawner
                         &CsvSpawnerEditorComponent::m_spawnOnComponentActivated,
                         "Spawn On Editor Activate",
                         "Spawns entities when editor component is being activated.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnButtonSpawnOnTerrainUpdateChanged)
+                    // ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnButtonSpawnOnComponentActivatedChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate,
                         "Spawn On Terrain Update",
                         "Should respawn entiteis on any Terrain config and transform change.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnButtonSpawnOnTerrainUpdateChanged)
+                    // ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnButtonSpawnOnTerrainUpdateChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::SetSpawnOnTerrainUpdateButtonVisibility);
             }
         }
@@ -92,26 +92,27 @@ namespace CsvSpawner
         // Connect to Terrain Notifier Bus
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
-        if (m_spawnOnComponentActivated && !m_spawnedOnceOnComponentActivated)
+        if (m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce)
         {
             AZ::TickBus::QueueFunction(
-                [this]()
+            [this]()
+            {
+                // If there is no Terrain handlers (which means no active terrain in this level), just spawn entities on next available
+                // tick.
+                if (!IsTerrainAvailable() && !m_spawnOnTerrainUpdate)
                 {
-                    // If there is no Terrain handlers (which means no active terrain in this level), just spawn entities on next available
-                    // tick.
-                    if (!IsTerrainAvailable() && !m_spawnOnTerrainUpdate)
-                    {
-                        m_spawnedOnceOnComponentActivated = true;
-                        SpawnEntities();
-                    }
-                });
+                    m_flagSpawnEntitiesOnStartOnce = true;
+                    SpawnEntities();
+                    AZ_Warning("CsvSpawnerEditorComponent::Activate", false, "Spawned with Activate - no terrain")
+                }
+            });
         }
     }
 
     void CsvSpawnerEditorComponent::Deactivate()
     {
         m_spawnedTickets.clear();
-        m_spawnedOnceOnComponentActivated = false;
+        m_flagSpawnEntitiesOnStartOnce = false;
 
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
@@ -154,15 +155,17 @@ namespace CsvSpawner
     {
         AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Terrain Data Changed.");
 
-        if (m_spawnOnComponentActivated && !m_spawnedOnceOnComponentActivated)
+        if (m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce)
         {
             AZ::TickBus::QueueFunction(
                 [this]()
                 {
                     SpawnEntities();
+                    m_flagSpawnEntitiesOnStartOnce = true;
                 });
 
-            m_spawnedOnceOnComponentActivated = true;
+            // m_flagSpawnEntitiesOnStartOnce = true;
+            AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Spawned with On Spawn Activated")
         }
 
         if (!m_spawnOnTerrainUpdate)
@@ -175,6 +178,8 @@ namespace CsvSpawner
             {
                 SpawnEntities();
             });
+
+        AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Spawned with Terrain Data Changed")
     }
 
     void CsvSpawnerEditorComponent::SpawnEntities()
@@ -216,23 +221,32 @@ namespace CsvSpawner
     void CsvSpawnerEditorComponent::OnButtonSpawnOnTerrainUpdateChanged()
     {
         // Make this only available if level has Terrain.
-        if (IsTerrainAvailable())
+        if (IsTerrainAvailable() && !m_flagSpawnEntitiesOnStartOnce)
         {
             AZ::TickBus::QueueFunction(
                 [this]()
                 {
                     SpawnEntities();
                 });
+
+            m_flagSpawnEntitiesOnStartOnce = true;
+            AZ_Warning("CsvSpawnerEditorComponent", false, "Spawned with Terrain Update Ediotr Button")
         }
     }
 
     void CsvSpawnerEditorComponent::OnButtonSpawnOnComponentActivatedChanged()
     {
-        AZ::TickBus::QueueFunction(
+        if (!m_flagSpawnEntitiesOnStartOnce)
+        {
+            AZ::TickBus::QueueFunction(
             [this]()
             {
                 SpawnEntities();
             });
+
+            m_flagSpawnEntitiesOnStartOnce = true;
+            AZ_Warning("CsvSpawnerEditorComponent", false, "Spawned with Activate Edtior Button")
+        }
     }
 
     void CsvSpawnerEditorComponent::OnShowLabelsChanged()

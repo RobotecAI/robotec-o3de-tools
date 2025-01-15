@@ -67,7 +67,7 @@ namespace CsvSpawner
         int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
 
         bool m_spawnOnComponentActivated{ true }; //!< Whether entities should be spawned if editor component is activated.
-        bool m_spawnedOnceOnComponentActivated{ false }; //!< @returns True if spawned once, false otherwise.
+        bool m_flagSpawnEntitiesOnStartOnce{ false }; //!< @returns True if spawned once, false otherwise.
 
         //! This needs to be called since, change to
         //! @var m_spawnOnComponentActivated causes component to refresh and erase spawned entities.
