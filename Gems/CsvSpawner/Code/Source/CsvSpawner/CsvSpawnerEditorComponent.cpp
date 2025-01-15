@@ -72,7 +72,7 @@ namespace CsvSpawner
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate,
                         "Spawn On Terrain Update",
-                        "Should respawn entiteis on any Terrain config and transform change.")
+                        "Should respawn entities on any Terrain config and transform change.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::SetSpawnOnTerrainUpdateButtonVisibility);
             }
         }
@@ -149,6 +149,11 @@ namespace CsvSpawner
      */
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
+        if (static_cast<bool>(dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::ColorData)))
+        {
+            return;
+        }
+
         if ((m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce) || m_spawnOnTerrainUpdate)
         {
             AZ::TickBus::QueueFunction(
