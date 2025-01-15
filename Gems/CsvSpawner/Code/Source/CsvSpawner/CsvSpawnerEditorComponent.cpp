@@ -37,6 +37,7 @@ namespace CsvSpawner
                 ->Field("SpawnableAssetConfigurations", &CsvSpawnerEditorComponent::m_spawnableAssetConfigurations)
                 ->Field("DefaultSeed", &CsvSpawnerEditorComponent::m_defaultSeed)
                 ->Field("ShowLabels", &CsvSpawnerEditorComponent::m_showLabels)
+                ->Field("Spawn On Component Activated", &CsvSpawnerEditorComponent::m_spawnOnComponentActivated)
                 ->Field("SpawnOnTerrainUpdate", &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -61,19 +62,24 @@ namespace CsvSpawner
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_defaultSeed, "Default seed", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_showLabels, "Show labels in Editor", "")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnOnShowLabelsChanged)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnShowLabelsChanged)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CsvSpawnerEditorComponent::m_spawnOnComponentActivated,
+                        "Spawn Entities On Activate",
+                        "Spawns entities when editor component is being activated.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate,
                         "Spawn On Terrain Update",
                         "Should respawn entiteis on any Terrain config and transform change.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnSpawnOnTerrainUpdateChanged)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::ShouldShowSpawnOnTerrainUpdate);
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnButtonSpawnOnTerrainUpdateChanged)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::ShouldShowButtonSpawnOnTerrainUpdate);
             }
         }
     }
 
-    void CsvSpawnerEditorComponent::OnOnShowLabelsChanged()
+    void CsvSpawnerEditorComponent::OnShowLabelsChanged()
     {
         if (m_showLabels)
         {
@@ -88,19 +94,35 @@ namespace CsvSpawner
     void CsvSpawnerEditorComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         if (m_showLabels)
         {
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
-        // m_spawnOnTerrainUpdate = AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
+        // Connect to Terrain Notifier Bus
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+
+        if (m_spawnOnComponentActivated && !spawnedOnceOnStart)
+        {
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    // If there is no Terrain handlers (which means no active terrain in this level), just spawn entities on next available
+                    // tick.
+                    if (!AzFramework::Terrain::TerrainDataRequestBus::HasHandlers() && !m_spawnOnTerrainUpdate)
+                    {
+                        spawnedOnceOnStart = true;
+                        SpawnEntities();
+                    }
+                });
+        }
     }
 
     void CsvSpawnerEditorComponent::Deactivate()
     {
         m_spawnedTickets.clear();
+        spawnedOnceOnStart = false;
 
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
@@ -141,12 +163,25 @@ namespace CsvSpawner
      */
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
+        AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Terrain Data Changed.");
+
+        if (m_spawnOnComponentActivated && !spawnedOnceOnStart)
+        {
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    SpawnEntities();
+                });
+
+            spawnedOnceOnStart = true;
+        }
+
         if (!m_spawnOnTerrainUpdate)
         {
             return;
         }
 
-        AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Terrain Data Changed.") AZ::TickBus::QueueFunction(
+        AZ::TickBus::QueueFunction(
             [this]()
             {
                 SpawnEntities();
@@ -184,20 +219,27 @@ namespace CsvSpawner
             CsvSpawnerUtils::SpawnEntities(m_spawnableEntityInfo, config, m_defaultSeed, AzPhysics::EditorPhysicsSceneName, GetEntityId());
     }
 
-    AZ::u32 CsvSpawnerEditorComponent::ShouldShowSpawnOnTerrainUpdate() const
+    AZ::u32 CsvSpawnerEditorComponent::ShouldShowButtonSpawnOnTerrainUpdate() const
     {
         return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers() ? AZ::Edit::PropertyVisibility::Show
                                                                           : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    void CsvSpawnerEditorComponent::OnSpawnOnTerrainUpdateChanged()
+    void CsvSpawnerEditorComponent::OnButtonSpawnOnTerrainUpdateChanged()
     {
-        AZ_Warning("CsvSpawnerEditorComponent::OnSpawnOnTerrainUpdateChanged", false, "Spawn Terrain Triggered.")
+        AZ_Warning("CsvSpawnerEditorComponent::OnSpawnOnTerrainUpdateChanged", false, "Spawn Terrain Triggered.");
+
+        // This needs to be called since, change to this variable causes component to refresh and erase spawned entities.
+        // We want to keep entities always spawned (be visible) whenever, to any user action.
+        // Make this only available if level has Terrain.
+        if (AzFramework::Terrain::TerrainDataRequestBus::HasHandlers())
+        {
             AZ::TickBus::QueueFunction(
                 [this]()
                 {
                     SpawnEntities();
                 });
+        }
     }
 
     void CsvSpawnerEditorComponent::OnSpawnButton()
