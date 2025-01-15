@@ -67,14 +67,14 @@ namespace CsvSpawner
         int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
 
         // Spawn on start
-        bool m_spawnOnComponentActivated{ true }; //!< Decides whenever entities should be spawned if editor is active.
-        bool spawnedOnceOnStart{ false };
+        bool m_spawnOnComponentActivated{ true }; //!< Decides whenever entities should be spawned if editor component is activated.
+        bool m_spawnedOnceOnComponentActivated{ false }; //!< @returns True if spawned once, false otherwise.
 
         // Terrain Change
         bool m_spawnOnTerrainUpdate{
             false
         }; //!< Decides whenever Terrain settings, position is updated - should spawned entities follow up the changes.
-        AZ::u32 ShouldShowButtonSpawnOnTerrainUpdate() const;
+        AZ::u32 ChangeSpawnOnTerrainUpdateButtonVisibility() const;
         void OnButtonSpawnOnTerrainUpdateChanged();
     };
 } // namespace CsvSpawner

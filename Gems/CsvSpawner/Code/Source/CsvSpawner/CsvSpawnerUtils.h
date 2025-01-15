@@ -99,4 +99,6 @@ namespace CsvSpawner::CsvSpawnerUtils
         const AZStd::string& physicsSceneName = AZStd::string(),
         AZ::EntityId parentId = AZ::EntityId());
 
+    bool IsTerrainAvailable(); //!< @returns True if level has any valid Terrain handlers, false otherwise.
+
 }; // namespace CsvSpawner::CsvSpawnerUtils

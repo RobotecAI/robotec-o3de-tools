@@ -84,9 +84,4 @@ namespace CsvSpawner
         m_terrainCreatedOnlyOnce = false;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
-
-    bool CsvSpawnerComponent::IsTerrainAvailable()
-    {
-        return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
-    }
 } // namespace CsvSpawner

@@ -12,13 +12,13 @@
 #include "CsvSpawnerUtils.h"
 
 #include "AzFramework/Physics/CollisionBus.h"
+#include "AzFramework/Terrain/TerrainDataRequestBus.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -292,4 +292,8 @@ namespace CsvSpawner::CsvSpawnerUtils
         return tickets;
     }
 
+    bool IsTerrainAvailable()
+    {
+        return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
+    }
 } // namespace CsvSpawner::CsvSpawnerUtils

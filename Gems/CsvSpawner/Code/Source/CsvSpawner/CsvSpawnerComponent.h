@@ -59,6 +59,5 @@ namespace CsvSpawner
 
         // Terrain notify
         bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
-        [[nodiscard]] static bool IsTerrainAvailable(); //!< @returns True if current level has terrain, otherwise false.
     };
 } // namespace CsvSpawner
