@@ -29,7 +29,6 @@ namespace CsvSpawner
     class CsvSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
-        , protected AZ::TickBus::Handler
         , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
@@ -44,11 +43,7 @@ namespace CsvSpawner
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
-        // TickBus interface overrides ...
-        void OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
-
-        // Terrain interface overrides ...
+        // AzFramework::Terrain::TerrainDataNotificationBus interface overrides ...
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:

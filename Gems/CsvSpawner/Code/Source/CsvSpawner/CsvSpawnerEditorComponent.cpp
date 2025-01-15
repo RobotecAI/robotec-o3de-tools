@@ -81,59 +81,17 @@ namespace CsvSpawner
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
-        // AZ::TickBus::Handler::BusConnect();
 
         if (m_showLabels)
         {
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
-
-        // AZ::TickBus::QueueFunction([this]()
-        // {
-        //     AZ::TickBus::QueueFunction([this]()
-        //     {
-        //         AZ::TickBus::QueueFunction([this]()
-        //         {
-        //             SpawnEntities();
-        //         });
-        //     });
-        // });
-
-        // if (AzFramework::Terrain::TerrainDataRequestBus::HasHandlers())
-        // {
-        //     AZ_Warning("Editor::Activate", false, "Terrain is available.")
-        //     AZ::TickBus::QueueFunction([this]()
-        //     {
-        //         AZ::TickBus::QueueFunction([this]()
-        //         {
-        //             AZ::TickBus::QueueFunction([this]()
-        //             {
-        //                 SpawnEntities();
-        //             });
-        //         });
-        //     });
-        // }
-        // else
-        // {
-        //     AZ_Warning("Editor::Activate", false, "Terrain is not available.")
-        //     AZ::TickBus::QueueFunction([this]()
-        //     {
-        //         AZ::TickBus::QueueFunction([this]()
-        //         {
-        //             SpawnEntities();
-        //         });
-        //     });
-        // }
-
-        // AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 2.f, AZ::ScriptTimePoint{});
-        // SpawnEntities();
     }
 
     void CsvSpawnerEditorComponent::Deactivate()
     {
         m_spawnedTickets.clear();
 
-        AZ::TickBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
@@ -164,33 +122,14 @@ namespace CsvSpawner
         m_spawnedTickets.clear();
     }
 
-    void CsvSpawnerEditorComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-        // auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        // const auto sceneHandle = sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
-        //
-        // if (sceneInterface->IsEnabled(sceneHandle) && sceneHandle != AzPhysics::InvalidSceneHandle)
-        // {
-        //     SpawnEntities();
-        //     AZ::TickBus::Handler::BusDisconnect();
-        // }
-
-        if (AzFramework::Terrain::TerrainDataRequestBus::HasHandlers() && m_spawnableAssetConfigurations.front().m_placeOnTerrain)
-        {
-            SpawnEntities();
-            AZ_Warning("Editor::Activate", false, "Terrain has handlers.")
-            AZ::TickBus::Handler::BusDisconnect();
-        }
-    }
-
-    int CsvSpawnerEditorComponent::GetTickOrder()
-    {
-        return AZ::ComponentTickBus::TICK_LAST;
-    }
-
+    /* Inside TerrainSystem::OnTick() this function is (broadcasted) called twice.
+     * It's due to Terrain dirty mask that is being cleaned in the very first 2 ticks.
+     * Using this is more efficient compared to Activate called OnTerrainDataCreateEnd/Begin(), that don't provide "real" info about is the terrain ready.
+     *
+     *
+     */
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        AZ_Warning("OnTerrainDataChanged", false, "Terrain data changed.")
         AZ::TickBus::QueueFunction([this]()
         {
             SpawnEntities();
