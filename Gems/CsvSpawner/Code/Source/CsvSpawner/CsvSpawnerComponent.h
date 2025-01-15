@@ -38,7 +38,7 @@ namespace CsvSpawner
             const AZStd::vector<CsvSpawnableEntityInfo>& spawnableEntityInfo,
             AZ::u64 defaultSeed);
 
-        ~CsvSpawnerComponent() = default;
+        ~CsvSpawnerComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 

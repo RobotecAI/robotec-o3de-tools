@@ -34,7 +34,7 @@ namespace CsvSpawner
     public:
         AZ_EDITOR_COMPONENT(CsvSpawnerEditorComponent, CsvSpawnerEditorComponentTypeId);
         CsvSpawnerEditorComponent() = default;
-        ~CsvSpawnerEditorComponent() = default;
+        ~CsvSpawnerEditorComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -66,15 +66,21 @@ namespace CsvSpawner
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
         int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
 
-        // Spawn on start
-        bool m_spawnOnComponentActivated{ true }; //!< Decides whenever entities should be spawned if editor component is activated.
+        bool m_spawnOnComponentActivated{ true }; //!< Whether entities should be spawned if editor component is activated.
         bool m_spawnedOnceOnComponentActivated{ false }; //!< @returns True if spawned once, false otherwise.
 
-        // Terrain Change
-        bool m_spawnOnTerrainUpdate{
-            false
-        }; //!< Decides whenever Terrain settings, position is updated - should spawned entities follow up the changes.
-        AZ::u32 ChangeSpawnOnTerrainUpdateButtonVisibility() const;
+        //! This needs to be called since, change to
+        //! @var m_spawnOnComponentActivated causes component to refresh and erase spawned entities.
+        //! We want to keep entities always spawned (be visible) whenever to any user action.
+        void OnButtonSpawnOnComponentActivatedChanged();
+
+        //! Whether Terrain settings or position is updated, and if should spawned entities follow up the changes.
+        bool m_spawnOnTerrainUpdate{ false };
+        AZ::u32 SetSpawnOnTerrainUpdateButtonVisibility() const;
+
+        //! This needs to be called since, change to
+        //! @var m_spawnOnTerrainUpdate causes component to refresh and erase spawned entities.
+        //! We want to keep entities always spawned (be visible) whenever to any user action.
         void OnButtonSpawnOnTerrainUpdateChanged();
     };
 } // namespace CsvSpawner
