@@ -11,6 +11,7 @@
 #pragma once
 
 #include "CsvSpawnerUtils.h"
+#include "AzFramework/Terrain/TerrainDataRequestBus.h"
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
@@ -29,6 +30,7 @@ namespace CsvSpawner
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
         , protected AZ::TickBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(CsvSpawnerEditorComponent, CsvSpawnerEditorComponentTypeId);
@@ -45,6 +47,9 @@ namespace CsvSpawner
         // TickBus interface overrides ...
         void OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
+
+        // Terrain interface overrides ...
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
