@@ -91,17 +91,17 @@ namespace CsvSpawner
         if (m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce)
         {
             AZ::TickBus::QueueFunction(
-            [this]()
-            {
-                // If there is no Terrain handlers (which means no active terrain in this level), just spawn entities on next available
-                // tick.
-                if (!IsTerrainAvailable() && !m_spawnOnTerrainUpdate)
+                [this]()
                 {
-                    m_flagSpawnEntitiesOnStartOnce = true;
-                    SpawnEntities();
-                    AZ_Warning("CsvSpawnerEditorComponent::Activate", false, "Spawned with Activate - no terrain")
-                }
-            });
+                    // If there is no Terrain handlers (which means no active terrain in this level), just spawn entities on next available
+                    // tick.
+                    if (!IsTerrainAvailable() && !m_spawnOnTerrainUpdate)
+                    {
+                        m_flagSpawnEntitiesOnStartOnce = true;
+                        SpawnEntities();
+                        AZ_Warning("CsvSpawnerEditorComponent::Activate", false, "Spawned with Activate - no terrain")
+                    }
+                });
         }
     }
 
@@ -140,13 +140,6 @@ namespace CsvSpawner
         m_spawnedTickets.clear();
     }
 
-    /* Inside TerrainSystem::OnTick() this function is (broadcasted) called twice.
-     * It's due to Terrain dirty mask that is being cleaned in the very first 2 ticks.
-     * Using this is more reliable compared to Activate called OnTerrainDataCreateBegin/End(), that don't provide "real" info about is the
-     * terrain ready.
-     *
-     *
-     */
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         if (static_cast<bool>(dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::ColorData)))
