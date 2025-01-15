@@ -99,7 +99,6 @@ namespace CsvSpawner
                     {
                         m_flagSpawnEntitiesOnStartOnce = true;
                         SpawnEntities();
-                        AZ_Warning("CsvSpawnerEditorComponent::Activate", false, "Spawned with Activate - no terrain")
                     }
                 });
         }
@@ -142,6 +141,7 @@ namespace CsvSpawner
 
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
+        // Ignore changes made to settings or color. Apply only if shape, surface, height changes.
         if (static_cast<bool>(dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::ColorData)))
         {
             return;
@@ -155,7 +155,6 @@ namespace CsvSpawner
                     SpawnEntities();
                     m_flagSpawnEntitiesOnStartOnce = true;
                 });
-            AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Spawned with Combined Func")
         }
     }
 
