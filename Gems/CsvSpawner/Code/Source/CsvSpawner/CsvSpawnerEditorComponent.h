@@ -65,5 +65,10 @@ namespace CsvSpawner
 
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
         int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
+
+        // Terrain Change
+        bool m_spawnOnTerrainUpdate{false}; //!< Decides whenever Terrain settings, position is updated - should spawned entities follow up the changes.
+        AZ::u32 ShouldShowSpawnOnTerrainUpdate() const;
+        void OnSpawnOnTerrainUpdateChanged();
     };
 } // namespace CsvSpawner
