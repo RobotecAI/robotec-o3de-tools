@@ -69,18 +69,8 @@ namespace CsvSpawner
         bool m_spawnOnComponentActivated{ true }; //!< Whether entities should be spawned if editor component is activated.
         bool m_flagSpawnEntitiesOnStartOnce{ false }; //!< @returns True if spawned once, false otherwise.
 
-        //! This needs to be called since, change to
-        //! @var m_spawnOnComponentActivated causes component to refresh and erase spawned entities.
-        //! We want to keep entities always spawned (be visible) whenever to any user action.
-        void OnButtonSpawnOnComponentActivatedChanged();
-
         //! Whether Terrain settings or position is updated, and if should spawned entities follow up the changes.
         bool m_spawnOnTerrainUpdate{ false };
         AZ::u32 SetSpawnOnTerrainUpdateButtonVisibility() const;
-
-        //! This needs to be called since, change to
-        //! @var m_spawnOnTerrainUpdate causes component to refresh and erase spawned entities.
-        //! We want to keep entities always spawned (be visible) whenever to any user action.
-        void OnButtonSpawnOnTerrainUpdateChanged();
     };
 } // namespace CsvSpawner

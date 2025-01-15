@@ -68,13 +68,11 @@ namespace CsvSpawner
                         &CsvSpawnerEditorComponent::m_spawnOnComponentActivated,
                         "Spawn On Editor Activate",
                         "Spawns entities when editor component is being activated.")
-                    // ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnButtonSpawnOnComponentActivatedChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate,
                         "Spawn On Terrain Update",
                         "Should respawn entiteis on any Terrain config and transform change.")
-                    // ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnButtonSpawnOnTerrainUpdateChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::SetSpawnOnTerrainUpdateButtonVisibility);
             }
         }
@@ -83,14 +81,12 @@ namespace CsvSpawner
     void CsvSpawnerEditorComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         if (m_showLabels)
         {
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
-
-        // Connect to Terrain Notifier Bus
-        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         if (m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce)
         {
@@ -153,9 +149,7 @@ namespace CsvSpawner
      */
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Terrain Data Changed.");
-
-        if (m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce)
+        if ((m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce) || m_spawnOnTerrainUpdate)
         {
             AZ::TickBus::QueueFunction(
                 [this]()
@@ -163,23 +157,8 @@ namespace CsvSpawner
                     SpawnEntities();
                     m_flagSpawnEntitiesOnStartOnce = true;
                 });
-
-            // m_flagSpawnEntitiesOnStartOnce = true;
-            AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Spawned with On Spawn Activated")
+            AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Spawned with Combined Func")
         }
-
-        if (!m_spawnOnTerrainUpdate)
-        {
-            return;
-        }
-
-        AZ::TickBus::QueueFunction(
-            [this]()
-            {
-                SpawnEntities();
-            });
-
-        AZ_Warning("CsvSpawnerEditorComponent::OnTerrainDataChanged", false, "Spawned with Terrain Data Changed")
     }
 
     void CsvSpawnerEditorComponent::SpawnEntities()
@@ -216,37 +195,6 @@ namespace CsvSpawner
     AZ::u32 CsvSpawnerEditorComponent::SetSpawnOnTerrainUpdateButtonVisibility() const
     {
         return IsTerrainAvailable() ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
-    }
-
-    void CsvSpawnerEditorComponent::OnButtonSpawnOnTerrainUpdateChanged()
-    {
-        // Make this only available if level has Terrain.
-        if (IsTerrainAvailable() && !m_flagSpawnEntitiesOnStartOnce)
-        {
-            AZ::TickBus::QueueFunction(
-                [this]()
-                {
-                    SpawnEntities();
-                });
-
-            m_flagSpawnEntitiesOnStartOnce = true;
-            AZ_Warning("CsvSpawnerEditorComponent", false, "Spawned with Terrain Update Ediotr Button")
-        }
-    }
-
-    void CsvSpawnerEditorComponent::OnButtonSpawnOnComponentActivatedChanged()
-    {
-        if (!m_flagSpawnEntitiesOnStartOnce)
-        {
-            AZ::TickBus::QueueFunction(
-            [this]()
-            {
-                SpawnEntities();
-            });
-
-            m_flagSpawnEntitiesOnStartOnce = true;
-            AZ_Warning("CsvSpawnerEditorComponent", false, "Spawned with Activate Edtior Button")
-        }
     }
 
     void CsvSpawnerEditorComponent::OnShowLabelsChanged()
