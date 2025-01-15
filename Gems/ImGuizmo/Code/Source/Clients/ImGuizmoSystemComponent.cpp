@@ -102,6 +102,7 @@ namespace ImGuizmo
     void ImGuizmoSystemComponent::Activate()
     {
         m_imguiAvailable = false;
+        m_gizmoData.clear();
         ImGuizmoRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
     }
@@ -142,51 +143,90 @@ namespace ImGuizmo
         {
             return;
         }
+
         ImGuiContext* prevContext = ImGui::GetCurrentContext();
         ImGui::SetCurrentContext(imGuiContext);
-        for (auto& [_, gizmoData] : m_gizmoData)
+
+        ImGuizmoRequests::GizmoHandle handleToDraw = ImGuizmoRequests::InvalidGizmoHandle;
+
+        // if we are currently manipulating a gizmo, we want to draw that one
+        // otherwise we want to draw the closest gizmo to the cursor
+        if (m_currentlyManipulatedHandle != ImGuizmoRequests::InvalidGizmoHandle)
         {
-            if (!gizmoData.m_gizmoVisible)
+            handleToDraw = m_currentlyManipulatedHandle;
+        }
+        else
+        {
+            AZStd::pair<float, GizmoHandle> closestGizmo{ std::numeric_limits<float>::max(), ImGuizmoRequests::InvalidGizmoHandle };
+            for (auto& [handle, gizmoData] : m_gizmoData)
             {
-                continue;
+                if (!gizmoData.m_gizmoVisible)
+                {
+                    continue;
+                }
+                const auto gizmoTranslation = Conversions::Float16ToTranslation4D(gizmoData.m_gizmoMatrix);
+                const AZ::Vector4 localPosition = viewportContext->GetCameraViewMatrix() * gizmoTranslation;
+                // Skip gizmos that are behind the camera
+                if (localPosition.GetZ() > 0.0f)
+                {
+                    continue;
+                }
+                const AzFramework::ScreenSize windowSize{ static_cast<int>(viewportContext->GetViewportSize().m_width),
+                                                          static_cast<int>(viewportContext->GetViewportSize().m_height) };
+
+                AzFramework::ScreenPoint renderScreenpoint = AzFramework::WorldToScreen(
+                    gizmoTranslation.GetAsVector3(),
+                    viewportContext->GetCameraViewMatrixAsMatrix3x4(),
+                    viewportContext->GetCameraProjectionMatrix(),
+                    windowSize);
+
+                gizmoData.m_screenLocation = AZ::Vector2(renderScreenpoint.m_x, renderScreenpoint.m_y);
+                const ImVec2 mousePos = ImGui::GetMousePos();
+
+                // compute distance to cursor
+                AZ::Vector2 distanceToCursor = AZ::Vector2(mousePos.x - renderScreenpoint.m_x, mousePos.y - renderScreenpoint.m_y);
+                float distance = distanceToCursor.GetLengthSq();
+                if (distance < closestGizmo.first)
+                {
+                    closestGizmo = { distance, handle };
+                }
+
+                const auto& screen_x = gizmoData.m_screenLocation.GetX();
+                const auto& screen_y = gizmoData.m_screenLocation.GetY();
+
+                ImGui::SetNextWindowPos(ImVec2(screen_x, screen_y + 2.0f * ImGui::GetFrameHeight())); // Offset text slightly
+
+                AZStd::string gizmoLabel = AZStd::string::format("%s##%d", gizmoData.m_name.c_str(), handle);
+                ImGui::Begin(
+                    gizmoLabel.c_str(),
+                    nullptr,
+                    ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+                ImGui::Text("%s", gizmoData.m_name.c_str());
+                ImGui::End();
             }
+            if (closestGizmo.second != InvalidGizmoHandle)
+            {
+                handleToDraw = closestGizmo.second;
+            }
+        }
+
+        if (handleToDraw != ImGuizmoRequests::InvalidGizmoHandle)
+        {
+            AZ_Assert(m_gizmoData.contains(handleToDraw), "Gizmo handle not found");
+            auto& gizmoData = m_gizmoData[handleToDraw];
             ImGuizmo::BeginFrame();
             ImGuizmo::Enable(true);
             ImGuizmo::SetRect(0, 0, viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
 
-            const auto gizmoTranslation = Conversions::Float16ToTranslation4D(gizmoData.m_gizmoMatrix);
-            const AZ::Vector4 localPosition = viewportContext->GetCameraViewMatrix() * gizmoTranslation;
-            // Skip gizmos that are behind the camera
-            if (localPosition.GetZ() > 0.0f)
-            {
-                continue;
-            }
-
             float view[16];
             float projection[16];
+
             viewportContext->GetCameraProjectionMatrix().StoreToColumnMajorFloat16(projection);
             viewportContext->GetCameraViewMatrix().StoreToColumnMajorFloat16(view);
             ImGuizmo::AllowAxisFlip(false);
             ImGuizmo::Manipulate(view, projection, gizmoData.m_operation, gizmoData.m_mode, gizmoData.m_gizmoMatrix);
             gizmoData.m_manipulated = ImGuizmo::IsUsing();
-
-            const AzFramework::ScreenSize windowSize{ static_cast<int>(viewportContext->GetViewportSize().m_width),
-                                                      static_cast<int>(viewportContext->GetViewportSize().m_height) };
-
-            AzFramework::ScreenPoint renderScreenpoint = AzFramework::WorldToScreen(
-                gizmoTranslation.GetAsVector3(),
-                viewportContext->GetCameraViewMatrixAsMatrix3x4(),
-                viewportContext->GetCameraProjectionMatrix(),
-                windowSize);
-
-            ImGui::SetNextWindowPos(
-                ImVec2(renderScreenpoint.m_x, renderScreenpoint.m_y + 2.0f * ImGui::GetFrameHeight())); // Offset text slightly
-            ImGui::Begin(
-                "GizmoLabel",
-                nullptr,
-                ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-            ImGui::Text("%s", gizmoData.m_name.c_str());
-            ImGui::End();
+            m_currentlyManipulatedHandle = ImGuizmo::IsUsing() ? handleToDraw : ImGuizmoRequests::InvalidGizmoHandle;
         }
         ImGui::SetCurrentContext(prevContext);
     }
@@ -236,11 +276,6 @@ namespace ImGuizmo
         {
             AZ_Assert(false, "Gizmo handle not found");
             return;
-        }
-        // hide other gizmos
-        for (auto& [_, gizmoData] : m_gizmoData)
-        {
-            gizmoData.m_gizmoVisible = false;
         }
         m_gizmoData[handle].m_gizmoVisible = visible;
     }
