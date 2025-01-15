@@ -124,16 +124,18 @@ namespace CsvSpawner
 
     /* Inside TerrainSystem::OnTick() this function is (broadcasted) called twice.
      * It's due to Terrain dirty mask that is being cleaned in the very first 2 ticks.
-     * Using this is more efficient compared to Activate called OnTerrainDataCreateEnd/Begin(), that don't provide "real" info about is the terrain ready.
+     * Using this is more efficient compared to Activate called OnTerrainDataCreateEnd/Begin(), that don't provide "real" info about is the
+     * terrain ready.
      *
      *
      */
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        AZ::TickBus::QueueFunction([this]()
-        {
-            SpawnEntities();
-        });
+        AZ::TickBus::QueueFunction(
+            [this]()
+            {
+                SpawnEntities();
+            });
     }
 
     void CsvSpawnerEditorComponent::SpawnEntities()

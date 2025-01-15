@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include "CsvSpawnerUtils.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
+#include "CsvSpawnerUtils.h"
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
