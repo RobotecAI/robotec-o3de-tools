@@ -71,6 +71,8 @@ namespace CsvSpawner
 
         //! Whether Terrain settings or position is updated, and if should spawned entities follow up the changes.
         bool m_spawnOnTerrainUpdate{ false };
-        AZ::u32 SetSpawnOnTerrainUpdateButtonVisibility() const;
+        AZ::u32 SetPropertyVisibilityByTerrain() const;
+        TerrainDataChangedMask m_terrainDataChangedMask{ TerrainDataChangedMask::Settings | TerrainDataChangedMask::ColorData };
+        void OnTerrainFlagsChanged();
     };
 } // namespace CsvSpawner
