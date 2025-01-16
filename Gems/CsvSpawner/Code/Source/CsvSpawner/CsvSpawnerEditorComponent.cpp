@@ -45,7 +45,7 @@ namespace CsvSpawner
                 ->Field("SpawnableAssetConfigurations", &CsvSpawnerEditorComponent::m_spawnableAssetConfigurations)
                 ->Field("DefaultSeed", &CsvSpawnerEditorComponent::m_defaultSeed)
                 ->Field("ShowLabels", &CsvSpawnerEditorComponent::m_showLabels)
-                ->Field("Spawn On Component Activated", &CsvSpawnerEditorComponent::m_spawnOnComponentActivated)
+                ->Field("SpawnOnComponentActivated", &CsvSpawnerEditorComponent::m_spawnOnComponentActivated)
                 ->Field("SpawnOnTerrainUpdate", &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate)
                 ->Field("TerrainDataChangedMask", &CsvSpawnerEditorComponent::m_terrainDataChangedMask);
 
@@ -56,12 +56,12 @@ namespace CsvSpawner
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "CsvSpawnerEditorComponent")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "CsvSpawner")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_spawnableAssetConfigurations,
                         "Asset Config",
                         "Asset configuration")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_csvAssetId, "CSV Asset", "CSV asset")
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Reload Csv", "Reload Csv")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -72,24 +72,29 @@ namespace CsvSpawner
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_defaultSeed, "Default seed", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_showLabels, "Show labels in Editor", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnShowLabelsChanged)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "In Editor Spawn Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_spawnOnComponentActivated,
                         "Spawn On Editor Activate",
                         "Spawns entities when editor component is being activated.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::RefreshUI)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate,
                         "Spawn On Terrain Update",
                         "Should respawn entities on any Terrain config and transform change.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::SpawnOnTerrainUpdateTriggered)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::SetPropertyVisibilityByTerrain)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &CsvSpawnerEditorComponent::m_terrainDataChangedMask,
                         "Terrain Flags To Ignore",
                         "Flags to ignore on the terrain update data performed.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnerEditorComponent::IsSpawnOnTerrainUpdateDisabled)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnTerrainFlagsChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::SetPropertyVisibilityByTerrain)
+                    ->Attribute(AZ::Edit::Attributes::ComboBoxEditable, &CsvSpawnerEditorComponent::IsSpawnOnTerrainUpdateEnabled)
                     ->Attribute(
                         AZ::Edit::Attributes::EnumValues,
                         AZStd::vector<AZ::Edit::EnumConstant<TerrainDataChangedMask>>{
@@ -245,12 +250,39 @@ namespace CsvSpawner
         return IsTerrainAvailable() ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    void CsvSpawnerEditorComponent::OnTerrainFlagsChanged()
+    AZ::Crc32 CsvSpawnerEditorComponent::RefreshUI()
     {
-        if (!m_spawnOnTerrainUpdate)
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    AZ::Crc32 CsvSpawnerEditorComponent::SpawnOnTerrainUpdateTriggered()
+    {
+        if (IsSpawnOnTerrainUpdateDisabled())
         {
-            m_terrainDataChangedMask = TerrainDataChangedMask::None;
+            m_terrainDataChangedMask = TerrainDataChangedMask::All;
         }
+
+        return RefreshUI();
+    }
+
+    AZ::Crc32 CsvSpawnerEditorComponent::OnTerrainFlagsChanged()
+    {
+        if (m_terrainDataChangedMask == TerrainDataChangedMask::All)
+        {
+            m_spawnOnTerrainUpdate = false;
+        }
+
+        return RefreshUI();
+    }
+
+    bool CsvSpawnerEditorComponent::IsSpawnOnTerrainUpdateDisabled() const
+    {
+        return !m_spawnOnTerrainUpdate;
+    }
+
+    bool CsvSpawnerEditorComponent::IsSpawnOnTerrainUpdateEnabled() const
+    {
+        return m_spawnOnTerrainUpdate;
     }
 
     void CsvSpawnerEditorComponent::OnShowLabelsChanged()
