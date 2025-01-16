@@ -66,8 +66,8 @@ namespace CsvSpawner
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_terrainSettingsConfig,
-                        "Terrain Settings",
-                        "Terrain settings configuration in editor.");
+                        "Spawn Behaviour Settings",
+                        "Settings to configure spawn behaviour in editor.");
             }
         }
     }
@@ -136,7 +136,7 @@ namespace CsvSpawner
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         // Ignore on update with selected flags
-        if (static_cast<bool>(dataChangedMask & m_terrainSettingsConfig.m_terrainDataChangedMask))
+        if (static_cast<bool>(dataChangedMask & m_terrainSettingsConfig.m_terrainMasksToIgnore))
         {
             return;
         }
@@ -244,7 +244,7 @@ namespace CsvSpawner
                 ->Version(2)
                 ->Field("SpawnOnComponentActivated", &CsvSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated)
                 ->Field("SpawnOnTerrainUpdate", &CsvSpawnerEditorTerrainSettingsConfig::m_spawnOnTerrainUpdate)
-                ->Field("TerrainDataChangedMask", &CsvSpawnerEditorTerrainSettingsConfig::m_terrainDataChangedMask);
+                ->Field("TerrainDataChangedMask", &CsvSpawnerEditorTerrainSettingsConfig::m_terrainMasksToIgnore);
         }
 
         auto* editContext = serializeContext->GetEditContext();
@@ -254,7 +254,7 @@ namespace CsvSpawner
                 ->Class<CsvSpawnerEditorTerrainSettingsConfig>(
                     "CsvSpawnerEditorTerrainSettingsConfig", "CsvSpawnerEditorTerrainSettingsConfig")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "In Editor Spawn Settings")
-                ->Attribute(AZ::Edit::Attributes::Category, "Editor Spawn Settings")
+                ->Attribute(AZ::Edit::Attributes::Category, "In Editor Spawn Settings")
                 ->DataElement(
                     AZ::Edit::UIHandlers::Default,
                     &CsvSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated,
@@ -270,7 +270,7 @@ namespace CsvSpawner
                 ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain)
                 ->DataElement(
                     AZ::Edit::UIHandlers::ComboBox,
-                    &CsvSpawnerEditorTerrainSettingsConfig::m_terrainDataChangedMask,
+                    &CsvSpawnerEditorTerrainSettingsConfig::m_terrainMasksToIgnore,
                     "Terrain Flags To Ignore",
                     "Flags to ignore on the terrain update data performed.")
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled)
@@ -349,7 +349,7 @@ namespace CsvSpawner
     {
         if (IsSpawnOnTerrainUpdateDisabled())
         {
-            m_terrainDataChangedMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All;
+            m_terrainMasksToIgnore = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All;
         }
 
         return RefreshUI();
@@ -357,7 +357,7 @@ namespace CsvSpawner
 
     AZ::Crc32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged()
     {
-        if (m_terrainDataChangedMask == AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All)
+        if (m_terrainMasksToIgnore == AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All)
         {
             m_spawnOnTerrainUpdate = false;
         }

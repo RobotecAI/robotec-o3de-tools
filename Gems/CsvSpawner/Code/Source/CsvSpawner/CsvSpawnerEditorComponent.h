@@ -21,6 +21,8 @@
 
 namespace CsvSpawner
 {
+    //! Terrain Settings Configuration for Editor Component.
+    //! This config lets user decide what behaviour should be applied when the Terrain is applicable in current Level.
     class CsvSpawnerEditorTerrainSettingsConfig
     {
     public:
@@ -40,8 +42,8 @@ namespace CsvSpawner
         //! Whether Terrain settings or position is updated, and if should spawned entities follow up the changes.
         bool m_spawnOnTerrainUpdate{ false };
 
-        // AZ_TYPE_INFO(TerrainDataChangedMask, "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}")
-        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask m_terrainDataChangedMask{
+        //! Masks to be ignored while updating Terrain.
+        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask m_terrainMasksToIgnore{
             AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
             AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData
         };
