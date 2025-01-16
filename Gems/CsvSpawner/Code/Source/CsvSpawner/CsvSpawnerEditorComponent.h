@@ -21,6 +21,44 @@
 
 namespace CsvSpawner
 {
+    class CsvSpawnerEditorTerrainSettingsConfig
+    {
+    public:
+        AZ_RTTI(CsvSpawnerEditorTerrainSettingsConfig, CsvSpawnerEditorTerrainSettingsConfigTypeId)
+
+        CsvSpawnerEditorTerrainSettingsConfig() = default;
+        virtual ~CsvSpawnerEditorTerrainSettingsConfig() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        //! Whether entities should be spawned if editor component is activated.
+        bool m_spawnOnComponentActivated{ true };
+
+        //! Prevent multiple terrains to init spawn. @returns True if spawned once, false otherwise.
+        bool m_flagSpawnEntitiesOnStartOnce{ false };
+
+        //! Whether Terrain settings or position is updated, and if should spawned entities follow up the changes.
+        bool m_spawnOnTerrainUpdate{ false };
+
+        // AZ_TYPE_INFO(TerrainDataChangedMask, "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}")
+        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask m_terrainDataChangedMask{
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData
+        };
+
+    private:
+        AZ::u32 SetPropertyVisibilityByTerrain() const;
+
+        AZ::Crc32 SpawnOnTerrainUpdateTriggered();
+
+        AZ::Crc32 OnTerrainFlagsChanged();
+
+        AZ::Crc32 RefreshUI();
+
+        // Helper functions for UI Notify (need both, since cannot negate them in Reflect)
+        [[nodiscard]] bool IsSpawnOnTerrainUpdateDisabled() const;
+        [[nodiscard]] bool IsSpawnOnTerrainUpdateEnabled() const;
+    };
 
     //! Editor component for the CsvSpawner component.
     //! This component is used to spawn Csvs in the editor.
@@ -46,10 +84,6 @@ namespace CsvSpawner
         // AzFramework::Terrain::TerrainDataNotificationBus interface overrides ...
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
-        // Helper functions for UI Notify (need both, since cannot negate them in Reflect)
-        [[nodiscard]] bool IsSpawnOnTerrainUpdateDisabled() const;
-        [[nodiscard]] bool IsSpawnOnTerrainUpdateEnabled() const;
-
     private:
         // EntityDebugDisplayEventBus::Handler overrides
         void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
@@ -70,19 +104,6 @@ namespace CsvSpawner
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
         int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
 
-        bool m_spawnOnComponentActivated{ true }; //!< Whether entities should be spawned if editor component is activated.
-        bool m_flagSpawnEntitiesOnStartOnce{
-            false
-        }; //!< Prevent multiple terrains to init spawn. @returns True if spawned once, false otherwise.
-
-        //! Whether Terrain settings or position is updated, and if should spawned entities follow up the changes.
-        bool m_spawnOnTerrainUpdate{ false };
-        AZ::u32 SetPropertyVisibilityByTerrain() const;
-        AZ::Crc32 SpawnOnTerrainUpdateTriggered();
-
-        TerrainDataChangedMask m_terrainDataChangedMask{ TerrainDataChangedMask::Settings | TerrainDataChangedMask::ColorData };
-        AZ::Crc32 OnTerrainFlagsChanged();
-
-        AZ::Crc32 RefreshUI();
+        CsvSpawnerEditorTerrainSettingsConfig m_terrainSettingsConfig; //!< Terrain Editor Settings Configuration for CsvSpawner
     };
 } // namespace CsvSpawner

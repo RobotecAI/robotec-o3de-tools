@@ -29,14 +29,7 @@ namespace CsvSpawner
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            // Reflect the enum
-            serializeContext->Enum<TerrainDataChangedMask>()
-                ->Value("None", TerrainDataChangedMask::None)
-                ->Value("Settings", TerrainDataChangedMask::Settings)
-                ->Value("HeightData", TerrainDataChangedMask::HeightData)
-                ->Value("ColorData", TerrainDataChangedMask::ColorData)
-                ->Value("SurfaceData", TerrainDataChangedMask::SurfaceData)
-                ->Value("All", TerrainDataChangedMask::All);
+            CsvSpawnerEditorTerrainSettingsConfig::Reflect(context);
 
             serializeContext->Class<CsvSpawnerEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Version(2)
@@ -45,9 +38,7 @@ namespace CsvSpawner
                 ->Field("SpawnableAssetConfigurations", &CsvSpawnerEditorComponent::m_spawnableAssetConfigurations)
                 ->Field("DefaultSeed", &CsvSpawnerEditorComponent::m_defaultSeed)
                 ->Field("ShowLabels", &CsvSpawnerEditorComponent::m_showLabels)
-                ->Field("SpawnOnComponentActivated", &CsvSpawnerEditorComponent::m_spawnOnComponentActivated)
-                ->Field("SpawnOnTerrainUpdate", &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate)
-                ->Field("TerrainDataChangedMask", &CsvSpawnerEditorComponent::m_terrainDataChangedMask);
+                ->Field("TerrainSettingsConfig", &CsvSpawnerEditorComponent::m_terrainSettingsConfig);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
@@ -72,64 +63,11 @@ namespace CsvSpawner
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_defaultSeed, "Default seed", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_showLabels, "Show labels in Editor", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnShowLabelsChanged)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "In Editor Spawn Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &CsvSpawnerEditorComponent::m_spawnOnComponentActivated,
-                        "Spawn On Editor Activate",
-                        "Spawns entities when editor component is being activated.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::RefreshUI)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &CsvSpawnerEditorComponent::m_spawnOnTerrainUpdate,
-                        "Spawn On Terrain Update",
-                        "Should respawn entities on any Terrain config and transform change.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::SpawnOnTerrainUpdateTriggered)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::SetPropertyVisibilityByTerrain)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox,
-                        &CsvSpawnerEditorComponent::m_terrainDataChangedMask,
-                        "Terrain Flags To Ignore",
-                        "Flags to ignore on the terrain update data performed.")
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnerEditorComponent::IsSpawnOnTerrainUpdateDisabled)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnTerrainFlagsChanged)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorComponent::SetPropertyVisibilityByTerrain)
-                    ->Attribute(AZ::Edit::Attributes::ComboBoxEditable, &CsvSpawnerEditorComponent::IsSpawnOnTerrainUpdateEnabled)
-                    ->Attribute(
-                        AZ::Edit::Attributes::EnumValues,
-                        AZStd::vector<AZ::Edit::EnumConstant<TerrainDataChangedMask>>{
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(TerrainDataChangedMask::None, "None"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(TerrainDataChangedMask::All, "All"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(TerrainDataChangedMask::Settings, "Settings"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(TerrainDataChangedMask::HeightData, "Height Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(TerrainDataChangedMask::ColorData, "Color Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(TerrainDataChangedMask::SurfaceData, "Surface Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData, "Settings + Height Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::Settings | TerrainDataChangedMask::ColorData, "Settings + Color Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::Settings | TerrainDataChangedMask::SurfaceData, "Settings + Surface Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::HeightData | TerrainDataChangedMask::ColorData, "Height Data + Color Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::HeightData | TerrainDataChangedMask::SurfaceData, "Height Data + Surface Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::ColorData | TerrainDataChangedMask::SurfaceData, "Color Data + Surface Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData | TerrainDataChangedMask::ColorData,
-                                "Settings + Height Data + Color Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData | TerrainDataChangedMask::SurfaceData,
-                                "Settings + Height Data + Surface Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::Settings | TerrainDataChangedMask::ColorData | TerrainDataChangedMask::SurfaceData,
-                                "Settings + Color Data + Surface Data"),
-                            AZ::Edit::EnumConstant<TerrainDataChangedMask>(
-                                TerrainDataChangedMask::HeightData | TerrainDataChangedMask::ColorData |
-                                    TerrainDataChangedMask::SurfaceData,
-                                "Height Data + Color Data + Surface Data"),
-                        });
+                        &CsvSpawnerEditorComponent::m_terrainSettingsConfig,
+                        "Terrain Settings",
+                        "Terrain settings configuration in editor.");
             }
         }
     }
@@ -144,16 +82,16 @@ namespace CsvSpawner
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
-        if (m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce)
+        if (m_terrainSettingsConfig.m_spawnOnComponentActivated && !m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce)
         {
             AZ::TickBus::QueueFunction(
                 [this]()
                 {
                     // If there is no Terrain handlers (which means no active terrain in this level), just spawn entities on next available
                     // tick. Since terrain is initiated on tick, IsTerrainAvailable will return real information when used inside tick.
-                    if (!IsTerrainAvailable() && !m_spawnOnTerrainUpdate)
+                    if (!IsTerrainAvailable() && !m_terrainSettingsConfig.m_spawnOnTerrainUpdate)
                     {
-                        m_flagSpawnEntitiesOnStartOnce = true;
+                        m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = true;
                         SpawnEntities();
                     }
                 });
@@ -163,7 +101,7 @@ namespace CsvSpawner
     void CsvSpawnerEditorComponent::Deactivate()
     {
         m_spawnedTickets.clear();
-        m_flagSpawnEntitiesOnStartOnce = false;
+        m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = false;
 
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
@@ -198,18 +136,19 @@ namespace CsvSpawner
     void CsvSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         // Ignore on update with selected flags
-        if (static_cast<bool>(dataChangedMask & m_terrainDataChangedMask))
+        if (static_cast<bool>(dataChangedMask & m_terrainSettingsConfig.m_terrainDataChangedMask))
         {
             return;
         }
 
-        if ((m_spawnOnComponentActivated && !m_flagSpawnEntitiesOnStartOnce) || m_spawnOnTerrainUpdate)
+        if ((m_terrainSettingsConfig.m_spawnOnComponentActivated && !m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce) ||
+            m_terrainSettingsConfig.m_spawnOnTerrainUpdate)
         {
             AZ::TickBus::QueueFunction(
                 [this]()
                 {
                     SpawnEntities();
-                    m_flagSpawnEntitiesOnStartOnce = true;
+                    m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = true;
                 });
         }
     }
@@ -243,46 +182,6 @@ namespace CsvSpawner
         const auto config = CsvSpawnerUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
         m_spawnedTickets =
             CsvSpawnerUtils::SpawnEntities(m_spawnableEntityInfo, config, m_defaultSeed, AzPhysics::EditorPhysicsSceneName, GetEntityId());
-    }
-
-    AZ::u32 CsvSpawnerEditorComponent::SetPropertyVisibilityByTerrain() const
-    {
-        return IsTerrainAvailable() ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
-    }
-
-    AZ::Crc32 CsvSpawnerEditorComponent::RefreshUI()
-    {
-        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
-    }
-
-    AZ::Crc32 CsvSpawnerEditorComponent::SpawnOnTerrainUpdateTriggered()
-    {
-        if (IsSpawnOnTerrainUpdateDisabled())
-        {
-            m_terrainDataChangedMask = TerrainDataChangedMask::All;
-        }
-
-        return RefreshUI();
-    }
-
-    AZ::Crc32 CsvSpawnerEditorComponent::OnTerrainFlagsChanged()
-    {
-        if (m_terrainDataChangedMask == TerrainDataChangedMask::All)
-        {
-            m_spawnOnTerrainUpdate = false;
-        }
-
-        return RefreshUI();
-    }
-
-    bool CsvSpawnerEditorComponent::IsSpawnOnTerrainUpdateDisabled() const
-    {
-        return !m_spawnOnTerrainUpdate;
-    }
-
-    bool CsvSpawnerEditorComponent::IsSpawnOnTerrainUpdateEnabled() const
-    {
-        return m_spawnOnTerrainUpdate;
     }
 
     void CsvSpawnerEditorComponent::OnShowLabelsChanged()
@@ -324,5 +223,160 @@ namespace CsvSpawner
         }
         debugDisplay.PopMatrix();
         debugDisplay.SetState(stateBefore);
+    }
+
+    /* CsvSpawnerEditorTerrainSettingsConfig */
+
+    void CsvSpawnerEditorTerrainSettingsConfig::Reflect(AZ::ReflectContext* context)
+    {
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            // Reflect the enum
+            serializeContext->Enum<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>()
+                ->Value("None", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None)
+                ->Value("Settings", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings)
+                ->Value("HeightData", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData)
+                ->Value("ColorData", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData)
+                ->Value("All", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All);
+
+            serializeContext->Class<CsvSpawnerEditorTerrainSettingsConfig>()
+                ->Version(2)
+                ->Field("SpawnOnComponentActivated", &CsvSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated)
+                ->Field("SpawnOnTerrainUpdate", &CsvSpawnerEditorTerrainSettingsConfig::m_spawnOnTerrainUpdate)
+                ->Field("TerrainDataChangedMask", &CsvSpawnerEditorTerrainSettingsConfig::m_terrainDataChangedMask);
+        }
+
+        auto* editContext = serializeContext->GetEditContext();
+        if (editContext)
+        {
+            editContext
+                ->Class<CsvSpawnerEditorTerrainSettingsConfig>(
+                    "CsvSpawnerEditorTerrainSettingsConfig", "CsvSpawnerEditorTerrainSettingsConfig")
+                ->ClassElement(AZ::Edit::ClassElements::EditorData, "In Editor Spawn Settings")
+                ->Attribute(AZ::Edit::Attributes::Category, "Editor Spawn Settings")
+                ->DataElement(
+                    AZ::Edit::UIHandlers::Default,
+                    &CsvSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated,
+                    "Spawn On Editor Activate",
+                    "Spawns entities when editor component is being activated.")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorTerrainSettingsConfig::RefreshUI)
+                ->DataElement(
+                    AZ::Edit::UIHandlers::Default,
+                    &CsvSpawnerEditorTerrainSettingsConfig::m_spawnOnTerrainUpdate,
+                    "Spawn On Terrain Update",
+                    "Should respawn entities on any Terrain config and transform change.")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered)
+                ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain)
+                ->DataElement(
+                    AZ::Edit::UIHandlers::ComboBox,
+                    &CsvSpawnerEditorTerrainSettingsConfig::m_terrainDataChangedMask,
+                    "Terrain Flags To Ignore",
+                    "Flags to ignore on the terrain update data performed.")
+                ->Attribute(AZ::Edit::Attributes::ReadOnly, &CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled)
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged)
+                ->Attribute(AZ::Edit::Attributes::Visibility, &CsvSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain)
+                ->Attribute(AZ::Edit::Attributes::ComboBoxEditable, &CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled)
+                ->Attribute(
+                    AZ::Edit::Attributes::EnumValues,
+                    AZStd::vector<AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>>{
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None, "None"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All, "All"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings, "Settings"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData, "Height Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData, "Color Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData, "Surface Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData,
+                            "Settings + Height Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData,
+                            "Settings + Color Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData,
+                            "Settings + Surface Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData,
+                            "Height Data + Color Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData,
+                            "Height Data + Surface Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData,
+                            "Color Data + Surface Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData,
+                            "Settings + Height Data + Color Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData,
+                            "Settings + Height Data + Surface Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData,
+                            "Settings + Color Data + Surface Data"),
+                        AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData |
+                                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData,
+                            "Height Data + Color Data + Surface Data"),
+                    });
+        }
+    }
+
+    AZ::u32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain() const
+    {
+        return IsTerrainAvailable() ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::Crc32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered()
+    {
+        if (IsSpawnOnTerrainUpdateDisabled())
+        {
+            m_terrainDataChangedMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All;
+        }
+
+        return RefreshUI();
+    }
+
+    AZ::Crc32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged()
+    {
+        if (m_terrainDataChangedMask == AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All)
+        {
+            m_spawnOnTerrainUpdate = false;
+        }
+
+        return RefreshUI();
+    }
+
+    AZ::Crc32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::RefreshUI()
+    {
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
+    bool CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled() const
+    {
+        return !m_spawnOnTerrainUpdate;
+    }
+
+    bool CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled() const
+    {
+        return m_spawnOnTerrainUpdate;
     }
 } // namespace CsvSpawner
