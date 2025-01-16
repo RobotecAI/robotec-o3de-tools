@@ -1,5 +1,5 @@
 
-#include "ViewportStreamerComponent.h"
+#include "ViewportStreamerSystemComponent.h"
 #include <ViewportStreamer/ViewportStreamerTypeIds.h>
 #include <ViewportStreamerModuleInterface.h>
 

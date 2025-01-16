@@ -1,5 +1,5 @@
 
-#include <Clients/ViewportStreamerComponent.h>
+#include "ViewportStreamerEditorSystemComponent.h"
 #include <ViewportStreamer/ViewportStreamerTypeIds.h>
 #include <ViewportStreamerModuleInterface.h>
 
@@ -20,7 +20,7 @@ namespace ViewportStreamer
             m_descriptors.insert(
                 m_descriptors.end(),
                 {
-                    ViewportStreamerComponent::CreateDescriptor(),
+                    ViewportStreamerEditorSystemComponent::CreateDescriptor(),
                 });
         }
 
@@ -30,7 +30,9 @@ namespace ViewportStreamer
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList{};
+            return AZ::ComponentTypeList{
+                azrtti_typeid<ViewportStreamerEditorSystemComponent>(),
+            };
         }
     };
 } // namespace ViewportStreamer

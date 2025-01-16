@@ -1,10 +1,10 @@
 ## Viewport Streamer Gem
 
-This Gem provides sensor, which streams application's current viewport on ROS2 topic.
+This Gem provides a publisher, which streams application's current viewport on ROS2 topic.
 
 ## Features
 
-This Gem enables sensor which publishes data on `sensor_msgs::msg::Image` ROS2 topic. Such data contain entire frame displayed in application's current viewport. 
+This Gem publishes data on `sensor_msgs::msg::Image` ROS2 topic. Such data contain entire frame displayed in application's current viewport. 
 
 ## Prerequisites
 
@@ -13,10 +13,17 @@ This Gem enables sensor which publishes data on `sensor_msgs::msg::Image` ROS2 t
 
 ## Integration
 
-In Editor (builded with `ViewportStreamer` Gem), add `ViewportStreamer Component` in level entity of particular level. If needed, change default sensor configuration. By default, sensor's topic name is `/viewport`.
+Since `ViewportStreamer` works as a System Component, it is enabled in runtime without configuration from Editor. Default `/viewport` topic may be changed using SettingsRegistry.
 
 ## Interaction
 
 Frames streamed on `/viewport` might be displayed e.g. using `rviz2`:
 
 ![Viewport stream displayed in rviz2](./Docs/images/display_rviz2.png)
+
+## SettingsRegistry usage
+
+| Key name                             | Value type      | Default value            |
+| ------------------------------------ | --------------- | ------------------------ |
+| `/ViewportStreamer/StreamFrequency`  | `AZ::u64`       | 30                       |
+| `/ViewportStreamer/FrameName`        | `AZStd::string` | "viewportstreamer_frame" |
