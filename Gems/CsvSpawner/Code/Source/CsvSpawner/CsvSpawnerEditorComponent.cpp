@@ -31,7 +31,7 @@ namespace CsvSpawner
         {
             CsvSpawnerEditorTerrainSettingsConfig::Reflect(context);
 
-            serializeContext->Class<CsvSpawnerEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
+            serializeContext->Class<CsvSpawnerEditorComponent, EditorComponentBase>()
                 ->Version(2)
                 ->Field("CsvAssetId", &CsvSpawnerEditorComponent::m_csvAssetId)
                 ->Field("NumberOfEntries", &CsvSpawnerEditorComponent::m_numberOfEntries)
@@ -74,7 +74,7 @@ namespace CsvSpawner
 
     void CsvSpawnerEditorComponent::Activate()
     {
-        AzToolsFramework::Components::EditorComponentBase::Activate();
+        EditorComponentBase::Activate();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         if (m_showLabels)
@@ -105,13 +105,13 @@ namespace CsvSpawner
 
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
-        AzToolsFramework::Components::EditorComponentBase::Deactivate();
+        EditorComponentBase::Deactivate();
     }
 
     void CsvSpawnerEditorComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         // Create Game component
-        const auto config = CsvSpawnerUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
+        const auto config = GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
 
         using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
         AZ::Data::AssetInfo sourceAssetInfo;
@@ -125,7 +125,7 @@ namespace CsvSpawner
 
         AZ_Printf("CsvSpawnerEditorComponent", "Source of CSV file path: %s", sourcePath.c_str());
 
-        auto spawnableEntityInfo = CsvSpawner::CsvSpawnerUtils::GetSpawnableEntityInfoFromCSV(sourcePath.String());
+        auto spawnableEntityInfo = GetSpawnableEntityInfoFromCSV(sourcePath.String());
 
         gameEntity->CreateComponent<CsvSpawnerComponent>(config, spawnableEntityInfo, m_defaultSeed);
 
@@ -174,12 +174,12 @@ namespace CsvSpawner
 
         AZ_Printf("CsvSpawnerEditorComponent", "Source of CSV file path: %s", sourcePath.c_str());
 
-        m_spawnableEntityInfo = CsvSpawner::CsvSpawnerUtils::GetSpawnableEntityInfoFromCSV(sourcePath.String());
+        m_spawnableEntityInfo = GetSpawnableEntityInfoFromCSV(sourcePath.String());
         m_numberOfEntries = m_spawnableEntityInfo.size();
 
         AZ_Printf("CsvSpawnerEditorComponent", "Spawning spawnables, %d", m_numberOfEntries);
 
-        const auto config = CsvSpawnerUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
+        const auto config = GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
         m_spawnedTickets =
             CsvSpawnerUtils::SpawnEntities(m_spawnableEntityInfo, config, m_defaultSeed, AzPhysics::EditorPhysicsSceneName, GetEntityId());
     }
@@ -340,12 +340,12 @@ namespace CsvSpawner
         }
     }
 
-    AZ::u32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain() const
+    AZ::u32 CsvSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain() const
     {
         return IsTerrainAvailable() ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    AZ::Crc32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered()
+    AZ::Crc32 CsvSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered()
     {
         if (IsSpawnOnTerrainUpdateDisabled())
         {
@@ -355,7 +355,7 @@ namespace CsvSpawner
         return RefreshUI();
     }
 
-    AZ::Crc32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged()
+    AZ::Crc32 CsvSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged()
     {
         if (m_terrainMasksToIgnore == AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All)
         {
@@ -365,17 +365,17 @@ namespace CsvSpawner
         return RefreshUI();
     }
 
-    AZ::Crc32 CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::RefreshUI()
+    AZ::Crc32 CsvSpawnerEditorTerrainSettingsConfig::RefreshUI()
     {
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
-    bool CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled() const
+    bool CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled() const
     {
         return !m_spawnOnTerrainUpdate;
     }
 
-    bool CsvSpawner::CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled() const
+    bool CsvSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled() const
     {
         return m_spawnOnTerrainUpdate;
     }
