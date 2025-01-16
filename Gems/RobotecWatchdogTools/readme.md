@@ -13,7 +13,9 @@ The gem has minimal requirements, and it's on purpose: we want to minimize the s
 - Create a setreg file with Watchdog rules in your project's registry.
 - Good rule of thumb is to maintain two files: one for the Editor and a second for GameLauncher.
 
-## Example:
+## Examples:
+
+# Verify dynamic modules in Editor runtime
 
 Below is an example how to prevent Editor from starting if `ROS2.Editor` or `my_example_gem.Editor` is not loaded. 
 
@@ -39,13 +41,44 @@ with the following content:
 }
 ```
 
+# Verify if certain components are loaded
+
+Apart from dynamic module check on Editor start, this Gem provides API for checks wheather all components listed in registry are loaded.
+
+To use this feature, create similar setreg file in you project's Registry:
+
+```bash
+cd ${MY_PROJECT_ROOT}/Registry
+touch watchdog.setreg
+``` 
+
+with the following content:
+
+```json
+{
+    "O3DE": {
+        "Watchdog": {
+            "RequiredComponents": [
+                "ROS2SystemComponent",
+                "MyExampleRequiredComponent"
+            ]
+        }
+    }
+}
+```
+
+To perform verification, use `WatchdogTools::WatchdogToolsRequestBus::Events::VerifyComponentsLoaded` bus.
+
+
 ## Current functionality:
 
-Currently, only implemented rule is enumerating **dynamic** modules loaded by engine and comparing it with provided list of required ones.
-This by itself helps to quickly catch multiple issues like non-sourced environment, missing required packages or messed up symlinks for 3rd party dynlibs.
+Currently, two rules are implemented:
+*   enumerating **dynamic** modules loaded by engine and comparing it with provided list of required ones. This by itself helps to quickly catch multiple issues like non-sourced environment, missing required packages or messed up symlinks for 3rd party dynlibs.
+*   enumerating **components** (both system and normal components are valid) loaded by engine and comparing it with provided list of required ones.
 
 I eagerly anticipate contributions that include additional rules.
 
 ### Rules:
 `O3DE/Watchdog/RequiredModules` - it accepts a list of required dynamic modules. Note that both prefix (lib) and suffix (.so) are optional
+`O3DE/Watchdog/RequiredComponents` - it accepts a list of required components. 
 

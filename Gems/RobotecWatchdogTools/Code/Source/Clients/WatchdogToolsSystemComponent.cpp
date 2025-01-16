@@ -10,8 +10,16 @@
 
 #include "AzCore/Module/DynamicModuleHandle.h"
 #include "AzCore/Module/ModuleManagerBus.h"
+#include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
+#include <AzCore/std/containers/set.h>
 #include <Clients/WatchdogToolsSettings.h>
 #include <WatchdogTools/WatchdogToolsTypeIds.h>
 
@@ -58,7 +66,15 @@ namespace WatchdogTools
     {
         WatchdogToolsRequestBus::Handler::BusConnect();
 #if !defined(AZ_MONOLITHIC_BUILD)
-        CheckRequiredModules();
+        auto allModulesLoaded = CheckRequiredModules();
+        if (!allModulesLoaded.IsSuccess())
+        {
+            AZ_Warning("Watchdog", false, allModulesLoaded.GetError().c_str());
+        }
+        else if (!allModulesLoaded.GetValue())
+        {
+            std::terminate();
+        }
 #endif
     }
 
@@ -67,46 +83,100 @@ namespace WatchdogTools
         WatchdogToolsRequestBus::Handler::BusDisconnect();
     }
 
-    void WatchdogToolsSystemComponent::CheckRequiredModules()
+    AZ::Outcome<bool, AZStd::string> WatchdogToolsSystemComponent::CheckRequiredModules()
     {
-        AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
-        AZ_Assert(settingsRegistry, "Settings Registry Interface not available");
-        WatchdogSettings watchdogSettings;
-        watchdogSettings.LoadSettings(settingsRegistry);
-        AZStd::set<AZStd::string> requiredDynamicModules = GatherDynamicModules(watchdogSettings.m_requiredModules);
-        AZ::ModuleManagerRequestBus::Broadcast(
-            &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
-            [&requiredDynamicModules](const AZ::ModuleData& moduleData)
-            {
-                // // We can only enumerate shared libs, static libs are invisible to us
-                auto handle = moduleData.GetDynamicModuleHandle();
-                if (!handle)
-                {
-                    return true;
-                }
-                bool isLoaded = moduleData.GetDynamicModuleHandle()->IsLoaded();
-                if (!isLoaded)
-                {
-                    AZ_Warning("Watchdog", false, "Module %s is NOT loaded ", moduleData.GetDebugName());
-                    return false;
-                }
-                AZStd::string_view moduleName = moduleData.GetDebugName();
-
-                requiredDynamicModules.erase(moduleName);
-
-                return true;
-            });
-
-        if (!requiredDynamicModules.empty())
+        if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
         {
-            for (auto nonLoadedModule : requiredDynamicModules)
-            {
-                AZ_Printf("Watchdog", "Failed to load module: " AZ_STRING_FORMAT "\n", AZ_STRING_ARG(nonLoadedModule));
-            }
-            AZ_Fatal("Watchdog", "Some required modules were not loaded. Check the console output for errors");
+            WatchdogSettings watchdogSettings;
+            watchdogSettings.LoadSettings(settingsRegistry, "RequiredModules");
+            AZStd::set<AZStd::string> requiredDynamicModules = GatherDynamicModules(watchdogSettings.m_requiredModules);
+            AZ::ModuleManagerRequestBus::Broadcast(
+                &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
+                [&requiredDynamicModules](const AZ::ModuleData& moduleData)
+                {
+                    // // We can only enumerate shared libs, static libs are invisible to us
+                    auto handle = moduleData.GetDynamicModuleHandle();
+                    if (!handle)
+                    {
+                        return true;
+                    }
+                    bool isLoaded = moduleData.GetDynamicModuleHandle()->IsLoaded();
+                    if (!isLoaded)
+                    {
+                        AZ_Warning("Watchdog", false, "Module %s is NOT loaded ", moduleData.GetDebugName());
+                        return false;
+                    }
+                    AZStd::string_view moduleName = moduleData.GetDebugName();
 
-            std::terminate();
+                    requiredDynamicModules.erase(moduleName);
+
+                    return true;
+                });
+
+            bool allRequiredModulesLoaded = requiredDynamicModules.empty();
+
+            if (!allRequiredModulesLoaded)
+            {
+                for (auto nonLoadedModule : requiredDynamicModules)
+                {
+                    AZ_Printf("Watchdog", "Failed to load module: " AZ_STRING_FORMAT "\n", AZ_STRING_ARG(nonLoadedModule));
+                }
+                AZ_Fatal("Watchdog", "Some required modules were not loaded. Check the console output for errors");
+            }
+
+            return AZ::Success(allRequiredModulesLoaded);
         }
+        else
+        {
+            return AZ::Failure("SettingsRegistry for WatchdogTools inaccessible");
+        }
+    }
+
+    AZ::Outcome<bool, AZStd::string> WatchdogToolsSystemComponent::VerifyComponentsLoaded()
+    {
+        bool allComponentsLoaded = true;
+        if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
+        {
+            WatchdogSettings watchdogSettings;
+            watchdogSettings.LoadSettings(settingsRegistry, "RequiredComponents");
+            auto requiredComponents = watchdogSettings.m_requiredModules;
+            AZStd::set<AZStd::string> loadedComponentsNames;
+            auto enumerateComponentsEntities = [&loadedComponentsNames](AZ::Entity* entity)
+            {
+                for (auto component : entity->GetComponents())
+                {
+                    loadedComponentsNames.insert(component->RTTI_GetTypeName());
+                }
+            };
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::EnumerateEntities, enumerateComponentsEntities);
+
+            auto enumerateComponentsModules = [&loadedComponentsNames](const AZ::ModuleData& moduleData) -> bool
+            {
+                const AZ::Entity* entity = moduleData.GetEntity();
+
+                for (auto component : entity->GetComponents())
+                {
+                    loadedComponentsNames.insert(component->RTTI_GetTypeName());
+                }
+                return true;
+            };
+            AZ::ModuleManagerRequestBus::Broadcast(&AZ::ModuleManagerRequests::EnumerateModules, enumerateComponentsModules);
+
+            for (auto& requiredComponent : requiredComponents)
+            {
+                if (loadedComponentsNames.find(requiredComponent) == loadedComponentsNames.end())
+                {
+                    allComponentsLoaded = false;
+                    AZ_Warning("Watchdog", false, "Missing required component " AZ_STRING_FORMAT "\n", AZ_STRING_ARG(requiredComponent));
+                }
+            }
+        }
+        else
+        {
+            return AZ::Failure("SettingsRegistry for WatchdogTools inaccessible");
+        }
+
+        return AZ::Success(allComponentsLoaded);
     }
 
     AZStd::set<AZStd::string> WatchdogToolsSystemComponent::GatherDynamicModules(const AZStd::vector<AZStd::string>& modules)
