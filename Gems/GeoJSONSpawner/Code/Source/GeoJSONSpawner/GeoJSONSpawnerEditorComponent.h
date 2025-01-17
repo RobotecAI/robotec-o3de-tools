@@ -12,6 +12,7 @@
 
 #include "GeoJSONSpawnerUtils.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
+#include "EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h"
 
 #include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
 
@@ -33,6 +34,9 @@ namespace GeoJSONSpawner
     {
     public:
         AZ_EDITOR_COMPONENT(GeoJSONSpawnerEditorComponent, GeoJSONSpawnerEditorComponentTypeId);
+
+        GeoJSONSpawnerEditorComponent() = default;
+        ~GeoJSONSpawnerEditorComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -60,6 +64,8 @@ namespace GeoJSONSpawner
 
         AZStd::vector<GeoJSONUtils::GeoJSONSpawnableEntityInfo> m_spawnableEntityInfo;
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_spawnedTicketsGroups;
+
+        GeoJSONSpawnerEditorTerrainSettingsConfig m_terrainSettingsConfig; //!< Terrain Editor Settings Configuration for GeoJSONSpawner
     };
 
 } // namespace GeoJSONSpawner

@@ -21,16 +21,16 @@ namespace GeoJSONSpawner
         auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            // Reflect the enum
-            serializeContext->Enum<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>()
-                ->Value("None", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None)
-                ->Value("Settings", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings)
-                ->Value("HeightData", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData)
-                ->Value("ColorData", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData)
-                ->Value("All", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All);
+            // Reflect the enum - this crashesh reflect
+            // serializeContext->Enum<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>()
+            //     ->Value("None", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None)
+            //     ->Value("Settings", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings)
+            //     ->Value("HeightData", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData)
+            //     ->Value("ColorData", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::ColorData)
+            //     ->Value("All", AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All);
 
             serializeContext->Class<GeoJSONSpawnerEditorTerrainSettingsConfig>()
-                ->Version(2)
+                ->Version(0)
                 ->Field("SpawnOnComponentActivated", &GeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated)
                 ->Field("SpawnOnTerrainUpdate", &GeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnTerrainUpdate)
                 ->Field("TerrainDataChangedMask", &GeoJSONSpawnerEditorTerrainSettingsConfig::m_terrainMasksToIgnore);
