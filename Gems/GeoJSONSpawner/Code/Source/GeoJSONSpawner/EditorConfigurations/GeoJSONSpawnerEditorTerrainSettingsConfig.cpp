@@ -1,5 +1,5 @@
 /**
-* Copyright (C) Robotec AI - All Rights Reserved
+ * Copyright (C) Robotec AI - All Rights Reserved
  *
  * This source code is protected under international copyright law.  All rights
  * reserved and protected by the copyright holders.
@@ -65,7 +65,8 @@ namespace GeoJSONSpawner
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &GeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &GeoJSONSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain)
-                ->Attribute(AZ::Edit::Attributes::ComboBoxEditable, &GeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled)
+                ->Attribute(
+                    AZ::Edit::Attributes::ComboBoxEditable, &GeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled)
                 ->Attribute(
                     AZ::Edit::Attributes::EnumValues,
                     AZStd::vector<AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>>{
@@ -168,4 +169,4 @@ namespace GeoJSONSpawner
     {
         return m_spawnOnTerrainUpdate;
     }
-} // GeoJSON
+} // namespace GeoJSONSpawner

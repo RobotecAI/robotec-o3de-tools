@@ -10,8 +10,8 @@
 
 #include "GeoJSONSpawnerEditorComponent.h"
 
-#include "GeoJSONSpawnerComponent.h"
 #include "EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h"
+#include "GeoJSONSpawnerComponent.h"
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -69,10 +69,10 @@ namespace GeoJSONSpawner
                         "Show labels in Editor.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorComponent::OnShowLabelsChanged)
                     ->DataElement(
-                            AZ::Edit::UIHandlers::Default,
-                            &GeoJSONSpawnerEditorComponent::m_terrainSettingsConfig,
-                            "Spawn Behaviour Settings",
-                            "Settings to configure spawn behaviour in editor.");
+                        AZ::Edit::UIHandlers::Default,
+                        &GeoJSONSpawnerEditorComponent::m_terrainSettingsConfig,
+                        "Spawn Behaviour Settings",
+                        "Settings to configure spawn behaviour in editor.");
             }
         }
     }

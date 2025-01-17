@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include "GeoJSONSpawnerUtils.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
+#include "GeoJSONSpawnerUtils.h"
 
 #include <GeoJSONSpawner/GeoJSONSpawnerBus.h>
 #include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>

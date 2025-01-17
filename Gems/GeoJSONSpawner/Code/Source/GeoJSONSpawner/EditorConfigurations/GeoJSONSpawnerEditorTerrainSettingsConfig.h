@@ -1,5 +1,5 @@
 /**
-* Copyright (C) Robotec AI - All Rights Reserved
+ * Copyright (C) Robotec AI - All Rights Reserved
  *
  * This source code is protected under international copyright law.  All rights
  * reserved and protected by the copyright holders.
@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include "AzCore/RTTI/ReflectContext.h"
 #include "AzCore/RTTI/RTTIMacros.h"
+#include "AzCore/RTTI/ReflectContext.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
 #include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 
@@ -58,5 +58,4 @@ namespace GeoJSONSpawner
         [[nodiscard]] bool IsSpawnOnTerrainUpdateEnabled() const;
     };
 
-} // GeoJSON
-
+} // namespace GeoJSONSpawner
