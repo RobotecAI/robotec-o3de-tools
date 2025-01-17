@@ -129,11 +129,6 @@ namespace CsvSpawner
 
     AZ::Crc32 CsvSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered()
     {
-        if (IsSpawnOnTerrainUpdateDisabled())
-        {
-            m_terrainMasksToIgnore = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All;
-        }
-
         return RefreshUI();
     }
 
