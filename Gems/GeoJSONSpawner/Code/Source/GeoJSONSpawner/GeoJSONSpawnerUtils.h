@@ -175,4 +175,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
     //! @param geometryType - string with type of the geometry object
     //! @return enum connected with the given geometry type
     GeometryType GetGeometryType(const AZStd::string& geometryType);
+
+    //! This function checks if the Terrain is available in the level.
+    //! @returns True if level has any valid Terrain handlers, false otherwise.
+    [[nodiscard]] bool IsTerrainAvailable();
 } // namespace GeoJSONSpawner::GeoJSONUtils

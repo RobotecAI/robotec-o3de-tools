@@ -9,6 +9,8 @@
  */
 
 #include "GeoJSONSpawnerUtils.h"
+
+#include "AzFramework/Terrain/TerrainDataRequestBus.h"
 #include "Schemas/GeoJSONSchema.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
@@ -569,4 +571,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
         return GeometryType::Unknown;
     }
 
+    bool IsTerrainAvailable()
+    {
+        return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
+    }
 } // namespace GeoJSONSpawner::GeoJSONUtils
