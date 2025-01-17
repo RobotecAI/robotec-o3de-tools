@@ -186,6 +186,12 @@ namespace GeoJSONSpawner
         m_spawnedTicketsGroups.clear();
     }
 
+    void GeoJSONSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
+    {
+        NonIdHandler<TerrainDataNotifications, TerrainDataNotifications, AZ::Internal::EBusContainer<TerrainDataNotifications,
+            TerrainDataNotifications>>::OnTerrainDataChanged(dirtyRegion, dataChangedMask);
+    }
+
     void GeoJSONSpawnerEditorComponent::DisplayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {

@@ -11,6 +11,8 @@
 #pragma once
 
 #include "GeoJSONSpawnerUtils.h"
+#include "AzFramework/Terrain/TerrainDataRequestBus.h"
+
 #include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -27,6 +29,7 @@ namespace GeoJSONSpawner
     class GeoJSONSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(GeoJSONSpawnerEditorComponent, GeoJSONSpawnerEditorComponentTypeId);
@@ -37,6 +40,9 @@ namespace GeoJSONSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        // AzFramework::Terrain::TerrainDataNotificationBus::Handler overrides
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
