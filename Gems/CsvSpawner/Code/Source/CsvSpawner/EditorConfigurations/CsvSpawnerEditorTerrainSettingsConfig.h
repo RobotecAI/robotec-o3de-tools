@@ -10,8 +10,6 @@
 
 #pragma once
 
-#include "AzCore/RTTI/RTTIMacros.h"
-#include "AzCore/RTTI/ReflectContext.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
 #include "CsvSpawner/CsvSpawnerTypeIds.h"
 

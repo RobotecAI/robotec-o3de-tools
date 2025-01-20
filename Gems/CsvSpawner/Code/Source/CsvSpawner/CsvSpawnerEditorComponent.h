@@ -44,7 +44,7 @@ namespace CsvSpawner
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus interface overrides ...
-        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+        void OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
