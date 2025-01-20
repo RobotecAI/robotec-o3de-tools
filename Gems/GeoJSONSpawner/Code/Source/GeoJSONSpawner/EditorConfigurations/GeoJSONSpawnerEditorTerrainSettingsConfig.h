@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "AzCore/RTTI/ReflectContext.h"
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
 #include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 
