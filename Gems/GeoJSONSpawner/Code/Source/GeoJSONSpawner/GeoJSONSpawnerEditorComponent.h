@@ -46,7 +46,7 @@ namespace GeoJSONSpawner
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus::Handler overrides
-        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+        void OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides

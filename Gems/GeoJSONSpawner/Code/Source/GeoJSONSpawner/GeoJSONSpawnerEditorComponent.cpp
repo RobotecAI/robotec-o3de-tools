@@ -207,7 +207,8 @@ namespace GeoJSONSpawner
         m_spawnedTicketsGroups.clear();
     }
 
-    void GeoJSONSpawnerEditorComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
+    void GeoJSONSpawnerEditorComponent::OnTerrainDataChanged(
+        [[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         // Ignore on update with selected flags
         if (static_cast<bool>(dataChangedMask & m_terrainSettingsConfig.m_terrainMasksToIgnore))
