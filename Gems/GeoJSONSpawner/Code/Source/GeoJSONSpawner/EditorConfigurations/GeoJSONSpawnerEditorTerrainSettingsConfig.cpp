@@ -9,10 +9,10 @@
  */
 
 #include "GeoJSONSpawnerEditorTerrainSettingsConfig.h"
-
-#include "AzCore/Serialization/EditContext.h"
-#include "AzCore/Serialization/SerializeContext.h"
 #include "GeoJSONSpawner/GeoJSONSpawnerUtils.h"
+
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace GeoJSONSpawner
 {

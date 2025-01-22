@@ -10,17 +10,15 @@
 
 #pragma once
 
-#include "AzFramework/Terrain/TerrainDataRequestBus.h"
 #include "GeoJSONSpawnerUtils.h"
+#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
+#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 
-#include <GeoJSONSpawner/GeoJSONSpawnerBus.h>
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
-
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace GeoJSONSpawner
 {

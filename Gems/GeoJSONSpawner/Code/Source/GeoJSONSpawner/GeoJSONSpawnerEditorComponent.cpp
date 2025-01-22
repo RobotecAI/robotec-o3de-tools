@@ -9,7 +9,6 @@
  */
 
 #include "GeoJSONSpawnerEditorComponent.h"
-
 #include "EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h"
 #include "GeoJSONSpawnerComponent.h"
 

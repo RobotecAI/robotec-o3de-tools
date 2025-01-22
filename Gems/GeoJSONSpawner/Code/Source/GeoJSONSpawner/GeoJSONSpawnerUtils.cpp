@@ -9,10 +9,9 @@
  */
 
 #include "GeoJSONSpawnerUtils.h"
-
-#include "AzFramework/Terrain/TerrainDataRequestBus.h"
 #include "Schemas/GeoJSONSchema.h"
 
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/Transform.h>
@@ -22,7 +21,6 @@
 #include <ROS2/Georeference/GeoreferenceBus.h>
 #include <random>
 #include <rapidjson/schema.h>
-
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>

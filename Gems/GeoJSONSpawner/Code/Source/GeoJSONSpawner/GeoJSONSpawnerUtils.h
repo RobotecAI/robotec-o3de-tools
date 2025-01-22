@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
+#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
