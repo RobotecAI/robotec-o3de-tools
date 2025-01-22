@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "AzFramework/Terrain/TerrainDataRequestBus.h"
 #include "CsvSpawnerUtils.h"
 #include "EditorConfigurations/CsvSpawnerEditorTerrainSettingsConfig.h"
 
@@ -18,6 +17,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 namespace CsvSpawner
