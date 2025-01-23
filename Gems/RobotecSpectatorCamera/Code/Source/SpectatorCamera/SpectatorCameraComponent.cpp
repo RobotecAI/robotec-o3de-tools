@@ -10,7 +10,7 @@
 
 namespace RobotecSpectatorCamera
 {
-    constexpr AZStd::string_view CenterTheCursorConfigurationKey = "/O3DE/Camera/MoveCursorToTheCenter";
+    constexpr AZStd::string_view CenterTheCursorConfigurationKey = "/O3DE/SpectatorCamera/MoveCursorToTheCenter";
 
     SpectatorCameraComponent::SpectatorCameraComponent(
         const RobotecSpectatorCamera::SpectatorCameraConfiguration& spectatorCameraConfiguration)
