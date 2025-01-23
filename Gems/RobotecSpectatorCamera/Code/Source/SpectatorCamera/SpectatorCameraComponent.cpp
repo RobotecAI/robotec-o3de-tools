@@ -1,4 +1,7 @@
 #include "SpectatorCameraComponent.h"
+
+#include "AzCore/Settings/SettingsRegistry.h"
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -7,6 +10,8 @@
 
 namespace RobotecSpectatorCamera
 {
+    constexpr AZStd::string_view CenterTheCursorConfigurationKey = "/O3DE/Camera/MoveCursorToTheCenter";
+
     SpectatorCameraComponent::SpectatorCameraComponent(
         const RobotecSpectatorCamera::SpectatorCameraConfiguration& spectatorCameraConfiguration)
         : m_configuration(spectatorCameraConfiguration)
@@ -31,6 +36,13 @@ namespace RobotecSpectatorCamera
         AzFramework::InputChannelEventListener::Connect();
 
         AZ::TransformBus::EventResult(m_currentTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
+        auto* registry = AZ::SettingsRegistry::Get();
+        AZ_Assert(registry, "No Registry available");
+        if (registry)
+        {
+            registry->Get(m_centerTheCursor, CenterTheCursorConfigurationKey);
+        }
     }
 
     void SpectatorCameraComponent::Deactivate()
@@ -106,7 +118,7 @@ namespace RobotecSpectatorCamera
                 SpectatorCameraConfiguration::OrbitRadiusMax);
         }
 
-        if (channelId == AzFramework::InputDeviceMouse::Button::Right || m_configuration.m_cameraMode == CameraMode::FreeFlying)
+        if (channelId == AzFramework::InputDeviceMouse::Button::Right && m_configuration.m_cameraMode == CameraMode::ThirdPerson)
         {
             AzFramework::SystemCursorState currentCursorState;
             AzFramework::InputSystemCursorRequestBus::EventResult(
@@ -131,14 +143,17 @@ namespace RobotecSpectatorCamera
             {
                 m_isRightMouseButtonPressed = false;
 
-                // Restore the cursor's original position
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id,
-                    &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized,
-                    m_initialMousePosition);
+                if (m_centerTheCursor)
+                {
+                    // Restore the cursor's original position
+                    AzFramework::InputSystemCursorRequestBus::Event(
+                        AzFramework::InputDeviceMouse::Id,
+                        &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized,
+                        m_initialMousePosition);
 
-                // Update m_lastMousePosition to the restored position to prevent the jump on the next rotation start
-                m_lastMousePosition = m_initialMousePosition;
+                    // Update m_lastMousePosition to the restored position to prevent the jump on the next rotation start
+                    m_lastMousePosition = m_initialMousePosition;
+                }
                 AzFramework::InputSystemCursorRequestBus::Event(
                     AzFramework::InputDeviceMouse::Id,
                     &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
@@ -160,16 +175,23 @@ namespace RobotecSpectatorCamera
             AZ::Vector2 currentMousePosition = GetCurrentMousePosition();
             AZ::Vector2 mouseDelta = currentMousePosition - m_lastMousePosition;
 
+            if (m_centerTheCursor)
+            {
+                const auto center = AZ::Vector2(0.5f, 0.5f);
+
+                // Recenter the cursor to avoid edge constraints
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized, center);
+
+                // Then update m_lastMousePosition accordingly
+                m_lastMousePosition = center;
+            }
+            else
+            {
+                m_lastMousePosition = currentMousePosition;
+            }
+
             RotateCameraOnMouse(mouseDelta);
-
-            const auto center = AZ::Vector2(0.5f, 0.5f);
-
-            // Recenter the cursor to avoid edge constraints
-            AzFramework::InputSystemCursorRequestBus::Event(
-                AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized, center);
-
-            // Then update m_lastMousePosition accordingly
-            m_lastMousePosition = center;
         }
     }
 
@@ -275,6 +297,9 @@ namespace RobotecSpectatorCamera
 
     void SpectatorCameraComponent::ToggleCameraMode()
     {
+        // RMB should be handled only in the ThirdPerson mode. This line fixes problem with such combination:
+        // RMB pressed -> Key C pressed -> FreeFlying -> RMB released -> Key C pressed -> ThirdPerson -> Camera rotates without pressing RMB
+        m_isRightMouseButtonPressed = false;
         if (m_configuration.m_cameraMode == CameraMode::ThirdPerson)
         {
             m_configuration.m_cameraMode = CameraMode::FreeFlying;

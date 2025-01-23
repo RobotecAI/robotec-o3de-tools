@@ -62,7 +62,8 @@ namespace RobotecSpectatorCamera
         float m_yaw{ 0.0f };
         bool m_isRightMouseButtonPressed{ false };
         bool m_ignoreNextMovement{ false };
-        AZ::Vector2 m_initialMousePosition;
+        bool m_centerTheCursor{ false };
+        AZ::Vector2 m_initialMousePosition{ AZ::Vector2::CreateZero() };
         AZ::Vector2 m_lastMousePosition{ AZ::Vector2::CreateZero() };
         AZ::Vector3 m_movement{ AZ::Vector3::CreateZero() };
         AZ::Vector2 m_rotation{ AZ::Vector2::CreateZero() };
