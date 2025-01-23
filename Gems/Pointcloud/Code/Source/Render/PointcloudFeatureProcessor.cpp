@@ -35,7 +35,7 @@ namespace Pointcloud
 
         if (!m_shader)
         {
-            AZ_Error("PointcloudFeatureProcessor", false, "Failed to load required stars shader.");
+            AZ_Error("PointcloudFeatureProcessor", false, "Failed to load required pointcloud shader.");
             return;
         }
         AZ::Data::AssetBus::MultiHandler::BusConnect(m_shader->GetAssetId());
