@@ -1,5 +1,5 @@
 /**
-* Copyright (C) Robotec AI - All Rights Reserved
+ * Copyright (C) Robotec AI - All Rights Reserved
  *
  * This source code is protected under international copyright law.  All rights
  * reserved and protected by the copyright holders.
@@ -16,8 +16,7 @@
 
 namespace CsvSpawner
 {
-    class CsvSpawnerInterface
-        : public AZ::EBusTraits
+    class CsvSpawnerInterface : public AZ::EBusTraits
     {
     public:
         virtual ~CsvSpawnerInterface() = default;
