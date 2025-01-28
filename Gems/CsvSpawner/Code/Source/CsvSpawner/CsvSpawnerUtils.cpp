@@ -294,7 +294,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         }
 
         // Call CsvSpawner EBus notification
-        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, physicsSceneName, parentId, tickets);
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, physicsSceneName, parentId);
 
         return tickets;
     }
