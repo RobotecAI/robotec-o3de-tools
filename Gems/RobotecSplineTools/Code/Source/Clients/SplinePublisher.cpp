@@ -134,12 +134,14 @@ namespace SplineTools
         {
             const AZ::Vector3& vertex = spline->GetVertex(i);
 
-            // Convert each vertex into a PoseStamped and add to the path
-            geometry_msgs::msg::PoseStamped poseStamped;
+            // Use emplace_back to construct PoseStamped in-place
+            pathMessage.poses.emplace_back();
+            auto& poseStamped = pathMessage.poses.back();
+
+            // Set the pose values directly
             poseStamped.pose.position.x = vertex.GetX();
             poseStamped.pose.position.y = vertex.GetY();
             poseStamped.pose.position.z = vertex.GetZ();
-            pathMessage.poses.push_back(poseStamped);
         }
 
         m_publisher->publish(pathMessage);
