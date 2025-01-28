@@ -47,6 +47,23 @@ Refer to [readme](https://github.com/RobotecAI/robotec-o3de-tools/tree/main/Gems
 # RobotecSpectatorCamera
 
 A component that allows to look at an entity from 3rd person perspective and to switch camera mode to the free flying mode (to switch mode press the `C` key). It also allows to enable/disable following the target's rotation and to add a vertical offset to change the `look at` point of the target entity.  
+The Spectator camera component can be configured to centre the cursor when moving the camera (this gives the full range of rotation regardless of the available screen space) or to let the cursor move freely on the screen when moving the camera (this reduces the range of rotation, e.g. in third person mode a full rotation may require a few repeats of the (RMB press ->Rotate camera ->RMB release ->Move cursor to previous start position ->Repeat) cycle). This option can be configured via the `setreg` file or by passing `--regset` flag in the command line. Example:
+- `.setreg`:
+```json
+{
+    "O3DE":
+    {
+        "SpectatorCamera":
+        {
+            "MoveCursorToTheCenter": false
+        }
+    }
+}
+```
+- `--regset flag`:
+```
+./Editor --regset="/O3DE/SpectatorCamera/MoveCursorToTheCenter=true"
+```
 ![](doc/RobotecSpectatorCamera.png)
 
 
