@@ -11,14 +11,14 @@
 
 #include "CsvSpawnerUtils.h"
 
-#include "AzFramework/Physics/CollisionBus.h"
+#include <AzFramework/Physics/CollisionBus.h>
+#include <CsvSpawner/CsvSpawnerInterface.h>
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -196,6 +196,10 @@ namespace CsvSpawner::CsvSpawnerUtils
         const AZStd::string& physicsSceneName,
         AZ::EntityId parentId)
     {
+        // Call CsvSpawner EBus notification
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin,
+            entitiesToSpawn, spawnableAssetConfiguration, physicsSceneName, parentId);
+
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "Unable to get physics scene interface");
         const auto sceneHandle = sceneInterface->GetSceneHandle(physicsSceneName);
@@ -289,6 +293,11 @@ namespace CsvSpawner::CsvSpawnerUtils
             spawner->SpawnAllEntities(ticket, optionalArgs);
             tickets[entityConfig.m_id] = AZStd::move(ticket);
         }
+
+        // Call CsvSpawner EBus notification
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished,
+            entitiesToSpawn, spawnableAssetConfiguration, physicsSceneName, parentId, tickets);
+
         return tickets;
     }
 
