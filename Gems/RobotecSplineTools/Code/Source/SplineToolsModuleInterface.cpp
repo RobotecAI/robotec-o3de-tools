@@ -27,8 +27,7 @@ namespace SplineTools
             { SplineToolsSystemComponent::CreateDescriptor(),
               VisualizeSplineComponent::CreateDescriptor(),
               SplineSubscriber::CreateDescriptor(),
-              SplinePublisher::CreateDescriptor()
-            });
+              SplinePublisher::CreateDescriptor() });
     }
 
     AZ::ComponentTypeList SplineToolsModuleInterface::GetRequiredSystemComponents() const

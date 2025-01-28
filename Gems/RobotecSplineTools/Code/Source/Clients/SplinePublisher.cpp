@@ -17,16 +17,16 @@ namespace SplineTools
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SplinePublisherConfiguration>()
-                ->Version(0)
-                ->Field("m_topicName", &SplinePublisherConfiguration::m_TopicConfig);
+            serializeContext->Class<SplinePublisherConfiguration>()->Version(0)->Field(
+                "m_topicName", &SplinePublisherConfiguration::m_TopicConfig);
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext
                     ->Class<SplinePublisherConfiguration>(
                         "SplinePublisherConfiguration", "Configuration for the SplineSubscriber component")
                     ->ClassElement(AZ::Edit::ClassElements::Group, "SplineSubscriber Configuration")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SplinePublisherConfiguration::m_TopicConfig, "Topic Config", "Topic Config");
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &SplinePublisherConfiguration::m_TopicConfig, "Topic Config", "Topic Config");
             }
         }
     }
@@ -69,8 +69,8 @@ namespace SplineTools
         auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
         if (ros2Node)
         {
-            m_publisher = ros2Node->create_publisher<nav_msgs::msg::Path>(
-                m_config.m_TopicConfig.m_topic.data(), m_config.m_TopicConfig.GetQoS());
+            m_publisher =
+                ros2Node->create_publisher<nav_msgs::msg::Path>(m_config.m_TopicConfig.m_topic.data(), m_config.m_TopicConfig.GetQoS());
 
             AZ::TickBus::Handler::BusConnect();
         }
@@ -99,13 +99,12 @@ namespace SplineTools
 
         auto* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
         nav_msgs::msg::Path pathMessage;
-        pathMessage.header.frame_id = ros2Frame->GetFrameID().data();  // Set an appropriate frame ID (as per your use case)
+        pathMessage.header.frame_id = ros2Frame->GetFrameID().data(); // Set an appropriate frame ID (as per your use case)
         pathMessage.header.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
 
         // Generate the path based on the spline (retrieve spline data from the SplineService)
         AZStd::vector<AZ::Vector3> splinePoints;
-        LmbrCentral::SplineComponentRequestBus::EventResult(
-            splinePoints, GetEntityId(), &LmbrCentral::SplineComponentRequests::GetSpline);
+        LmbrCentral::SplineComponentRequestBus::EventResult(splinePoints, GetEntityId(), &LmbrCentral::SplineComponentRequests::GetSpline);
 
         for (const auto& point : splinePoints)
         {

@@ -1,14 +1,14 @@
 #pragma once
 
-#include <ROS2/Communication/TopicConfiguration.h>
-#include <SplineTools/SplineToolsTypeIds.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
+#include <ROS2/Communication/TopicConfiguration.h>
+#include <SplineTools/SplineToolsTypeIds.h>
 
-#include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/path.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 namespace SplineTools
 {
@@ -20,8 +20,10 @@ namespace SplineTools
         static void Reflect(AZ::ReflectContext* context);
         ROS2::TopicConfiguration m_TopicConfig{ rclcpp::ServicesQoS() };
     };
-    
-    class SplinePublisher : public AZ::Component, public AZ::TickBus::Handler
+
+    class SplinePublisher
+        : public AZ::Component
+        , public AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT(SplinePublisher, SplinePublisherComponentTypeId);
