@@ -21,15 +21,9 @@ namespace CsvSpawner
     public:
         virtual ~CsvSpawnerInterface() = default;
 
-        virtual void OnEntitiesSpawnBegin(
-            const AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo>& entitiesToSpawn,
-            const AZStd::unordered_map<AZStd::string, CsvSpawnerUtils::CsvSpawnableAssetConfiguration>& spawnableAssetConfiguration,
-            const AZStd::string& physicsSceneName,
-            const AZ::EntityId& parentId) = 0;
+        virtual void OnEntitiesSpawnBegin(const AZStd::string& physicsSceneName, const AZ::EntityId& parentId) = 0;
 
         virtual void OnEntitiesSpawnFinished(
-            const AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo>& entitiesToSpawn,
-            const AZStd::unordered_map<AZStd::string, CsvSpawnerUtils::CsvSpawnableAssetConfiguration>& spawnableAssetConfiguration,
             const AZStd::string& physicsSceneName,
             const AZ::EntityId& parentId,
             const AZStd::unordered_map<int, AzFramework::EntitySpawnTicket>& spawnTickets) = 0;
