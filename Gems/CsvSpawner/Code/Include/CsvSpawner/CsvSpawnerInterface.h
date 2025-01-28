@@ -23,10 +23,7 @@ namespace CsvSpawner
 
         virtual void OnEntitiesSpawnBegin(const AZStd::string& physicsSceneName, const AZ::EntityId& parentId) = 0;
 
-        virtual void OnEntitiesSpawnFinished(
-            const AZStd::string& physicsSceneName,
-            const AZ::EntityId& parentId,
-            const AZStd::unordered_map<int, AzFramework::EntitySpawnTicket>& spawnTickets) = 0;
+        virtual void OnEntitiesSpawnFinished(const AZStd::string& physicsSceneName, const AZ::EntityId& parentId) = 0;
 
         // EBus Configuration - allow multiple listeners
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
