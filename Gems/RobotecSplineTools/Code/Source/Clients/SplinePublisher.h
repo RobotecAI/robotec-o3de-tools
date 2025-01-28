@@ -41,7 +41,7 @@ namespace SplineTools
         void Deactivate() override;
 
         // AZ::TickBus::Handler interface implementation
-        void OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time) override;
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
     private:
         void PublishSplineAsPath() const;

@@ -1,9 +1,8 @@
 #include "SplinePublisher.h"
 
-#include "ROS2/Utilities/ROS2Names.h"
-
 #include <ROS2/Frame/ROS2FrameComponent.h>
 #include <ROS2/ROS2Bus.h>
+#include <ROS2/Utilities/ROS2Names.h>
 
 namespace SplineTools
 {
@@ -60,20 +59,43 @@ namespace SplineTools
 
     void SplinePublisher::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("SplineService", 0x2b674d3c));
+        required.push_back(AZ_CRC_CE("SplineService"));
         required.push_back(AZ_CRC_CE("ROS2Frame"));
     }
 
     void SplinePublisher::Activate()
     {
+        const ROS2::ROS2FrameComponent* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
+        if (!ros2Frame)
+        {
+            AZ_Warning("SplinePublisher::Activate", false, "ROS2 Frame Component is not available!");
+            return;
+        }
+
+        AZStd::string frameNamespace = ros2Frame->GetNamespace();
+        if (!frameNamespace.empty())
+        {
+            m_config.m_TopicConfig.m_topic = AZStd::string::format("%s/%s", frameNamespace.c_str(), m_config.m_TopicConfig.m_topic.c_str());
+        }
+
+        // Create the ROS2 Publisher
         auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
         if (ros2Node)
         {
             m_publisher =
-                ros2Node->create_publisher<nav_msgs::msg::Path>(m_config.m_TopicConfig.m_topic.data(), m_config.m_TopicConfig.GetQoS());
+                ros2Node->create_publisher<nav_msgs::msg::Path>(m_config.m_TopicConfig.m_topic.c_str(), m_config.m_TopicConfig.GetQoS());
 
             AZ::TickBus::Handler::BusConnect();
         }
+
+        // const auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        // if (ros2Node)
+        // {
+        //     m_publisher =
+        //         ros2Node->create_publisher<nav_msgs::msg::Path>(m_config.m_TopicConfig.m_topic.data(), m_config.m_TopicConfig.GetQoS());
+        //
+        //     AZ::TickBus::Handler::BusConnect();
+        // }
     }
 
     void SplinePublisher::Deactivate()
@@ -84,9 +106,6 @@ namespace SplineTools
 
     void SplinePublisher::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_UNUSED(deltaTime);
-        AZ_UNUSED(time);
-
         PublishSplineAsPath();
     }
 
@@ -98,6 +117,11 @@ namespace SplineTools
         }
 
         const ROS2::ROS2FrameComponent* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
+        if (!ros2Frame)
+        {
+            AZ_Warning("SplinePublisher::PublishSplineAsPath", false, "ROS2 Frame Component is not available!");
+            return;
+        }
 
         nav_msgs::msg::Path pathMessage;
         pathMessage.header.frame_id = ros2Frame->GetFrameID().data();
@@ -127,7 +151,6 @@ namespace SplineTools
             pathMessage.poses.push_back(poseStamped);
         }
 
-        // Publish the message
         m_publisher->publish(pathMessage);
     }
 } // namespace SplineTools
