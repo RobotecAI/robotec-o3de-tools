@@ -97,7 +97,8 @@ namespace SplineTools
             return;
         }
 
-        auto* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
+        const ROS2::ROS2FrameComponent* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
+
         nav_msgs::msg::Path pathMessage;
         pathMessage.header.frame_id = ros2Frame->GetFrameID().data();
         pathMessage.header.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
