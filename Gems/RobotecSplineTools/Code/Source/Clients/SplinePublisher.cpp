@@ -99,19 +99,30 @@ namespace SplineTools
 
         auto* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
         nav_msgs::msg::Path pathMessage;
-        pathMessage.header.frame_id = ros2Frame->GetFrameID().data(); // Set an appropriate frame ID (as per your use case)
+        pathMessage.header.frame_id = ros2Frame->GetFrameID().data();
         pathMessage.header.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
 
-        // Generate the path based on the spline (retrieve spline data from the SplineService)
-        AZStd::vector<AZ::Vector3> splinePoints;
-        LmbrCentral::SplineComponentRequestBus::EventResult(splinePoints, GetEntityId(), &LmbrCentral::SplineComponentRequests::GetSpline);
+        // Retrieve spline data
+        AZStd::shared_ptr<AZ::Spline> spline;
+        LmbrCentral::SplineComponentRequestBus::EventResult(spline, GetEntityId(), &LmbrCentral::SplineComponentRequests::GetSpline);
 
-        for (const auto& point : splinePoints)
+        if (!spline)
         {
+            AZ_Warning("SplinePublisher::PublishSplineAsPath", false, "Spline not found. Cannot generate spline path.");
+            return;
+        }
+
+        // Retrieve vertices from the spline
+        const size_t vertexCount = spline->GetVertexCount();
+        for (size_t i = 0; i < vertexCount; ++i)
+        {
+            const AZ::Vector3& vertex = spline->GetVertex(i);
+
+            // Convert each vertex into a PoseStamped and add to the path
             geometry_msgs::msg::PoseStamped poseStamped;
-            poseStamped.pose.position.x = point.GetX();
-            poseStamped.pose.position.y = point.GetY();
-            poseStamped.pose.position.z = point.GetZ();
+            poseStamped.pose.position.x = vertex.GetX();
+            poseStamped.pose.position.y = vertex.GetY();
+            poseStamped.pose.position.z = vertex.GetZ();
             pathMessage.poses.push_back(poseStamped);
         }
 
