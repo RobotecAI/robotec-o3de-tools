@@ -1,9 +1,11 @@
 
 #include "SplineToolsModuleInterface.h"
+
 #include <AzCore/Memory/Memory.h>
 
 #include <SplineTools/SplineToolsTypeIds.h>
 
+#include <Clients/SplinePublisher.h>
 #include <Clients/SplineSubscriber.h>
 #include <Clients/SplineToolsSystemComponent.h>
 #include <Clients/VisualizeSplineComponent.h>
@@ -24,7 +26,9 @@ namespace SplineTools
             m_descriptors.end(),
             { SplineToolsSystemComponent::CreateDescriptor(),
               VisualizeSplineComponent::CreateDescriptor(),
-              SplineSubscriber::CreateDescriptor() });
+              SplineSubscriber::CreateDescriptor(),
+              SplinePublisher::CreateDescriptor()
+            });
     }
 
     AZ::ComponentTypeList SplineToolsModuleInterface::GetRequiredSystemComponents() const

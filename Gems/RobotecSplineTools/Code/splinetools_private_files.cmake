@@ -10,4 +10,6 @@ set(FILES
     Source/Clients/SplineSubscriber.cpp
     Source/Clients/SplineSubscriberConfig.h
     Source/Clients/SplineSubscriberConfig.cpp
+    Source/Clients/SplinePublisher.h
+    Source/Clients/SplinePublisher.cpp
 )
