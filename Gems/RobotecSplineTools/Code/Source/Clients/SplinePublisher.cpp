@@ -87,15 +87,6 @@ namespace SplineTools
 
             AZ::TickBus::Handler::BusConnect();
         }
-
-        // const auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
-        // if (ros2Node)
-        // {
-        //     m_publisher =
-        //         ros2Node->create_publisher<nav_msgs::msg::Path>(m_config.m_TopicConfig.m_topic.data(), m_config.m_TopicConfig.GetQoS());
-        //
-        //     AZ::TickBus::Handler::BusConnect();
-        // }
     }
 
     void SplinePublisher::Deactivate()
