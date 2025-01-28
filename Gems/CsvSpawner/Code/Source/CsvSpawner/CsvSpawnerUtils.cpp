@@ -197,8 +197,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         AZ::EntityId parentId)
     {
         // Call CsvSpawner EBus notification
-        CsvSpawnerNotificationBus::Broadcast(
-            &CsvSpawnerInterface::OnEntitiesSpawnBegin, entitiesToSpawn, spawnableAssetConfiguration, physicsSceneName, parentId);
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin, physicsSceneName, parentId);
 
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "Unable to get physics scene interface");
@@ -295,13 +294,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         }
 
         // Call CsvSpawner EBus notification
-        CsvSpawnerNotificationBus::Broadcast(
-            &CsvSpawnerInterface::OnEntitiesSpawnFinished,
-            entitiesToSpawn,
-            spawnableAssetConfiguration,
-            physicsSceneName,
-            parentId,
-            tickets);
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, physicsSceneName, parentId, tickets);
 
         return tickets;
     }
