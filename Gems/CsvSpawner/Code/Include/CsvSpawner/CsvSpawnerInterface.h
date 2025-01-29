@@ -18,35 +18,65 @@
 namespace CsvSpawner
 {
 
-    // Enum with flags for spawning status
+    /**
+     * @brief Flags representing the status of an CsvSpawner::Spawn() operation.
+     *
+     * SpawnStatusCode provides various status indicators for entity spawning.
+     * These flags help track whether spawning was successful, stopped, or failed.
+     */
     enum class SpawnStatusCode : uint8_t
     {
-        Success = 0, // Operation succeeded.
-        Fail = 1 << 0, // Generic failure.
-        SpawnStopped = 1 << 1, // Spawning was stopped prematurely but not necessarily a failure.
-        ErrorOccurred = 1 << 2, // An error occurred during spawning (potentially recoverable).
+        Success = 0, ///< Operation succeeded.
+        Fail = 1 << 0, ///< Generic failure.
+        SpawnStopped = 1 << 1, ///< Spawning was stopped prematurely but not necessarily a failure.
+        ErrorOccurred = 1 << 2, ///< An error occurred during spawning (potentially recoverable).
     };
 
+    /// Enable bitwise operations for SpawnStatusCode.
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatusCode);
 
-    // Structure to hold spawn data
+    /**
+     * @brief Structure holding data related to CsvSpawner entity spawning.
+     *
+     * SpawnInfo contains information about the entities to be spawned, the physics scene
+     * they belong to, and the parent entity responsible for the spawn operation.
+     */
     struct SpawnInfo
     {
-        const AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo>& m_entitiesToSpawn;
-        const AZStd::string& m_physicsSceneName;
-        const AZ::EntityId& m_spawnerParentEntityId;
+        const AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo>& m_entitiesToSpawn; ///< List of entities to spawn.
+        const AZStd::string& m_physicsSceneName; ///< Name of the physics scene where entities will be spawned.
+        const AZ::EntityId& m_spawnerParentEntityId; ///< Parent entity ID managing the spawn process.
     };
 
+    /**
+     * @brief Interface for handling entity spawn events for Csv Spawner.
+     *
+     * CsvSpawnerInterface is an Event Bus interface that notifies multiple
+     * listeners when entity spawning begins and finishes.
+     */
     class CsvSpawnerInterface : public AZ::EBusTraits
     {
     public:
         virtual ~CsvSpawnerInterface() = default;
 
-        virtual void OnEntitiesSpawnBegin(const SpawnInfo& m_spawnInfo){}
+        /**
+         * @brief Called when entity spawning begins.
+         * @param m_spawnInfo Struct holding information about entities to be spawned.
+         */
+        virtual void OnEntitiesSpawnBegin(const SpawnInfo& m_spawnInfo)
+        {
+        }
 
-        virtual void OnEntitiesSpawnFinished(const SpawnInfo& m_spawnInfo, const SpawnStatusCode& m_statusCode){}
+        /**
+         * @brief Called when entity spawning finishes.
+         * @param m_spawnInfo Struct holding information about entities to be spawned.
+         * @param m_statusCode Status code indicating success, failure and warnings of the spawn.
+         */
+        virtual void OnEntitiesSpawnFinished(const SpawnInfo& m_spawnInfo, const SpawnStatusCode& m_statusCode)
+        {
+        }
 
-        // EBus Configuration - allow multiple listeners
+        /// EBus Configuration - Allows multiple listeners to handle events.
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
     };
 
