@@ -44,7 +44,7 @@ namespace CsvSpawner
 
         virtual void OnEntitiesSpawnBegin(const SpawnInfo& m_spawnInfo) = 0;
 
-        virtual void OnEntitiesSpawnFinished(const SpawnInfo& m_spawnInfo, const SpawnStatusCode& m_successCode) = 0;
+        virtual void OnEntitiesSpawnFinished(const SpawnInfo& m_spawnInfo, const SpawnStatusCode& m_statusCode) = 0;
 
         // EBus Configuration - allow multiple listeners
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
