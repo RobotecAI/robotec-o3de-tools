@@ -12,7 +12,7 @@
 #include "AzCore/Debug/Trace.h"
 #include "CsvSpawnerComponent.h"
 #include "CsvSpawnerCsvParser.h"
-#include "CsvSpawnerUtils.h"
+#include <CsvSpawner/CsvSpawnerUtils.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/Path/Path.h>
