@@ -233,7 +233,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 AZ_Error("CsvSpawner", false, "SpawnableAssetConfiguration %s not found", entityConfig.m_name.c_str());
 
                 // Add notify code status
-                spawnStatusCode |= ErrorOccurred;
+                spawnStatusCode |= SpawnStatusCode::ErrorOccurred;
                 continue;
             }
 
@@ -264,7 +264,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 else
                 {
                     // Add notify code status
-                    spawnStatusCode |= ErrorOccurred;
+                    spawnStatusCode |= SpawnStatusCode::ErrorOccurred;
 
                     continue; // Skip this entity if we can't find a valid position and
                               // place on terrain is enabled.
@@ -280,7 +280,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= ErrorOccurred;
+                    spawnStatusCode |= SpawnStatusCode::ErrorOccurred;
 
                     return;
                 }
@@ -297,7 +297,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= ErrorOccurred;
+                    spawnStatusCode |= SpawnStatusCode::ErrorOccurred;
 
                     return;
                 }
@@ -310,7 +310,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         }
 
         // Check is success spawn
-        tickets.empty() ? spawnStatusCode |= Fail : spawnStatusCode |= Success;
+        tickets.empty() ? spawnStatusCode |= SpawnStatusCode::Fail : spawnStatusCode |= SpawnStatusCode::Success;
         // Call CsvSpawner EBus notification - Finished
         CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
 
