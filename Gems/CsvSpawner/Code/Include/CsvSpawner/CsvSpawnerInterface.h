@@ -18,13 +18,13 @@
 namespace CsvSpawner
 {
 
-    // Enum with flags for spawning success code
-    enum SpawnStatusCode : uint8_t
+    // Enum with flags for spawning status
+    enum class SpawnStatusCode : uint8_t
     {
-        Success = 0,
-        Fail = 1 << 0,
-        SpawnStopped = 1 << 1,
-        ErrorOccurred = 1 << 2,
+        Success = 0, // Operation succeeded.
+        Fail = 1 << 0, // Generic failure.
+        SpawnStopped = 1 << 1, // Spawning was stopped prematurely but not necessarily a failure.
+        ErrorOccurred = 1 << 2, // An error occurred during spawning (potentially recoverable).
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatusCode);
