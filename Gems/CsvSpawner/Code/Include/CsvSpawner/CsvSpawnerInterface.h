@@ -13,9 +13,27 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <CsvSpawner/CsvSpawnerUtils.h>
 
 namespace CsvSpawner
 {
+
+    // Enum with success code for spawning
+    enum SpawnSuccessCode
+    {
+        Fail = -1,
+        Success = 0,
+        SpawnStopped = 1,
+    };
+
+    // Structure to hold spawn data
+    struct SpawnInfo
+    {
+        const AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo>& m_EntitiesToSpawn;
+        const AZStd::string& m_PhysicsSceneName;
+        const AZ::EntityId& m_ParentId;
+    };
+
     class CsvSpawnerInterface : public AZ::EBusTraits
     {
     public:

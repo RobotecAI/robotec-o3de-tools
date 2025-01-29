@@ -11,7 +11,7 @@
 #pragma once
 
 #include "API/ToolsApplicationAPI.h"
-#include "CsvSpawnerUtils.h"
+#include <CsvSpawner/CsvSpawnerUtils.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
