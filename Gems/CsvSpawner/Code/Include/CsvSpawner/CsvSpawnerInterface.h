@@ -18,20 +18,23 @@
 namespace CsvSpawner
 {
 
-    // Enum with success code for spawning
-    enum SpawnSuccessCode
+    // Enum with flags for spawning success code
+    enum SpawnStatusCode : uint8_t
     {
-        Fail = -1,
         Success = 0,
-        SpawnStopped = 1,
+        Fail = 1 << 0,
+        SpawnStopped = 1 << 1,
+        ErrorOccurred = 1 << 1,
     };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatusCode);
 
     // Structure to hold spawn data
     struct SpawnInfo
     {
-        const AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo>& m_EntitiesToSpawn;
-        const AZStd::string& m_PhysicsSceneName;
-        const AZ::EntityId& m_ParentId;
+        const AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo>& m_entitiesToSpawn;
+        const AZStd::string& m_physicsSceneName;
+        const AZ::EntityId& m_spawnerParentEntityId;
     };
 
     class CsvSpawnerInterface : public AZ::EBusTraits
@@ -39,9 +42,9 @@ namespace CsvSpawner
     public:
         virtual ~CsvSpawnerInterface() = default;
 
-        virtual void OnEntitiesSpawnBegin(const AZStd::string& physicsSceneName, const AZ::EntityId& parentId) = 0;
+        virtual void OnEntitiesSpawnBegin(const SpawnInfo& m_spawnInfo) = 0;
 
-        virtual void OnEntitiesSpawnFinished(const AZStd::string& physicsSceneName, const AZ::EntityId& parentId) = 0;
+        virtual void OnEntitiesSpawnFinished(const SpawnInfo& m_spawnInfo, const SpawnStatusCode& m_successCode) = 0;
 
         // EBus Configuration - allow multiple listeners
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;

@@ -196,8 +196,12 @@ namespace CsvSpawner::CsvSpawnerUtils
         const AZStd::string& physicsSceneName,
         AZ::EntityId parentId)
     {
-        // Call CsvSpawner EBus notification
-        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin, physicsSceneName, parentId);
+        SpawnInfo broadcastSpawnInfo =
+            SpawnInfo{ entitiesToSpawn, physicsSceneName, parentId }; // Spawn Info used in CsvSpawner EBus notify.
+        SpawnStatusCode spawnStatusCode; // Spawn Status Code Status used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
+
+        // Call CsvSpawner EBus notification - Begin
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin, broadcastSpawnInfo);
 
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "Unable to get physics scene interface");
@@ -227,6 +231,9 @@ namespace CsvSpawner::CsvSpawnerUtils
             if (!spawnableAssetConfiguration.contains(entityConfig.m_name))
             {
                 AZ_Error("CsvSpawner", false, "SpawnableAssetConfiguration %s not found", entityConfig.m_name.c_str());
+
+                // Add notify code status
+                spawnStatusCode |= ErrorOccurred;
                 continue;
             }
 
@@ -256,6 +263,9 @@ namespace CsvSpawner::CsvSpawnerUtils
                 }
                 else
                 {
+                    // Add notify code status
+                    spawnStatusCode |= ErrorOccurred;
+
                     continue; // Skip this entity if we can't find a valid position and
                               // place on terrain is enabled.
                 }
@@ -265,10 +275,13 @@ namespace CsvSpawner::CsvSpawnerUtils
             AzFramework::EntitySpawnTicket ticket(spawnable);
             // Set the pre-spawn callback to set the name of the root entity to the name
             // of the spawnable
-            optionalArgs.m_preInsertionCallback = [transform](auto id, auto view)
+            optionalArgs.m_preInsertionCallback = [transform, &spawnStatusCode](auto id, auto view)
             {
                 if (view.empty())
                 {
+                    // Add notify code status
+                    spawnStatusCode |= ErrorOccurred;
+
                     return;
                 }
                 AZ::Entity* root = *view.begin();
@@ -278,11 +291,14 @@ namespace CsvSpawner::CsvSpawnerUtils
                 transformInterface->SetWorldTM(transform);
             };
             optionalArgs.m_completionCallback =
-                [parentId](
+                [parentId, &spawnStatusCode](
                     [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableConstEntityContainerView view)
             {
                 if (view.empty())
                 {
+                    // Add notify code status
+                    spawnStatusCode |= ErrorOccurred;
+
                     return;
                 }
                 const AZ::Entity* root = *view.begin();
@@ -293,8 +309,10 @@ namespace CsvSpawner::CsvSpawnerUtils
             tickets[entityConfig.m_id] = AZStd::move(ticket);
         }
 
-        // Call CsvSpawner EBus notification
-        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, physicsSceneName, parentId);
+        // Check is success spawn
+        tickets.empty() ? spawnStatusCode |= Fail : spawnStatusCode |= Success;
+        // Call CsvSpawner EBus notification - Finished
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
 
         return tickets;
     }
