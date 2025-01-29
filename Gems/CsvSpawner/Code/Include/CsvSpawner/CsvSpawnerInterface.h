@@ -24,7 +24,7 @@ namespace CsvSpawner
         Success = 0,
         Fail = 1 << 0,
         SpawnStopped = 1 << 1,
-        ErrorOccurred = 1 << 1,
+        ErrorOccurred = 1 << 2,
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatusCode);
