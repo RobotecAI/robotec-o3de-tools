@@ -141,7 +141,7 @@ namespace ROS2PoseControl
     void ROS2PoseControl::SetEnablePhysics(bool enable)
     {
         SetPhysicsEnabled(enable);
-        m_configuration.m_enablePhysics = enable;
+        m_enablePhysics = enable;
     }
 
     void ROS2PoseControl::SetRigidBodiesToKinematic(bool enable)
