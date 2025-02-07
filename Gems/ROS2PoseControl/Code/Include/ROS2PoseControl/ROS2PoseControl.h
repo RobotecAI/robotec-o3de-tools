@@ -10,6 +10,7 @@
 #include <ROS2/Communication/TopicConfiguration.h>
 #include <ROS2/ROS2Bus.h>
 #include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
+#include <ROS2PoseControl/ROS2PoseControlRequestBus.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <rclcpp/publisher.hpp>
 #include <rclcpp/subscription.hpp>
@@ -22,6 +23,7 @@ namespace ROS2PoseControl
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public ImGui::ImGuiUpdateListenerBus::Handler
+        , private ROS2PoseControlRequestsBus::Handler
 
     {
     public:
@@ -97,6 +99,16 @@ namespace ROS2PoseControl
         //! enables only those entities.
         void SetPhysicsEnabled(bool enabled);
 
+        void SetTrackingMode(const ROS2PoseControlConfiguration::TrackingMode trackingMode) override;
+        void SetTargetFrame(const AZStd::string& targetFrame) override;
+        void SetReferenceFrame(const AZStd::string& referenceFrame) override;
+        void SetEnablePhysics(bool enable) override;
+        void SetRigidBodiesToKinematic(bool enable) override;
+        void ApplyConfiguration() override;
+
+        void InitializeRosIntestines();
+        void DeinitializeRosIntestines();
+
         // Tracks the entities that need physics reenabled.
         AZStd::unordered_set<AZ::EntityId> m_needsPhysicsReenable;
 
@@ -106,9 +118,14 @@ namespace ROS2PoseControl
         // Pose Messages Tracking.
         std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>> m_poseSubscription;
 
+        AZStd::unordered_map<AZ::EntityId, AZ::Transform> m_localTransforms;
+
         // TF2 Tracking.
         std::shared_ptr<tf2_ros::TransformListener> m_tf_listener{ nullptr };
         std::unique_ptr<tf2_ros::Buffer> m_tf_buffer;
         AZStd::string m_odomFrameId;
+        bool m_enablePhysics{ true };
+        bool m_isKinematic{ false };
+        bool m_initialPositionRestored{ false };
     };
 } // namespace ROS2PoseControl

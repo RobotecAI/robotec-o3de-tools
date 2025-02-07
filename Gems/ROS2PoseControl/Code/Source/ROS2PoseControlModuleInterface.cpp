@@ -2,7 +2,7 @@
 #include "ROS2PoseControlModuleInterface.h"
 #include <AzCore/Memory/Memory.h>
 
-#include "Clients/ROS2PoseControl.h"
+#include <ROS2PoseControl//ROS2PoseControl.h>
 #include <ROS2PoseControl/ROS2PoseControlTypeIds.h>
 
 #include <Clients/ROS2PoseControlSystemComponent.h>
