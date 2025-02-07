@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder TerrainShaper/Assets": {
+                    "watch": "@GEMROOT:TerrainShaper@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder TerrainShaper/Registry": {
+                    "watch": "@GEMROOT:TerrainShaper@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
