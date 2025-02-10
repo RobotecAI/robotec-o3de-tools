@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <TerrainShaper/TerrainShaperTypeIds.h>
+
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
@@ -9,7 +11,7 @@ namespace TerrainShaper
     class TerrainShaperRequests
     {
     public:
-        AZ_RTTI(TerrainShaperRequests, "{B6F734AF-2E26-4C75-9861-B04210AA8791}");
+        AZ_RTTI(TerrainShaperRequests, TerrainShaperRequestsTypeId);
         virtual ~TerrainShaperRequests() = default;
         // Put your public methods here
     };
