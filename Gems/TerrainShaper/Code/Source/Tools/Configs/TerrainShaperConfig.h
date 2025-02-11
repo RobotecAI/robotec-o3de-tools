@@ -12,7 +12,17 @@ namespace TerrainShaper::Config
         Smooth  = 3
     };
 
-    AZ_TYPE_INFO_SPECIALIZE(TerrainShaperActions, "{D634499B-42A8-4C3E-9DCA-497F5214D6F5}");
+    AZ_TYPE_INFO_SPECIALIZE(TerrainShaperActions, "{EBAA0F99-102F-4EAB-AFB4-0A5086E679A2}");
+
+    enum class TerrainShaperBrushTypes
+    {
+        Circle = 0,
+        Rectangle = 1,
+        Square = 2,
+        Triangle = 3
+    };
+
+    AZ_TYPE_INFO_SPECIALIZE(TerrainShaperBrushTypes, "{5704010D-EAA7-4D28-A84B-BC448433106F}");
 
     class TerrainShaperConfig
     {
