@@ -1,8 +1,17 @@
+/**
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders. If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 
 #include "ROS2PoseControlModuleInterface.h"
 #include <AzCore/Memory/Memory.h>
 
-#include <ROS2PoseControl//ROS2PoseControl.h>
+#include <ROS2PoseControl/ROS2PoseControl.h>
 #include <ROS2PoseControl/ROS2PoseControlTypeIds.h>
 
 #include <Clients/ROS2PoseControlSystemComponent.h>
