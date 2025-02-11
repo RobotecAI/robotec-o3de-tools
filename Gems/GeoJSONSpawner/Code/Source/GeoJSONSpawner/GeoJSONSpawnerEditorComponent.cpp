@@ -182,7 +182,8 @@ namespace GeoJSONSpawner
         const auto featureObjectInfo = GeoJSONUtils::ParseJSONFromFile(sourcePath.c_str());
         auto spawnableEntitiesInfo =
             GeoJSONUtils::GetSpawnableEntitiesFromFeatureObjectVector(featureObjectInfo, spawnableAssetConfigurationsMap);
-        gameEntity->CreateComponent<GeoJSONSpawnerComponent>(spawnableAssetConfigurationsMap, sourceAssetInfo.m_relativePath.c_str(), m_defaultSeed);
+        gameEntity->CreateComponent<GeoJSONSpawnerComponent>(
+            spawnableAssetConfigurationsMap, sourceAssetInfo.m_relativePath.c_str(), m_defaultSeed);
         m_spawnedTicketsGroups.clear();
     }
 
