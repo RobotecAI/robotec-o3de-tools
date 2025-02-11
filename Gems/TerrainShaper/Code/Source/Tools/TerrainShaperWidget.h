@@ -10,6 +10,9 @@
 #endif
 #include <QButtonGroup>
 #include <QHBoxLayout>
+#include <QIcon>
+#include <QPixmap>
+#include <QSize>
 
 Q_DECLARE_METATYPE(AZ::EntityId) // Make Az EntityId available for Qt
 Q_DECLARE_METATYPE(TerrainShaper::Config::TerrainShaperActions)

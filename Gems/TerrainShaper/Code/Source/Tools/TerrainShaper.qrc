@@ -1,5 +1,9 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/TerrainShaper">
         <file alias="toolbar_icon.svg">toolbar_icon.svg</file>
+        <file alias="circle_icon.svg">Icons/circle_icon.svg</file>
+        <file alias="rectangle_icon.svg">Icons/rectangle_icon.svg</file>
+        <file alias="square_icon.svg">Icons/square_icon.svg</file>
+        <file alias="triangle_icon.svg">Icons/triangle_icon.svg</file>
     </qresource>
 </RCC>

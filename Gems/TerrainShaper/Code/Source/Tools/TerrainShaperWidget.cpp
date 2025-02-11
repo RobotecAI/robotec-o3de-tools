@@ -61,21 +61,29 @@ namespace TerrainShaper
         struct BrushInfo
         {
             Config::TerrainShaperBrushTypes type;
-            QString name;
+            QString iconPath;  // Icon path in .qrc
         };
 
         BrushInfo brushes[] = {
-            { Config::TerrainShaperBrushTypes::Circle, "Circle" },
-            { Config::TerrainShaperBrushTypes::Rectangle, "Rectangle" },
-            { Config::TerrainShaperBrushTypes::Square, "Square" },
-            { Config::TerrainShaperBrushTypes::Triangle, "Triangle" }
+            { Config::TerrainShaperBrushTypes::Circle, ":/TerrainShaper/circle_icon.svg" },
+            { Config::TerrainShaperBrushTypes::Rectangle, ":/TerrainShaper/rectangle_icon.svg" },
+            { Config::TerrainShaperBrushTypes::Square, ":/TerrainShaper/square_icon.svg" },
+            { Config::TerrainShaperBrushTypes::Triangle, ":/TerrainShaper/triangle_icon.svg" }
         };
 
         for (const BrushInfo& brush : brushes)
         {
-            QPushButton* button = new QPushButton(brush.name, this);
+            QPushButton* button = new QPushButton(this);
             button->setCheckable(true);
             button->setProperty("brushType", QVariant::fromValue(brush.type)); // Store enum in button
+
+            // Load SVG from Resource File
+            QIcon icon(brush.iconPath);
+            button->setIcon(icon);
+            button->setIconSize(QSize(24, 24));  // Set icon size
+
+            // Remove text and keep only icon
+            button->setFixedSize(32, 32);  // Ensure buttons have proper size
 
             m_BrushButtonGroup->addButton(button, static_cast<int>(brush.type));
             m_BrushLayout->addWidget(button);
@@ -87,21 +95,21 @@ namespace TerrainShaper
             }
         }
 
-        connect(m_BrushButtonGroup, QOverload<int>::of(&QButtonGroup::idClicked),
+        connect(m_BrushButtonGroup, &QButtonGroup::idClicked,
                 this, &TerrainShaperWidget::OnBrushSelected);
 
-        // Apply bold border for buttons clicked button
+        // Style for highlighted selection
         setStyleSheet(R"(
-            QPushButton {
-                padding: 8px;
-                border: 2px solid transparent;
-                border-radius: 5px;
-            }
-            QPushButton:checked {
-                border: 2px solid blue; /* Highlight selected brush */
-                font-weight: bold;
-            }
-        )");
+        QPushButton {
+            padding: 4px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            background-color: #444;
+        }
+        QPushButton:checked {
+            border: 2px solid blue; /* Highlight selected brush */
+            background-color: #555;
+        })");
     }
 
     void TerrainShaperWidget::OnTerrainRefreshButtonClicked()
