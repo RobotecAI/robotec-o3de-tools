@@ -68,7 +68,7 @@ namespace TerrainShaper
         options.toolbarIcon = ":/TerrainShaper/toolbar_icon.svg";
 
         // Register our custom widget as a dockable tool with the Editor under an Examples sub-menu
-        AzToolsFramework::RegisterViewPane<TerrainShaperWidget>("TerrainShaper", "Examples", options);
+        AzToolsFramework::RegisterViewPane<TerrainShaperWidget>("Terrain Shaper", "Examples", options);
     }
 
 } // namespace TerrainShaper
