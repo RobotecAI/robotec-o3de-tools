@@ -37,10 +37,10 @@ namespace TerrainShaper
 
         // Terrain Actions Dropdown
         m_TerrainActionDropdown = new QComboBox(this);
-        m_TerrainActionDropdown->addItem("Flatten Terrain");
-        m_TerrainActionDropdown->addItem("Raise Terrain");
-        m_TerrainActionDropdown->addItem("Lower Terrain");
-        m_TerrainActionDropdown->addItem("Smooth Terrain");
+        m_TerrainActionDropdown->addItem("Flatten Terrain", QVariant::fromValue(Config::TerrainShaperActions::Flatten));
+        m_TerrainActionDropdown->addItem("Raise Terrain", QVariant::fromValue(Config::TerrainShaperActions::Raise));
+        m_TerrainActionDropdown->addItem("Lower Terrain", QVariant::fromValue(Config::TerrainShaperActions::Lower));
+        m_TerrainActionDropdown->addItem("Smooth Terrain", QVariant::fromValue(Config::TerrainShaperActions::Smooth));
         connect(m_TerrainActionDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged),
                 this, &TerrainShaperWidget::OnTerrainActionDropdownChanged);
         formLayout->addRow(new QLabel(QObject::tr("Select Action: "), this), m_TerrainActionDropdown);
@@ -85,26 +85,33 @@ namespace TerrainShaper
 
     void TerrainShaperWidget::OnTerrainActionDropdownChanged(int index)
     {
-        AZ_Printf("O3DE", "Selected terrain option: %d", index);
+        if (index < 0)
+            return;
 
-        switch (index)
+        // Retrieve selected action from QVariant
+        QVariant actionVariant = m_TerrainActionDropdown->itemData(index);
+        Config::TerrainShaperActions selectedAction = actionVariant.value<Config::TerrainShaperActions>();
+
+        switch (selectedAction)
         {
-        case 0:
+        case Config::TerrainShaperActions::Flatten:
             // TerrainShaperUtils::FlattenTerrain();
             break;
-        case 1:
+        case Config::TerrainShaperActions::Raise:
             // TerrainShaperUtils::RaiseTerrain();
             break;
-        case 2:
+        case Config::TerrainShaperActions::Lower:
             // TerrainShaperUtils::LowerTerrain();
             break;
-        case 3:
+        case Config::TerrainShaperActions::Smooth:
             // TerrainShaperUtils::SmoothTerrain();
             break;
         default:
-            AZ_Printf("O3DE", "Invalid selection");
+            AZ_Printf("OnTerrainActionDropdownChanged", "Invalid selection");
             break;
         }
+
+        AZ_Printf("OnTerrainActionDropdownChanged", "Selected Action: %d", index);
     }
 }
 

@@ -2,6 +2,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include "Configs/TerrainShaperConfig.h"
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <QWidget>
@@ -9,6 +10,7 @@
 #endif
 
 Q_DECLARE_METATYPE(AZ::EntityId) // Make Az entity available for Qt
+Q_DECLARE_METATYPE(TerrainShaper::Config::TerrainShaperActions) // Make Az entity available for Qt
 
 namespace TerrainShaper
 {

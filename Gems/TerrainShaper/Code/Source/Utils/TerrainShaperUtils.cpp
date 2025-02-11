@@ -57,4 +57,11 @@ namespace TerrainShaper::Utils
 
         return terrains;
     }
+
+    AZStd::vector<AZ::Vector3> GetTerrainGradient(const AZ::EntityId& terrainId, const AZ::Vector3& position)
+    {
+        AZ_Assert(terrainId.IsValid(), "Could not retrieve the terrain id.");
+        return {AZ::Vector3::CreateZero()};
+    }
+
 } // TerrainShaper::Utils
