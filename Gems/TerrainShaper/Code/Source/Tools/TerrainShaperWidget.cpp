@@ -47,7 +47,7 @@ namespace TerrainShaper
 
         // Create a row of brush buttons
         CreateBrushSelect();
-        mainLayout->addLayout(m_BrushLayout);
+        formLayout->addRow(new QLabel(QObject::tr("Pick Brush: "), this), m_BrushLayout);
 
         mainLayout->addLayout(formLayout);
         setLayout(mainLayout);
@@ -80,10 +80,10 @@ namespace TerrainShaper
             // Load SVG from Resource File
             QIcon icon(brush.iconPath);
             button->setIcon(icon);
-            button->setIconSize(QSize(24, 24));  // Set icon size
+            // button->setIconSize(QSize(24, 24));  // Set icon size
 
             // Remove text and keep only icon
-            button->setFixedSize(32, 32);  // Ensure buttons have proper size
+            // button->setFixedSize(32, 32);  // Ensure buttons have proper size
 
             m_BrushButtonGroup->addButton(button, static_cast<int>(brush.type));
             m_BrushLayout->addWidget(button);
