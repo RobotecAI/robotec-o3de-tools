@@ -1,3 +1,13 @@
+/**
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders. If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
+
 #pragma once
 
 #include <AzCore/Component/Component.h>
@@ -10,6 +20,7 @@
 #include <ROS2/Communication/TopicConfiguration.h>
 #include <ROS2/ROS2Bus.h>
 #include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
+#include <ROS2PoseControl/ROS2PoseControlRequestBus.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <rclcpp/publisher.hpp>
 #include <rclcpp/subscription.hpp>
@@ -22,6 +33,7 @@ namespace ROS2PoseControl
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public ImGui::ImGuiUpdateListenerBus::Handler
+        , public ROS2PoseControlRequestsBus::Handler
 
     {
     public:
@@ -97,6 +109,21 @@ namespace ROS2PoseControl
         //! enables only those entities.
         void SetPhysicsEnabled(bool enabled);
 
+        // ROS2PoseControlRequestsBus::Handler overrides.
+        void SetTrackingMode(const ROS2PoseControlConfiguration::TrackingMode trackingMode) override;
+        void SetTargetFrame(const AZStd::string& targetFrame) override;
+        void SetReferenceFrame(const AZStd::string& referenceFrame) override;
+        void SetEnablePhysics(bool enable) override;
+        void SetRigidBodiesToKinematic(bool enable) override;
+        void ApplyConfiguration() override;
+
+        //! Initializes all ROS2-related things (rclcpp::Subscription, tf2_ros::Buffer etc.)
+        //! Allows to reconfigure tracking mode in the runtime
+        void InitializeRosIntestines();
+        //! Deinitializes all ROS2-related things (rclcpp::Subscription, tf2_ros::Buffer etc.)
+        //! Allows to reconfigure tracking mode in the runtime
+        void DeinitializeRosIntestines();
+
         // Tracks the entities that need physics reenabled.
         AZStd::unordered_set<AZ::EntityId> m_needsPhysicsReenable;
 
@@ -105,6 +132,10 @@ namespace ROS2PoseControl
 
         // Pose Messages Tracking.
         std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>> m_poseSubscription;
+
+        // Restoring prefab if m_enablePhysics == false or m_isKinematic == true
+        bool m_initialPositionRestored{ false };
+        AZStd::unordered_map<AZ::EntityId, AZ::Transform> m_localTransforms;
 
         // TF2 Tracking.
         std::shared_ptr<tf2_ros::TransformListener> m_tf_listener{ nullptr };
