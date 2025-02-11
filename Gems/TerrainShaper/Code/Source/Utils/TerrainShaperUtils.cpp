@@ -1,16 +1,17 @@
 #include "TerrainShaperUtils.h"
 
-#include "AzCore/Component/TransformBus.h"
-#include "Component/EditorComponentAPIBus.h"
-#include "Entity/EditorEntityContextBus.h"
-#include "Entity/EditorEntityHelpers.h"
-#include "ToolsComponents/TransformComponent.h"
+#include <AzCore/Component/TransformBus.h>
+#include <Component/EditorComponentAPIBus.h>
+#include <Entity/EditorEntityContextBus.h>
+#include <Entity/EditorEntityHelpers.h>
+#include <ToolsComponents/TransformComponent.h>
 
 namespace TerrainShaper::Utils
 {
     AZStd::vector<AZ::EntityId> GetAllTerrains()
     {
-        AZStd::vector<AZ::EntityId> terrains;
+        AZStd::vector<AZ::EntityId> terrains; // Available Terrains to return
+        AZ::Uuid terrainLayerUuid = AZ::Uuid("{9403FC94-FA38-4387-BEFD-A728C7D850C1}"); // Direct Uuid from EditorTerrainLayerSpawner
 
         // Broadcast the request to get the editor context ID
         AzFramework::EntityContextId editorContextId;
@@ -18,30 +19,40 @@ namespace TerrainShaper::Utils
             editorContextId,
             &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId
         );
+        AZ_Assert(editorContextId.IsNull(), "Could not retrieve the editor context id.");
 
-        AZ_Printf("GetAllTerrains()", "Terrain Context: %u\n", editorContextId);
+        // Get selected entities in editor
+        AzToolsFramework::EntityIdList selectedEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities
+        );
+        AZ_Assert(selectedEntities.empty(), "No entity selected! Please select at least one entity from Entity Outliner.");
 
-        // AZ::EntityUtils::EnumerateEntityIds()
-
-        AZ::EntityId rootId = AZ::EntityId(editorContextId.size());
-
-        // Get direct children
+        // Get Selected Entities Descendants
         AZStd::vector<AZ::EntityId> children;
-        AZ::TransformBus::EventResult(children, rootId, &AZ::TransformBus::Events::GetAllDescendants);
-
-        AZ::Uuid terrainLayerUuid = AZ::Uuid("{3848605F-A4EA-478C-B710-84AB8DCA9EC5}");
-
-        for (const AZ::EntityId& child : children)
+        for (const AZ::EntityId& childId : selectedEntities)
         {
-            AZ_Printf("GetAllTerrains()", "Child Id: %u\n", child)
-            bool hasTerrainComponent = AzToolsFramework::GetEntity(child)->FindComponent(terrainLayerUuid);
+            // Get direct children
+            AZ::TransformBus::EventResult(children, childId, &AZ::TransformBus::Events::GetAllDescendants);
+        }
 
-            if (!child.IsValid() ||!hasTerrainComponent)
+        // Lookup for children with terrain layer component
+        for (const AZ::EntityId& childId : children)
+        {
+            if (!childId.IsValid())
             {
                 continue;
             }
 
-            terrains.push_back(child);
+            auto hasTerrainComponent = AzToolsFramework::GetEntity(childId)->FindComponent(terrainLayerUuid);
+
+            if (!hasTerrainComponent)
+            {
+                continue;
+            }
+
+            AZ_Printf("GetAllTerrains()", "Has Terrain: %u\n", childId)
+            terrains.push_back(childId);
         }
 
         return terrains;
