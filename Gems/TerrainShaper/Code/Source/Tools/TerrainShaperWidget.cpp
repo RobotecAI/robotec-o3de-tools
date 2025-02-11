@@ -45,8 +45,63 @@ namespace TerrainShaper
                 this, &TerrainShaperWidget::OnTerrainActionDropdownChanged);
         formLayout->addRow(new QLabel(QObject::tr("Select Action: "), this), m_TerrainActionDropdown);
 
+        // Create a row of brush buttons
+        CreateBrushSelect();
+        mainLayout->addLayout(m_BrushLayout);
+
         mainLayout->addLayout(formLayout);
         setLayout(mainLayout);
+    }
+
+    void TerrainShaperWidget::CreateBrushSelect()
+    {
+        m_BrushLayout = new QHBoxLayout();
+        m_BrushButtonGroup = new QButtonGroup(this);
+
+        struct BrushInfo
+        {
+            Config::TerrainShaperBrushTypes type;
+            QString name;
+        };
+
+        BrushInfo brushes[] = {
+            { Config::TerrainShaperBrushTypes::Circle, "Circle" },
+            { Config::TerrainShaperBrushTypes::Rectangle, "Rectangle" },
+            { Config::TerrainShaperBrushTypes::Square, "Square" },
+            { Config::TerrainShaperBrushTypes::Triangle, "Triangle" }
+        };
+
+        for (const BrushInfo& brush : brushes)
+        {
+            QPushButton* button = new QPushButton(brush.name, this);
+            button->setCheckable(true);
+            button->setProperty("brushType", QVariant::fromValue(brush.type)); // Store enum in button
+
+            m_BrushButtonGroup->addButton(button, static_cast<int>(brush.type));
+            m_BrushLayout->addWidget(button);
+
+            // Default selected brush
+            if (brush.type == m_SelectedBrush)
+            {
+                button->setChecked(true);
+            }
+        }
+
+        connect(m_BrushButtonGroup, QOverload<int>::of(&QButtonGroup::idClicked),
+                this, &TerrainShaperWidget::OnBrushSelected);
+
+        // Apply bold border for buttons clicked button
+        setStyleSheet(R"(
+            QPushButton {
+                padding: 8px;
+                border: 2px solid transparent;
+                border-radius: 5px;
+            }
+            QPushButton:checked {
+                border: 2px solid blue; /* Highlight selected brush */
+                font-weight: bold;
+            }
+        )");
     }
 
     void TerrainShaperWidget::OnTerrainRefreshButtonClicked()
@@ -112,6 +167,25 @@ namespace TerrainShaper
         }
 
         AZ_Printf("OnTerrainActionDropdownChanged", "Selected Action: %d", index);
+    }
+
+    void TerrainShaperWidget::OnBrushSelected(int index)
+    {
+        // Convert id back to enum
+        m_SelectedBrush = static_cast<Config::TerrainShaperBrushTypes>(index);
+
+        // Print selected brush type
+        QString brushName;
+        switch (m_SelectedBrush)
+        {
+        case Config::TerrainShaperBrushTypes::Circle: brushName = "Circle"; break;
+        case Config::TerrainShaperBrushTypes::Rectangle: brushName = "Rectangle"; break;
+        case Config::TerrainShaperBrushTypes::Square: brushName = "Square"; break;
+        case Config::TerrainShaperBrushTypes::Triangle: brushName = "Triangle"; break;
+        default: brushName = "Unknown"; break;
+        }
+
+        AZ_Printf("O3DE", "Selected Brush Type: %s", brushName.toUtf8().constData());
     }
 }
 

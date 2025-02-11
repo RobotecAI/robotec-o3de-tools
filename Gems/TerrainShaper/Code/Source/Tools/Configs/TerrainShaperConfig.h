@@ -24,9 +24,9 @@ namespace TerrainShaper::Config
 
     AZ_TYPE_INFO_SPECIALIZE(TerrainShaperBrushTypes, "{5704010D-EAA7-4D28-A84B-BC448433106F}");
 
-    class TerrainShaperConfig
-    {
-
-    };
+    // class TerrainShaperConfig
+    // {
+    //
+    // };
 
 } // TerrainShaper::Config
