@@ -1,10 +1,6 @@
 
 #include <ROS2PoseControl/ROS2PoseControl.h>
 
-#include "AzCore/Debug/Trace.h"
-#include "ROS2/Sensor/Events/PhysicsBasedSource.h"
-#include "ROS2/Sensor/Events/TickBasedSource.h"
-
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Transform.h>
@@ -18,7 +14,6 @@
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <ROS2/Frame/ROS2FrameComponent.h>
 #include <ROS2/Georeference/GeoreferenceBus.h>
-#include <ROS2/Sensor/ROS2SensorComponentBase.h>
 #include <ROS2/Utilities/ROS2Conversions.h>
 #include <ROS2/Utilities/ROS2Names.h>
 #include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
@@ -141,7 +136,7 @@ namespace ROS2PoseControl
     void ROS2PoseControl::SetEnablePhysics(bool enable)
     {
         SetPhysicsEnabled(enable);
-        m_enablePhysics = enable;
+        m_configuration.m_enablePhysics = enable;
     }
 
     void ROS2PoseControl::SetRigidBodiesToKinematic(bool enable)
@@ -158,7 +153,7 @@ namespace ROS2PoseControl
                 rigidBodyComponent->SetKinematic(enable);
             }
         }
-        m_isKinematic = enable;
+        m_configuration.m_isKinematic = enable;
     }
 
     void ROS2PoseControl::ApplyConfiguration()
@@ -178,10 +173,6 @@ namespace ROS2PoseControl
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
             if (auto* rigidBodyComponent = entity->FindComponent<PhysX::RigidBodyComponent>())
             {
-                if (rigidBodyComponent->IsKinematic() == false)
-                {
-                    rigidBodyComponent->SetKinematic(true);
-                }
                 if (enabled)
                 {
                     if (m_needsPhysicsReenable.contains(entityId))
@@ -438,7 +429,7 @@ namespace ROS2PoseControl
             return;
         }
 
-        if (m_enablePhysics)
+        if (m_configuration.m_enablePhysics)
         {
             // Disable physics to allow transform movement.
             DisablePhysics();
@@ -448,7 +439,7 @@ namespace ROS2PoseControl
         // then we want to restore the initial positions of all entities. These positions
         // may have changed before the physics or kinematics were enabled/disabled via
         // the EBus request
-        if (!m_initialPositionRestored && (!m_enablePhysics || m_isKinematic))
+        if (!m_initialPositionRestored && (!m_configuration.m_enablePhysics || m_configuration.m_isKinematic))
         {
             for (const auto& [entityId, localTM] : m_localTransforms)
             {
@@ -484,7 +475,7 @@ namespace ROS2PoseControl
 
         AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, modifiedTransform);
 
-        if (m_enablePhysics)
+        if (m_configuration.m_enablePhysics)
         {
             // Re-enable physics after the transform is applied.
             EnablePhysics();

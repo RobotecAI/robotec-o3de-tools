@@ -10,16 +10,35 @@
 
 namespace ROS2PoseControl
 {
+    //! Interface for the ROS2PoseControl
+    //! Used for configuring the ROS2PoseControl at runtime
     class ROS2PoseControlRequests : public AZ::ComponentBus
     {
     public:
         AZ_RTTI(ROS2PoseControlRequests, ROS2PoseControlRequestsTypeId)
 
+        //! Set the tracking mode
+        //! @param trackingMode - new tracking mode, to check available tracking modes @see ROS2PoseControlConfigruation
         virtual void SetTrackingMode(const ROS2PoseControlConfiguration::TrackingMode trackingMode) = 0;
+
+        //! Set the target frame that is used in the TF2 tracking mode
+        //! @param targetFrame - name of the frame that will be used as a target frame in a lookupTransform method
         virtual void SetTargetFrame(const AZStd::string& targetFrame) = 0;
+
+        //! Set the reference frame that is used in the TF2 tracking mode
+        //! @param referenceFrame - name of the frame that will be used as a reference (source) frame in a lookupTransform method
         virtual void SetReferenceFrame(const AZStd::string& referenceFrame) = 0;
+
+        //! Enable or disable physics for all prefab's rigid bodies
+        //! @param enable - enable/disable flag
         virtual void SetEnablePhysics(bool enable) = 0;
-        virtual void SetRigidBodiesToKinematic(bool enable)  = 0;
+
+        //! Change the prefab's rigid bodies to either Kinematic (enable==true) or Simulated (enable==false)
+        //! @param enable - enable/disable flag
+        virtual void SetRigidBodiesToKinematic(bool enable) = 0;
+
+        //! Apply configuration of the ROS2PoseControl in its current state. In general this function reinitialize the ROS2 intestines of
+        //! the ROS2PoseControl
         virtual void ApplyConfiguration() = 0;
     };
 

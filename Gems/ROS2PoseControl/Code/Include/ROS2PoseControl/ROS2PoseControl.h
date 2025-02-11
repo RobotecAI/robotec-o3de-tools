@@ -23,7 +23,7 @@ namespace ROS2PoseControl
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public ImGui::ImGuiUpdateListenerBus::Handler
-        , private ROS2PoseControlRequestsBus::Handler
+        , public ROS2PoseControlRequestsBus::Handler
 
     {
     public:
@@ -99,6 +99,7 @@ namespace ROS2PoseControl
         //! enables only those entities.
         void SetPhysicsEnabled(bool enabled);
 
+        // ROS2PoseControlRequestsBus::Handler overrides.
         void SetTrackingMode(const ROS2PoseControlConfiguration::TrackingMode trackingMode) override;
         void SetTargetFrame(const AZStd::string& targetFrame) override;
         void SetReferenceFrame(const AZStd::string& referenceFrame) override;
@@ -106,7 +107,11 @@ namespace ROS2PoseControl
         void SetRigidBodiesToKinematic(bool enable) override;
         void ApplyConfiguration() override;
 
+        //! Initializes all ROS2-related things (rclcpp::Subscription, tf2_ros::Buffer etc.)
+        //! Allows to reconfigure tracking mode in the runtime
         void InitializeRosIntestines();
+        //! Deinitializes all ROS2-related things (rclcpp::Subscription, tf2_ros::Buffer etc.)
+        //! Allows to reconfigure tracking mode in the runtime
         void DeinitializeRosIntestines();
 
         // Tracks the entities that need physics reenabled.
@@ -118,14 +123,13 @@ namespace ROS2PoseControl
         // Pose Messages Tracking.
         std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>> m_poseSubscription;
 
+        // Restoring prefab if m_enablePhysics == false or m_isKinematic == true
+        bool m_initialPositionRestored{ false };
         AZStd::unordered_map<AZ::EntityId, AZ::Transform> m_localTransforms;
 
         // TF2 Tracking.
         std::shared_ptr<tf2_ros::TransformListener> m_tf_listener{ nullptr };
         std::unique_ptr<tf2_ros::Buffer> m_tf_buffer;
         AZStd::string m_odomFrameId;
-        bool m_enablePhysics{ true };
-        bool m_isKinematic{ false };
-        bool m_initialPositionRestored{ false };
     };
 } // namespace ROS2PoseControl

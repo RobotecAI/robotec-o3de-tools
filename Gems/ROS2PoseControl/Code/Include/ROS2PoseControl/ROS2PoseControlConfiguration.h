@@ -47,5 +47,8 @@ namespace ROS2PoseControl
         AZStd::string m_startOffsetTag;
 
         bool m_useWGS = false;
+
+        bool m_enablePhysics{ true };
+        bool m_isKinematic{ false };
     };
 } // namespace ROS2PoseControl
