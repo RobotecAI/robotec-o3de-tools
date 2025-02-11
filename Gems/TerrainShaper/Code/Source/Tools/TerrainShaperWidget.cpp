@@ -2,8 +2,9 @@
 #include "TerrainShaperWidget.h"
 
 #include <Utils/TerrainShaperUtils.h>
-
 #include <AzCore/Utils/Utils.h>
+
+#include <QFormLayout>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -15,33 +16,36 @@ namespace TerrainShaper
     {
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
+        // Title
         QLabel* introLabel = new QLabel(QObject::tr("Terrain Shaping Tool"), this);
-        mainLayout->addWidget(introLabel, 0, Qt::AlignTop);
+        introLabel->setStyleSheet("font-weight: bold; font-size: 14px;");
+        mainLayout->addWidget(introLabel, 0, Qt::AlignTop | Qt::AlignLeft);
 
-        // Get Terrainn List
-        QPushButton* terrainButton = new QPushButton(QObject::tr("Refresh Available Terrains"), this);
-        mainLayout->addWidget(terrainButton, 0, Qt::AlignCenter);
+        // Form Layout for Labels and Widgets
+        QFormLayout* formLayout = new QFormLayout();
 
+        // Refresh Available Terrains Button
+        QPushButton* terrainButton = new QPushButton(QObject::tr("Refresh"), this);
         connect(terrainButton, &QPushButton::clicked, this, &TerrainShaperWidget::OnTerrainRefreshButtonClicked);
+        formLayout->addRow(new QLabel(QObject::tr("Available Terrains: "), this), terrainButton);
 
-        // Add Available Terrains to ComboBox
+        // Available Terrains Dropdown
         m_TerrainDropdown = new QComboBox(this);
-        mainLayout->addWidget(m_TerrainDropdown, 0, Qt::AlignCenter);
-
         connect(m_TerrainDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged),
                 this, &TerrainShaperWidget::OnTerrainDropdownChanged);
+        formLayout->addRow(new QLabel(QObject::tr("Select Terrain: "), this), m_TerrainDropdown);
 
-        // List Actions
+        // Terrain Actions Dropdown
         m_TerrainActionDropdown = new QComboBox(this);
         m_TerrainActionDropdown->addItem("Flatten Terrain");
         m_TerrainActionDropdown->addItem("Raise Terrain");
         m_TerrainActionDropdown->addItem("Lower Terrain");
         m_TerrainActionDropdown->addItem("Smooth Terrain");
-
-        mainLayout->addWidget(m_TerrainActionDropdown, 0, Qt::AlignCenter);
         connect(m_TerrainActionDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged),
                 this, &TerrainShaperWidget::OnTerrainActionDropdownChanged);
+        formLayout->addRow(new QLabel(QObject::tr("Select Action: "), this), m_TerrainActionDropdown);
 
+        mainLayout->addLayout(formLayout);
         setLayout(mainLayout);
     }
 
