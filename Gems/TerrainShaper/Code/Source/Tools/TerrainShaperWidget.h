@@ -15,5 +15,8 @@ namespace TerrainShaper
         Q_OBJECT
     public:
         explicit TerrainShaperWidget(QWidget* parent = nullptr);
+
+    private slots:
+        void OnTerrainButtonClicked();  // Function that will be linked to button click
     };
 } 

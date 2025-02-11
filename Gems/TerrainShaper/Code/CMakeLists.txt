@@ -29,7 +29,11 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         INTERFACE
-           AZ::AzCore
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AzToolsFramework
+            Gem::LmbrCentral
+            Gem::Terrain
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -51,6 +55,8 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
+            Gem::LmbrCentral
+            Gem::Terrain.Static
             Gem::Terrain
 )
 
@@ -117,6 +123,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             INTERFACE
                 AZ::AzToolsFramework
+                Gem::LmbrCentral
+                Gem::Terrain
     )
 
     # The ${gem_name}.Editor.Private.Object target is an internal target
@@ -139,6 +147,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 ${gem_name}.Private.Object
+                Gem::LmbrCentral
+                Gem::Terrain
     )
 
     ly_add_target(

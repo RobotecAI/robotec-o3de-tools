@@ -6,6 +6,10 @@
 
 #include "TerrainShaperWidget.h"
 
+#include "Utils/TerrainShaperUtils.h"
+
+#include <QPushButton>
+
 namespace TerrainShaper
 {
     TerrainShaperWidget::TerrainShaperWidget(QWidget* parent)
@@ -13,20 +17,21 @@ namespace TerrainShaper
     {
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-        QLabel* introLabel = new QLabel(QObject::tr("Put your cool stuff here!"), this);
-        mainLayout->addWidget(introLabel, 0, Qt::AlignCenter);
+        QLabel* introLabel = new QLabel(QObject::tr("Terrain Shaping Tool"), this);
+        mainLayout->addWidget(introLabel, 0, Qt::AlignTop);
 
-        QString helpText = QString(
-            "For help getting started, visit the <a href=\"https://o3de.org/docs/tools-ui/\">UI Development</a> documentation<br/>or come ask a question in the <a href=\"https://discord.gg/R77Wss3kHe\">sig-ui-ux channel</a> on Discord");
+        // Create button and add it to layout
+        QPushButton* terrainButton = new QPushButton(QObject::tr("RefreshTerrainList"), this);
+        mainLayout->addWidget(terrainButton, 0, Qt::AlignCenter);
 
-        QLabel* helpLabel = new QLabel(this);
-        helpLabel->setTextFormat(Qt::RichText);
-        helpLabel->setText(helpText);
-        helpLabel->setOpenExternalLinks(true);
-
-        mainLayout->addWidget(helpLabel, 0, Qt::AlignCenter);
+        connect(terrainButton, &QPushButton::clicked, this, &TerrainShaperWidget::OnTerrainButtonClicked);
 
         setLayout(mainLayout);
+    }
+
+    void TerrainShaperWidget::OnTerrainButtonClicked()
+    {
+        Utils::GetAllTerrains();
     }
 }
 
