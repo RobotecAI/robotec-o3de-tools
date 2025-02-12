@@ -25,10 +25,12 @@ namespace TerrainShaper
         QFormLayout* formLayout = new QFormLayout();
 
         // Refresh Available Terrains Button
-        QPushButton* terrainButton = new QPushButton(QObject::tr("Refresh"), this);
+        QPushButton* terrainButton = new QPushButton(QObject::tr(""), this);
         terrainButton->setIcon(QIcon(":/TerrainShaper/refresh_icon.svg"));
+        terrainButton->setIconSize(QSize(24, 24));
+        terrainButton->setFixedSize(QSize(32, 32));
         connect(terrainButton, &QPushButton::clicked, this, &TerrainShaperWidget::OnTerrainRefreshButtonClicked);
-        formLayout->addRow(new QLabel(QObject::tr("Available Terrains: "), this), terrainButton);
+        formLayout->addRow(new QLabel(QObject::tr("Load Terrain List: "), this), terrainButton);
 
         // Available Terrains Dropdown
         m_TerrainDropdown = new QComboBox(this);
