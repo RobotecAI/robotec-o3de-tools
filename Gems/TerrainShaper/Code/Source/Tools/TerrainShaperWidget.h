@@ -17,6 +17,7 @@
 Q_DECLARE_METATYPE(AZ::EntityId) // Make Az EntityId available for Qt
 Q_DECLARE_METATYPE(TerrainShaper::Config::TerrainShaperActions)
 Q_DECLARE_METATYPE(TerrainShaper::Config::TerrainShaperBrushTypes)
+Q_DECLARE_METATYPE(TerrainShaper::Config::BrushInfo)
 
 namespace TerrainShaper
 {

@@ -58,38 +58,32 @@ namespace TerrainShaper
         m_BrushLayout = new QHBoxLayout();
         m_BrushButtonGroup = new QButtonGroup(this);
 
-        struct BrushInfo
-        {
-            Config::TerrainShaperBrushTypes type;
-            QString iconPath;  // Icon path in .qrc
-        };
-
-        BrushInfo brushes[] = {
+        Config::BrushInfo brushes[] = {
             { Config::TerrainShaperBrushTypes::Circle, ":/TerrainShaper/circle_icon.svg" },
             { Config::TerrainShaperBrushTypes::Rectangle, ":/TerrainShaper/rectangle_icon.svg" },
             { Config::TerrainShaperBrushTypes::Square, ":/TerrainShaper/square_icon.svg" },
             { Config::TerrainShaperBrushTypes::Triangle, ":/TerrainShaper/triangle_icon.svg" }
         };
 
-        for (const BrushInfo& brush : brushes)
+        for (const Config::BrushInfo& brush : brushes)
         {
             QPushButton* button = new QPushButton(this);
             button->setCheckable(true);
-            button->setProperty("brushType", QVariant::fromValue(brush.type)); // Store enum in button
+            button->setProperty("brushType", QVariant::fromValue(brush.m_brushType)); // Store enum in button
 
             // Load SVG from Resource File
-            QIcon icon(brush.iconPath);
+            QIcon icon((brush.m_iconPath.c_str()));
             button->setIcon(icon);
             // button->setIconSize(QSize(24, 24));  // Set icon size
 
             // Remove text and keep only icon
             // button->setFixedSize(32, 32);  // Ensure buttons have proper size
 
-            m_BrushButtonGroup->addButton(button, static_cast<int>(brush.type));
+            m_BrushButtonGroup->addButton(button, static_cast<int>(brush.m_brushType));
             m_BrushLayout->addWidget(button);
 
             // Default selected brush
-            if (brush.type == m_SelectedBrush)
+            if (brush.m_brushType == m_SelectedBrush)
             {
                 button->setChecked(true);
             }
