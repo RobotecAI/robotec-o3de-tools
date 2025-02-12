@@ -140,7 +140,7 @@ namespace TerrainShaper
 
         AZ::EntityId selectedEntityId = m_TerrainEntries[index];
 
-        AZ_Printf("O3DE", "Selected Terrain Entity ID: %llu", static_cast<AZ::u64>(selectedEntityId));
+        AZ_Printf("TerrainShaperWidget::OnTerrainDropdownChanged()", "Selected Terrain Entity ID: %llu", static_cast<AZ::u64>(selectedEntityId));
     }
 
     void TerrainShaperWidget::OnTerrainActionDropdownChanged(int index)
@@ -167,11 +167,11 @@ namespace TerrainShaper
             // TerrainShaperUtils::SmoothTerrain();
             break;
         default:
-            AZ_Printf("OnTerrainActionDropdownChanged", "Invalid selection");
+            AZ_Printf("TerrainShaperWidget::OnTerrainActionDropdownChanged()", "Invalid selection.");
             break;
         }
 
-        AZ_Printf("OnTerrainActionDropdownChanged", "Selected Action: %d", index);
+        AZ_Printf("TerrainShaperWidget::OnTerrainActionDropdownChanged()", "Selected Action: %d", index);
     }
 
     void TerrainShaperWidget::OnBrushSelected(int index)
@@ -190,7 +190,7 @@ namespace TerrainShaper
         default: brushName = "Unknown"; break;
         }
 
-        AZ_Printf("O3DE", "Selected Brush Type: %s", brushName.toUtf8().constData());
+        AZ_Printf("TerrainShaperWidget::OnBrushSelected()", "Selected Brush Type: %s", brushName.toUtf8().constData());
     }
 }
 
