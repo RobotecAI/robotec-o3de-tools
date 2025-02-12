@@ -74,16 +74,13 @@ namespace TerrainShaper
             button->setCheckable(true);
             button->setProperty("brushType", QVariant::fromValue(brush.m_brushType)); // Store enum in button
 
-            // Load SVG from Resource File
             QIcon icon((brush.m_iconPath.c_str()));
             button->setIcon(icon);
-            // button->setIconSize(QSize(24, 24));  // Set icon size
-
-            // Remove text and keep only icon
-            // button->setFixedSize(32, 32);  // Ensure buttons have proper size
+            button->setIconSize(QSize(24, 24));
+            button->setFixedSize(32, 32);
 
             m_BrushButtonGroup->addButton(button, static_cast<int>(brush.m_brushType));
-            m_BrushLayout->addWidget(button);
+            m_BrushLayout->addWidget(button, 0, Qt::AlignCenter | Qt::AlignLeft);
 
             // Default selected brush
             if (brush.m_brushType == m_SelectedBrush)
@@ -183,11 +180,21 @@ namespace TerrainShaper
         QString brushName;
         switch (m_SelectedBrush)
         {
-        case Config::TerrainShaperBrushTypes::Circle: brushName = "Circle"; break;
-        case Config::TerrainShaperBrushTypes::Rectangle: brushName = "Rectangle"; break;
-        case Config::TerrainShaperBrushTypes::Square: brushName = "Square"; break;
-        case Config::TerrainShaperBrushTypes::Triangle: brushName = "Triangle"; break;
-        default: brushName = "Unknown"; break;
+            case Config::TerrainShaperBrushTypes::Circle:
+                brushName = "Circle";
+                break;
+            case Config::TerrainShaperBrushTypes::Rectangle:
+                brushName = "Rectangle";
+                break;
+            case Config::TerrainShaperBrushTypes::Square:
+                brushName = "Square";
+                break;
+            case Config::TerrainShaperBrushTypes::Triangle:
+                brushName = "Triangle";
+                break;
+            default:
+                brushName = "Unknown";
+                break;
         }
 
         AZ_Printf("TerrainShaperWidget::OnBrushSelected()", "Selected Brush Type: %s", brushName.toUtf8().constData());
