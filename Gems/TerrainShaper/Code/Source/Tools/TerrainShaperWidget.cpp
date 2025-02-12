@@ -26,6 +26,7 @@ namespace TerrainShaper
 
         // Refresh Available Terrains Button
         QPushButton* terrainButton = new QPushButton(QObject::tr("Refresh"), this);
+        terrainButton->setIcon(QIcon(":/TerrainShaper/refresh_icon.svg"));
         connect(terrainButton, &QPushButton::clicked, this, &TerrainShaperWidget::OnTerrainRefreshButtonClicked);
         formLayout->addRow(new QLabel(QObject::tr("Available Terrains: "), this), terrainButton);
 
