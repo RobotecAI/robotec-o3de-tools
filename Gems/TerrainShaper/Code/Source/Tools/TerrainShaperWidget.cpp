@@ -1,6 +1,8 @@
 
 #include "TerrainShaperWidget.h"
 
+#include "Viewport/ViewportMessages.h"
+
 #include <Utils/TerrainShaperUtils.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -135,9 +137,15 @@ namespace TerrainShaper
         if (index < 0 || index >= m_TerrainEntries.size())
             return;
 
-        AZ::EntityId selectedEntityId = m_TerrainEntries[index];
+        AZ_Printf("TerrainShaperWidget::OnTerrainDropdownChanged()", "Selected Terrain Entity ID: %llu", m_TerrainEntries[index]);
 
-        AZ_Printf("TerrainShaperWidget::OnTerrainDropdownChanged()", "Selected Terrain Entity ID: %llu", static_cast<AZ::u64>(selectedEntityId));
+        // Select the entity
+        AzToolsFramework::EntityIdList entities = { m_TerrainEntries[index] };
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entities);
+
+        // Focus the camera on the entity
+        AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
     }
 
     void TerrainShaperWidget::OnTerrainActionDropdownChanged(int index)
