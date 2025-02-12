@@ -5,5 +5,6 @@
         <file alias="rectangle_icon.svg">Icons/rectangle_icon.svg</file>
         <file alias="square_icon.svg">Icons/square_icon.svg</file>
         <file alias="triangle_icon.svg">Icons/triangle_icon.svg</file>
+        <file alias="refresh_icon.svg">Icons/refresh_icon.svg</file>
     </qresource>
 </RCC>
