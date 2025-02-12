@@ -3,6 +3,7 @@
 
 #include "Viewport/ViewportMessages.h"
 
+#include <QCheckBox>
 #include <Utils/TerrainShaperUtils.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -34,6 +35,18 @@ namespace TerrainShaper
         connect(terrainButton, &QPushButton::clicked, this, &TerrainShaperWidget::OnTerrainRefreshButtonClicked);
         formLayout->addRow(new QLabel(QObject::tr("Load Terrain List: "), this), terrainButton);
 
+        // Outline Checkbox
+        QCheckBox* outlineCheckbox = new QCheckBox("", this);
+        outlineCheckbox->setChecked(m_TerrainSelectSettings.m_enableOutline);
+        // connect(outlineCheckbox, &QCheckBox::stateChanged, this);
+        formLayout->addRow(new QLabel(QObject::tr("Enable Outline: "), this), outlineCheckbox);
+
+        // Focus Checkbox
+        QCheckBox* focusCheckbox = new QCheckBox("", this);
+        focusCheckbox->setChecked(m_TerrainSelectSettings.m_enableFocus);
+        // connect(focusCheckbox, &QCheckBox::stateChanged, this);
+        formLayout->addRow(new QLabel(QObject::tr("Enable Focus: "), this), focusCheckbox);
+
         // Available Terrains Dropdown
         m_TerrainDropdown = new QComboBox(this);
         connect(m_TerrainDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -42,10 +55,10 @@ namespace TerrainShaper
 
         // Terrain Actions Dropdown
         m_TerrainActionDropdown = new QComboBox(this);
-        m_TerrainActionDropdown->addItem("Flatten Terrain", QVariant::fromValue(Config::TerrainShaperActions::Flatten));
-        m_TerrainActionDropdown->addItem("Raise Terrain", QVariant::fromValue(Config::TerrainShaperActions::Raise));
-        m_TerrainActionDropdown->addItem("Lower Terrain", QVariant::fromValue(Config::TerrainShaperActions::Lower));
-        m_TerrainActionDropdown->addItem("Smooth Terrain", QVariant::fromValue(Config::TerrainShaperActions::Smooth));
+        m_TerrainActionDropdown->addItem("Flatten Terrain", QVariant::fromValue(Config::ShaperActions::Flatten));
+        m_TerrainActionDropdown->addItem("Raise Terrain", QVariant::fromValue(Config::ShaperActions::Raise));
+        m_TerrainActionDropdown->addItem("Lower Terrain", QVariant::fromValue(Config::ShaperActions::Lower));
+        m_TerrainActionDropdown->addItem("Smooth Terrain", QVariant::fromValue(Config::ShaperActions::Smooth));
         connect(m_TerrainActionDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged),
                 this, &TerrainShaperWidget::OnTerrainActionDropdownChanged);
         formLayout->addRow(new QLabel(QObject::tr("Select Action: "), this), m_TerrainActionDropdown);
@@ -64,10 +77,10 @@ namespace TerrainShaper
         m_BrushButtonGroup = new QButtonGroup(this);
 
         Config::BrushInfo brushes[] = {
-            { Config::TerrainShaperBrushTypes::Circle, ":/TerrainShaper/circle_icon.svg" },
-            { Config::TerrainShaperBrushTypes::Rectangle, ":/TerrainShaper/rectangle_icon.svg" },
-            { Config::TerrainShaperBrushTypes::Square, ":/TerrainShaper/square_icon.svg" },
-            { Config::TerrainShaperBrushTypes::Triangle, ":/TerrainShaper/triangle_icon.svg" }
+            { Config::BrushTypes::Circle, ":/TerrainShaper/circle_icon.svg" },
+            { Config::BrushTypes::Rectangle, ":/TerrainShaper/rectangle_icon.svg" },
+            { Config::BrushTypes::Square, ":/TerrainShaper/square_icon.svg" },
+            { Config::BrushTypes::Triangle, ":/TerrainShaper/triangle_icon.svg" }
         };
 
         for (const Config::BrushInfo& brush : brushes)
@@ -137,15 +150,23 @@ namespace TerrainShaper
         if (index < 0 || index >= m_TerrainEntries.size())
             return;
 
-        AZ_Printf("TerrainShaperWidget::OnTerrainDropdownChanged()", "Selected Terrain Entity ID: %llu", m_TerrainEntries[index]);
+        AZ_Printf("TerrainShaperWidget::OnTerrainDropdownChanged()", "Selected Terrain Entity ID: %llu\t%b\t%b",
+            m_TerrainEntries[index], m_TerrainSelectSettings.m_enableOutline, m_TerrainSelectSettings.m_enableFocus);
 
         // Select the entity
-        AzToolsFramework::EntityIdList entities = { m_TerrainEntries[index] };
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entities);
+        if (m_TerrainSelectSettings.m_enableOutline)
+        {
+            AzToolsFramework::EntityIdList entities = { m_TerrainEntries[index] };
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entities);
+        }
 
-        // Focus the camera on the entity
-        AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
+        // Focus the camera on the selected entity
+        if (m_TerrainSelectSettings.m_enableFocus)
+        {
+            AzToolsFramework::EditorRequestBus::Broadcast(
+                &AzToolsFramework::EditorRequestBus::Events::GoToSelectedEntitiesInViewports);
+        }
     }
 
     void TerrainShaperWidget::OnTerrainActionDropdownChanged(int index)
@@ -155,20 +176,20 @@ namespace TerrainShaper
 
         // Retrieve selected action from QVariant
         QVariant actionVariant = m_TerrainActionDropdown->itemData(index);
-        Config::TerrainShaperActions selectedAction = actionVariant.value<Config::TerrainShaperActions>();
+        Config::ShaperActions selectedAction = actionVariant.value<Config::ShaperActions>();
 
         switch (selectedAction)
         {
-        case Config::TerrainShaperActions::Flatten:
+        case Config::ShaperActions::Flatten:
             // TerrainShaperUtils::FlattenTerrain();
             break;
-        case Config::TerrainShaperActions::Raise:
+        case Config::ShaperActions::Raise:
             // TerrainShaperUtils::RaiseTerrain();
             break;
-        case Config::TerrainShaperActions::Lower:
+        case Config::ShaperActions::Lower:
             // TerrainShaperUtils::LowerTerrain();
             break;
-        case Config::TerrainShaperActions::Smooth:
+        case Config::ShaperActions::Smooth:
             // TerrainShaperUtils::SmoothTerrain();
             break;
         default:
@@ -182,22 +203,22 @@ namespace TerrainShaper
     void TerrainShaperWidget::OnBrushSelected(int index)
     {
         // Convert id back to enum
-        m_SelectedBrush = static_cast<Config::TerrainShaperBrushTypes>(index);
+        m_SelectedBrush = static_cast<Config::BrushTypes>(index);
 
         // Print selected brush type
         QString brushName;
         switch (m_SelectedBrush)
         {
-            case Config::TerrainShaperBrushTypes::Circle:
+            case Config::BrushTypes::Circle:
                 brushName = "Circle";
                 break;
-            case Config::TerrainShaperBrushTypes::Rectangle:
+            case Config::BrushTypes::Rectangle:
                 brushName = "Rectangle";
                 break;
-            case Config::TerrainShaperBrushTypes::Square:
+            case Config::BrushTypes::Square:
                 brushName = "Square";
                 break;
-            case Config::TerrainShaperBrushTypes::Triangle:
+            case Config::BrushTypes::Triangle:
                 brushName = "Triangle";
                 break;
             default:

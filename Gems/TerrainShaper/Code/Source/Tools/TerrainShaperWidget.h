@@ -15,9 +15,10 @@
 #include <QSize>
 
 Q_DECLARE_METATYPE(AZ::EntityId) // Make Az EntityId available for Qt
-Q_DECLARE_METATYPE(TerrainShaper::Config::TerrainShaperActions)
-Q_DECLARE_METATYPE(TerrainShaper::Config::TerrainShaperBrushTypes)
+Q_DECLARE_METATYPE(TerrainShaper::Config::ShaperActions)
+Q_DECLARE_METATYPE(TerrainShaper::Config::BrushTypes)
 Q_DECLARE_METATYPE(TerrainShaper::Config::BrushInfo)
+Q_DECLARE_METATYPE(TerrainShaper::Config::TerrainSelectSettings)
 
 namespace TerrainShaper
 {
@@ -36,12 +37,16 @@ namespace TerrainShaper
         void OnBrushSelected(int index);
 
     private:
+        // Terrain Selection
         QComboBox* m_TerrainDropdown;
         AZStd::vector<AZ::EntityId> m_TerrainEntries;
+        Config::TerrainSelectSettings m_TerrainSelectSettings;
 
+        // Terrain Brush Actions
         QComboBox* m_TerrainActionDropdown;
 
-        Config::TerrainShaperBrushTypes m_SelectedBrush;
+        // Terrain Brush
+        Config::BrushTypes m_SelectedBrush;
         QButtonGroup* m_BrushButtonGroup;
         QHBoxLayout* m_BrushLayout;
     };
