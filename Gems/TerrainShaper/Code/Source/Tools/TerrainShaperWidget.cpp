@@ -33,19 +33,19 @@ namespace TerrainShaper
         terrainButton->setIconSize(QSize(24, 24));
         terrainButton->setFixedSize(QSize(32, 32));
         connect(terrainButton, &QPushButton::clicked, this, &TerrainShaperWidget::OnTerrainRefreshButtonClicked);
-        formLayout->addRow(new QLabel(QObject::tr("Load Terrain List: "), this), terrainButton);
+        formLayout->addRow(new QLabel(QObject::tr("Load Terrain List:"), this), terrainButton);
 
         // Outline Checkbox
-        QCheckBox* outlineCheckbox = new QCheckBox("", this);
+        QCheckBox* outlineCheckbox = new QCheckBox("Enable Outline", this);
         outlineCheckbox->setChecked(m_TerrainSelectSettings.m_enableOutline);
         // connect(outlineCheckbox, &QCheckBox::stateChanged, this);
-        formLayout->addRow(new QLabel(QObject::tr("Enable Outline: "), this), outlineCheckbox);
+        formLayout->addRow(new QLabel(QObject::tr("Enable Outline:"), this), outlineCheckbox);
 
         // Focus Checkbox
-        QCheckBox* focusCheckbox = new QCheckBox("", this);
+        QCheckBox* focusCheckbox = new QCheckBox("Enable Focus", this);
         focusCheckbox->setChecked(m_TerrainSelectSettings.m_enableFocus);
         // connect(focusCheckbox, &QCheckBox::stateChanged, this);
-        formLayout->addRow(new QLabel(QObject::tr("Enable Focus: "), this), focusCheckbox);
+        formLayout->addRow(new QLabel(QObject::tr("Enable Focus:"), this), focusCheckbox);
 
         // Available Terrains Dropdown
         m_TerrainDropdown = new QComboBox(this);
@@ -61,11 +61,11 @@ namespace TerrainShaper
         m_TerrainActionDropdown->addItem("Smooth Terrain", QVariant::fromValue(Config::ShaperActions::Smooth));
         connect(m_TerrainActionDropdown, QOverload<int>::of(&QComboBox::currentIndexChanged),
                 this, &TerrainShaperWidget::OnTerrainActionDropdownChanged);
-        formLayout->addRow(new QLabel(QObject::tr("Select Action: "), this), m_TerrainActionDropdown);
+        formLayout->addRow(new QLabel(QObject::tr("Select Action:"), this), m_TerrainActionDropdown);
 
         // Create a row of brush buttons
         CreateBrushSelect();
-        formLayout->addRow(new QLabel(QObject::tr("Pick Brush: "), this), m_BrushLayout);
+        formLayout->addRow(new QLabel(QObject::tr("Pick Brush:"), this), m_BrushLayout);
 
         mainLayout->addLayout(formLayout);
         setLayout(mainLayout);
@@ -180,21 +180,21 @@ namespace TerrainShaper
 
         switch (selectedAction)
         {
-        case Config::ShaperActions::Flatten:
-            // TerrainShaperUtils::FlattenTerrain();
-            break;
-        case Config::ShaperActions::Raise:
-            // TerrainShaperUtils::RaiseTerrain();
-            break;
-        case Config::ShaperActions::Lower:
-            // TerrainShaperUtils::LowerTerrain();
-            break;
-        case Config::ShaperActions::Smooth:
-            // TerrainShaperUtils::SmoothTerrain();
-            break;
-        default:
-            AZ_Printf("TerrainShaperWidget::OnTerrainActionDropdownChanged()", "Invalid selection.");
-            break;
+            case Config::ShaperActions::Flatten:
+                // TerrainShaperUtils::FlattenTerrain();
+                break;
+            case Config::ShaperActions::Raise:
+                // TerrainShaperUtils::RaiseTerrain();
+                break;
+            case Config::ShaperActions::Lower:
+                // TerrainShaperUtils::LowerTerrain();
+                break;
+            case Config::ShaperActions::Smooth:
+                // TerrainShaperUtils::SmoothTerrain();
+                break;
+            default:
+                AZ_Printf("TerrainShaperWidget::OnTerrainActionDropdownChanged()", "Invalid selection.");
+                break;
         }
 
         AZ_Printf("TerrainShaperWidget::OnTerrainActionDropdownChanged()", "Selected Action: %d", index);
