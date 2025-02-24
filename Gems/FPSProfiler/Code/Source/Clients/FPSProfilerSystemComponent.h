@@ -59,7 +59,6 @@ namespace FPSProfiler
         void WriteDataToFile();
 
         // Debug display
-        AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
         void ShowFPS(const float& fps) const;
     };
 

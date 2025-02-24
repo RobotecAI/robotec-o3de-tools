@@ -63,16 +63,10 @@ namespace FPSProfiler
             return;
         }
 
-        AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite);
+        AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
         AZStd::string csvHeader = "Frame,FrameTime,InstantFPS,MinFPS,MaxFPS,AvgFPS,GpuMemoryUsed\n";
         file.Write(csvHeader.size(), csvHeader.c_str());
         file.Close();
-
-        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
-        m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-        m_debugDisplay->SetColor(AZ::Colors::DarkRed);
-        m_debugDisplay->SetAlpha(0.8f);
 
         AZ_Printf("FPS Profiler", "FPS Profiler Activated.");
     }
@@ -143,10 +137,19 @@ namespace FPSProfiler
             return;
         }
 
-        AZStd::string debugText = AZStd::string::format("FPS: %.2f", fps);
-        if (m_debugDisplay)
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+        AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
+        if (!debugDisplay)
         {
-            m_debugDisplay->Draw2dTextLabel(10, 10, 1.0f, debugText.c_str(), true);
+            return;
         }
+
+        debugDisplay->SetColor(AZ::Colors::DarkRed);
+        debugDisplay->SetAlpha(0.8f);
+
+        AZStd::string debugText = AZStd::string::format("FPS: %.2f", fps);
+        debugDisplay->Draw2dTextLabel(10, 10, 1.0f, debugText.c_str(), true);
     }
 } // namespace FPSProfiler
