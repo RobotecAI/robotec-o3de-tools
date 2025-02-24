@@ -62,10 +62,6 @@ namespace FPSProfiler
         }
     }
 
-    void FPSProfilerSystemComponent::Init(q)
-    {
-    }
-
     void FPSProfilerSystemComponent::Activate()
     {
         FPSProfilerRequestBus::Handler::BusConnect();
