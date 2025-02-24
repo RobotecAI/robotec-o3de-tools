@@ -1,6 +1,4 @@
-
 #include "FPSProfilerSystemComponent.h"
-#include <FPSProfiler/FPSProfilerTypeIds.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -8,11 +6,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
+#include <utility>
+
 namespace FPSProfiler
 {
-    AZ_COMPONENT_IMPL(FPSProfilerSystemComponent, "FPSProfilerSystemComponent",
-        FPSProfilerSystemComponentTypeId);
-
     void FPSProfilerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -37,13 +34,17 @@ namespace FPSProfiler
     {
         if (FPSProfilerInterface::Get() == nullptr)
         {
-            FPSProfilerInterface::Register(this);
+           FPSProfilerInterface::Register(this);
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const FPSProfilerData& m_configuration)
-        : m_configuration(m_configuration)
+    FPSProfilerSystemComponent::FPSProfilerSystemComponent(FPSProfilerData  m_configuration)
+        : m_configuration(AZStd::move(m_configuration))
     {
+        if (FPSProfilerInterface::Get() == nullptr)
+        {
+            FPSProfilerInterface::Register(this);
+        }
     }
 
     FPSProfilerSystemComponent::~FPSProfilerSystemComponent()

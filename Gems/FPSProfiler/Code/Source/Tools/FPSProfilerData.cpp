@@ -1,4 +1,3 @@
-
 #include "FPSProfilerData.h"
 
 #include <AzCore/Serialization/EditContext.h>

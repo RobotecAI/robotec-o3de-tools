@@ -1,4 +1,3 @@
-
 #include "FPSProfilerEditorSystemComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
@@ -27,10 +26,6 @@ namespace FPSProfiler
             }
         }
     }
-
-    FPSProfilerEditorSystemComponent::FPSProfilerEditorSystemComponent() = default;
-
-    FPSProfilerEditorSystemComponent::~FPSProfilerEditorSystemComponent() = default;
 
     void FPSProfilerEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {

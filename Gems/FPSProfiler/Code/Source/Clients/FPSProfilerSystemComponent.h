@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <Tools/FPSProfilerData.h>
@@ -11,13 +10,12 @@
 
 namespace FPSProfiler
 {
-    class FPSProfilerSystemComponent
-        : public AZ::Component
+    class FPSProfilerSystemComponent : public AZ::Component
         , protected FPSProfilerRequestBus::Handler
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT_DECL(FPSProfilerSystemComponent);
+        AZ_COMPONENT(FPSProfilerSystemComponent, FPSProfilerSystemComponentTypeId, Component);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -25,8 +23,8 @@ namespace FPSProfiler
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         FPSProfilerSystemComponent();
-        explicit FPSProfilerSystemComponent(const FPSProfilerData& m_configuration);
-        ~FPSProfilerSystemComponent();
+        explicit FPSProfilerSystemComponent(FPSProfilerData m_configuration);
+        ~FPSProfilerSystemComponent() override;
 
     protected:
         ////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "FPSProfilerData.h"
@@ -10,8 +9,7 @@
 namespace FPSProfiler
 {
     /// System component for FPSProfiler editor
-    class FPSProfilerEditorSystemComponent
-        : public AzToolsFramework::Components::EditorComponentBase
+    class FPSProfilerEditorSystemComponent : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
@@ -19,8 +17,8 @@ namespace FPSProfiler
 
         static void Reflect(AZ::ReflectContext* context);
 
-        FPSProfilerEditorSystemComponent();
-        ~FPSProfilerEditorSystemComponent();
+        FPSProfilerEditorSystemComponent() = default;
+        ~FPSProfilerEditorSystemComponent() override = default;
 
         // AZ::Component
         void Activate() override;
