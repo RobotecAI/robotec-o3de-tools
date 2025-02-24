@@ -1,41 +1,36 @@
 
 #pragma once
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-
+#include "FPSProfilerData.h"
 #include <Clients/FPSProfilerSystemComponent.h>
+
+#include <ToolsComponents/EditorComponentBase.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace FPSProfiler
 {
     /// System component for FPSProfiler editor
     class FPSProfilerEditorSystemComponent
-        : public FPSProfilerSystemComponent
+        : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
-        using BaseSystemComponent = FPSProfilerSystemComponent;
     public:
-        AZ_COMPONENT_DECL(FPSProfilerEditorSystemComponent);
+        AZ_EDITOR_COMPONENT(FPSProfilerEditorSystemComponent, FPSProfilerEditorSystemComponentTypeId, EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
 
         FPSProfilerEditorSystemComponent();
         ~FPSProfilerEditorSystemComponent();
 
-    private:
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
-
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
+        void BuildGameEntity(AZ::Entity*) override;
 
-        AZ::IO::Path m_OutputFilename = "@user@/fps_log.csv";
-        bool m_SaveFPSData = true;
-        bool m_SaveMultiple = true;
-        bool m_SaveGPUData = true;
-        bool m_SaveCPUData = true;
-        bool m_ShowFPS = true;
+    private:
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
+        FPSProfilerData m_Configuration;
     };
 } // namespace FPSProfiler

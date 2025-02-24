@@ -50,8 +50,8 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const AZ::IO::Path& m_outputFilename, const bool& m_SaveMultiple)
-        : m_outputFilename(m_outputFilename), m_SaveMultiple(m_SaveMultiple)
+    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const FPSProfilerData& m_Configuration)
+        : m_ProfilerData(m_Configuration)
     {
     }
 
@@ -72,12 +72,12 @@ namespace FPSProfiler
         FPSProfilerRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        if (m_outputFilename.empty())
+        if (m_ProfilerData.m_OutputFilename.empty())
         {
-            m_outputFilename = "@user@/fps_log.csv"; // Default location in user log
+            m_ProfilerData.m_OutputFilename = "@user@/fps_log.csv"; // Default location in user log
         }
 
-        AZ::IO::FileIOStream file(m_outputFilename.c_str(), AZ::IO::OpenMode::ModeWrite);
+        AZ::IO::FileIOStream file(m_ProfilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite);
         AZStd::string csvHeader = "Frame,FrameTime,InstantFPS,MinFPS,MaxFPS,AvgFPS,GpuMemoryUsed\n";
         file.Write(csvHeader.size(), csvHeader.c_str());
         file.Close();
@@ -139,7 +139,7 @@ namespace FPSProfiler
 
             }
 
-            AZ::IO::FileIOStream file(m_outputFilename.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeWrite);
+            AZ::IO::FileIOStream file(m_ProfilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeWrite);
 
             for (const auto& entry : m_logEntries)
             {

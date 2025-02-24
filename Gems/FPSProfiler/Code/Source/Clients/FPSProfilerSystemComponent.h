@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <Tools/FPSProfilerData.h>
+
 #include <cfloat>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -24,7 +26,7 @@ namespace FPSProfiler
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         FPSProfilerSystemComponent();
-        FPSProfilerSystemComponent(const AZ::IO::Path& m_outputFilename, const bool& m_SaveMultiple);
+        FPSProfilerSystemComponent(const FPSProfilerData& m_Configuration);
         ~FPSProfilerSystemComponent();
 
     protected:
@@ -54,8 +56,7 @@ namespace FPSProfiler
         float m_totalFrameTime = 0.0f;
         int m_frameCount = 0;
 
-        AZ::IO::Path m_outputFilename;
-        bool m_SaveMultiple;
+        FPSProfilerData m_ProfilerData;
 
         void WriteDataToFile();
     };
