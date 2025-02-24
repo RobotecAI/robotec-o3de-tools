@@ -2,8 +2,8 @@
 
 #include <FPSProfiler/FPSProfilerTypeIds.h>
 
-#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace FPSProfiler
 {
@@ -19,4 +19,4 @@ namespace FPSProfiler
         bool m_SaveCPUData = true;
         bool m_ShowFPS = true;
     };
-} // FPSProfiler
+} // namespace FPSProfiler

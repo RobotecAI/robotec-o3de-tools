@@ -8,8 +8,7 @@
 
 namespace FPSProfiler
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(FPSProfilerModuleInterface,
-        "FPSProfilerModuleInterface", FPSProfilerModuleInterfaceTypeId);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(FPSProfilerModuleInterface, "FPSProfilerModuleInterface", FPSProfilerModuleInterfaceTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL(FPSProfilerModuleInterface, AZ::Module);
     AZ_CLASS_ALLOCATOR_IMPL(FPSProfilerModuleInterface, AZ::SystemAllocator);
 
@@ -19,8 +18,10 @@ namespace FPSProfiler
         // Add ALL components descriptors associated with this gem to m_descriptors.
         // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
         // This happens through the [MyComponent]::Reflect() function.
-        m_descriptors.insert(m_descriptors.end(), {
-            FPSProfilerSystemComponent::CreateDescriptor(),
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                FPSProfilerSystemComponent::CreateDescriptor(),
             });
     }
 

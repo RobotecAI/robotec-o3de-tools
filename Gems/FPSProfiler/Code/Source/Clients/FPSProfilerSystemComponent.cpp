@@ -12,9 +12,8 @@ namespace FPSProfiler
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()
-                ->Version(0)
-                ->Field("m_Configuration", &FPSProfilerSystemComponent::m_configuration);
+            serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()->Version(0)->Field(
+                "m_Configuration", &FPSProfilerSystemComponent::m_configuration);
         }
     }
 
@@ -32,11 +31,11 @@ namespace FPSProfiler
     {
         if (FPSProfilerInterface::Get() == nullptr)
         {
-           FPSProfilerInterface::Register(this);
+            FPSProfilerInterface::Register(this);
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(FPSProfilerData  m_configuration)
+    FPSProfilerSystemComponent::FPSProfilerSystemComponent(FPSProfilerData m_configuration)
         : m_configuration(AZStd::move(m_configuration))
     {
         if (FPSProfilerInterface::Get() == nullptr)
@@ -103,14 +102,12 @@ namespace FPSProfiler
         if (AZ::RPI::RPISystemInterface* rpiSystem = AZ::RPI::RPISystemInterface::Get())
         {
             // gpuMemoryUsed = static_cast<float>(rpiSystem->GetCurrentCpuMemoryUsage());
-            [[maybe_unused]]AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+            [[maybe_unused]] AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
             AZ::RHI::MemoryStatistics memoryStatistics;
         }
 
         AZStd::string logEntry = AZStd::string::format(
-            "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-            m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed
-        );
+            "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f\n", m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed);
         m_logEntries.push_back(logEntry);
 
         if (m_frameCount % 100 == 0)

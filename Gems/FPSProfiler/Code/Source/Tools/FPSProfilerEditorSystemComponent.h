@@ -3,13 +3,14 @@
 #include "FPSProfilerData.h"
 #include <Clients/FPSProfilerSystemComponent.h>
 
-#include <ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <ToolsComponents/EditorComponentBase.h>
 
 namespace FPSProfiler
 {
     /// System component for FPSProfiler editor
-    class FPSProfilerEditorSystemComponent : public AzToolsFramework::Components::EditorComponentBase
+    class FPSProfilerEditorSystemComponent
+        : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:

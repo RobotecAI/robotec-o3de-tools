@@ -1,16 +1,17 @@
 #pragma once
 
-#include <Tools/FPSProfilerData.h>
 #include <FPSProfiler/FPSProfilerBus.h>
+#include <Tools/FPSProfilerData.h>
 
-#include <cfloat>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <cfloat>
 
 namespace FPSProfiler
 {
-    class FPSProfilerSystemComponent : public AZ::Component
+    class FPSProfilerSystemComponent
+        : public AZ::Component
         , protected FPSProfilerRequestBus::Handler
         , public AZ::TickBus::Handler
     {

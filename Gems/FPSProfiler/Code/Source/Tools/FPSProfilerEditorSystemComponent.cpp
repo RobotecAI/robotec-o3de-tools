@@ -11,13 +11,13 @@ namespace FPSProfiler
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<FPSProfilerEditorSystemComponent>()
-                ->Version(0)
-                ->Field("m_Configuration", &FPSProfilerEditorSystemComponent::m_configuration);
+            serializeContext->Class<FPSProfilerEditorSystemComponent>()->Version(0)->Field(
+                "m_Configuration", &FPSProfilerEditorSystemComponent::m_configuration);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<FPSProfilerEditorSystemComponent>("FPS Profiler", "Tracks FPS, GPU and CPU performance and saves it into .csv")
+                editContext
+                    ->Class<FPSProfilerEditorSystemComponent>("FPS Profiler", "Tracks FPS, GPU and CPU performance and saves it into .csv")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Performance")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))

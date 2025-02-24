@@ -6,8 +6,7 @@
 
 namespace FPSProfiler
 {
-    class FPSProfilerModuleInterface
-        : public AZ::Module
+    class FPSProfilerModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(FPSProfilerModuleInterface)
@@ -21,4 +20,4 @@ namespace FPSProfiler
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace FPSProfiler
+} // namespace FPSProfiler

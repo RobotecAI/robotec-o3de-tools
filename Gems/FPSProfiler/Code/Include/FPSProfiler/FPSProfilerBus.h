@@ -16,8 +16,7 @@ namespace FPSProfiler
         // Put your public methods here
     };
 
-    class FPSProfilerBusTraits
-        : public AZ::EBusTraits
+    class FPSProfilerBusTraits : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////
