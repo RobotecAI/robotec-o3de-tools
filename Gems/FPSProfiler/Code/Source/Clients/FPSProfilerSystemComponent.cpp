@@ -6,8 +6,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
-#include <utility>
-
 namespace FPSProfiler
 {
     void FPSProfilerSystemComponent::Reflect(AZ::ReflectContext* context)
