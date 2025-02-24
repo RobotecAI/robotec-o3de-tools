@@ -2,11 +2,12 @@
 #pragma once
 
 #include <Tools/FPSProfilerData.h>
+#include <FPSProfiler/FPSProfilerBus.h>
 
 #include <cfloat>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <FPSProfiler/FPSProfilerBus.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 namespace FPSProfiler
 {
@@ -53,9 +54,14 @@ namespace FPSProfiler
         float m_totalFrameTime = 0.0f;
         int m_frameCount = 0;
 
-        FPSProfilerData m_ProfilerData;
+        // Profiler Data - Editor Settings
+        FPSProfilerData m_profilerData;
 
         void WriteDataToFile();
+
+        // Debug display
+        AzFramework::DebugDisplayRequests* m_debugDisplay;
+        void ShowFPS(const float& fps) const;
     };
 
 } // namespace FPSProfiler

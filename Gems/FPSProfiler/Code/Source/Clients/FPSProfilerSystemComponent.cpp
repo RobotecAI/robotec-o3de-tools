@@ -6,6 +6,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 namespace FPSProfiler
 {
@@ -40,7 +41,7 @@ namespace FPSProfiler
     }
 
     FPSProfilerSystemComponent::FPSProfilerSystemComponent(const FPSProfilerData& m_Configuration)
-        : m_ProfilerData(m_Configuration)
+        : m_profilerData(m_Configuration)
     {
     }
 
@@ -57,16 +58,22 @@ namespace FPSProfiler
         FPSProfilerRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        if (m_ProfilerData.m_OutputFilename.empty())
+        if (m_profilerData.m_OutputFilename.empty())
         {
             AZ_Error("FPSProfiler", false, "The output filename must be provided or cannot be empty!");
             return;
         }
 
-        AZ::IO::FileIOStream file(m_ProfilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite);
+        AZ::IO::FileIOStream file(m_profilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite);
         AZStd::string csvHeader = "Frame,FrameTime,InstantFPS,MinFPS,MaxFPS,AvgFPS,GpuMemoryUsed\n";
         file.Write(csvHeader.size(), csvHeader.c_str());
         file.Close();
+
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+        m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        m_debugDisplay->SetColor(AZ::Colors::DarkRed);
+        m_debugDisplay->SetAlpha(0.8f);
 
         AZ_Printf("FPS Profiler", "FPS Profiler Activated.");
     }
@@ -82,6 +89,7 @@ namespace FPSProfiler
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         float fps = deltaTime > 0 ? (1.0f / deltaTime) : 0.0f;
+        ShowFPS(fps);
 
         m_fpsSamples.push_back(fps);
         m_minFPS = AZStd::min(m_minFPS, fps);
@@ -120,7 +128,7 @@ namespace FPSProfiler
     {
         if (!m_logEntries.empty())
         {
-            AZ::IO::FileIOStream file(m_ProfilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeWrite);
+            AZ::IO::FileIOStream file(m_profilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeWrite);
 
             for (const auto& entry : m_logEntries)
             {
@@ -128,6 +136,21 @@ namespace FPSProfiler
             }
             file.Close();
             m_logEntries.clear();
+        }
+    }
+
+    void FPSProfilerSystemComponent::ShowFPS(const float& fps) const
+    {
+        if (!m_profilerData.m_ShowFPS)
+        {
+            return;
+        }
+
+        AZStd::string debugText = AZStd::string::format("My Game | FPS: %.1f", fps);
+
+        if (m_debugDisplay)
+        {
+            m_debugDisplay->Draw2dTextLabel(10, 10, 1.0f, debugText.c_str(), true);
         }
     }
 } // namespace FPSProfiler
