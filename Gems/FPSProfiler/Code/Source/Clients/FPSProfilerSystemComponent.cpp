@@ -1,12 +1,10 @@
 
 #include "FPSProfilerSystemComponent.h"
-
-#include "Atom/RHI/RHISystemInterface.h"
-#include "Atom/RPI.Public/RPISystemInterface.h"
-#include "AzCore/IO/FileIO.h"
-
 #include <FPSProfiler/FPSProfilerTypeIds.h>
 
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace FPSProfiler
