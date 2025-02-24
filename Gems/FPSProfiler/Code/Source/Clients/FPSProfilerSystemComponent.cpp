@@ -33,14 +33,6 @@ namespace FPSProfiler
         incompatible.push_back(AZ_CRC_CE("FPSProfilerService"));
     }
 
-    void FPSProfilerSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-    }
-
-    void FPSProfilerSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-    }
-
     FPSProfilerSystemComponent::FPSProfilerSystemComponent()
     {
         if (FPSProfilerInterface::Get() == nullptr)
