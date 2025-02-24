@@ -31,6 +31,6 @@ namespace FPSProfiler
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        FPSProfilerData m_Configuration;
+        FPSProfilerData m_configuration;
     };
 } // namespace FPSProfiler

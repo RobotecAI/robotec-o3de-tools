@@ -18,7 +18,8 @@ namespace FPSProfiler
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()
-                ->Version(0);
+                ->Version(0)
+                ->Field("m_Configuration", &FPSProfilerSystemComponent::m_configuration);
         }
     }
 
@@ -40,8 +41,8 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const FPSProfilerData& m_Configuration)
-        : m_profilerData(m_Configuration)
+    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const FPSProfilerData& m_configuration)
+        : m_configuration(m_configuration)
     {
     }
 
@@ -58,13 +59,13 @@ namespace FPSProfiler
         FPSProfilerRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        if (m_profilerData.m_OutputFilename.empty())
+        if (m_configuration.m_OutputFilename.empty())
         {
             AZ_Error("FPSProfiler", false, "The output filename must be provided or cannot be empty!");
             return;
         }
 
-        AZ::IO::FileIOStream file(m_profilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite);
+        AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite);
         AZStd::string csvHeader = "Frame,FrameTime,InstantFPS,MinFPS,MaxFPS,AvgFPS,GpuMemoryUsed\n";
         file.Write(csvHeader.size(), csvHeader.c_str());
         file.Close();
@@ -128,7 +129,7 @@ namespace FPSProfiler
     {
         if (!m_logEntries.empty())
         {
-            AZ::IO::FileIOStream file(m_profilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeWrite);
+            AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeWrite);
 
             for (const auto& entry : m_logEntries)
             {
@@ -141,13 +142,12 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::ShowFPS(const float& fps) const
     {
-        if (!m_profilerData.m_ShowFPS)
+        if (!m_configuration.m_ShowFPS)
         {
             return;
         }
 
-        AZStd::string debugText = AZStd::string::format("My Game | FPS: %.1f", fps);
-
+        AZStd::string debugText = AZStd::string::format("FPS: %.2f", fps);
         if (m_debugDisplay)
         {
             m_debugDisplay->Draw2dTextLabel(10, 10, 1.0f, debugText.c_str(), true);

@@ -25,7 +25,7 @@ namespace FPSProfiler
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         FPSProfilerSystemComponent();
-        FPSProfilerSystemComponent(const FPSProfilerData& m_Configuration);
+        explicit FPSProfilerSystemComponent(const FPSProfilerData& m_configuration);
         ~FPSProfilerSystemComponent();
 
     protected:
@@ -55,12 +55,12 @@ namespace FPSProfiler
         int m_frameCount = 0;
 
         // Profiler Data - Editor Settings
-        FPSProfilerData m_profilerData;
+        FPSProfilerData m_configuration;
 
         void WriteDataToFile();
 
         // Debug display
-        AzFramework::DebugDisplayRequests* m_debugDisplay;
+        AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
         void ShowFPS(const float& fps) const;
     };
 

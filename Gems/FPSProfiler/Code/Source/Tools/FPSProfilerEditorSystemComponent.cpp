@@ -14,7 +14,7 @@ namespace FPSProfiler
         {
             serializeContext->Class<FPSProfilerEditorSystemComponent>()
                 ->Version(0)
-                ->Field("m_Configuration", &FPSProfilerEditorSystemComponent::m_Configuration);
+                ->Field("m_Configuration", &FPSProfilerEditorSystemComponent::m_configuration);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -23,7 +23,7 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::Category, "Performance")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_Configuration);
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configuration);
             }
         }
     }
@@ -54,6 +54,6 @@ namespace FPSProfiler
 
     void FPSProfilerEditorSystemComponent::BuildGameEntity(AZ::Entity* entity)
     {
-        entity->CreateComponent<FPSProfilerSystemComponent>(m_Configuration);
+        entity->CreateComponent<FPSProfilerSystemComponent>(m_configuration);
     }
 } // namespace FPSProfiler
