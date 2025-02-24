@@ -19,8 +19,7 @@ namespace FPSProfiler
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+                ->Version(0);
         }
     }
 
@@ -63,7 +62,7 @@ namespace FPSProfiler
         }
     }
 
-    void FPSProfilerSystemComponent::Init()
+    void FPSProfilerSystemComponent::Init(q)
     {
     }
 
@@ -74,7 +73,8 @@ namespace FPSProfiler
 
         if (m_ProfilerData.m_OutputFilename.empty())
         {
-            m_ProfilerData.m_OutputFilename = "@user@/fps_log.csv"; // Default location in user log
+            AZ_Error("FPSProfiler", false, "The output filename must be provided or cannot be empty!");
+            return;
         }
 
         AZ::IO::FileIOStream file(m_ProfilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite);
@@ -82,7 +82,7 @@ namespace FPSProfiler
         file.Write(csvHeader.size(), csvHeader.c_str());
         file.Close();
 
-        AZ_Printf("FPS Profiler", "FPS Profiler Activated on Level.");
+        AZ_Printf("FPS Profiler", "FPS Profiler Activated.");
     }
 
     void FPSProfilerSystemComponent::Deactivate()
@@ -134,11 +134,6 @@ namespace FPSProfiler
     {
         if (!m_logEntries.empty())
         {
-            for (int i = 0; i < sizeof(uint8_t); ++i)
-            {
-
-            }
-
             AZ::IO::FileIOStream file(m_ProfilerData.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeWrite);
 
             for (const auto& entry : m_logEntries)
