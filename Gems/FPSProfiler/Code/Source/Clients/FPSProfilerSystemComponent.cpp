@@ -64,6 +64,14 @@ namespace FPSProfiler
             return;
         }
 
+        // Reserve at least twice as needed occurrences, since close and save operation may happen at the tick frame saves.
+        // Since log entries are cleared when occurrence update happens, it's good to reserve known size.
+        if (m_configuration.m_AutoSave)
+        {
+            m_fpsSamples.reserve(m_configuration.m_AutoSaveOccurrences * 2);
+            m_logEntries.reserve(m_configuration.m_AutoSaveOccurrences * 2);
+        }
+
         CreateLogFile();
 
         AZ_Printf("FPS Profiler", "FPS Profiler Activated.");
@@ -89,7 +97,7 @@ namespace FPSProfiler
         m_totalFrameTime += deltaTime;
         m_frameCount++;
 
-        if (fps > 0.001f) // Ignore near zero values, precision to the third decimal after 0
+        if (fps > m_configuration.m_NearZeroPrecision) // Ignore near zero values, precision to the third decimal after 0
         {
             m_minFPS = AZStd::min(m_minFPS, fps);
         }
@@ -112,8 +120,8 @@ namespace FPSProfiler
             "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f\n", m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed);
         m_logEntries.push_back(logEntry);
 
-        // Save every 100 frames to not overflow buffer
-        if (m_frameCount % 100 == 0)
+        // Save every 100 frames to not overflow buffer, when Auto Save enabled.
+        if (m_configuration.m_AutoSave && m_frameCount % 100 == 0)
         {
             WriteDataToFile();
         }

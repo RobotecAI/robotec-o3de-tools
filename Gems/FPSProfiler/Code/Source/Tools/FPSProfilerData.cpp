@@ -12,6 +12,9 @@ namespace FPSProfiler
                 ->Version(0)
                 ->Field("m_OutputFilename", &FPSProfilerData::m_OutputFilename)
                 ->Field("m_SaveWithTimestamp", &FPSProfilerData::m_SaveWithTimestamp)
+                ->Field("m_AutoSave", &FPSProfilerData::m_AutoSave)
+                ->Field("m_AutoSaveOccurrences", &FPSProfilerData::m_AutoSaveOccurrences)
+                ->Field("m_NearZeroPrecision", &FPSProfilerData::m_NearZeroPrecision)
                 ->Field("m_SaveFPSData", &FPSProfilerData::m_SaveFPSData)
                 ->Field("m_SaveCPUData", &FPSProfilerData::m_SaveCPUData)
                 ->Field("m_SaveGPUData", &FPSProfilerData::m_SaveGPUData)
@@ -38,6 +41,26 @@ namespace FPSProfiler
                         &FPSProfilerData::m_SaveWithTimestamp,
                         "Save File With Timestamp",
                         "When enabled, system will save files with timestamp postfix of current date and hour.")
+
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &FPSProfilerData::m_AutoSave,
+                        "Auto Save",
+                        "When enabled, system will auto save after specified frame occurencies.")
+
+                    ->DataElement(
+                            AZ::Edit::UIHandlers::Default,
+                            &FPSProfilerData::m_NearZeroPrecision,
+                            "Near Zero Precision",
+                            "Specify near Zero precision, that will be used for system.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
+
+                    ->DataElement(
+                            AZ::Edit::UIHandlers::Default,
+                            &FPSProfilerData::m_SaveWithTimestamp,
+                            "Save File With Timestamp",
+                            "When enabled, system will save files with timestamp postfix of current date and hour.")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Data Settings")
 
