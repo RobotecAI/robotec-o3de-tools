@@ -126,6 +126,11 @@ namespace FPSProfiler
         if (!fileExists)
         {
             m_configuration.m_OutputFilename = "@user@/fps_log.csv"; // Restore to default path
+            AZ_Error(
+                "FPSProfiler::CreateLogFile",
+                false,
+                "Specified file does not exist. Using default path: %s",
+                m_configuration.m_OutputFilename);
         }
 
         if (m_configuration.m_SaveWithTimestamp)
