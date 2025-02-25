@@ -164,17 +164,20 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::WriteDataToFile()
     {
-        if (!m_logEntries.empty())
+        // Exit when nothing to save
+        if (m_logEntries.empty())
         {
-            AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeWrite);
-
-            for (const auto& entry : m_logEntries)
-            {
-                file.Write(entry.size(), entry.c_str());
-            }
-            file.Close();
-            m_logEntries.clear();
+            return;
         }
+
+        AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend);
+
+        for (const auto& entry : m_logEntries)
+        {
+            file.Write(entry.size(), entry.c_str());
+        }
+        file.Close();
+        m_logEntries.clear();
 
         // Notify - File Update
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configuration.m_OutputFilename.c_str());
