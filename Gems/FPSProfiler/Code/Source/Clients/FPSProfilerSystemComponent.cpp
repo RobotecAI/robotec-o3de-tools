@@ -1,5 +1,8 @@
 #include "FPSProfilerSystemComponent.h"
 
+#include "Atom/RPI.Public/RPIUtils.h"
+#include "Atom/RPI.Public/ViewportContext.h"
+
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/IO/FileIO.h>
@@ -117,7 +120,7 @@ namespace FPSProfiler
         }
 
         AZStd::string logEntry = AZStd::string::format(
-            "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f\n", m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed);
+            "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed, BytesToMB(GetCpuMemoryUsed()), BytesToMB(GetGpuMemoryUsed()));
         m_logEntries.push_back(logEntry);
 
         // Save every 100 frames to not overflow buffer, when Auto Save enabled.
@@ -167,7 +170,7 @@ namespace FPSProfiler
         }
 
         AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
-        AZStd::string csvHeader = "Frame,FrameTime,InstantFPS,MinFPS,MaxFPS,AvgFPS,GpuMemoryUsed\n";
+        AZStd::string csvHeader = "Frame,FrameTime,CurrentFPS,MinFPS,MaxFPS,AvgFPS,CpuMemoryUsed,GpuMemoryUsed\n";
         file.Write(csvHeader.size(), csvHeader.c_str());
         file.Close();
 
@@ -195,6 +198,35 @@ namespace FPSProfiler
 
         // Notify - File Update
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configuration.m_OutputFilename.c_str());
+    }
+
+    size_t FPSProfilerSystemComponent::GetCpuMemoryUsed()
+    {
+        size_t usedBytes = 0;
+        size_t reservedBytes = 0;
+
+        // Get stats for the system allocator
+        AZ::AllocatorManager::Instance().GetAllocatorStats(usedBytes, reservedBytes, nullptr);
+
+        // Return the used bytes (allocated memory)
+        return usedBytes;
+    }
+
+    size_t FPSProfilerSystemComponent::GetGpuMemoryUsed()
+    {
+        if (AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get())
+        {
+            if (AZ::RHI::Device* device = rhiSystem->GetDevice())
+            {
+                AZ::RHI::MemoryStatistics memoryStats;
+                device->CompileMemoryStatistics(memoryStats, AZ::RHI::MemoryStatisticsReportFlags::Detail);
+
+                // Return the GPU memory used in bytes
+                return memoryStats.m_heaps.front().m_memoryUsage.m_totalResidentInBytes;
+            }
+        }
+
+        return 0;
     }
 
     void FPSProfilerSystemComponent::ShowFPS(const float& fps) const

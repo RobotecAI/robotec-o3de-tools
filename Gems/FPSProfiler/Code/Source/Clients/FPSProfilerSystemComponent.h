@@ -58,6 +58,13 @@ namespace FPSProfiler
         void CreateLogFile();
         void WriteDataToFile();
 
+        size_t GetCpuMemoryUsed();
+        size_t GetGpuMemoryUsed();
+        float BytesToMB(size_t bytes)
+        {
+            return static_cast<float>(bytes) / (1024.0f * 1024.0f);
+        }
+
         // Debug display
         void ShowFPS(const float& fps) const;
     };
