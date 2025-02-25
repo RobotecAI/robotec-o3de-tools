@@ -49,18 +49,18 @@ namespace FPSProfiler
                         "When enabled, system will auto save after specified frame occurencies.")
 
                     ->DataElement(
-                            AZ::Edit::UIHandlers::Default,
-                            &FPSProfilerData::m_NearZeroPrecision,
-                            "Near Zero Precision",
-                            "Specify near Zero precision, that will be used for system.")
+                        AZ::Edit::UIHandlers::Default,
+                        &FPSProfilerData::m_NearZeroPrecision,
+                        "Near Zero Precision",
+                        "Specify near Zero precision, that will be used for system.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
 
                     ->DataElement(
-                            AZ::Edit::UIHandlers::Default,
-                            &FPSProfilerData::m_SaveWithTimestamp,
-                            "Save File With Timestamp",
-                            "When enabled, system will save files with timestamp postfix of current date and hour.")
+                        AZ::Edit::UIHandlers::Default,
+                        &FPSProfilerData::m_SaveWithTimestamp,
+                        "Save File With Timestamp",
+                        "When enabled, system will save files with timestamp postfix of current date and hour.")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Data Settings")
 
