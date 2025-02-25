@@ -1,8 +1,6 @@
 #include "FPSProfilerSystemComponent.h"
 
-#include <AzQtComponents/Components/Widgets/FileDialog.h>
-#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-
+#include <AzCore/std/numeric.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/IO/FileIO.h>
@@ -93,7 +91,10 @@ namespace FPSProfiler
         m_totalFrameTime += deltaTime;
         m_frameCount++;
 
-        float avgFPS = (m_frameCount > 0) ? (m_frameCount / m_totalFrameTime) : 0.0f;
+        // Average FPS calculation
+        float avgFPS = !m_fpsSamples.empty() ?
+                       (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / m_fpsSamples.size())
+                       : 0.0f;
 
         float gpuMemoryUsed = 0.0f;
         if (AZ::RPI::RPISystemInterface* rpiSystem = AZ::RPI::RPISystemInterface::Get())
@@ -104,7 +105,7 @@ namespace FPSProfiler
         }
 
         AZStd::string logEntry = AZStd::string::format(
-            "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f\n", m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed);
+            "%d,%.4f,%.2f,%.2f,%.2f,%.4f,%.2f\n", m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed);
         m_logEntries.push_back(logEntry);
 
         // Save every 100 frames to not overflow buffer
