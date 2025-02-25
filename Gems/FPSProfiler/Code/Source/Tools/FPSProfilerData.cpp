@@ -11,7 +11,7 @@ namespace FPSProfiler
             serializeContext->Class<FPSProfilerData>()
                 ->Version(0)
                 ->Field("m_OutputFilename", &FPSProfilerData::m_OutputFilename)
-                ->Field("m_SaveMultiple", &FPSProfilerData::m_SaveWithTimestamp)
+                ->Field("m_SaveWithTimestamp", &FPSProfilerData::m_SaveWithTimestamp)
                 ->Field("m_SaveFPSData", &FPSProfilerData::m_SaveFPSData)
                 ->Field("m_SaveCPUData", &FPSProfilerData::m_SaveCPUData)
                 ->Field("m_SaveGPUData", &FPSProfilerData::m_SaveGPUData)
@@ -36,9 +36,8 @@ namespace FPSProfiler
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &FPSProfilerData::m_SaveWithTimestamp,
-                        "Save Multiple",
-                        "When enabled, system will save files without overwriting current file. Each file will have prefix *_n.csv postfix "
-                        "numeration.")
+                        "Save File With Timestamp",
+                        "When enabled, system will save files with timestamp postfix of current date and hour.")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Data Settings")
 
