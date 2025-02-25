@@ -6,7 +6,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <cfloat>
 
 namespace FPSProfiler
 {
@@ -48,7 +47,7 @@ namespace FPSProfiler
         AZStd::vector<float> m_fpsSamples;
         AZStd::vector<AZStd::string> m_logEntries;
 
-        float m_minFPS = FLT_MAX; // Tracking the lowest FPS value - set to max for difference
+        float m_minFPS = AZ::Constants::FloatMax; // Tracking the lowest FPS value - set to max for difference
         float m_maxFPS = 0.0f; // Tracking the highest FPS value - set to min for diff
         float m_totalFrameTime = 0.0f;
         int m_frameCount = 0;

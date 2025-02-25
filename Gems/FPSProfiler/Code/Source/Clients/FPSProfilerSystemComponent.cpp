@@ -86,10 +86,15 @@ namespace FPSProfiler
         ShowFPS(fps);
 
         m_fpsSamples.push_back(fps);
-        m_minFPS = AZStd::min(m_minFPS, fps);
-        m_maxFPS = AZStd::max(m_maxFPS, fps);
         m_totalFrameTime += deltaTime;
         m_frameCount++;
+
+        if (fps > 0.001f) // Ignore near zero values, precision to the third decimal after 0
+        {
+            m_minFPS = AZStd::min(m_minFPS, fps);
+        }
+
+        m_maxFPS = AZStd::max(m_maxFPS, fps);
 
         // Average FPS calculation
         float avgFPS = !m_fpsSamples.empty() ?
@@ -179,6 +184,7 @@ namespace FPSProfiler
         }
         file.Close();
         m_logEntries.clear();
+        m_fpsSamples.clear();
 
         // Notify - File Update
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configuration.m_OutputFilename.c_str());
