@@ -107,6 +107,7 @@ namespace FPSProfiler
             "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f\n", m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed);
         m_logEntries.push_back(logEntry);
 
+        // Save every 100 frames to not overflow buffer
         if (m_frameCount % 100 == 0)
         {
             WriteDataToFile();
