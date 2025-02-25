@@ -13,7 +13,7 @@ namespace FPSProfiler
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::IO::Path m_OutputFilename = "@user@/fps_log.csv";
-        bool m_SaveMultiple = true;
+        bool m_SaveWithTimestamp = true;
         bool m_SaveFPSData = true;
         bool m_SaveGPUData = true;
         bool m_SaveCPUData = true;

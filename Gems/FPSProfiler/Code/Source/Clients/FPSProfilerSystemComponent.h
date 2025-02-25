@@ -56,6 +56,7 @@ namespace FPSProfiler
         // Profiler Data - Editor Settings
         FPSProfilerData m_configuration;
 
+        void CreateLogFile();
         void WriteDataToFile();
 
         // Debug display

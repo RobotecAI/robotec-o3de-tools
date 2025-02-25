@@ -1,5 +1,8 @@
 #include "FPSProfilerSystemComponent.h"
 
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/IO/FileIO.h>
@@ -63,10 +66,7 @@ namespace FPSProfiler
             return;
         }
 
-        AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
-        AZStd::string csvHeader = "Frame,FrameTime,InstantFPS,MinFPS,MaxFPS,AvgFPS,GpuMemoryUsed\n";
-        file.Write(csvHeader.size(), csvHeader.c_str());
-        file.Close();
+        CreateLogFile();
 
         AZ_Printf("FPS Profiler", "FPS Profiler Activated.");
     }
@@ -115,6 +115,41 @@ namespace FPSProfiler
         return AZ::TICK_GAME;
     }
 
+    void FPSProfilerSystemComponent::CreateLogFile()
+    {
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        bool fileExists = fileIO->Exists(m_configuration.m_OutputFilename.c_str());
+
+        if (!fileExists)
+        {
+            m_configuration.m_OutputFilename = "@user@/fps_log.csv"; // Restore to default path
+        }
+
+        if (m_configuration.m_SaveWithTimestamp)
+        {
+            // Get current system time
+            auto now = AZStd::chrono::system_clock::now();
+            std::time_t now_time_t = AZStd::chrono::system_clock::to_time_t(now);
+
+            // Convert to local time structure
+            std::tm timeInfo;
+            localtime_r(&now_time_t, &timeInfo);
+
+            // Format the timestamp as YYYYMMDD_HHMM
+            char timestamp[16]; // Buffer for formatted time
+            strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M", &timeInfo);
+
+            m_configuration.m_OutputFilename.ReplaceFilename(
+                (m_configuration.m_OutputFilename.Stem().String() + "_" + timestamp + m_configuration.m_OutputFilename.Extension().String())
+                    .data());
+        }
+
+        AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
+        AZStd::string csvHeader = "Frame,FrameTime,InstantFPS,MinFPS,MaxFPS,AvgFPS,GpuMemoryUsed\n";
+        file.Write(csvHeader.size(), csvHeader.c_str());
+        file.Close();
+    }
+
     void FPSProfilerSystemComponent::WriteDataToFile()
     {
         if (!m_logEntries.empty())
@@ -149,7 +184,7 @@ namespace FPSProfiler
         debugDisplay->SetColor(AZ::Colors::DarkRed);
         debugDisplay->SetAlpha(0.8f);
 
-        AZStd::string debugText = AZStd::string::format("FPS: %.2f", fps);
+        AZStd::string debugText = AZStd::string::format("Profiler | FPS: %.2f", fps);
         debugDisplay->Draw2dTextLabel(10, 10, 1.0f, debugText.c_str(), true);
     }
 } // namespace FPSProfiler
