@@ -111,16 +111,16 @@ namespace FPSProfiler
         float avgFPS =
             !m_fpsSamples.empty() ? (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / m_fpsSamples.size()) : 0.0f;
 
-        float gpuMemoryUsed = 0.0f;
-        if (AZ::RPI::RPISystemInterface* rpiSystem = AZ::RPI::RPISystemInterface::Get())
-        {
-            // gpuMemoryUsed = static_cast<float>(rpiSystem->GetCurrentCpuMemoryUsage());
-            [[maybe_unused]] AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-            AZ::RHI::MemoryStatistics memoryStatistics;
-        }
-
         AZStd::string logEntry = AZStd::string::format(
-            "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", m_frameCount, deltaTime, fps, m_minFPS, m_maxFPS, avgFPS, gpuMemoryUsed, BytesToMB(GetCpuMemoryUsed()), BytesToMB(GetGpuMemoryUsed()));
+            "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+            m_frameCount,
+            deltaTime,
+            fps,
+            m_minFPS,
+            m_maxFPS,
+            avgFPS,
+            BytesToMB(GetCpuMemoryUsed()),
+            BytesToMB(GetGpuMemoryUsed()));
         m_logEntries.push_back(logEntry);
 
         // Save every 100 frames to not overflow buffer, when Auto Save enabled.
