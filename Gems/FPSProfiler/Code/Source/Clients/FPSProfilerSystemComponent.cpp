@@ -130,7 +130,7 @@ namespace FPSProfiler
                 "FPSProfiler::CreateLogFile",
                 false,
                 "Specified file does not exist. Using default path: %s",
-                m_configuration.m_OutputFilename);
+                m_configuration.m_OutputFilename.c_str());
         }
 
         if (m_configuration.m_SaveWithTimestamp)
