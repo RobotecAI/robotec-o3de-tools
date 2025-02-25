@@ -76,6 +76,9 @@ namespace FPSProfiler
         AZ::TickBus::Handler::BusDisconnect();
         WriteDataToFile();
 
+        // Notify - File Saved
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileSaved, m_configuration.m_OutputFilename.c_str());
+
         FPSProfilerRequestBus::Handler::BusDisconnect();
     }
 
@@ -148,6 +151,9 @@ namespace FPSProfiler
         AZStd::string csvHeader = "Frame,FrameTime,InstantFPS,MinFPS,MaxFPS,AvgFPS,GpuMemoryUsed\n";
         file.Write(csvHeader.size(), csvHeader.c_str());
         file.Close();
+
+        // Notify - File Created
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileCreated, m_configuration.m_OutputFilename.c_str());
     }
 
     void FPSProfilerSystemComponent::WriteDataToFile()
@@ -163,6 +169,9 @@ namespace FPSProfiler
             file.Close();
             m_logEntries.clear();
         }
+
+        // Notify - File Update
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configuration.m_OutputFilename.c_str());
     }
 
     void FPSProfilerSystemComponent::ShowFPS(const float& fps) const
