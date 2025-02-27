@@ -36,7 +36,7 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(FPSProfilerData m_configuration)
+    FPSProfilerSystemComponent::FPSProfilerSystemComponent(FPSProfilerConfig m_configuration)
         : m_configuration(AZStd::move(m_configuration))
     {
         if (FPSProfilerInterface::Get() == nullptr)

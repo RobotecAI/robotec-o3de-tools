@@ -7,9 +7,9 @@
 
 namespace FPSProfiler
 {
-    struct FPSProfilerData
+    struct FPSProfilerConfig
     {
-        AZ_TYPE_INFO(FPSProfilerData, FPSProfilerDataTypeId);
+        AZ_TYPE_INFO(FPSProfilerConfig, FPSProfilerDataTypeId);
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::IO::Path m_OutputFilename = "@user@/fps_log.csv";

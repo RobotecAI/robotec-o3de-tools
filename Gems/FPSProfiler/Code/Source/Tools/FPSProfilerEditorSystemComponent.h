@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FPSProfilerData.h"
+#include "FPSProfilerConfig.h"
 #include <Clients/FPSProfilerSystemComponent.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -30,6 +30,6 @@ namespace FPSProfiler
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        FPSProfilerData m_configuration;
+        FPSProfilerConfig m_configuration;
     };
 } // namespace FPSProfiler

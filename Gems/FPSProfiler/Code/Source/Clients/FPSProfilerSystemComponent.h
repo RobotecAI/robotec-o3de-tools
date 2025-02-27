@@ -1,7 +1,7 @@
 #pragma once
 
 #include <FPSProfiler/FPSProfilerBus.h>
-#include <Tools/FPSProfilerData.h>
+#include <Tools/FPSProfilerConfig.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -23,7 +23,7 @@ namespace FPSProfiler
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         FPSProfilerSystemComponent();
-        explicit FPSProfilerSystemComponent(FPSProfilerData m_configuration);
+        explicit FPSProfilerSystemComponent(FPSProfilerConfig m_configuration);
         ~FPSProfilerSystemComponent() override;
 
     protected:
@@ -50,7 +50,10 @@ namespace FPSProfiler
         void ShowFpsOnScreen(bool enable) override;
 
     private:
-        FPSProfilerData m_configuration; // Profiler Data - Editor Settings
+        // Profiler Configuration - Editor Settings
+        FPSProfilerConfig m_configuration;
+
+        // Profiler Data
         bool m_isProfiling;
         float m_minFps; // Tracking the lowest FPS value
         float m_maxFps; // Tracking the highest FPS value
