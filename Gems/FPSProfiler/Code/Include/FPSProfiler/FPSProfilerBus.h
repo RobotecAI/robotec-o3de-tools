@@ -20,6 +20,8 @@ namespace FPSProfiler
         virtual void ResetProfilingData() = 0;
         virtual bool IsProfiling() const = 0;
         virtual bool IsAnySaveOptionEnabled() const = 0;
+        virtual void ChangeSavePath(const AZStd::string& newSavePath) = 0;
+        virtual void SafeChangeSavePath(const AZStd::string& newSavePath) = 0;
 
         // Get Fps Data
         virtual float GetMinFps() const = 0;
@@ -33,6 +35,7 @@ namespace FPSProfiler
 
         // Logging
         virtual void SaveLogToFile() = 0;
+        virtual void SaveLogToFile(const AZStd::string& newSavePath, bool useSafeChangePath=true) = 0;
         virtual void ShowFpsOnScreen(bool enable) = 0;
     };
 

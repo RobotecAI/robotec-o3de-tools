@@ -41,6 +41,8 @@ namespace FPSProfiler
         void ResetProfilingData() override;
         bool IsProfiling() const override;
         bool IsAnySaveOptionEnabled() const override;
+        void ChangeSavePath(const AZStd::string& newSavePath) override;
+        void SafeChangeSavePath(const AZStd::string& newSavePath) override;
         float GetMinFps() const override;
         float GetMaxFps() const override;
         float GetAvgFps() const override;
@@ -48,6 +50,7 @@ namespace FPSProfiler
         size_t GetCpuMemoryUsed() const override;
         size_t GetGpuMemoryUsed() const override;
         void SaveLogToFile() override;
+        void SaveLogToFile(const AZStd::string& newSavePath, bool useSafeChangePath) override;
         void ShowFpsOnScreen(bool enable) override;
 
     private:

@@ -106,6 +106,7 @@ namespace FPSProfiler
             return;
         }
 
+        // Calculate data for Profiler Bus
         CalculateFpsData(deltaTime);
 
         if (m_configuration.m_ShowFps)
@@ -193,6 +194,19 @@ namespace FPSProfiler
         return m_configuration.m_SaveFpsData || m_configuration.m_SaveCpuData || m_configuration.m_SaveGpuData;
     }
 
+    void FPSProfilerSystemComponent::ChangeSavePath(const AZStd::string& newSavePath)
+    {
+        AZ_Printf("FPS Profiler", "Path changed.");
+        m_configuration.m_OutputFilename = newSavePath;
+    }
+
+    void FPSProfilerSystemComponent::SafeChangeSavePath(const AZStd::string& newSavePath)
+    {
+        // If profiling is enabled, save current open file and stop profiling.
+        StopProfiling();
+        ChangeSavePath(newSavePath);
+    }
+
     float FPSProfilerSystemComponent::GetMinFps() const
     {
         return m_minFps;
@@ -244,6 +258,20 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::SaveLogToFile()
     {
+        WriteDataToFile();
+    }
+
+    void FPSProfilerSystemComponent::SaveLogToFile(const AZStd::string& newSavePath, bool useSafeChangePath)
+    {
+        if (useSafeChangePath)
+        {
+            SafeChangeSavePath(newSavePath);
+        }
+        else
+        {
+            ChangeSavePath(newSavePath);
+        }
+
         WriteDataToFile();
     }
 
