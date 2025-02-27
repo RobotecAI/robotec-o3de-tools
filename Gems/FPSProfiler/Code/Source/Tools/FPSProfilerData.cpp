@@ -70,6 +70,7 @@ namespace FPSProfiler
                         "Specify near Zero precision, that will be used for system.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.00001f)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Data Settings")
 
