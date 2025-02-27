@@ -69,7 +69,7 @@ namespace FPSProfiler
             m_logEntries.reserve(m_configuration.m_AutoSaveOccurrences * 2);
         }
 
-        if (m_configuration.m_SaveFPSData)
+        if (m_configuration.m_SaveFpsData)
         {
             // Cannot be 0 for std::min comparison
             m_minFps = AZ::Constants::FloatMax;
@@ -93,13 +93,13 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (m_configuration.m_ShowFPS)
+        if (m_configuration.m_ShowFps)
         {
             ShowFps();
         }
 
         // Calculate data only if enabled, otherwise push default values to log entry.
-        if (m_configuration.m_SaveFPSData)
+        if (m_configuration.m_SaveFpsData)
         {
             CalculateFpsData(deltaTime);
         }

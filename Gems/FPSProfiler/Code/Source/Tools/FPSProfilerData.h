@@ -17,9 +17,9 @@ namespace FPSProfiler
         bool m_AutoSave = true;
         int m_AutoSaveOccurrences = 100;
         float m_NearZeroPrecision = 0.01f;
-        bool m_SaveFPSData = true;
+        bool m_SaveFpsData = true;
         bool m_SaveGPUData = true;
         bool m_SaveCPUData = true;
-        bool m_ShowFPS = true;
+        bool m_ShowFps = true;
     };
 } // namespace FPSProfiler

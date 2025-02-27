@@ -36,13 +36,13 @@ namespace FPSProfiler
         AZ_RTTI(FPSProfilerNotifications, FPSProfilerNotificationsTypeId);
         virtual ~FPSProfilerNotifications() = default;
 
-        virtual void OnFileCreated(AZStd::string fileName)
+        virtual void OnFileCreated(const AZStd::string& fileName)
         {
         }
-        virtual void OnFileUpdate(AZStd::string fileName)
+        virtual void OnFileUpdate(const AZStd::string& fileName)
         {
         }
-        virtual void OnFileSaved(AZStd::string fileName)
+        virtual void OnFileSaved(const AZStd::string& fileName)
         {
         }
     };

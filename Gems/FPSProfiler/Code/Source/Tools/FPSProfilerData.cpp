@@ -15,10 +15,10 @@ namespace FPSProfiler
                 ->Field("m_AutoSave", &FPSProfilerData::m_AutoSave)
                 ->Field("m_AutoSaveOccurrences", &FPSProfilerData::m_AutoSaveOccurrences)
                 ->Field("m_NearZeroPrecision", &FPSProfilerData::m_NearZeroPrecision)
-                ->Field("m_SaveFPSData", &FPSProfilerData::m_SaveFPSData)
+                ->Field("m_SaveFPSData", &FPSProfilerData::m_SaveFpsData)
                 ->Field("m_SaveCPUData", &FPSProfilerData::m_SaveCPUData)
                 ->Field("m_SaveGPUData", &FPSProfilerData::m_SaveGPUData)
-                ->Field("m_ShowFPS", &FPSProfilerData::m_ShowFPS);
+                ->Field("m_ShowFPS", &FPSProfilerData::m_ShowFps);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -75,7 +75,7 @@ namespace FPSProfiler
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerData::m_SaveFPSData,
+                        &FPSProfilerData::m_SaveFpsData,
                         "Save FPS Data",
                         "When enabled, system will collect FPS data into csv.")
 
@@ -95,7 +95,7 @@ namespace FPSProfiler
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerData::m_ShowFPS,
+                        &FPSProfilerData::m_ShowFps,
                         "Show FPS",
                         "When enabled, system will show FPS counter in top-left corner.");
             }
