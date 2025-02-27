@@ -35,7 +35,7 @@ namespace FPSProfiler
 
         // Logging
         virtual void SaveLogToFile() = 0;
-        virtual void SaveLogToFile(const AZStd::string& newSavePath, bool useSafeChangePath=true) = 0;
+        virtual void SaveLogToFile(const AZStd::string& newSavePath, bool useSafeChangePath = true) = 0;
         virtual void ShowFpsOnScreen(bool enable) = 0;
     };
 
