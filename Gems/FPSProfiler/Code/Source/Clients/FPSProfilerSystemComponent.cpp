@@ -349,6 +349,12 @@ namespace FPSProfiler
             return;
         }
 
+        // If none save option enabled - exit
+        if (!IsAnySaveOptionEnabled())
+        {
+            return;
+        }
+
         AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend);
 
         for (const auto& entry : m_logEntries)
