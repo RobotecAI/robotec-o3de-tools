@@ -9,7 +9,7 @@
 
 namespace FPSProfiler
 {
-    class FPSProfilerSystemComponent
+    class FPSProfilerSystemComponent final
         : public AZ::Component
         , protected FPSProfilerRequestBus::Handler
         , public AZ::TickBus::Handler
@@ -39,12 +39,12 @@ namespace FPSProfiler
         // Profiler Data - Editor Settings
         FPSProfilerData m_configuration;
 
-        float m_minFps = AZ::Constants::FloatMax; // Tracking the lowest FPS value - set to max for difference
-        float m_maxFps = 0.0f; // Tracking the highest FPS value - set to min for diff
+        float m_minFps = 0.0; // Tracking the lowest FPS value
+        float m_maxFps = 0.0f; // Tracking the highest FPS value
         float m_avgFps = 0.0f; // Mean Value of accumulated current FPS
         float m_currentFps = 0.0f; // Actual FPS in current frame
-        float m_totalFrameTime = 0.0f;
-        int m_frameCount = 0;
+        float m_totalFrameTime = 0.0f; // Time it took to enter frame
+        int m_frameCount = 0; // Numeric value of actual frame
         AZStd::vector<float> m_fpsSamples; // Vector of collected current FPSs. Cleared once @ref m_configuration.m_AutoSave enabled.
         AZStd::vector<AZStd::string> m_logEntries; // Vector of collected log entries. Cleared after @ref
                                                    // m_configuration.m_AutoSaveOccurrences, when @ref m_configuration.m_AutoSave enabled.

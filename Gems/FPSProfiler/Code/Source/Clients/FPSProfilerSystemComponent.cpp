@@ -72,6 +72,12 @@ namespace FPSProfiler
             m_logEntries.reserve(m_configuration.m_AutoSaveOccurrences * 2);
         }
 
+        if (m_configuration.m_SaveFPSData)
+        {
+            // Cannot be 0 for std::min comparison
+            m_minFps = AZ::Constants::FloatMax;
+        }
+
         FPSProfilerRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         CreateLogFile();
