@@ -38,12 +38,6 @@ namespace FPSProfiler
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfig::m_SaveWithTimestamp,
-                        "Timestamp",
-                        "When enabled, system will save files with timestamp postfix of current date and hour.")
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
                         &FPSProfilerConfig::m_AutoSave,
                         "Auto Save",
                         "When enabled, system will auto save after specified frame occurrance.")
@@ -62,6 +56,14 @@ namespace FPSProfiler
                             const FPSProfilerConfig* data = reinterpret_cast<const FPSProfilerConfig*>(instance);
                             return data && data->m_AutoSave ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
                         })
+
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &FPSProfilerConfig::m_SaveWithTimestamp,
+                        "Timestamp",
+                        "When enabled, system will save files with timestamp postfix of current date and hour.")
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Precision Settings")
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
