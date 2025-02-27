@@ -55,13 +55,14 @@ namespace FPSProfiler
 
         // Helpers
         void CalculateFpsData(const float& deltaTime);
-        static float BytesToMB(size_t bytes);
-
-        // Memory Access
-        static size_t GetCpuMemoryUsed();
-        static size_t GetGpuMemoryUsed();
 
         // Debug display
         void ShowFps() const;
+
+    public:
+        // Memory Access
+        static size_t GetCpuMemoryUsed();
+        static size_t GetGpuMemoryUsed();
+        static float BytesToMB(size_t bytes);
     };
 } // namespace FPSProfiler
