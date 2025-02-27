@@ -6,6 +6,11 @@ namespace FPSProfiler
 {
     void FPSProfilerData::Reflect(AZ::ReflectContext* context)
     {
+        if (!context)
+        {
+            return;
+        }
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<FPSProfilerData>()
@@ -39,14 +44,29 @@ namespace FPSProfiler
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &FPSProfilerData::m_SaveWithTimestamp,
-                        "Save File With Timestamp",
+                        "Timestamp",
                         "When enabled, system will save files with timestamp postfix of current date and hour.")
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &FPSProfilerData::m_AutoSave,
                         "Auto Save",
-                        "When enabled, system will auto save after specified frame occurencies.")
+                        "When enabled, system will auto save after specified frame occurrance.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &FPSProfilerData::m_AutoSaveOccurrences,
+                        "Auto Save At Frame",
+                        "Specify after how many frames system will auto save log.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(
+                        AZ::Edit::Attributes::Visibility,
+                        [](const void* instance)
+                        {
+                            const FPSProfilerData* data = reinterpret_cast<const FPSProfilerData*>(instance);
+                            return data && data->m_AutoSave ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+                        })
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
@@ -54,13 +74,7 @@ namespace FPSProfiler
                         "Near Zero Precision",
                         "Specify near Zero precision, that will be used for system.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerData::m_SaveWithTimestamp,
-                        "Save File With Timestamp",
-                        "When enabled, system will save files with timestamp postfix of current date and hour.")
+                    ->Attribute(AZ::Edit::Attributes::Max, 0.1f)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Data Settings")
 

@@ -93,38 +93,31 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        float fps = deltaTime > 0 ? (1.0f / deltaTime) : 0.0f;
-        ShowFPS(fps);
-
-        m_fpsSamples.push_back(fps);
-        m_totalFrameTime += deltaTime;
-        m_frameCount++;
-
-        if (fps > m_configuration.m_NearZeroPrecision) // Ignore near zero values, precision to the third decimal after 0
+        if (m_configuration.m_ShowFPS)
         {
-            m_minFPS = AZStd::min(m_minFPS, fps);
+            ShowFps();
         }
 
-        m_maxFPS = AZStd::max(m_maxFPS, fps);
-
-        // Average FPS calculation
-        float avgFPS =
-            !m_fpsSamples.empty() ? (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / m_fpsSamples.size()) : 0.0f;
+        // Calculate data only if enabled, otherwise push default values to log entry.
+        if (m_configuration.m_SaveFPSData)
+        {
+            CalculateFpsData(deltaTime);
+        }
 
         AZStd::string logEntry = AZStd::string::format(
             "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
             m_frameCount,
             deltaTime,
-            fps,
+            m_currentFPS,
             m_minFPS,
             m_maxFPS,
-            avgFPS,
-            BytesToMB(GetCpuMemoryUsed()),
-            BytesToMB(GetGpuMemoryUsed()));
+            m_avgFPS,
+            m_configuration.m_SaveCPUData ? BytesToMB(GetCpuMemoryUsed()) : 0.0f,
+            m_configuration.m_SaveGPUData ? BytesToMB(GetGpuMemoryUsed()) : 0.0f);
         m_logEntries.push_back(logEntry);
 
-        // Save every 100 frames to not overflow buffer, when Auto Save enabled.
-        if (m_configuration.m_AutoSave && m_frameCount % 100 == 0)
+        // Save after every m_AutoSaveOccurrences frames to not overflow buffer, only when m_AutoSave enabled.
+        if (m_configuration.m_AutoSave && m_frameCount % m_configuration.m_AutoSaveOccurrences == 0)
         {
             WriteDataToFile();
         }
@@ -133,6 +126,24 @@ namespace FPSProfiler
     int FPSProfilerSystemComponent::GetTickOrder()
     {
         return AZ::TICK_GAME;
+    }
+
+    void FPSProfilerSystemComponent::CalculateFpsData(const float& deltaTime)
+    {
+        m_currentFPS = deltaTime > 0 ? (1.0f / deltaTime) : 0.0f;
+        m_fpsSamples.push_back(m_currentFPS);
+
+        m_totalFrameTime += deltaTime;
+        m_frameCount++;
+
+        // Ignore near zero values, precision to the third decimal after 0
+        if (m_currentFPS > m_configuration.m_NearZeroPrecision)
+        {
+            m_minFPS = AZStd::min(m_minFPS, m_currentFPS);
+        }
+        m_maxFPS = AZStd::max(m_maxFPS, m_currentFPS);
+
+        m_avgFPS = !m_fpsSamples.empty() ? (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / m_fpsSamples.size()) : 0.0f;
     }
 
     void FPSProfilerSystemComponent::CreateLogFile()
@@ -229,13 +240,13 @@ namespace FPSProfiler
         return 0;
     }
 
-    void FPSProfilerSystemComponent::ShowFPS(const float& fps) const
+    float FPSProfilerSystemComponent::BytesToMB(size_t bytes)
     {
-        if (!m_configuration.m_ShowFPS)
-        {
-            return;
-        }
+        return static_cast<float>(bytes) / (1024.0f * 1024.0f);
+    }
 
+    void FPSProfilerSystemComponent::ShowFps() const
+    {
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
         AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
         AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
@@ -248,7 +259,7 @@ namespace FPSProfiler
         debugDisplay->SetColor(AZ::Colors::Red);
         debugDisplay->SetAlpha(1.0f);
 
-        AZStd::string debugText = AZStd::string::format("Profiler | FPS: %.2f", fps);
+        AZStd::string debugText = AZStd::string::format("Profiler | FPS: %.2f", m_currentFPS);
         debugDisplay->Draw2dTextLabel(10, 10, 1.0f, debugText.c_str(), true);
     }
 } // namespace FPSProfiler
