@@ -58,9 +58,6 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::Activate()
     {
-        FPSProfilerRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
-
         if (m_configuration.m_OutputFilename.empty())
         {
             AZ_Error("FPSProfiler", false, "The output filename must be provided or cannot be empty!");
@@ -75,9 +72,9 @@ namespace FPSProfiler
             m_logEntries.reserve(m_configuration.m_AutoSaveOccurrences * 2);
         }
 
+        FPSProfilerRequestBus::Handler::BusConnect();
+        AZ::TickBus::Handler::BusConnect();
         CreateLogFile();
-
-        AZ_Printf("FPS Profiler", "FPS Profiler Activated.");
     }
 
     void FPSProfilerSystemComponent::Deactivate()
@@ -108,10 +105,10 @@ namespace FPSProfiler
             "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
             m_frameCount,
             deltaTime,
-            m_currentFPS,
-            m_minFPS,
-            m_maxFPS,
-            m_avgFPS,
+            m_currentFps,
+            m_minFps,
+            m_maxFps,
+            m_avgFps,
             m_configuration.m_SaveCPUData ? BytesToMB(GetCpuMemoryUsed()) : 0.0f,
             m_configuration.m_SaveGPUData ? BytesToMB(GetGpuMemoryUsed()) : 0.0f);
         m_logEntries.push_back(logEntry);
@@ -130,20 +127,20 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::CalculateFpsData(const float& deltaTime)
     {
-        m_currentFPS = deltaTime > 0 ? (1.0f / deltaTime) : 0.0f;
-        m_fpsSamples.push_back(m_currentFPS);
+        m_currentFps = deltaTime > 0 ? (1.0f / deltaTime) : 0.0f;
+        m_fpsSamples.push_back(m_currentFps);
 
         m_totalFrameTime += deltaTime;
         m_frameCount++;
 
-        // Ignore near zero values, precision to the third decimal after 0
-        if (m_currentFPS > m_configuration.m_NearZeroPrecision)
+        // Using m_NearZeroPrecision, since m_currentFPS cannot be equal to 0 if delta time is valid.
+        if (m_currentFps > m_configuration.m_NearZeroPrecision)
         {
-            m_minFPS = AZStd::min(m_minFPS, m_currentFPS);
+            m_minFps = AZStd::min(m_minFps, m_currentFps);
         }
-        m_maxFPS = AZStd::max(m_maxFPS, m_currentFPS);
+        m_maxFps = AZStd::max(m_maxFps, m_currentFps);
 
-        m_avgFPS = !m_fpsSamples.empty() ? (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / m_fpsSamples.size()) : 0.0f;
+        m_avgFps = !m_fpsSamples.empty() ? (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / m_fpsSamples.size()) : 0.0f;
     }
 
     void FPSProfilerSystemComponent::CreateLogFile()
@@ -259,7 +256,7 @@ namespace FPSProfiler
         debugDisplay->SetColor(AZ::Colors::Red);
         debugDisplay->SetAlpha(1.0f);
 
-        AZStd::string debugText = AZStd::string::format("Profiler | FPS: %.2f", m_currentFPS);
+        AZStd::string debugText = AZStd::string::format("Profiler | FPS: %.2f", m_currentFps);
         debugDisplay->Draw2dTextLabel(10, 10, 1.0f, debugText.c_str(), true);
     }
 } // namespace FPSProfiler
