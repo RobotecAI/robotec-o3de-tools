@@ -70,8 +70,10 @@ namespace FPSProfiler
         }
 
         FPSProfilerRequestBus::Handler::BusConnect();
+
         CreateLogFile();
-        StartProfiling();
+        ResetProfilingData();
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void FPSProfilerSystemComponent::Deactivate()

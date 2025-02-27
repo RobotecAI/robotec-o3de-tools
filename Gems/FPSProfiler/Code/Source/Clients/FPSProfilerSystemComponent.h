@@ -50,9 +50,7 @@ namespace FPSProfiler
         void ShowFpsOnScreen(bool enable) override;
 
     private:
-        // Profiler Data - Editor Settings
-        FPSProfilerData m_configuration;
-
+        FPSProfilerData m_configuration; // Profiler Data - Editor Settings
         bool m_isProfiling;
         float m_minFps; // Tracking the lowest FPS value
         float m_maxFps; // Tracking the highest FPS value
