@@ -69,15 +69,9 @@ namespace FPSProfiler
             m_logEntries.reserve(m_configuration.m_AutoSaveOccurrences * 2);
         }
 
-        if (m_configuration.m_SaveFpsData)
-        {
-            // Cannot be 0 for std::min comparison
-            m_minFps = AZ::Constants::FloatMax;
-        }
-
         FPSProfilerRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
         CreateLogFile();
+        StartProfiling();
     }
 
     void FPSProfilerSystemComponent::Deactivate()
@@ -87,33 +81,34 @@ namespace FPSProfiler
 
         // Notify - File Saved
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileSaved, m_configuration.m_OutputFilename.c_str());
-
         FPSProfilerRequestBus::Handler::BusDisconnect();
     }
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        // Safety exit when profiling is disabled.
+        if (!m_isProfiling)
+        {
+            return;
+        }
+
+        CalculateFpsData(deltaTime);
+
         if (m_configuration.m_ShowFps)
         {
             ShowFps();
         }
 
-        // Calculate data only if enabled, otherwise push default values to log entry.
-        if (m_configuration.m_SaveFpsData)
-        {
-            CalculateFpsData(deltaTime);
-        }
-
         AZStd::string logEntry = AZStd::string::format(
             "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-            m_frameCount,
-            deltaTime,
-            m_currentFps,
-            m_minFps,
-            m_maxFps,
-            m_avgFps,
-            m_configuration.m_SaveCPUData ? BytesToMB(GetCpuMemoryUsed()) : 0.0f,
-            m_configuration.m_SaveGPUData ? BytesToMB(GetGpuMemoryUsed()) : 0.0f);
+            m_configuration.m_SaveFpsData ? m_frameCount : -1,
+            m_configuration.m_SaveFpsData ? deltaTime : -1.0f,
+            m_configuration.m_SaveFpsData ? m_currentFps : -1.0f,
+            m_configuration.m_SaveFpsData ? m_minFps : -1.0f,
+            m_configuration.m_SaveFpsData ? m_maxFps : -1.0f,
+            m_configuration.m_SaveFpsData ? m_avgFps : -1.0f,
+            m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed()) : 0.0f,
+            m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed()) : 0.0f);
         m_logEntries.push_back(logEntry);
 
         // Save after every m_AutoSaveOccurrences frames to not overflow buffer, only when m_AutoSave enabled.
@@ -126,6 +121,116 @@ namespace FPSProfiler
     int FPSProfilerSystemComponent::GetTickOrder()
     {
         return AZ::TICK_GAME;
+    }
+
+    void FPSProfilerSystemComponent::StartProfiling()
+    {
+        if (m_isProfiling)
+        {
+            return;
+        }
+
+        m_isProfiling = true;
+        ResetProfilingData();
+
+        if (!AZ::TickBus::Handler::BusIsConnected()) // Connect TickBus only if not already connected
+        {
+            AZ::TickBus::Handler::BusConnect();
+        }
+        AZ_Printf("FPS Profiler", "Profiling started.");
+    }
+
+    void FPSProfilerSystemComponent::StopProfiling()
+    {
+        if (!m_isProfiling)
+        {
+            return;
+        }
+
+        m_isProfiling = false;
+
+        if (AZ::TickBus::Handler::BusIsConnected()) // Only disconnect if actually connected
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+        }
+        SaveLogToFile();
+        AZ_Printf("FPS Profiler", "Profiling stopped.");
+    }
+
+    void FPSProfilerSystemComponent::ResetProfilingData()
+    {
+        m_minFps = AZ::Constants::FloatMax;
+        m_maxFps = 0.0f;
+        m_avgFps = 0.0f;
+        m_currentFps = 0.0f;
+        m_totalFrameTime = 0.0f;
+        m_frameCount = 0;
+        m_fpsSamples.clear();
+        m_logEntries.clear();
+    }
+
+    bool FPSProfilerSystemComponent::IsProfiling() const
+    {
+        return m_isProfiling;
+    }
+
+    float FPSProfilerSystemComponent::GetMinFps() const
+    {
+        return m_minFps;
+    }
+
+    float FPSProfilerSystemComponent::GetMaxFps() const
+    {
+        return m_maxFps;
+    }
+
+    float FPSProfilerSystemComponent::GetAvgFps() const
+    {
+        return m_avgFps;
+    }
+
+    float FPSProfilerSystemComponent::GetCurrentFps() const
+    {
+        return m_currentFps;
+    }
+
+    size_t FPSProfilerSystemComponent::GetCpuMemoryUsed() const
+    {
+        size_t usedBytes = 0;
+        size_t reservedBytes = 0;
+
+        // Get stats for the system allocator
+        AZ::AllocatorManager::Instance().GetAllocatorStats(usedBytes, reservedBytes, nullptr);
+
+        // Return the used bytes (allocated memory)
+        return usedBytes;
+    }
+
+    size_t FPSProfilerSystemComponent::GetGpuMemoryUsed() const
+    {
+        if (AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get())
+        {
+            if (AZ::RHI::Device* device = rhiSystem->GetDevice())
+            {
+                AZ::RHI::MemoryStatistics memoryStats;
+                device->CompileMemoryStatistics(memoryStats, AZ::RHI::MemoryStatisticsReportFlags::Detail);
+
+                // Return the GPU memory used in bytes
+                return memoryStats.m_heaps.front().m_memoryUsage.m_totalResidentInBytes;
+            }
+        }
+
+        return 0;
+    }
+
+    void FPSProfilerSystemComponent::SaveLogToFile()
+    {
+        WriteDataToFile();
+    }
+
+    void FPSProfilerSystemComponent::ShowFpsOnScreen(bool enable)
+    {
+        m_configuration.m_ShowFps = enable;
     }
 
     void FPSProfilerSystemComponent::CalculateFpsData(const float& deltaTime)
@@ -209,35 +314,6 @@ namespace FPSProfiler
 
         // Notify - File Update
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configuration.m_OutputFilename.c_str());
-    }
-
-    size_t FPSProfilerSystemComponent::GetCpuMemoryUsed()
-    {
-        size_t usedBytes = 0;
-        size_t reservedBytes = 0;
-
-        // Get stats for the system allocator
-        AZ::AllocatorManager::Instance().GetAllocatorStats(usedBytes, reservedBytes, nullptr);
-
-        // Return the used bytes (allocated memory)
-        return usedBytes;
-    }
-
-    size_t FPSProfilerSystemComponent::GetGpuMemoryUsed()
-    {
-        if (AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get())
-        {
-            if (AZ::RHI::Device* device = rhiSystem->GetDevice())
-            {
-                AZ::RHI::MemoryStatistics memoryStats;
-                device->CompileMemoryStatistics(memoryStats, AZ::RHI::MemoryStatisticsReportFlags::Detail);
-
-                // Return the GPU memory used in bytes
-                return memoryStats.m_heaps.front().m_memoryUsage.m_totalResidentInBytes;
-            }
-        }
-
-        return 0;
     }
 
     float FPSProfilerSystemComponent::BytesToMB(size_t bytes)

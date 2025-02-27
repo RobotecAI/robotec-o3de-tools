@@ -13,7 +13,26 @@ namespace FPSProfiler
     public:
         AZ_RTTI(FPSProfilerRequests, FPSProfilerRequestsTypeId);
         virtual ~FPSProfilerRequests() = default;
-        // Put your public methods here
+
+        // Profiler control
+        virtual void StartProfiling() = 0;
+        virtual void StopProfiling() = 0;
+        virtual void ResetProfilingData() = 0;
+        virtual bool IsProfiling() const = 0;
+
+        // Get Fps Data
+        virtual float GetMinFps() const = 0;
+        virtual float GetMaxFps() const = 0;
+        virtual float GetAvgFps() const = 0;
+        virtual float GetCurrentFps() const = 0;
+
+        // Memory usage
+        virtual size_t GetCpuMemoryUsed() const = 0;
+        virtual size_t GetGpuMemoryUsed() const = 0;
+
+        // Logging
+        virtual void SaveLogToFile() = 0;
+        virtual void ShowFpsOnScreen(bool enable) = 0;
     };
 
     class FPSProfilerBusTraits : public AZ::EBusTraits

@@ -16,8 +16,8 @@ namespace FPSProfiler
                 ->Field("m_AutoSaveOccurrences", &FPSProfilerData::m_AutoSaveOccurrences)
                 ->Field("m_NearZeroPrecision", &FPSProfilerData::m_NearZeroPrecision)
                 ->Field("m_SaveFPSData", &FPSProfilerData::m_SaveFpsData)
-                ->Field("m_SaveCPUData", &FPSProfilerData::m_SaveCPUData)
-                ->Field("m_SaveGPUData", &FPSProfilerData::m_SaveGPUData)
+                ->Field("m_SaveCPUData", &FPSProfilerData::m_SaveCpuData)
+                ->Field("m_SaveGPUData", &FPSProfilerData::m_SaveGpuData)
                 ->Field("m_ShowFPS", &FPSProfilerData::m_ShowFps);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -82,13 +82,13 @@ namespace FPSProfiler
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerData::m_SaveGPUData,
+                        &FPSProfilerData::m_SaveGpuData,
                         "Save GPU Data",
                         "When enabled, system will collect GPU usage data into csv.")
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerData::m_SaveCPUData,
+                        &FPSProfilerData::m_SaveCpuData,
                         "Save CPU Data",
                         "When enabled, system will collect CPU usage data into csv.")
 
