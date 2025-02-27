@@ -40,6 +40,7 @@ namespace FPSProfiler
         void StopProfiling() override;
         void ResetProfilingData() override;
         bool IsProfiling() const override;
+        bool IsAnySaveOptionEnabled() const override;
         float GetMinFps() const override;
         float GetMaxFps() const override;
         float GetAvgFps() const override;

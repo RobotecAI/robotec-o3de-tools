@@ -19,6 +19,7 @@ namespace FPSProfiler
         virtual void StopProfiling() = 0;
         virtual void ResetProfilingData() = 0;
         virtual bool IsProfiling() const = 0;
+        virtual bool IsAnySaveOptionEnabled() const = 0;
 
         // Get Fps Data
         virtual float GetMinFps() const = 0;

@@ -61,6 +61,12 @@ namespace FPSProfiler
             return;
         }
 
+        // If none save option enabled - exit
+        if (!IsAnySaveOptionEnabled())
+        {
+            return;
+        }
+
         // Reserve at least twice as needed occurrences, since close and save operation may happen at the tick frame saves.
         // Since log entries are cleared when occurrence update happens, it's good to reserve known size.
         if (m_configuration.m_AutoSave)
@@ -90,6 +96,12 @@ namespace FPSProfiler
     {
         // Safety exit when profiling is disabled.
         if (!m_isProfiling)
+        {
+            return;
+        }
+
+        // If none save option enabled - exit
+        if (!IsAnySaveOptionEnabled())
         {
             return;
         }
@@ -174,6 +186,11 @@ namespace FPSProfiler
     bool FPSProfilerSystemComponent::IsProfiling() const
     {
         return m_isProfiling;
+    }
+
+    bool FPSProfilerSystemComponent::IsAnySaveOptionEnabled() const
+    {
+        return m_configuration.m_SaveFpsData || m_configuration.m_SaveCpuData || m_configuration.m_SaveGpuData;
     }
 
     float FPSProfilerSystemComponent::GetMinFps() const
