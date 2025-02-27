@@ -202,7 +202,7 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::SafeChangeSavePath(const AZStd::string& newSavePath)
     {
-        // If profiling is enabled, save current open file and stop profiling.
+        // If profiling is enabled, save current opened file and stop profiling.
         StopProfiling();
         ChangeSavePath(newSavePath);
     }
