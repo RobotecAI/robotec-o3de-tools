@@ -1,14 +1,11 @@
 #include "FPSProfilerSystemComponent.h"
 
-#include "Atom/RPI.Public/RPIUtils.h"
-#include "Atom/RPI.Public/ViewportContext.h"
-
+#include <Atom/RHI/Device.h>
+#include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/numeric.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 namespace FPSProfiler
 {

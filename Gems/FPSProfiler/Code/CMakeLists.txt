@@ -31,13 +31,6 @@ ly_add_target(
         INTERFACE
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzToolsFramework
-            Gem::Atom_RPI.Public
-            Gem::Atom_RPI.Private
-            Gem::Atom_RPI.Edit
-            Gem::Atom_RHI.Public
-            Gem::Atom_RHI.Private
-            Gem::Atom_RHI.Edit
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -59,12 +52,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            Gem::Atom_RPI.Public
-            Gem::Atom_RPI.Private
-            Gem::Atom_RPI.Edit
             Gem::Atom_RHI.Public
-            Gem::Atom_RHI.Private
-            Gem::Atom_RHI.Edit
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface

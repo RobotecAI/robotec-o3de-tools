@@ -6,11 +6,6 @@ namespace FPSProfiler
 {
     void FPSProfilerData::Reflect(AZ::ReflectContext* context)
     {
-        if (!context)
-        {
-            return;
-        }
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<FPSProfilerData>()
