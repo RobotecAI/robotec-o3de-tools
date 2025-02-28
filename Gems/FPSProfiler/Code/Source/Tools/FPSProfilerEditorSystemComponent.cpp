@@ -26,7 +26,8 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configuration)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default,
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
                         &FPSProfilerEditorSystemComponent::m_profileOnGameStart,
                         "Profile On Game Start",
                         "Should system start profiling data instantly after game is launched, or await for other system to activate it?");

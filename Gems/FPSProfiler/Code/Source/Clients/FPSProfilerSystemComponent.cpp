@@ -37,7 +37,8 @@ namespace FPSProfiler
     }
 
     FPSProfilerSystemComponent::FPSProfilerSystemComponent(FPSProfilerConfig m_configuration, bool m_profileOnGameStart)
-        : m_configuration(AZStd::move(m_configuration)), m_isProfiling(m_profileOnGameStart)
+        : m_configuration(AZStd::move(m_configuration))
+        , m_isProfiling(m_profileOnGameStart)
     {
         if (FPSProfilerInterface::Get() == nullptr)
         {
