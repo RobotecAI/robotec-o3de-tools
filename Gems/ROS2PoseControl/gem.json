@@ -1,6 +1,6 @@
 {
     "gem_name": "ROS2PoseControl",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "display_name": "ROS2PoseControl",
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",

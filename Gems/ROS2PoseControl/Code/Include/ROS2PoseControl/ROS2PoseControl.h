@@ -110,7 +110,7 @@ namespace ROS2PoseControl
         void SetPhysicsEnabled(bool enabled);
 
         // ROS2PoseControlRequestsBus::Handler overrides.
-        void SetTrackingMode(const ROS2PoseControlConfiguration::TrackingMode trackingMode) override;
+        void SetTrackingMode(const TrackingMode trackingMode) override;
         void SetTargetFrame(const AZStd::string& targetFrame) override;
         void SetReferenceFrame(const AZStd::string& referenceFrame) override;
         void SetEnablePhysics(bool enable) override;
@@ -119,16 +119,17 @@ namespace ROS2PoseControl
 
         //! Initializes all ROS2-related things (rclcpp::Subscription, tf2_ros::Buffer etc.)
         //! Allows to reconfigure tracking mode in the runtime
-        void InitializeRosIntestines();
+        void InitializeROSConnection();
         //! Deinitializes all ROS2-related things (rclcpp::Subscription, tf2_ros::Buffer etc.)
         //! Allows to reconfigure tracking mode in the runtime
-        void DeinitializeRosIntestines();
+        void DeinitializeROSConnection();
 
         // Tracks the entities that need physics reenabled.
         AZStd::unordered_set<AZ::EntityId> m_needsPhysicsReenable;
 
         // Configuration
         ROS2PoseControlConfiguration m_configuration;
+        bool m_configurationChanged{ false };
 
         // Pose Messages Tracking.
         std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>> m_poseSubscription;
@@ -141,5 +142,6 @@ namespace ROS2PoseControl
         std::shared_ptr<tf2_ros::TransformListener> m_tf_listener{ nullptr };
         std::unique_ptr<tf2_ros::Buffer> m_tf_buffer;
         AZStd::string m_odomFrameId;
+        bool m_tfWarningLogShown{ false };
     };
 } // namespace ROS2PoseControl

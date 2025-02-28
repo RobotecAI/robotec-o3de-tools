@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "ROS2PoseControlRequestBus.h"
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -34,12 +35,6 @@ namespace ROS2PoseControl
         AZ::Crc32 isGroudOffsetVisible() const;
 
         AZ::Crc32 isUseTagOffset() const;
-
-        enum class TrackingMode
-        {
-            PoseMessages,
-            TF2
-        };
 
         TrackingMode m_tracking_mode = TrackingMode::PoseMessages;
         ROS2::TopicConfiguration m_poseTopicConfiguration;
