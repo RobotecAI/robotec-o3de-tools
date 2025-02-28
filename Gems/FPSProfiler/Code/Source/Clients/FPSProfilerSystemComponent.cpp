@@ -61,11 +61,22 @@ namespace FPSProfiler
             return;
         }
 
-        // If none save option enabled - exit
+        // If none, dont proceed
+        if (!(m_isProfiling && m_configuration.m_ShowFps))
+        {
+            return;
+        }
+
+        FPSProfilerRequestBus::Handler::BusConnect(); // connect first to broadcast notifications
+        ResetProfilingData();
+        AZ::TickBus::Handler::BusConnect(); // connect last, after setup
+        AZ_Printf("FPS Profiler", "Activating FPSProfiler");
+
         if (!IsAnySaveOptionEnabled())
         {
             return;
         }
+        CreateLogFile();
 
         // Reserve at least twice as needed occurrences, since close and save operation may happen at the tick frame saves.
         // Since log entries are cleared when occurrence update happens, it's good to reserve known size.
@@ -74,12 +85,6 @@ namespace FPSProfiler
             m_fpsSamples.reserve(m_configuration.m_AutoSaveOccurrences * 2);
             m_logEntries.reserve(m_configuration.m_AutoSaveOccurrences * 2);
         }
-
-        FPSProfilerRequestBus::Handler::BusConnect();
-
-        CreateLogFile();
-        ResetProfilingData();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void FPSProfilerSystemComponent::Deactivate()
@@ -147,6 +152,7 @@ namespace FPSProfiler
 
         m_isProfiling = true;
         ResetProfilingData();
+        CreateLogFile();
 
         if (!AZ::TickBus::Handler::BusIsConnected()) // Connect TickBus only if not already connected
         {
