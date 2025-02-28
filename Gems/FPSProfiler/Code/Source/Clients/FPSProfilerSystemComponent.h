@@ -23,7 +23,7 @@ namespace FPSProfiler
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         FPSProfilerSystemComponent();
-        explicit FPSProfilerSystemComponent(FPSProfilerConfig m_configuration);
+        explicit FPSProfilerSystemComponent(FPSProfilerConfig m_configuration, bool m_profileOnGameStart);
         ~FPSProfilerSystemComponent() override;
 
     protected:

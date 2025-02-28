@@ -11,8 +11,10 @@ namespace FPSProfiler
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<FPSProfilerEditorSystemComponent>()->Version(0)->Field(
-                "m_Configuration", &FPSProfilerEditorSystemComponent::m_configuration);
+            serializeContext->Class<FPSProfilerEditorSystemComponent>()
+                ->Version(0)
+                ->Field("m_Configuration", &FPSProfilerEditorSystemComponent::m_configuration)
+                ->Field("m_profileOnGameStart", &FPSProfilerEditorSystemComponent::m_profileOnGameStart);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -22,7 +24,12 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::Category, "Performance")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configuration);
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configuration)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default,
+                        &FPSProfilerEditorSystemComponent::m_profileOnGameStart,
+                        "Profile On Game Start",
+                        "Should system start profiling data instantly after game is launched, or await for other system to activate it?");
             }
         }
     }
@@ -49,6 +56,6 @@ namespace FPSProfiler
 
     void FPSProfilerEditorSystemComponent::BuildGameEntity(AZ::Entity* entity)
     {
-        entity->CreateComponent<FPSProfilerSystemComponent>(m_configuration);
+        entity->CreateComponent<FPSProfilerSystemComponent>(m_configuration, m_profileOnGameStart);
     }
 } // namespace FPSProfiler
