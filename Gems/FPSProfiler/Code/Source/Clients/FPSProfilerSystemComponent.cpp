@@ -289,7 +289,7 @@ namespace FPSProfiler
         m_frameCount++;
 
         // Using m_NearZeroPrecision, since m_currentFPS cannot be equal to 0 if delta time is valid.
-        if (m_currentFps > m_configuration.m_NearZeroPrecision)
+        if (m_currentFps >= m_configuration.m_NearZeroPrecision)
         {
             m_minFps = AZStd::min(m_minFps, m_currentFps);
         }
