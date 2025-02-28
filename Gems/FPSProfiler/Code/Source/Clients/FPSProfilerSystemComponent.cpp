@@ -122,8 +122,8 @@ namespace FPSProfiler
             m_configuration.m_SaveFpsData ? m_minFps : -1.0f,
             m_configuration.m_SaveFpsData ? m_maxFps : -1.0f,
             m_configuration.m_SaveFpsData ? m_avgFps : -1.0f,
-            m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed()) : 0.0f,
-            m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed()) : 0.0f);
+            m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed()) : -1.0f,
+            m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed()) : -1.0f);
         m_logEntries.push_back(logEntry);
 
         // Save after every m_AutoSaveOccurrences frames to not overflow buffer, only when m_AutoSave enabled.
