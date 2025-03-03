@@ -13,8 +13,10 @@ namespace FPSProfiler
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()->Version(0)->Field(
-                "m_Configuration", &FPSProfilerSystemComponent::m_configuration);
+            serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()
+                ->Version(1)
+                ->Field("m_Configuration", &FPSProfilerSystemComponent::m_configuration)
+                ->Field("m_profileOnGameStart", &FPSProfilerSystemComponent::m_isProfiling);
         }
     }
 
@@ -36,9 +38,9 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(FPSProfilerConfig m_configuration, bool m_profileOnGameStart)
-        : m_configuration(AZStd::move(m_configuration))
-        , m_isProfiling(m_profileOnGameStart)
+    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const FPSProfilerConfig& config, bool profileOnGameStart)
+        : m_configuration(AZStd::move(config))
+        , m_isProfiling(profileOnGameStart)
     {
         if (FPSProfilerInterface::Get() == nullptr)
         {
