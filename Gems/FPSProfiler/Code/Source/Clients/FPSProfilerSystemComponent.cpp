@@ -300,7 +300,9 @@ namespace FPSProfiler
         }
         m_maxFps = AZStd::max(m_maxFps, m_currentFps);
 
-        m_avgFps = !m_fpsSamples.empty() ? (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / m_fpsSamples.size()) : 0.0f;
+        m_avgFps = !m_fpsSamples.empty()
+            ? (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / static_cast<float>(m_fpsSamples.size()))
+            : 0.0f;
     }
 
     void FPSProfilerSystemComponent::CreateLogFile()
@@ -340,7 +342,7 @@ namespace FPSProfiler
             std::time_t now_time_t = AZStd::chrono::system_clock::to_time_t(now);
 
             // Convert to local time structure
-            std::tm timeInfo;
+            std::tm timeInfo{};
             localtime_r(&now_time_t, &timeInfo);
 
             // Format the timestamp as YYYYMMDD_HHMM

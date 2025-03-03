@@ -19,22 +19,22 @@ namespace FPSProfiler
         virtual void StartProfiling() = 0;
         virtual void StopProfiling() = 0;
         virtual void ResetProfilingData() = 0;
-        virtual bool IsProfiling() const = 0;
-        virtual bool IsAnySaveOptionEnabled() const = 0;
+        [[nodiscard]] virtual bool IsProfiling() const = 0;
+        [[nodiscard]] virtual bool IsAnySaveOptionEnabled() const = 0;
         virtual void ChangeSavePath(
-            const AZ::IO::Path& newSavePath) = 0; //!< Caution! This function is not runtime safe. Instead use @ref SafeChangeSavePath
+            const AZ::IO::Path& newSavePath) = 0; //!< Caution! This function is not runtime safe. Instead, use @ref SafeChangeSavePath
         virtual void SafeChangeSavePath(const AZ::IO::Path& newSavePath) = 0; //!< Runtime safe path changing. Saves and stops current
-                                                                              //!< profiling and changes path afterwards.
+                                                                              //!< profiling and changes path afterward.
 
         // Get Fps Data
-        virtual float GetMinFps() const = 0;
-        virtual float GetMaxFps() const = 0;
-        virtual float GetAvgFps() const = 0;
-        virtual float GetCurrentFps() const = 0;
+        [[nodiscard]] virtual float GetMinFps() const = 0;
+        [[nodiscard]] virtual float GetMaxFps() const = 0;
+        [[nodiscard]] virtual float GetAvgFps() const = 0;
+        [[nodiscard]] virtual float GetCurrentFps() const = 0;
 
         // Memory usage
-        virtual size_t GetCpuMemoryUsed() const = 0;
-        virtual size_t GetGpuMemoryUsed() const = 0;
+        [[nodiscard]] virtual size_t GetCpuMemoryUsed() const = 0;
+        [[nodiscard]] virtual size_t GetGpuMemoryUsed() const = 0;
 
         // Logging
         virtual void SaveLogToFile() = 0;
