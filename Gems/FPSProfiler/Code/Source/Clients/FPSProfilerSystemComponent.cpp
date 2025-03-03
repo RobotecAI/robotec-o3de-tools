@@ -56,7 +56,7 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::Activate()
     {
-        if (m_configuration.m_OutputFilename.empty())
+        if (!IsPathValid(m_configuration.m_OutputFilename))
         {
             m_configuration.m_OutputFilename = "@user@/fps_log.csv";
             AZ_Warning("FPSProfiler", false, "Invalid output file path. Using default: %s", m_configuration.m_OutputFilename.c_str());
