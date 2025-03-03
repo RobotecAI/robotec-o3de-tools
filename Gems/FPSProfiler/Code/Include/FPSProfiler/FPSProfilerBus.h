@@ -5,7 +5,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/std/string/string.h>
 
 namespace FPSProfiler
 {
@@ -38,7 +37,7 @@ namespace FPSProfiler
 
         // Logging
         virtual void SaveLogToFile() = 0;
-        virtual void SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath) = 0;
+        virtual void SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath) = 0;
         virtual void ShowFpsOnScreen(bool enable) = 0;
     };
 
@@ -62,13 +61,13 @@ namespace FPSProfiler
         AZ_RTTI(FPSProfilerNotifications, FPSProfilerNotificationsTypeId);
         virtual ~FPSProfilerNotifications() = default;
 
-        virtual void OnFileCreated(const AZStd::string& fileName)
+        virtual void OnFileCreated(const AZ::IO::Path& filePath)
         {
         }
-        virtual void OnFileUpdate(const AZStd::string& fileName)
+        virtual void OnFileUpdate(const AZ::IO::Path& filePath)
         {
         }
-        virtual void OnFileSaved(const AZStd::string& fileName)
+        virtual void OnFileSaved(const AZ::IO::Path& filePath)
         {
         }
     };
