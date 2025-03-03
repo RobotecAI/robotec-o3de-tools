@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "ROS2PoseControlConfiguration.h"
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
@@ -19,7 +20,6 @@
 #include <ImGuiBus.h>
 #include <ROS2/Communication/TopicConfiguration.h>
 #include <ROS2/ROS2Bus.h>
-#include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
 #include <ROS2PoseControl/ROS2PoseControlRequestBus.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <rclcpp/publisher.hpp>

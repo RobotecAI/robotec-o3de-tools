@@ -10,13 +10,13 @@
 
 #pragma once
 
-#include "ROS2PoseControlRequestBus.h"
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 #include <ROS2/Communication/TopicConfiguration.h>
+#include <ROS2PoseControl/ROS2PoseControlRequestBus.h>
 
 namespace ROS2PoseControl
 {

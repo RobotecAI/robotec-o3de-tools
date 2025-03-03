@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "ROS2PoseControlConfiguration.h"
 #include "ROS2PoseControlTypeIds.h"
 
 #include <AzCore/Component/ComponentBus.h>

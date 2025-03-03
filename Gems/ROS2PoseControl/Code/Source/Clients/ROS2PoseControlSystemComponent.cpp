@@ -12,8 +12,8 @@
 
 #include <ROS2PoseControl/ROS2PoseControlTypeIds.h>
 
+#include "ROS2PoseControlConfiguration.h"
 #include <AzCore/Serialization/SerializeContext.h>
-#include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
 
 namespace ROS2PoseControl
 {

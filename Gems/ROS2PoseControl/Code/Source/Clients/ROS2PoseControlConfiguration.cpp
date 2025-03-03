@@ -8,7 +8,7 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
+#include "ROS2PoseControlConfiguration.h"
 
 #include <AzCore/Serialization/EditContext.h>
 

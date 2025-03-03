@@ -8,7 +8,7 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include <ROS2PoseControl/ROS2PoseControl.h>
+#include "ROS2PoseControl.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -25,7 +25,6 @@
 #include <ROS2/Georeference/GeoreferenceBus.h>
 #include <ROS2/Utilities/ROS2Conversions.h>
 #include <ROS2/Utilities/ROS2Names.h>
-#include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
 #include <RigidBodyComponent.h>
 #include <imgui/imgui.h>
 #include <tf2_ros/transform_listener.h>
