@@ -72,11 +72,10 @@ namespace FPSProfiler
             CreateLogFile();
         }
 
-        // Reserve at least twice as needed occurrences, since close and save operation may happen at the tick frame saves.
-        // Since log entries are cleared when occurrence update happens, it's good to reserve known size.
+        // Since log entries are cleared when occurrence update happens, it's good to reserve known size and some extra buffor for close
+        // operation.
         if (m_configuration.m_AutoSave)
         {
-            m_fpsSamples.reserve(m_configuration.m_AutoSaveAtFrame);
             m_logEntries.reserve(m_configuration.m_AutoSaveAtFrame * 2);
         }
     }
@@ -288,21 +287,25 @@ namespace FPSProfiler
     void FPSProfilerSystemComponent::CalculateFpsData(const float& deltaTime)
     {
         m_currentFps = deltaTime > 0 ? (1.0f / deltaTime) : 0.0f;
-        m_fpsSamples.push_back(m_currentFps);
-
         m_totalFrameTime += deltaTime;
         m_frameCount++;
+
+        // Latest fps hisotry for avg fps calculation
+        m_fpsSamples.push_back(m_currentFps);
+        if (m_fpsSamples.size() > m_configuration.m_AutoSaveAtFrame)
+        {
+            m_fpsSamples.pop_front();
+        }
+
+        m_avgFps = AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / static_cast<float>(m_fpsSamples.size());
 
         // Using m_NearZeroPrecision, since m_currentFPS cannot be equal to 0 if delta time is valid.
         if (m_currentFps >= m_configuration.m_NearZeroPrecision)
         {
             m_minFps = AZStd::min(m_minFps, m_currentFps);
         }
-        m_maxFps = AZStd::max(m_maxFps, m_currentFps);
 
-        m_avgFps = !m_fpsSamples.empty()
-            ? (AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / static_cast<float>(m_fpsSamples.size()))
-            : 0.0f;
+        m_maxFps = AZStd::max(m_maxFps, m_currentFps);
     }
 
     void FPSProfilerSystemComponent::CreateLogFile()
@@ -360,7 +363,6 @@ namespace FPSProfiler
             file.Write(entry.size(), entry.c_str());
         }
         file.Close();
-        m_logEntries.clear();
         m_fpsSamples.clear();
 
         // Notify - File Update
