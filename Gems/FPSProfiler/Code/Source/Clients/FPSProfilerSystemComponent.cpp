@@ -311,9 +311,29 @@ namespace FPSProfiler
         {
             m_configuration.m_OutputFilename = "@user@/fps_log.csv";
             AZ_Warning("FPSProfiler", false, "Invalid output file path. Using default: %s", m_configuration.m_OutputFilename.c_str());
-            return;
         }
 
+        // Apply Timestamp
+        if (m_configuration.m_SaveWithTimestamp)
+        {
+            // Get current system time
+            auto now = AZStd::chrono::system_clock::now();
+            std::time_t now_time_t = AZStd::chrono::system_clock::to_time_t(now);
+
+            // Convert to local time structure
+            std::tm timeInfo{};
+            localtime_r(&now_time_t, &timeInfo);
+
+            // Format the timestamp as YYYYMMDD_HHMM
+            char timestamp[16]; // Buffer for formatted time
+            strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M", &timeInfo);
+
+            m_configuration.m_OutputFilename.ReplaceFilename(
+                (m_configuration.m_OutputFilename.Stem().String() + "_" + timestamp + m_configuration.m_OutputFilename.Extension().String())
+                    .data());
+        }
+
+        // Validate if file can be created
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         if (!fileIO->Exists(m_configuration.m_OutputFilename.c_str()))
         {
@@ -335,25 +355,7 @@ namespace FPSProfiler
             }
         }
 
-        if (m_configuration.m_SaveWithTimestamp)
-        {
-            // Get current system time
-            auto now = AZStd::chrono::system_clock::now();
-            std::time_t now_time_t = AZStd::chrono::system_clock::to_time_t(now);
-
-            // Convert to local time structure
-            std::tm timeInfo{};
-            localtime_r(&now_time_t, &timeInfo);
-
-            // Format the timestamp as YYYYMMDD_HHMM
-            char timestamp[16]; // Buffer for formatted time
-            strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M", &timeInfo);
-
-            m_configuration.m_OutputFilename.ReplaceFilename(
-                (m_configuration.m_OutputFilename.Stem().String() + "_" + timestamp + m_configuration.m_OutputFilename.Extension().String())
-                    .data());
-        }
-
+        // Write profiling headers to file
         AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
         AZStd::string csvHeader = "Frame,FrameTime,CurrentFPS,MinFPS,MaxFPS,AvgFPS,CpuMemoryUsed,GpuMemoryUsed\n";
         file.Write(csvHeader.size(), csvHeader.c_str());
