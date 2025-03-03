@@ -202,7 +202,7 @@ namespace FPSProfiler
         }
 
         m_configuration.m_OutputFilename = newSavePath;
-        AZ_Warning("FPS Profiler", false, "Path changed.");
+        AZ_Warning("FPS Profiler", !m_isProfiling, "Path changed during activated profiling.");
     }
 
     void FPSProfilerSystemComponent::SafeChangeSavePath(const AZ::IO::Path& newSavePath)
@@ -316,43 +316,19 @@ namespace FPSProfiler
         // Apply Timestamp
         if (m_configuration.m_SaveWithTimestamp)
         {
-            // Get current system time
             auto now = AZStd::chrono::system_clock::now();
             std::time_t now_time_t = AZStd::chrono::system_clock::to_time_t(now);
 
-            // Convert to local time structure
             std::tm timeInfo{};
             localtime_r(&now_time_t, &timeInfo);
 
             // Format the timestamp as YYYYMMDD_HHMM
-            char timestamp[16]; // Buffer for formatted time
+            char timestamp[16];
             strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M", &timeInfo);
 
             m_configuration.m_OutputFilename.ReplaceFilename(
                 (m_configuration.m_OutputFilename.Stem().String() + "_" + timestamp + m_configuration.m_OutputFilename.Extension().String())
                     .data());
-        }
-
-        // Validate if file can be created
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        if (!fileIO->Exists(m_configuration.m_OutputFilename.c_str()))
-        {
-            AZ_Warning("FPSProfiler", false, "File does not exist, trying to create it...");
-
-            AZ::IO::HandleType fileHandle;
-            if (fileIO->Open(
-                    m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath, fileHandle) ==
-                AZ::IO::ResultCode::Success)
-            {
-                fileIO->Close(fileHandle);
-                AZ_Printf("FPSProfiler", "Log file successfully created: %s", m_configuration.m_OutputFilename.c_str());
-            }
-            else
-            {
-                // Restore default path on fail
-                m_configuration.m_OutputFilename = "@user@/fps_log.csv";
-                AZ_Warning("FPSProfiler", false, "Failed to create file. Using default path: %s", m_configuration.m_OutputFilename.c_str());
-            }
         }
 
         // Write profiling headers to file
