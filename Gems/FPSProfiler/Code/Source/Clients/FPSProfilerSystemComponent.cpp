@@ -76,7 +76,7 @@ namespace FPSProfiler
         // Since log entries are cleared when occurrence update happens, it's good to reserve known size.
         if (m_configuration.m_AutoSave)
         {
-            m_fpsSamples.reserve(m_configuration.m_AutoSaveAtFrame * 2);
+            m_fpsSamples.reserve(m_configuration.m_AutoSaveAtFrame);
             m_logEntries.reserve(m_configuration.m_AutoSaveAtFrame * 2);
         }
     }
