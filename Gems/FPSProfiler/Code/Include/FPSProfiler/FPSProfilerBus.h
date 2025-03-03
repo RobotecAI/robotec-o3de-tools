@@ -3,6 +3,7 @@
 #include <FPSProfiler/FPSProfilerTypeIds.h>
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/string/string.h>
 
@@ -20,8 +21,10 @@ namespace FPSProfiler
         virtual void ResetProfilingData() = 0;
         virtual bool IsProfiling() const = 0;
         virtual bool IsAnySaveOptionEnabled() const = 0;
-        virtual void ChangeSavePath(const AZStd::string& newSavePath) = 0;
-        virtual void SafeChangeSavePath(const AZStd::string& newSavePath) = 0;
+        virtual void ChangeSavePath(
+            const AZ::IO::Path& newSavePath) = 0; //!< Caution! This function is not runtime safe. Instead use @ref SafeChangeSavePath
+        virtual void SafeChangeSavePath(const AZ::IO::Path& newSavePath) = 0; //!< Runtime safe path changing. Saves and stops current
+                                                                              //!< profiling and changes path afterwards.
 
         // Get Fps Data
         virtual float GetMinFps() const = 0;
@@ -35,7 +38,7 @@ namespace FPSProfiler
 
         // Logging
         virtual void SaveLogToFile() = 0;
-        virtual void SaveLogToFile(const AZStd::string& newSavePath, bool useSafeChangePath = true) = 0;
+        virtual void SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath) = 0;
         virtual void ShowFpsOnScreen(bool enable) = 0;
     };
 

@@ -58,14 +58,8 @@ namespace FPSProfiler
     {
         if (m_configuration.m_OutputFilename.empty())
         {
-            AZ_Error("FPSProfiler", false, "The output filename must be provided or cannot be empty!");
-            return;
-        }
-
-        // If none, dont proceed
-        if (!(m_isProfiling && m_configuration.m_ShowFps))
-        {
-            return;
+            m_configuration.m_OutputFilename = "@user@/fps_log.csv";
+            AZ_Warning("FPSProfiler", false, "Invalid output file path. Using default: %s", m_configuration.m_OutputFilename.c_str());
         }
 
         FPSProfilerRequestBus::Handler::BusConnect(); // connect first to broadcast notifications
@@ -73,18 +67,17 @@ namespace FPSProfiler
         AZ::TickBus::Handler::BusConnect(); // connect last, after setup
         AZ_Printf("FPS Profiler", "Activating FPSProfiler");
 
-        if (!IsAnySaveOptionEnabled())
+        if (IsAnySaveOptionEnabled())
         {
-            return;
+            CreateLogFile();
         }
-        CreateLogFile();
 
         // Reserve at least twice as needed occurrences, since close and save operation may happen at the tick frame saves.
         // Since log entries are cleared when occurrence update happens, it's good to reserve known size.
         if (m_configuration.m_AutoSave)
         {
-            m_fpsSamples.reserve(m_configuration.m_AutoSaveOccurrences * 2);
-            m_logEntries.reserve(m_configuration.m_AutoSaveOccurrences * 2);
+            m_fpsSamples.reserve(m_configuration.m_AutoSaveAtFrame * 2);
+            m_logEntries.reserve(m_configuration.m_AutoSaveAtFrame * 2);
         }
     }
 
@@ -133,7 +126,7 @@ namespace FPSProfiler
         m_logEntries.push_back(logEntry);
 
         // Save after every m_AutoSaveOccurrences frames to not overflow buffer, only when m_AutoSave enabled.
-        if (m_configuration.m_AutoSave && m_frameCount % m_configuration.m_AutoSaveOccurrences == 0)
+        if (m_configuration.m_AutoSave && m_frameCount % m_configuration.m_AutoSaveAtFrame == 0)
         {
             WriteDataToFile();
         }
@@ -201,13 +194,18 @@ namespace FPSProfiler
         return m_configuration.m_SaveFpsData || m_configuration.m_SaveCpuData || m_configuration.m_SaveGpuData;
     }
 
-    void FPSProfilerSystemComponent::ChangeSavePath(const AZStd::string& newSavePath)
+    void FPSProfilerSystemComponent::ChangeSavePath(const AZ::IO::Path& newSavePath)
     {
-        AZ_Printf("FPS Profiler", "Path changed.");
+        if (!IsPathValid(newSavePath))
+        {
+            return;
+        }
+
         m_configuration.m_OutputFilename = newSavePath;
+        AZ_Warning("FPS Profiler", false, "Path changed.");
     }
 
-    void FPSProfilerSystemComponent::SafeChangeSavePath(const AZStd::string& newSavePath)
+    void FPSProfilerSystemComponent::SafeChangeSavePath(const AZ::IO::Path& newSavePath)
     {
         // If profiling is enabled, save current opened file and stop profiling.
         StopProfiling();
@@ -268,7 +266,7 @@ namespace FPSProfiler
         WriteDataToFile();
     }
 
-    void FPSProfilerSystemComponent::SaveLogToFile(const AZStd::string& newSavePath, bool useSafeChangePath)
+    void FPSProfilerSystemComponent::SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath)
     {
         if (useSafeChangePath)
         {
@@ -307,17 +305,32 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::CreateLogFile()
     {
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        bool fileExists = fileIO->Exists(m_configuration.m_OutputFilename.c_str());
-
-        if (!fileExists)
+        if (!IsPathValid(m_configuration.m_OutputFilename))
         {
-            m_configuration.m_OutputFilename = "@user@/fps_log.csv"; // Restore to default path
-            AZ_Error(
-                "FPSProfiler::CreateLogFile",
-                false,
-                "Specified file does not exist. Using default path: %s",
-                m_configuration.m_OutputFilename.c_str());
+            m_configuration.m_OutputFilename = "@user@/fps_log.csv";
+            AZ_Warning("FPSProfiler", false, "Invalid output file path. Using default: %s", m_configuration.m_OutputFilename.c_str());
+            return;
+        }
+
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        if (!fileIO->Exists(m_configuration.m_OutputFilename.c_str()))
+        {
+            AZ_Warning("FPSProfiler", false, "File does not exist, trying to create it...");
+
+            AZ::IO::HandleType fileHandle;
+            if (fileIO->Open(
+                    m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath, fileHandle) ==
+                AZ::IO::ResultCode::Success)
+            {
+                fileIO->Close(fileHandle);
+                AZ_Printf("FPSProfiler", "Log file successfully created: %s", m_configuration.m_OutputFilename.c_str());
+            }
+            else
+            {
+                // Restore default path on fail
+                m_configuration.m_OutputFilename = "@user@/fps_log.csv";
+                AZ_Warning("FPSProfiler", false, "Failed to create file. Using default path: %s", m_configuration.m_OutputFilename.c_str());
+            }
         }
 
         if (m_configuration.m_SaveWithTimestamp)
@@ -350,13 +363,11 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::WriteDataToFile()
     {
-        // Exit when nothing to save
         if (m_logEntries.empty())
         {
             return;
         }
 
-        // If none save option enabled - exit
         if (!IsAnySaveOptionEnabled())
         {
             return;
@@ -379,6 +390,25 @@ namespace FPSProfiler
     float FPSProfilerSystemComponent::BytesToMB(size_t bytes)
     {
         return static_cast<float>(bytes) / (1024.0f * 1024.0f);
+    }
+
+    bool FPSProfilerSystemComponent::IsPathValid(const AZ::IO::Path& path)
+    {
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+
+        if (path.empty() || !path.HasFilename() || !path.HasExtension() || !fileIO || !fileIO->ResolvePath(path.c_str()))
+        {
+            const char* reason = path.empty() ? "Path cannot be empty."
+                : !path.HasFilename()         ? "Path must have a file at the end."
+                : !path.HasExtension()        ? "Path must have a *.csv extension."
+                : !fileIO                     ? "Could not get a FileIO object. Try again."
+                                              : "Path is not registered or recognizable by O3DE FileIO System.";
+
+            AZ_Warning("FPSProfiler::ChangeSavePath", false, "%s", reason);
+            return false;
+        }
+
+        return true;
     }
 
     void FPSProfilerSystemComponent::ShowFps() const

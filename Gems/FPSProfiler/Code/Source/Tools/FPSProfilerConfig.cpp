@@ -12,7 +12,7 @@ namespace FPSProfiler
                 ->Version(0)
                 ->Field("m_OutputFilename", &FPSProfilerConfig::m_OutputFilename)
                 ->Field("m_AutoSave", &FPSProfilerConfig::m_AutoSave)
-                ->Field("m_AutoSaveOccurrences", &FPSProfilerConfig::m_AutoSaveOccurrences)
+                ->Field("m_AutoSaveOccurrences", &FPSProfilerConfig::m_AutoSaveAtFrame)
                 ->Field("m_SaveWithTimestamp", &FPSProfilerConfig::m_SaveWithTimestamp)
                 ->Field("m_NearZeroPrecision", &FPSProfilerConfig::m_NearZeroPrecision)
                 ->Field("m_SaveFPSData", &FPSProfilerConfig::m_SaveFpsData)
@@ -45,7 +45,7 @@ namespace FPSProfiler
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfig::m_AutoSaveOccurrences,
+                        &FPSProfilerConfig::m_AutoSaveAtFrame,
                         "Auto Save At Frame",
                         "Specify after how many frames system will auto save log.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)

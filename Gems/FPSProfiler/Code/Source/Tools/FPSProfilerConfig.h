@@ -14,7 +14,7 @@ namespace FPSProfiler
 
         AZ::IO::Path m_OutputFilename = "@user@/fps_log.csv";
         bool m_AutoSave = true;
-        int m_AutoSaveOccurrences = 100;
+        int m_AutoSaveAtFrame = 100;
         bool m_SaveWithTimestamp = true;
         float m_NearZeroPrecision = 0.01f;
         bool m_SaveFpsData = true;
