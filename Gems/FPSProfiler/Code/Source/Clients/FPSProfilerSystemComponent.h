@@ -50,7 +50,7 @@ namespace FPSProfiler
         [[nodiscard]] size_t GetCpuMemoryUsed() const override;
         [[nodiscard]] size_t GetGpuMemoryUsed() const override;
         void SaveLogToFile() override;
-        void SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath) override;
+        void SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath) override;
         void ShowFpsOnScreen(bool enable) override;
 
     private:

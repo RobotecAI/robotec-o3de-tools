@@ -266,7 +266,7 @@ namespace FPSProfiler
         WriteDataToFile();
     }
 
-    void FPSProfilerSystemComponent::SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath)
+    void FPSProfilerSystemComponent::SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath)
     {
         if (useSafeChangePath)
         {
