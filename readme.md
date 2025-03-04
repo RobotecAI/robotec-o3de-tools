@@ -346,3 +346,34 @@ Refer to script canvas example below:
 ![alt text](doc/imguizmo.png)
 
 *Note* Only one gizmo can be rendered at the time!
+
+# FPSProfiler
+This gem provides a tool to collect statistics in the game mode of the FPS, CPU and GPU into `csv` file.
+
+The Profiler has a EBus which can control profiling in runtime (start/stop/reset), save profiled data, change save path, access current frame memory data or fps (avg, min, max).
+It is also provided with a set of notification functions, making it highly customizable for end user.
+
+## Setup
+To start using the profiler, add a `FPSProfiler` to Level entity.
+![FpsProfiler Editor](doc/FpsProfiler.png)
+
+| Variable Name             | Description                                                                                |
+|---------------------------|--------------------------------------------------------------------------------------------|
+| Csv Save Path             | Path where collected data will be saved.                                                   |
+| Auto Save                 | Enable auto save.                                                                          |
+| Auto Save At Frame        | Auto saves collected data at selected frame occurrence.                                    |
+| Timestamp                 | Applies timestamp Year-Month-Day-Hour-Minutes to file name. Let's you save multiple files. |
+| Near Zero Precision       |                                                                                            |
+| Save FPS Data             |                                                                                            |
+| Save CPU Data             |                                                                                            |
+| Save GPU Data             |                                                                                            |
+| Show FPS                  |                                                                                            |
+| Profile On Game Start     |                                                                                            |
+
+## Saved File Example
+| Frame | FrameTime  | CurrentFPS | MinFPS    | MaxFPS  | AvgFPS  | CpuMemoryUsed | GpuMemoryUsed |
+|-------|------------|------------|-----------|---------|---------|---------------|---------------|
+| 1     | 5347.2783  | 0.00       | MAX_FLOAT | 0.00    | 0.00    | 1349.42       | 1752.12       |
+| 2     | 0.4207     | 2.38       | 2.38      | 2.38    | 1.19    | 1375.50       | 2999.38       |
+| 3     | 0.1934     | 5.17       | 2.38      | 5.17    | 2.52    | 1400.49       | 2963.44       |
+
