@@ -65,7 +65,7 @@ namespace FPSProfiler
         float m_currentFps = 0.0f; // Actual FPS in current frame
         float m_totalFrameTime = 0.0f; // Time it took to enter frame
         int m_frameCount = 0; // Numeric value of actual frame
-        AZStd::deque<float> m_fpsSamples; // Vector of collected current FPSs. Cleared once @ref m_configuration.m_AutoSave enabled.
+        AZStd::deque<float> m_fpsSamples; // Deque of collected current FPSs. Used for calculating @ref m_avgFps.
         AZStd::vector<AZStd::string> m_logEntries; // Vector of collected log entries. Cleared after @ref
                                                    // m_configuration.m_AutoSaveOccurrences, when @ref m_configuration.m_AutoSave enabled.
 
