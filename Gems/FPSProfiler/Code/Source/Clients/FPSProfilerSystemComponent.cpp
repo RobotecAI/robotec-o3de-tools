@@ -14,7 +14,7 @@ namespace FPSProfiler
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()
-                ->Version(1)
+                ->Version(0)
                 ->Field("m_Configuration", &FPSProfilerSystemComponent::m_configuration)
                 ->Field("m_profileOnGameStart", &FPSProfilerSystemComponent::m_isProfiling);
         }
