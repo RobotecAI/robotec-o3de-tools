@@ -68,7 +68,7 @@ namespace FPSProfiler
         AZStd::deque<float> m_fpsSamples; // Deque of collected current FPSs. Used for calculating @ref m_avgFps.
         AZStd::vector<char> m_logBuffer; // Vector of collected log entries. Cleared after @ref
                                          // m_configuration.m_AutoSaveAtFrame, when @ref m_configuration.m_AutoSave enabled.
-        static constexpr AZStd::size_t MaxLogBufferSize = 1024 * 128; // Max buffer size for @ref m_requiredLogBufferSize.
+        static constexpr AZStd::size_t MAX_LOG_BUFFER_SIZE = 1024 * 128; // Max buffer size for @ref m_requiredLogBufferSize.
 
         // File operations
         void CreateLogFile();

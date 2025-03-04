@@ -76,7 +76,7 @@ namespace FPSProfiler
 
         // Reserve log entries buffer size based on known auto save per frame
         m_configuration.m_AutoSave ? m_logBuffer.reserve(160 * m_configuration.m_AutoSaveAtFrame * 2)
-                                   : m_logBuffer.reserve(MaxLogBufferSize);
+                                   : m_logBuffer.reserve(MAX_LOG_BUFFER_SIZE);
     }
 
     void FPSProfilerSystemComponent::Deactivate()
@@ -91,7 +91,6 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_FUNCTION(AzCore);
         if (!m_isProfiling)
         {
             return;
