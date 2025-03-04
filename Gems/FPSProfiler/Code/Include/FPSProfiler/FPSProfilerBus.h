@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FPSProfiler/FPSProfilerTypeIds.h>
+#include <Tools/FPSProfilerConfig.h>
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path_fwd.h>
@@ -68,6 +69,12 @@ namespace FPSProfiler
         {
         }
         virtual void OnFileSaved(const AZ::IO::Path& filePath)
+        {
+        }
+        virtual void OnProfileStart(const FPSProfilerConfig& config)
+        {
+        }
+        virtual void OnProfileStop(const FPSProfilerConfig& config)
         {
         }
     };
