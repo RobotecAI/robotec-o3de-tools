@@ -273,7 +273,7 @@ namespace FPSProfiler
             if (AZ::RHI::Device* device = rhiSystem->GetDevice())
             {
                 AZ::RHI::MemoryStatistics memoryStats;
-                device->CompileMemoryStatistics(memoryStats, AZ::RHI::MemoryStatisticsReportFlags::Detail);
+                device->CompileMemoryStatistics(memoryStats, AZ::RHI::MemoryStatisticsReportFlags::Basic);
 
                 // Return the GPU memory used in bytes
                 return memoryStats.m_heaps.front().m_memoryUsage.m_totalResidentInBytes;
