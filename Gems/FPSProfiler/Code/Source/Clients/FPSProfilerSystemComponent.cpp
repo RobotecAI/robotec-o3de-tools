@@ -118,7 +118,7 @@ namespace FPSProfiler
             logEntryLength = azsnprintf(
                 logEntry,
                 LineSize,
-                "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+                "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
                 m_frameCount,
                 deltaTime,
                 m_currentFps,
@@ -126,16 +126,20 @@ namespace FPSProfiler
                 m_maxFps,
                 m_avgFps,
                 m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().first) : -1.0f,
-                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().first) : -1.0f);
+                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().second) : -1.0f,
+                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().first) : -1.0f,
+                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().second) : -1.0f);
         }
         else
         {
             logEntryLength = azsnprintf(
                 logEntry,
                 LineSize,
-                "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f\n",
+                "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f,%.2f,%.2f\n",
                 m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().first) : -1.0f,
-                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().first) : -1.0f);
+                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().second) : -1.0f,
+                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().first) : -1.0f,
+                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().second) : -1.0f);
         }
         m_logBuffer.insert(m_logBuffer.end(), logEntry, logEntry + logEntryLength);
 
@@ -358,7 +362,8 @@ namespace FPSProfiler
 
         // Write profiling headers to file
         AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
-        AZStd::string csvHeader = "Frame,FrameTime,CurrentFPS,MinFPS,MaxFPS,AvgFPS,CpuMemoryUsed,GpuMemoryUsed\n";
+        AZStd::string csvHeader =
+            "Frame,FrameTime,CurrentFPS,MinFPS,MaxFPS,AvgFPS,CpuMemoryUsed,CpuMemoryReserved,GpuMemoryUsed,GpuMemoryReserved\n";
         file.Write(csvHeader.size(), csvHeader.c_str());
         file.Close();
 
