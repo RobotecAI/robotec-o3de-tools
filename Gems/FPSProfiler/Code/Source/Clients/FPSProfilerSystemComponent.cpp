@@ -192,6 +192,7 @@ namespace FPSProfiler
 
         // Notify - Profile Reset
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileReset, m_configuration);
+        AZ_Printf("FPS Profiler", "Profiling reset.");
     }
 
     bool FPSProfilerSystemComponent::IsProfiling() const
