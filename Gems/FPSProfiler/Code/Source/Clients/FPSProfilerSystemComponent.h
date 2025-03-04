@@ -54,33 +54,37 @@ namespace FPSProfiler
         void ShowFpsOnScreen(bool enable) override;
 
     private:
-        // Profiler Configuration - Editor Settings
-        FPSProfilerConfig m_configuration;
+        // Profiler Configuration
+        FPSProfilerConfig m_configuration; //!< Stores editor settings for the profiler
 
-        // Profiler Data
-        bool m_isProfiling = false;
-        float m_minFps = 0.0f; // Tracking the lowest FPS value
-        float m_maxFps = 0.0f; // Tracking the highest FPS value
-        float m_avgFps = 0.0f; // Mean Value of accumulated current FPS
-        float m_currentFps = 0.0f; // Actual FPS in current frame
-        float m_totalFrameTime = 0.0f; // Time it took to enter frame
-        int m_frameCount = 0; // Numeric value of actual frame
-        AZStd::deque<float> m_fpsSamples; // Deque of collected current FPSs. Used for calculating @ref m_avgFps.
-        AZStd::vector<char> m_logBuffer; // Vector of collected log entries. Cleared after @ref
-                                         // m_configuration.m_AutoSaveAtFrame, when @ref m_configuration.m_AutoSave enabled.
-        static constexpr AZStd::size_t MAX_LOG_BUFFER_SIZE = 1024 * 128; // Max buffer size for @ref m_requiredLogBufferSize.
-        static constexpr AZStd::size_t MAX_LOG_BUFFER_LINE_SIZE = 128; // Max line length
+        // Profiling State
+        bool m_isProfiling = false; //!< Flag to indicate if profiling is active
 
-        // File operations
+        // FPS Tracking Data
+        float m_minFps = 0.0f; //!< Lowest FPS value recorded
+        float m_maxFps = 0.0f; //!< Highest FPS value recorded
+        float m_avgFps = 0.0f; //!< Mean value of collected FPS samples
+        float m_currentFps = 0.0f; //!< FPS in the current frame
+        float m_totalFrameTime = 0.0f; //!< Time taken for the current frame
+        int m_frameCount = 0; //!< Total number of frames processed
+
+        AZStd::deque<float> m_fpsSamples; //!< Stores recent FPS values for averaging
+
+        // Log Buffer
+        AZStd::vector<char> m_logBuffer; //!< Buffer for log entries, cleared periodically if auto save enabled.
+        static constexpr AZStd::size_t MAX_LOG_BUFFER_SIZE = 1024 * 128; //!< Max log buffer size
+        static constexpr AZStd::size_t MAX_LOG_BUFFER_LINE_SIZE = 128; //!< Max length per log line
+
+        // File Operations
         void CreateLogFile();
         void WriteDataToFile();
 
-        // Helpers
+        // Utility Functions
         void CalculateFpsData(const float& deltaTime);
         static float BytesToMB(AZStd::size_t bytes);
         static bool IsPathValid(const AZ::IO::Path& path);
 
-        // Debug display
+        // Debug Display
         void ShowFps() const;
     };
 } // namespace FPSProfiler
