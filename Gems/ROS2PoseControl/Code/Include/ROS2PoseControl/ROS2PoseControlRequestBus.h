@@ -31,8 +31,8 @@ namespace ROS2PoseControl
         AZ_RTTI(ROS2PoseControlRequests, ROS2PoseControlRequestsTypeId)
 
         //! Set the tracking mode
-        //! @param trackingMode - new tracking mode, to check available tracking modes @see ROS2PoseControlConfigruation
-        virtual void SetTrackingMode(const TrackingMode trackingMode) = 0;
+        //! @param trackingMode - new tracking mode, to check available tracking modes @see ROS2PoseControlConfiguration
+        virtual void SetTrackingMode(TrackingMode trackingMode) = 0;
 
         //! Set the target frame that is used in the TF2 tracking mode
         //! @param targetFrame - name of the frame that will be used as a target frame in a lookupTransform method

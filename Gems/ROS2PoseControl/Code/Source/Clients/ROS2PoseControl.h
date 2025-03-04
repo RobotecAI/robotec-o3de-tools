@@ -101,7 +101,7 @@ namespace ROS2PoseControl
         //! @param transform The transform to apply.
         void ApplyTransform(const AZ::Transform& transform);
 
-        //! Enables physics on the entity and its descendants. Only enables physics of entties that had physics disabled by this component.
+        //! Enables physics on the entity and its descendants. Only enables physics of entities that had physics disabled by this component.
         void EnablePhysics();
         //! Disables physics on the entity and its descendants.
         void DisablePhysics();
@@ -110,7 +110,7 @@ namespace ROS2PoseControl
         void SetPhysicsEnabled(bool enabled);
 
         // ROS2PoseControlRequestsBus::Handler overrides.
-        void SetTrackingMode(const TrackingMode trackingMode) override;
+        void SetTrackingMode(TrackingMode trackingMode) override;
         void SetTargetFrame(const AZStd::string& targetFrame) override;
         void SetReferenceFrame(const AZStd::string& referenceFrame) override;
         void SetEnablePhysics(bool enable) override;

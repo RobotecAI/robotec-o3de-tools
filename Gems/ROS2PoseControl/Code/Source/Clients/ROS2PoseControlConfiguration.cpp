@@ -24,7 +24,7 @@ namespace ROS2PoseControl
         return m_tracking_mode == TrackingMode::PoseMessages ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    AZ::Crc32 ROS2PoseControlConfiguration::isGroudOffsetVisible() const
+    AZ::Crc32 ROS2PoseControlConfiguration::isGroundOffsetVisible() const
     {
         return m_clampToGround ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
@@ -108,7 +108,7 @@ namespace ROS2PoseControl
                         &ROS2PoseControlConfiguration::m_groundOffset,
                         "Ground Offset",
                         "Offset from the ground")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isGroudOffsetVisible);
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isGroundOffsetVisible);
             }
         }
     };

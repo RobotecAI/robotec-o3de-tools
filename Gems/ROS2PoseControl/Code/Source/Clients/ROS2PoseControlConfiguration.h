@@ -32,7 +32,7 @@ namespace ROS2PoseControl
 
         AZ::Crc32 isTrackingModePoseMessagesVisibility() const;
 
-        AZ::Crc32 isGroudOffsetVisible() const;
+        AZ::Crc32 isGroundOffsetVisible() const;
 
         AZ::Crc32 isUseTagOffset() const;
 

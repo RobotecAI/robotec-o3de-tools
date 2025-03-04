@@ -126,7 +126,7 @@ namespace ROS2PoseControl
         SetPhysicsEnabled(false);
     }
 
-    void ROS2PoseControl::SetTrackingMode(const TrackingMode trackingMode)
+    void ROS2PoseControl::SetTrackingMode(TrackingMode trackingMode)
     {
         m_configuration.m_tracking_mode = trackingMode;
         m_configurationChanged = true;
