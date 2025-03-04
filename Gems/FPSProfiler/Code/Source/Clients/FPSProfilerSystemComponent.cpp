@@ -91,6 +91,7 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        AZ_PROFILE_FUNCTION(AzCore);
         if (!m_isProfiling)
         {
             return;
@@ -259,10 +260,7 @@ namespace FPSProfiler
         size_t usedBytes = 0;
         size_t reservedBytes = 0;
 
-        // Get stats for the system allocator
-        AZ::AllocatorManager::Instance().GetAllocatorStats(usedBytes, reservedBytes, nullptr);
-
-        // Return the used bytes (allocated memory)
+        AZ::AllocatorManager::Instance().GetAllocatorStats(usedBytes, reservedBytes);
         return usedBytes;
     }
 
