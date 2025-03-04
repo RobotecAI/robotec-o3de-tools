@@ -97,6 +97,8 @@ namespace FPSProfiler
         {
             return;
         }
+
+        // Update FPS data
         CalculateFpsData(deltaTime);
 
         if (m_configuration.m_ShowFps)
@@ -109,14 +111,34 @@ namespace FPSProfiler
             return;
         }
 
-        char logEntry[LineSize];
+        // Initialize log entry buffer
+        char logEntry[MAX_LOG_BUFFER_LINE_SIZE];
         int logEntryLength = 0;
 
+        // Initialize memory usage values
+        float usedCpu = -1.0f, reservedCpu = -1.0f;
+        float usedGpu = -1.0f, reservedGpu = -1.0f;
+
+        if (m_configuration.m_SaveCpuData)
+        {
+            auto [cpuUsed, cpuReserved] = GetCpuMemoryUsed();
+            usedCpu = BytesToMB(cpuUsed);
+            reservedCpu = BytesToMB(cpuReserved);
+        }
+
+        if (m_configuration.m_SaveGpuData)
+        {
+            auto [gpuUsed, gpuReserved] = GetGpuMemoryUsed();
+            usedGpu = BytesToMB(gpuUsed);
+            reservedGpu = BytesToMB(gpuReserved);
+        }
+
+        // Format log entry
         if (m_configuration.m_SaveFpsData)
         {
             logEntryLength = azsnprintf(
                 logEntry,
-                LineSize,
+                MAX_LOG_BUFFER_LINE_SIZE,
                 "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
                 m_frameCount,
                 deltaTime,
@@ -124,26 +146,26 @@ namespace FPSProfiler
                 m_minFps,
                 m_maxFps,
                 m_avgFps,
-                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().first) : -1.0f,
-                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().second) : -1.0f,
-                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().first) : -1.0f,
-                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().second) : -1.0f);
+                usedCpu,
+                reservedCpu,
+                usedGpu,
+                reservedGpu);
         }
         else
         {
             logEntryLength = azsnprintf(
                 logEntry,
-                LineSize,
+                MAX_LOG_BUFFER_LINE_SIZE,
                 "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f,%.2f,%.2f\n",
-                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().first) : -1.0f,
-                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().second) : -1.0f,
-                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().first) : -1.0f,
-                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().second) : -1.0f);
+                usedCpu,
+                reservedCpu,
+                usedGpu,
+                reservedGpu);
         }
         m_logBuffer.insert(m_logBuffer.end(), logEntry, logEntry + logEntryLength);
 
-        // Auto Save
-        if (m_configuration.m_AutoSave && m_frameCount % m_configuration.m_AutoSaveAtFrame == 0)
+        // Auto save
+        if (m_configuration.m_AutoSave && (m_frameCount % m_configuration.m_AutoSaveAtFrame == 0))
         {
             WriteDataToFile();
         }

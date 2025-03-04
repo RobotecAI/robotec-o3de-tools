@@ -69,7 +69,7 @@ namespace FPSProfiler
         AZStd::vector<char> m_logBuffer; // Vector of collected log entries. Cleared after @ref
                                          // m_configuration.m_AutoSaveAtFrame, when @ref m_configuration.m_AutoSave enabled.
         static constexpr AZStd::size_t MAX_LOG_BUFFER_SIZE = 1024 * 128; // Max buffer size for @ref m_requiredLogBufferSize.
-        static constexpr AZStd::size_t LineSize = 128; // Max line length
+        static constexpr AZStd::size_t MAX_LOG_BUFFER_LINE_SIZE = 128; // Max line length
 
         // File operations
         void CreateLogFile();
