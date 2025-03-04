@@ -375,7 +375,7 @@ namespace FPSProfiler
             file.Write(entry.size(), entry.c_str());
         }
         file.Close();
-        m_fpsSamples.clear();
+        m_logEntries.clear();
 
         // Notify - File Update
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configuration.m_OutputFilename.c_str());
