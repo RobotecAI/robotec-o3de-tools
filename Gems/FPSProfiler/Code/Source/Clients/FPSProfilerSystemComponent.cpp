@@ -109,7 +109,6 @@ namespace FPSProfiler
             return;
         }
 
-        constexpr size_t LineSize = 128;
         char logEntry[LineSize];
         int logEntryLength = 0;
 
@@ -260,16 +259,16 @@ namespace FPSProfiler
         return m_currentFps;
     }
 
-    AZStd::pair<size_t, size_t> FPSProfilerSystemComponent::GetCpuMemoryUsed() const
+    AZStd::pair<AZStd::size_t, AZStd::size_t> FPSProfilerSystemComponent::GetCpuMemoryUsed() const
     {
-        size_t usedBytes = 0;
-        size_t reservedBytes = 0;
+        AZStd::size_t usedBytes = 0;
+        AZStd::size_t reservedBytes = 0;
 
         AZ::AllocatorManager::Instance().GetAllocatorStats(usedBytes, reservedBytes);
         return { usedBytes, reservedBytes };
     }
 
-    AZStd::pair<size_t, size_t> FPSProfilerSystemComponent::GetGpuMemoryUsed() const
+    AZStd::pair<AZStd::size_t, AZStd::size_t> FPSProfilerSystemComponent::GetGpuMemoryUsed() const
     {
         if (AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get())
         {
@@ -395,7 +394,7 @@ namespace FPSProfiler
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configuration.m_OutputFilename.c_str());
     }
 
-    float FPSProfilerSystemComponent::BytesToMB(size_t bytes)
+    float FPSProfilerSystemComponent::BytesToMB(AZStd::size_t bytes)
     {
         return static_cast<float>(bytes) / (1024.0f * 1024.0f);
     }

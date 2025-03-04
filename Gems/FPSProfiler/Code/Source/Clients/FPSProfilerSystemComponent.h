@@ -47,8 +47,8 @@ namespace FPSProfiler
         [[nodiscard]] float GetMaxFps() const override;
         [[nodiscard]] float GetAvgFps() const override;
         [[nodiscard]] float GetCurrentFps() const override;
-        [[nodiscard]] AZStd::pair<size_t, size_t> GetCpuMemoryUsed() const override;
-        [[nodiscard]] AZStd::pair<size_t, size_t> GetGpuMemoryUsed() const override;
+        [[nodiscard]] AZStd::pair<AZStd::size_t, AZStd::size_t> GetCpuMemoryUsed() const override;
+        [[nodiscard]] AZStd::pair<AZStd::size_t, AZStd::size_t> GetGpuMemoryUsed() const override;
         void SaveLogToFile() override;
         void SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath) override;
         void ShowFpsOnScreen(bool enable) override;
@@ -69,6 +69,7 @@ namespace FPSProfiler
         AZStd::vector<char> m_logBuffer; // Vector of collected log entries. Cleared after @ref
                                          // m_configuration.m_AutoSaveAtFrame, when @ref m_configuration.m_AutoSave enabled.
         static constexpr AZStd::size_t MAX_LOG_BUFFER_SIZE = 1024 * 128; // Max buffer size for @ref m_requiredLogBufferSize.
+        static constexpr AZStd::size_t LineSize = 128; // Max line length
 
         // File operations
         void CreateLogFile();
@@ -76,7 +77,7 @@ namespace FPSProfiler
 
         // Helpers
         void CalculateFpsData(const float& deltaTime);
-        static float BytesToMB(size_t bytes);
+        static float BytesToMB(AZStd::size_t bytes);
         static bool IsPathValid(const AZ::IO::Path& path);
 
         // Debug display

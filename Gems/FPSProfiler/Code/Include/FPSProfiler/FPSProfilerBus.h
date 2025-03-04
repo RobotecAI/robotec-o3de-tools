@@ -89,13 +89,13 @@ namespace FPSProfiler
          * @brief Gets the current CPU memory usage.
          * @return A pair containing the currently used and reserved CPU memory (in bytes).
          */
-        [[nodiscard]] virtual AZStd::pair<size_t, size_t> GetCpuMemoryUsed() const = 0;
+        [[nodiscard]] virtual AZStd::pair<AZStd::size_t, AZStd::size_t> GetCpuMemoryUsed() const = 0;
 
         /**
          * @brief Gets the current GPU memory usage.
          * @return A pair containing the currently used and reserved GPU memory (in bytes).
          */
-        [[nodiscard]] virtual AZStd::pair<size_t, size_t> GetGpuMemoryUsed() const = 0;
+        [[nodiscard]] virtual AZStd::pair<AZStd::size_t, AZStd::size_t> GetGpuMemoryUsed() const = 0;
 
         /**
          * @brief Saves the current profiling log to a csv file at the predefined save path.
