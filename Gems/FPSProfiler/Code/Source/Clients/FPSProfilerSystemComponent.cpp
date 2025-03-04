@@ -91,13 +91,10 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        // Safety exit when profiling is disabled.
         if (!m_isProfiling)
         {
             return;
         }
-
-        // Calculate data for Profiler Bus
         CalculateFpsData(deltaTime);
 
         if (m_configuration.m_ShowFps)
@@ -105,7 +102,6 @@ namespace FPSProfiler
             ShowFps();
         }
 
-        // If none save option enabled - exit
         if (!IsAnySaveOptionEnabled())
         {
             return;
