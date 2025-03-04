@@ -47,8 +47,8 @@ namespace FPSProfiler
         [[nodiscard]] float GetMaxFps() const override;
         [[nodiscard]] float GetAvgFps() const override;
         [[nodiscard]] float GetCurrentFps() const override;
-        [[nodiscard]] size_t GetCpuMemoryUsed() const override;
-        [[nodiscard]] size_t GetGpuMemoryUsed() const override;
+        [[nodiscard]] AZStd::pair<size_t, size_t> GetCpuMemoryUsed() const override;
+        [[nodiscard]] AZStd::pair<size_t, size_t> GetGpuMemoryUsed() const override;
         void SaveLogToFile() override;
         void SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath) override;
         void ShowFpsOnScreen(bool enable) override;

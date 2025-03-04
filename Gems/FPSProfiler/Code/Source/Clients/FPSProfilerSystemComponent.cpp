@@ -91,6 +91,8 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        AZ_PROFILE_SCOPE(AzCore, "FPSProfiler::OnTick()");
+
         if (!m_isProfiling)
         {
             return;
@@ -123,8 +125,8 @@ namespace FPSProfiler
                 m_minFps,
                 m_maxFps,
                 m_avgFps,
-                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed()) : -1.0f,
-                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed()) : -1.0f);
+                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().first) : -1.0f,
+                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().first) : -1.0f);
         }
         else
         {
@@ -132,8 +134,8 @@ namespace FPSProfiler
                 logEntry,
                 LineSize,
                 "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f\n",
-                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed()) : -1.0f,
-                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed()) : -1.0f);
+                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed().first) : -1.0f,
+                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed().first) : -1.0f);
         }
         m_logBuffer.insert(m_logBuffer.end(), logEntry, logEntry + logEntryLength);
 
@@ -254,16 +256,16 @@ namespace FPSProfiler
         return m_currentFps;
     }
 
-    size_t FPSProfilerSystemComponent::GetCpuMemoryUsed() const
+    AZStd::pair<size_t, size_t> FPSProfilerSystemComponent::GetCpuMemoryUsed() const
     {
         size_t usedBytes = 0;
         size_t reservedBytes = 0;
 
         AZ::AllocatorManager::Instance().GetAllocatorStats(usedBytes, reservedBytes);
-        return usedBytes;
+        return { usedBytes, reservedBytes };
     }
 
-    size_t FPSProfilerSystemComponent::GetGpuMemoryUsed() const
+    AZStd::pair<size_t, size_t> FPSProfilerSystemComponent::GetGpuMemoryUsed() const
     {
         if (AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get())
         {
@@ -272,11 +274,12 @@ namespace FPSProfiler
                 AZ::RHI::MemoryStatistics memoryStats;
                 device->CompileMemoryStatistics(memoryStats, AZ::RHI::MemoryStatisticsReportFlags::Basic);
 
-                return memoryStats.m_heaps.front().m_memoryUsage.m_totalResidentInBytes;
+                return { memoryStats.m_heaps.front().m_memoryUsage.m_totalResidentInBytes,
+                         memoryStats.m_heaps.front().m_memoryUsage.m_budgetInBytes };
             }
         }
 
-        return 0;
+        return { 0, 0 };
     }
 
     void FPSProfilerSystemComponent::SaveLogToFile()
