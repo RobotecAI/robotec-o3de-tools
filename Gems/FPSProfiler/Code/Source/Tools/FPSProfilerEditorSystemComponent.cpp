@@ -58,21 +58,5 @@ namespace FPSProfiler
     void FPSProfilerEditorSystemComponent::BuildGameEntity(AZ::Entity* entity)
     {
         entity->CreateComponent<FPSProfilerSystemComponent>(m_configuration, m_profileOnGameStart);
-        auto profiler = FPSProfiler::FPSProfilerInterface::Get();
-        if (profiler)
-        {
-            profiler->StartProfiling();
-            profiler->GetCurrentFps();
-        }
-
-        float currentFps = 0.0f;
-
-        // Retrieve FPS using the request bus
-        FPSProfilerRequestBus::BroadcastResult(currentFps, &FPSProfilerRequests::GetCurrentFps);
-
-        // Broadcast FPS (Replace with a relevant event in your system)
-        AZ_Printf("FPSProfiler", "Current FPS: %.2f", currentFps);
-
-        FPSProfilerRequestBus::Broadcast(&FPSProfilerRequests::StartProfiling);
     }
 } // namespace FPSProfiler

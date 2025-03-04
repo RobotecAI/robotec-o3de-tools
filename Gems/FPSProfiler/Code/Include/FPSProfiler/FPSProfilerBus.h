@@ -74,6 +74,9 @@ namespace FPSProfiler
         virtual void OnProfileStart(const FPSProfilerConfig& config)
         {
         }
+        virtual void OnProfileReset(const FPSProfilerConfig& config)
+        {
+        }
         virtual void OnProfileStop(const FPSProfilerConfig& config)
         {
         }

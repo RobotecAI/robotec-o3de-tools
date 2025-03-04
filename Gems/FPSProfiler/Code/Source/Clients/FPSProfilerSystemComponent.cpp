@@ -153,6 +153,9 @@ namespace FPSProfiler
         {
             AZ::TickBus::Handler::BusConnect();
         }
+
+        // Notify - Profile Started
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileStart, m_configuration);
         AZ_Printf("FPS Profiler", "Profiling started.");
     }
 
@@ -170,6 +173,9 @@ namespace FPSProfiler
             AZ::TickBus::Handler::BusDisconnect();
         }
         SaveLogToFile();
+
+        // Notify - Profile Stopped
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileStop, m_configuration);
         AZ_Printf("FPS Profiler", "Profiling stopped.");
     }
 
@@ -183,6 +189,9 @@ namespace FPSProfiler
         m_frameCount = 0;
         m_fpsSamples.clear();
         m_logEntries.clear();
+
+        // Notify - Profile Reset
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileReset, m_configuration);
     }
 
     bool FPSProfilerSystemComponent::IsProfiling() const
