@@ -66,8 +66,9 @@ namespace FPSProfiler
         float m_totalFrameTime = 0.0f; // Time it took to enter frame
         int m_frameCount = 0; // Numeric value of actual frame
         AZStd::deque<float> m_fpsSamples; // Deque of collected current FPSs. Used for calculating @ref m_avgFps.
-        AZStd::vector<AZStd::string> m_logEntries; // Vector of collected log entries. Cleared after @ref
-                                                   // m_configuration.m_AutoSaveAtFrame, when @ref m_configuration.m_AutoSave enabled.
+        AZStd::vector<char> m_logBuffer; // Vector of collected log entries. Cleared after @ref
+                                         // m_configuration.m_AutoSaveAtFrame, when @ref m_configuration.m_AutoSave enabled.
+        static constexpr AZStd::size_t MaxLogBufferSize = 1024 * 128; // Max buffer size for @ref m_requiredLogBufferSize.
 
         // File operations
         void CreateLogFile();

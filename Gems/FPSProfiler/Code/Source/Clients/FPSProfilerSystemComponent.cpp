@@ -74,12 +74,9 @@ namespace FPSProfiler
             CreateLogFile();
         }
 
-        // Since log entries are cleared when occurrence update happens, it's good to reserve known size and some extra buffor for close
-        // operation.
-        if (m_configuration.m_AutoSave)
-        {
-            m_logEntries.reserve(m_configuration.m_AutoSaveAtFrame * 2);
-        }
+        // Reserve log entries buffer size based on known auto save per frame
+        m_configuration.m_AutoSave ? m_logBuffer.reserve(160 * m_configuration.m_AutoSaveAtFrame * 2)
+                                   : m_logBuffer.reserve(MaxLogBufferSize);
     }
 
     void FPSProfilerSystemComponent::Deactivate()
@@ -114,19 +111,37 @@ namespace FPSProfiler
             return;
         }
 
-        AZStd::string logEntry = AZStd::string::format(
-            "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-            m_configuration.m_SaveFpsData ? m_frameCount : -1,
-            m_configuration.m_SaveFpsData ? deltaTime : -1.0f,
-            m_configuration.m_SaveFpsData ? m_currentFps : -1.0f,
-            m_configuration.m_SaveFpsData ? m_minFps : -1.0f,
-            m_configuration.m_SaveFpsData ? m_maxFps : -1.0f,
-            m_configuration.m_SaveFpsData ? m_avgFps : -1.0f,
-            m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed()) : -1.0f,
-            m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed()) : -1.0f);
-        m_logEntries.push_back(logEntry);
+        constexpr size_t LineSize = 128;
+        char logEntry[LineSize];
+        int logEntryLength = 0;
 
-        // Save after every m_AutoSaveOccurrences frames to not overflow buffer, only when m_AutoSave enabled.
+        if (m_configuration.m_SaveFpsData)
+        {
+            logEntryLength = azsnprintf(
+                logEntry,
+                LineSize,
+                "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+                m_frameCount,
+                deltaTime,
+                m_currentFps,
+                m_minFps,
+                m_maxFps,
+                m_avgFps,
+                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed()) : -1.0f,
+                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed()) : -1.0f);
+        }
+        else
+        {
+            logEntryLength = azsnprintf(
+                logEntry,
+                LineSize,
+                "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f\n",
+                m_configuration.m_SaveCpuData ? BytesToMB(GetCpuMemoryUsed()) : -1.0f,
+                m_configuration.m_SaveGpuData ? BytesToMB(GetGpuMemoryUsed()) : -1.0f);
+        }
+        m_logBuffer.insert(m_logBuffer.end(), logEntry, logEntry + logEntryLength);
+
+        // Auto Save
         if (m_configuration.m_AutoSave && m_frameCount % m_configuration.m_AutoSaveAtFrame == 0)
         {
             WriteDataToFile();
@@ -188,7 +203,7 @@ namespace FPSProfiler
         m_totalFrameTime = 0.0f;
         m_frameCount = 0;
         m_fpsSamples.clear();
-        m_logEntries.clear();
+        m_logBuffer.clear();
 
         // Notify - Profile Reset
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileReset, m_configuration);
@@ -358,7 +373,7 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::WriteDataToFile()
     {
-        if (m_logEntries.empty())
+        if (m_logBuffer.empty())
         {
             return;
         }
@@ -368,14 +383,13 @@ namespace FPSProfiler
             return;
         }
 
-        AZ::IO::FileIOStream file(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend);
-
-        for (const auto& entry : m_logEntries)
+        AZ::IO::HandleType file;
+        if (AZ::IO::FileIOBase::GetInstance()->Open(m_configuration.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend, file))
         {
-            file.Write(entry.size(), entry.c_str());
+            AZ::IO::FileIOBase::GetInstance()->Write(file, m_logBuffer.data(), m_logBuffer.size());
+            AZ::IO::FileIOBase::GetInstance()->Close(file);
         }
-        file.Close();
-        m_logEntries.clear();
+        m_logBuffer.clear();
 
         // Notify - File Update
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configuration.m_OutputFilename.c_str());
