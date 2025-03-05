@@ -170,6 +170,7 @@ namespace FPSProfiler
     {
         if (m_isProfiling)
         {
+            AZ_Warning("FPS Profiler", false, "Profiler already activated.");
             return;
         }
 
@@ -177,7 +178,8 @@ namespace FPSProfiler
         ResetProfilingData();
         CreateLogFile();
 
-        if (!AZ::TickBus::Handler::BusIsConnected()) // Connect TickBus only if not already connected
+        // Connect TickBus only if not already connected
+        if (!AZ::TickBus::Handler::BusIsConnected())
         {
             AZ::TickBus::Handler::BusConnect();
         }
@@ -191,12 +193,14 @@ namespace FPSProfiler
     {
         if (!m_isProfiling)
         {
+            AZ_Warning("FPS Profiler", false, "Profiler already stopped.");
             return;
         }
 
         m_isProfiling = false;
 
-        if (AZ::TickBus::Handler::BusIsConnected()) // Only disconnect if actually connected
+        // Disconnect TickBus only if actually connected
+        if (AZ::TickBus::Handler::BusIsConnected())
         {
             AZ::TickBus::Handler::BusDisconnect();
         }
@@ -220,7 +224,7 @@ namespace FPSProfiler
 
         // Notify - Profile Reset
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileReset, m_configuration);
-        AZ_Printf("FPS Profiler", "Profiling reset.");
+        AZ_Printf("FPS Profiler", "Profiling data reseted.");
     }
 
     bool FPSProfilerSystemComponent::IsProfiling() const
