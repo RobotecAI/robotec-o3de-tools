@@ -28,6 +28,7 @@ namespace FPSProfiler::Configs
         CPU  = 1 << 1,
         GPU  = 1 << 2,
         All  = FPS | CPU | GPU,
+        Memory = CPU | GPU,
     };
 
     struct FileSaveSettings
