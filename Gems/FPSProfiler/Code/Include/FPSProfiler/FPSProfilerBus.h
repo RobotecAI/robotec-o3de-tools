@@ -164,7 +164,7 @@ namespace FPSProfiler
          * @brief Called when the profiling process starts.
          * @param config The configuration settings used for the profiling session.
          */
-        virtual void OnProfileStart(const FPSProfilerConfigFile& config)
+        virtual void OnProfileStart(const Config::FPSProfilerConfigFile& config)
         {
         }
 
@@ -172,7 +172,7 @@ namespace FPSProfiler
          * @brief Called when the profiling data is reset.
          * @param config The configuration settings used for the profiling session.
          */
-        virtual void OnProfileReset(const FPSProfilerConfigFile& config)
+        virtual void OnProfileReset(const Config::FPSProfilerConfigFile& config)
         {
         }
 
@@ -180,7 +180,7 @@ namespace FPSProfiler
          * @brief Called when the profiling process stops.
          * @param config The configuration settings used for the profiling session.
          */
-        virtual void OnProfileStop(const FPSProfilerConfigFile& config)
+        virtual void OnProfileStop(const Config::FPSProfilerConfigFile& config)
         {
         }
     };

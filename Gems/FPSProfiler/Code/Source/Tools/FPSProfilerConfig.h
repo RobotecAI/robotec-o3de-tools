@@ -2,15 +2,24 @@
 
 #include <FPSProfiler/FPSProfilerTypeIds.h>
 
+#include <AzCore/Math/Color.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
-namespace FPSProfiler
+namespace FPSProfiler::Config
 {
     enum MovingAverageType
     {
         Simple,
         Exponential,
+    };
+
+    enum RecordStats : u_int8_t
+    {
+        None = 1 << 0,
+        FPS = 1 << 1,
+        CPU = 1 << 2,
+        GPU = 1 << 3,
     };
 
     struct FPSProfilerConfigFile
@@ -31,23 +40,24 @@ namespace FPSProfiler
         bool m_ShowFps = true;
     };
 
-    struct FPSProfilerConfigStats
+    struct Stats
     {
         bool m_SaveFpsData = true;
         bool m_SaveGpuData = true;
         bool m_SaveCpuData = true;
     };
 
-    struct FPSProfilerConfigPrecision
+    struct Precision
     {
         float m_NearZeroPrecision = 0.01f;
         MovingAverageType m_avgFpsType = MovingAverageType::Exponential;
         bool m_AverageMedianFilter = true;
     };
 
-    struct FPSProfilerConfigDebug
+    struct Debug
     {
         bool m_ShowFps = true;
+        AZ::Color m_Color = AZ::Colors::Blue;
     };
 
-} // namespace FPSProfiler
+} // namespace FPSProfiler::Config

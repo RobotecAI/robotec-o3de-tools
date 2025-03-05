@@ -2,7 +2,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 
-namespace FPSProfiler
+namespace FPSProfiler::Config
 {
     void FPSProfilerConfigFile::Reflect(AZ::ReflectContext* context)
     {
@@ -103,4 +103,4 @@ namespace FPSProfiler
             }
         }
     }
-} // namespace FPSProfiler
+} // namespace FPSProfiler::Config

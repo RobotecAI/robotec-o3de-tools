@@ -7,7 +7,7 @@ namespace FPSProfiler
 {
     void FPSProfilerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        FPSProfilerConfigFile::Reflect(context);
+        Config::FPSProfilerConfigFile::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {

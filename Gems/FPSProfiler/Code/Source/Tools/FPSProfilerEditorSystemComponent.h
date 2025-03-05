@@ -30,7 +30,7 @@ namespace FPSProfiler
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        FPSProfilerConfigFile m_configuration;
+        Config::FPSProfilerConfigFile m_configuration;
         bool m_profileOnGameStart = false;
     };
 } // namespace FPSProfiler
