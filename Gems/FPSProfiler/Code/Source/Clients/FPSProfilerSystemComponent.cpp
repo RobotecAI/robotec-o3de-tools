@@ -115,9 +115,10 @@ namespace FPSProfiler
         char logEntry[MAX_LOG_BUFFER_LINE_SIZE];
         int logEntryLength = 0;
 
-        // Initialize memory usage values
+        // Initialize statistics data
         float usedCpu = -1.0f, reservedCpu = -1.0f;
         float usedGpu = -1.0f, reservedGpu = -1.0f;
+        const char* logEntryFormat = "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f,%.2f,%.2f\n";
 
         if (m_configuration.m_SaveCpuData)
         {
@@ -133,35 +134,26 @@ namespace FPSProfiler
             reservedGpu = BytesToMB(gpuReserved);
         }
 
-        // Format log entry
-        if (m_configuration.m_SaveFpsData)
+        if (m_configuration.m_SaveCpuData)
         {
-            logEntryLength = azsnprintf(
-                logEntry,
-                MAX_LOG_BUFFER_LINE_SIZE,
-                "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-                m_frameCount,
-                deltaTime,
-                m_currentFps,
-                m_minFps,
-                m_maxFps,
-                m_avgFps,
-                usedCpu,
-                reservedCpu,
-                usedGpu,
-                reservedGpu);
+            logEntryFormat = "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n";
         }
-        else
-        {
-            logEntryLength = azsnprintf(
-                logEntry,
-                MAX_LOG_BUFFER_LINE_SIZE,
-                "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f,%.2f,%.2f\n",
-                usedCpu,
-                reservedCpu,
-                usedGpu,
-                reservedGpu);
-        }
+
+        // Add log entry
+        logEntryLength = azsnprintf(
+            logEntry,
+            MAX_LOG_BUFFER_LINE_SIZE,
+            logEntryFormat,
+            m_frameCount,
+            deltaTime,
+            m_currentFps,
+            m_minFps,
+            m_maxFps,
+            m_avgFps,
+            usedCpu,
+            reservedCpu,
+            usedGpu,
+            reservedGpu);
         m_logBuffer.insert(m_logBuffer.end(), logEntry, logEntry + logEntryLength);
 
         // Auto save
