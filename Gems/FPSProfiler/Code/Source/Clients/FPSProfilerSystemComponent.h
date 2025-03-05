@@ -54,8 +54,11 @@ namespace FPSProfiler
         void ShowFpsOnScreen(bool enable) override;
 
     private:
-        // Profiler Configuration
-        Configs::FileSaveSettings m_configuration; //!< Stores editor settings for the profiler
+        // Profiler Configurations
+        Configs::FileSaveSettings m_configFile; //!< Stores editor settings for the profiler
+        Configs::RecordSettings m_configRecord; //!< Stores editor settings for the profiler
+        Configs::PrecisionSettings m_configPrecision; //!< Stores editor settings for the profiler
+        Configs::DebugSettings m_configDebug; //!< Stores editor settings for the profiler
 
         // Profiling State
         bool m_isProfiling = false; //!< Flag to indicate if profiling is active
