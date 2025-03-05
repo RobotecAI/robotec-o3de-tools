@@ -75,7 +75,7 @@ namespace FPSProfiler
         }
 
         // Reserve log entries buffer size based on known auto save per frame
-        m_configuration.m_AutoSave ? m_logBuffer.reserve(160 * m_configuration.m_AutoSaveAtFrame * 2)
+        m_configuration.m_AutoSave ? m_logBuffer.reserve(MAX_LOG_BUFFER_LINE_SIZE * m_configuration.m_AutoSaveAtFrame * 2)
                                    : m_logBuffer.reserve(MAX_LOG_BUFFER_SIZE);
     }
 
