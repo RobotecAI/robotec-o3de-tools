@@ -95,8 +95,6 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_SCOPE(AzCore, "FPSProfiler");
-
         if (!m_isProfiling)
         {
             return;
