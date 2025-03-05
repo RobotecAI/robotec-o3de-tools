@@ -219,7 +219,7 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::ResetProfilingData()
     {
-        m_minFps = AZ::Constants::FloatMax;
+        m_minFps = AZ::Constants::FloatMax; // Start at max to ensure the first valid FPS sets the minimum correctly in AZStd::min
         m_maxFps = 0.0f;
         m_avgFps = 0.0f;
         m_currentFps = 0.0f;
