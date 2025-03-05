@@ -14,10 +14,10 @@ namespace FPSProfiler
                 ->Field("m_AutoSave", &FPSProfilerConfig::m_AutoSave)
                 ->Field("m_AutoSaveAtFrame", &FPSProfilerConfig::m_AutoSaveAtFrame)
                 ->Field("m_SaveWithTimestamp", &FPSProfilerConfig::m_SaveWithTimestamp)
-                ->Field("m_NearZeroPrecision", &FPSProfilerConfig::m_NearZeroPrecision)
                 ->Field("m_SaveFPSData", &FPSProfilerConfig::m_SaveFpsData)
                 ->Field("m_SaveCPUData", &FPSProfilerConfig::m_SaveCpuData)
                 ->Field("m_SaveGPUData", &FPSProfilerConfig::m_SaveGpuData)
+                ->Field("m_NearZeroPrecision", &FPSProfilerConfig::m_NearZeroPrecision)
                 ->Field("m_ShowFPS", &FPSProfilerConfig::m_ShowFps);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -29,6 +29,7 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "File Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &FPSProfilerConfig::m_OutputFilename,
@@ -40,7 +41,7 @@ namespace FPSProfiler
                         AZ::Edit::UIHandlers::Default,
                         &FPSProfilerConfig::m_AutoSave,
                         "Auto Save",
-                        "When enabled, system will auto save after specified frame occurrance.")
+                        "When enabled, system will auto save after specified frame occurrence.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(
@@ -63,19 +64,7 @@ namespace FPSProfiler
                         "Timestamp",
                         "When enabled, system will save files with timestamp postfix of current date and hour.")
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Precision Settings")
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfig::m_NearZeroPrecision,
-                        "Near Zero Precision",
-                        "Specify near Zero precision, that will be used for system.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 0.1f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.00001f)
-
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Data Settings")
-
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Statistics Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &FPSProfilerConfig::m_SaveFpsData,
@@ -94,8 +83,17 @@ namespace FPSProfiler
                         "Save CPU Data",
                         "When enabled, system will collect CPU usage data into csv.")
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Debug Settings")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Precision Settings")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &FPSProfilerConfig::m_NearZeroPrecision,
+                        "Near Zero Precision",
+                        "Specify near Zero precision, that will be used for system.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.00001f)
 
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Debug Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &FPSProfilerConfig::m_ShowFps,
