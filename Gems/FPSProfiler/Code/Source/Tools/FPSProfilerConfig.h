@@ -10,9 +10,10 @@ namespace FPSProfiler::Configs
 {
     enum MovingAverageType : bool
     {
-        Simple = true,
-        Exponential = false,
+        Simple = 0,
+        Exponential = 1,
     };
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(MovingAverageType);
 
     enum RecordType
     {
@@ -20,16 +21,19 @@ namespace FPSProfiler::Configs
         FramePick = 1,
         Await = 2,
     };
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(RecordType);
 
     enum RecordStatistics : uint8_t
     {
         None = 0,
-        FPS  = 1 << 0,
-        CPU  = 1 << 1,
-        GPU  = 1 << 2,
-        All  = FPS | CPU | GPU,
+        FPS = 1 << 0,
+        CPU = 1 << 1,
+        GPU = 1 << 2,
+        All = FPS | CPU | GPU,
         MemoryUsage = CPU | GPU,
     };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(RecordStatistics);
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(RecordStatistics);
 
     struct FileSaveSettings
     {
@@ -48,7 +52,7 @@ namespace FPSProfiler::Configs
         static void Reflect(AZ::ReflectContext* context);
 
         RecordType m_recordType = RecordType::GameStart;
-        float m_framesToSkip = 0.0f;    // Available only for FramePick
+        float m_framesToSkip = 0.0f; // Available only for FramePick
         float m_framesToRecord = 0.0f;
         RecordStatistics m_RecordStats = RecordStatistics::All;
     };
