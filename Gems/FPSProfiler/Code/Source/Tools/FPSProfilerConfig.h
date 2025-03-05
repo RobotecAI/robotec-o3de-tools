@@ -14,20 +14,20 @@ namespace FPSProfiler::Configs
         Exponential = false,
     };
 
-    enum RecordStatistics : uint8_t
-    {
-        None = 1 << 0,
-        FPS = 1 << 1,
-        CPU = 1 << 2,
-        GPU = 1 << 3,
-        All = FPS | CPU | GPU,
-    };
-
     enum RecordType
     {
         GameStart = 0,
         FramePick = 1,
         Await = 2,
+    };
+
+    enum RecordStatistics : uint8_t
+    {
+        None = 0,
+        FPS  = 1 << 0,
+        CPU  = 1 << 1,
+        GPU  = 1 << 2,
+        All  = FPS | CPU | GPU,
     };
 
     struct FileSaveSettings
