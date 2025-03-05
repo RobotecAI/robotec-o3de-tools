@@ -16,7 +16,7 @@ namespace FPSProfiler
             serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()
                 ->Version(0)
                 ->Field("m_Configuration", &FPSProfilerSystemComponent::m_configuration)
-                ->Field("m_profileOnGameStart", &FPSProfilerSystemComponent::m_isProfiling);
+                ->Field("m_profileOnGameStart", &FPSProfilerSystemComponent::m_profileOnGameStart);
         }
     }
 
@@ -40,7 +40,7 @@ namespace FPSProfiler
 
     FPSProfilerSystemComponent::FPSProfilerSystemComponent(const FPSProfilerConfig& config, bool profileOnGameStart)
         : m_configuration(AZStd::move(config))
-        , m_isProfiling(profileOnGameStart)
+        , m_profileOnGameStart(profileOnGameStart)
     {
         if (FPSProfilerInterface::Get() == nullptr)
         {
@@ -65,18 +65,22 @@ namespace FPSProfiler
         }
 
         FPSProfilerRequestBus::Handler::BusConnect(); // connect first to broadcast notifications
-        ResetProfilingData();
         AZ::TickBus::Handler::BusConnect(); // connect last, after setup
-        AZ_Printf("FPS Profiler", "Activating FPSProfiler");
-
-        if (IsAnySaveOptionEnabled())
-        {
-            CreateLogFile();
-        }
 
         // Reserve log entries buffer size based on known auto save per frame
         m_configuration.m_AutoSave ? m_logBuffer.reserve(MAX_LOG_BUFFER_LINE_SIZE * m_configuration.m_AutoSaveAtFrame * 2)
                                    : m_logBuffer.reserve(MAX_LOG_BUFFER_SIZE);
+
+        if (m_profileOnGameStart)
+        {
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    StartProfiling();
+                });
+        }
+
+        AZ_Printf("FPS Profiler", "FPSProfiler activated.");
     }
 
     void FPSProfilerSystemComponent::Deactivate()
@@ -91,6 +95,8 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        AZ_PROFILE_SCOPE(AzCore, "FPSProfiler");
+
         if (!m_isProfiling)
         {
             return;
@@ -351,6 +357,12 @@ namespace FPSProfiler
 
     void FPSProfilerSystemComponent::CreateLogFile()
     {
+        if (!IsAnySaveOptionEnabled())
+        {
+            AZ_Warning("FPSProfiler", false, "None save option selected. Skipping file creation.");
+            return;
+        }
+
         if (!IsPathValid(m_configuration.m_OutputFilename))
         {
             m_configuration.m_OutputFilename = "@user@/fps_log.csv";

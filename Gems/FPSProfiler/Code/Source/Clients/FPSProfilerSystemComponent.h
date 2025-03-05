@@ -59,6 +59,7 @@ namespace FPSProfiler
 
         // Profiling State
         bool m_isProfiling = false; //!< Flag to indicate if profiling is active
+        bool m_profileOnGameStart = false; //!< Should start profiling at game start.
 
         // FPS Tracking Data
         float m_minFps = 0.0f; //!< Lowest FPS value recorded
