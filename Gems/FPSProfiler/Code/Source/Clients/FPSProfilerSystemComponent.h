@@ -23,7 +23,7 @@ namespace FPSProfiler
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         FPSProfilerSystemComponent();
-        explicit FPSProfilerSystemComponent(const Config::FPSProfilerConfigFile& config, bool profileOnGameStart);
+        explicit FPSProfilerSystemComponent(const Configs::FileSaveSettings& config, bool profileOnGameStart);
         ~FPSProfilerSystemComponent() override;
 
     protected:
@@ -55,7 +55,7 @@ namespace FPSProfiler
 
     private:
         // Profiler Configuration
-        Config::FPSProfilerConfigFile m_configuration; //!< Stores editor settings for the profiler
+        Configs::FileSaveSettings m_configuration; //!< Stores editor settings for the profiler
 
         // Profiling State
         bool m_isProfiling = false; //!< Flag to indicate if profiling is active

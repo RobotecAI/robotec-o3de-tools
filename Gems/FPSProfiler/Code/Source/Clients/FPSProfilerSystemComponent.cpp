@@ -38,7 +38,7 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const Config::FPSProfilerConfigFile& config, bool profileOnGameStart)
+    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const Configs::FileSaveSettings& config, bool profileOnGameStart)
         : m_configuration(AZStd::move(config))
         , m_profileOnGameStart(profileOnGameStart)
     {

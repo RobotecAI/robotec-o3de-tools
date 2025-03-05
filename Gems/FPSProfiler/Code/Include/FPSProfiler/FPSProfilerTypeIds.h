@@ -6,7 +6,12 @@ namespace FPSProfiler
     // System Component TypeIds
     inline constexpr const char* FPSProfilerSystemComponentTypeId = "{B11CE88E-E1C5-404F-83D2-0D3850445A13}";
     inline constexpr const char* FPSProfilerEditorSystemComponentTypeId = "{F4308920-CD0B-4A2E-91DE-2EC1E970F97A}";
+
+    // Configs TypeIds
     inline constexpr const char* FPSProfilerConfigFileTypeId = "{70857242-4363-403C-ACF1-4A401B1024B5}";
+    inline constexpr const char* FPSProfilerConfigRecordTypeId = "{3CD7901E-F8C2-493A-B182-7EB2BAD9FBFB}";
+    inline constexpr const char* FPSProfilerConfigPrecisionTypeId = "{0ADE9CF6-1FE2-49E5-AB8D-B240EBDB9C03}";
+    inline constexpr const char* FPSProfilerConfigDebugTypeId = "{974F1627-C476-4310-B72A-7842BF868EC2}";
 
     // Module derived classes TypeIds
     inline constexpr const char* FPSProfilerModuleInterfaceTypeId = "{77EF155C-6E75-41B1-A939-AF5E2FE4FC6B}";

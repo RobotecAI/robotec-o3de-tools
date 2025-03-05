@@ -2,28 +2,28 @@
 
 #include <AzCore/Serialization/EditContext.h>
 
-namespace FPSProfiler::Config
+namespace FPSProfiler::Configs
 {
-    void FPSProfilerConfigFile::Reflect(AZ::ReflectContext* context)
+    void FileSaveSettings::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<FPSProfilerConfigFile>()
+            serializeContext->Class<FileSaveSettings>()
                 ->Version(0)
-                ->Field("m_OutputFilename", &FPSProfilerConfigFile::m_OutputFilename)
-                ->Field("m_AutoSave", &FPSProfilerConfigFile::m_AutoSave)
-                ->Field("m_AutoSaveAtFrame", &FPSProfilerConfigFile::m_AutoSaveAtFrame)
-                ->Field("m_SaveWithTimestamp", &FPSProfilerConfigFile::m_SaveWithTimestamp)
-                ->Field("m_SaveFPSData", &FPSProfilerConfigFile::m_SaveFpsData)
-                ->Field("m_SaveCPUData", &FPSProfilerConfigFile::m_SaveCpuData)
-                ->Field("m_SaveGPUData", &FPSProfilerConfigFile::m_SaveGpuData)
-                ->Field("m_NearZeroPrecision", &FPSProfilerConfigFile::m_NearZeroPrecision)
-                ->Field("m_ShowFPS", &FPSProfilerConfigFile::m_ShowFps);
+                ->Field("m_OutputFilename", &FileSaveSettings::m_OutputFilename)
+                ->Field("m_AutoSave", &FileSaveSettings::m_AutoSave)
+                ->Field("m_AutoSaveAtFrame", &FileSaveSettings::m_AutoSaveAtFrame)
+                ->Field("m_SaveWithTimestamp", &FileSaveSettings::m_SaveWithTimestamp)
+                ->Field("m_SaveFPSData", &FileSaveSettings::m_SaveFpsData)
+                ->Field("m_SaveCPUData", &FileSaveSettings::m_SaveCpuData)
+                ->Field("m_SaveGPUData", &FileSaveSettings::m_SaveGpuData)
+                ->Field("m_NearZeroPrecision", &FileSaveSettings::m_NearZeroPrecision)
+                ->Field("m_ShowFPS", &FileSaveSettings::m_ShowFps);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext
-                    ->Class<FPSProfilerConfigFile>(
+                    ->Class<FileSaveSettings>(
                         "FPS Profiler Configuration", "Tracks FPS, GPU and CPU performance and saves it into .csv")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Performance")
@@ -33,21 +33,21 @@ namespace FPSProfiler::Config
                     ->ClassElement(AZ::Edit::ClassElements::Group, "File Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_OutputFilename,
+                        &FileSaveSettings::m_OutputFilename,
                         "Csv Save Path",
                         "Select a path where *.csv will be saved.")
                     ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.csv")
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_AutoSave,
+                        &FileSaveSettings::m_AutoSave,
                         "Auto Save",
                         "When enabled, system will auto save after specified frame occurrence.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_AutoSaveAtFrame,
+                        &FileSaveSettings::m_AutoSaveAtFrame,
                         "Auto Save At Frame",
                         "Specify after how many frames system will auto save log.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
@@ -55,39 +55,39 @@ namespace FPSProfiler::Config
                         AZ::Edit::Attributes::Visibility,
                         [](const void* instance)
                         {
-                            const FPSProfilerConfigFile* data = reinterpret_cast<const FPSProfilerConfigFile*>(instance);
+                            const FileSaveSettings* data = reinterpret_cast<const FileSaveSettings*>(instance);
                             return data && data->m_AutoSave ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
                         })
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_SaveWithTimestamp,
+                        &FileSaveSettings::m_SaveWithTimestamp,
                         "Timestamp",
                         "When enabled, system will save files with timestamp postfix of current date and hour.")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Statistics Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_SaveFpsData,
+                        &FileSaveSettings::m_SaveFpsData,
                         "Save FPS Data",
                         "When enabled, system will collect FPS data into csv.")
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_SaveGpuData,
+                        &FileSaveSettings::m_SaveGpuData,
                         "Save GPU Data",
                         "When enabled, system will collect GPU usage data into csv.")
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_SaveCpuData,
+                        &FileSaveSettings::m_SaveCpuData,
                         "Save CPU Data",
                         "When enabled, system will collect CPU usage data into csv.")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Precision Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_NearZeroPrecision,
+                        &FileSaveSettings::m_NearZeroPrecision,
                         "Near Zero Precision",
                         "Specify near Zero precision, that will be used for system.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
@@ -97,10 +97,10 @@ namespace FPSProfiler::Config
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Debug Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerConfigFile::m_ShowFps,
+                        &FileSaveSettings::m_ShowFps,
                         "Show FPS",
                         "When enabled, system will show FPS counter in top-left corner.");
             }
         }
     }
-} // namespace FPSProfiler::Config
+} // namespace FPSProfiler::Configs
