@@ -81,9 +81,9 @@ namespace FPSProfiler::Configs
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &RecordSettings::m_recordType, "Record Type", "Specifies the type of record.")
                     // Provide the combo‐box choices:
-                    ->EnumAttribute(static_cast<int>(RecordType::GameStart), "Game Start")
-                    ->EnumAttribute(static_cast<int>(RecordType::FramePick), "Frame Pick")
-                    ->EnumAttribute(static_cast<int>(RecordType::Await), "Await")
+                    ->EnumAttribute(RecordType::GameStart, "Game Start")
+                    ->EnumAttribute(RecordType::FramePick, "Frame Pick")
+                    ->EnumAttribute(RecordType::Await, "Await")
                     // Ensure the UI updates when the enum changes:
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
