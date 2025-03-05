@@ -183,9 +183,64 @@ namespace FPSProfiler::Configs
 
     void PrecisionSettings::Reflect(AZ::ReflectContext* context)
     {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Enum<MovingAverageType>()
+                ->Value("Simple", MovingAverageType::Simple)
+                ->Value("Exponential", MovingAverageType::Exponential);
+
+            serializeContext->Class<PrecisionSettings>()
+                ->Version(1)
+                ->Field("NearZeroPrecision", &PrecisionSettings::m_NearZeroPrecision)
+                ->Field("AverageFpsType", &PrecisionSettings::m_avgFpsType)
+                ->Field("UseAverageMedianFilter", &PrecisionSettings::m_useAvgMedianFilter);
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<PrecisionSettings>("Precision Settings", "Settings for FPS profiler precision")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &PrecisionSettings::m_NearZeroPrecision,
+                        "Near Zero Precision",
+                        "Threshold for near-zero values")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox,
+                        &PrecisionSettings::m_avgFpsType,
+                        "Average FPS Type",
+                        "Select the type of moving average to use")
+                    ->EnumAttribute(MovingAverageType::Simple, "Simple Moving Average")
+                    ->EnumAttribute(MovingAverageType::Exponential, "Exponential Moving Average")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox,
+                        &PrecisionSettings::m_useAvgMedianFilter,
+                        "Use Average Median Filter",
+                        "Enable median filtering for averaging");
+            }
+        }
     }
 
     void DebugSettings::Reflect(AZ::ReflectContext* context)
     {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<DebugSettings>()
+                ->Version(1)
+                ->Field("PrintDebugInfo", &DebugSettings::m_PrintDebugInfo)
+                ->Field("ShowFps", &DebugSettings::m_ShowFps)
+                ->Field("Color", &DebugSettings::m_Color);
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<DebugSettings>("Debug Settings", "Settings for debugging the FPS Profiler")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox,
+                        &DebugSettings::m_PrintDebugInfo,
+                        "Print Debug Info",
+                        "Enable or disable debug information printing")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DebugSettings::m_ShowFps, "Show FPS", "Toggle FPS display on screen")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Color, &DebugSettings::m_Color, "Debug Color", "Set the debug information display color");
+            }
+        }
     }
 } // namespace FPSProfiler::Configs
