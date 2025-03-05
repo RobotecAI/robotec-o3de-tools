@@ -346,3 +346,16 @@ Refer to script canvas example below:
 ![alt text](doc/imguizmo.png)
 
 *Note* Only one gizmo can be rendered at the time!
+
+# RandomizeUtils 
+
+This gem allows to randomize prefab on spawning.
+It has a component called `RandomizePoseComponent` that modifies an entity during activation.
+It allows:
+ - change translation and rotation and uniform scale of the Transform component,
+ - deactivate the entity with given probability
+
+![](doc/RandomizePoseComponent.png)
+
+**Note:** that only given entity is modified (not all descendants).
+

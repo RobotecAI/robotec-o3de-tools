@@ -6,8 +6,7 @@
 
 namespace RandomizeUtils
 {
-    class RandomizeUtilsModuleInterface
-        : public AZ::Module
+    class RandomizeUtilsModuleInterface : public AZ::Module
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(RandomizeUtilsModuleInterface)
@@ -21,4 +20,4 @@ namespace RandomizeUtils
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-}// namespace RandomizeUtils
+} // namespace RandomizeUtils

@@ -1,11 +1,10 @@
 
+#include "Clients/RandomizePoseComponent.h"
 #include <RandomizeUtils/RandomizeUtilsTypeIds.h>
 #include <RandomizeUtilsModuleInterface.h>
-
 namespace RandomizeUtils
 {
-    class RandomizeUtilsEditorModule
-        : public RandomizeUtilsModuleInterface
+    class RandomizeUtilsEditorModule : public RandomizeUtilsModuleInterface
     {
     public:
         AZ_RTTI(RandomizeUtilsEditorModule, RandomizeUtilsEditorModuleTypeId, RandomizeUtilsModuleInterface);
@@ -15,10 +14,13 @@ namespace RandomizeUtils
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
-            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
-            // This happens through the [MyComponent]::Reflect() function.
-            m_descriptors.insert(m_descriptors.end(), {
-            });
+            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and
+            // EditContext. This happens through the [MyComponent]::Reflect() function.
+            m_descriptors.insert(
+                m_descriptors.end(),
+                {
+                    RandomizePoseComponent::CreateDescriptor(),
+                });
         }
 
         /**
@@ -27,11 +29,10 @@ namespace RandomizeUtils
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList {
-            };
+            return AZ::ComponentTypeList{};
         }
     };
-}// namespace RandomizeUtils
+} // namespace RandomizeUtils
 
 #if defined(O3DE_GEM_NAME)
 AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), RandomizeUtils::RandomizeUtilsEditorModule)
