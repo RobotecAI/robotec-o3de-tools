@@ -7,9 +7,15 @@
 
 namespace FPSProfiler
 {
-    struct FPSProfilerConfig
+    enum MovingAverageType
     {
-        AZ_TYPE_INFO(FPSProfilerConfig, FPSProfilerDataTypeId);
+        Simple,
+        Exponential,
+    };
+
+    struct FPSProfilerConfigFile
+    {
+        AZ_TYPE_INFO(FPSProfilerConfigFile, FPSProfilerConfigFileTypeId);
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::IO::Path m_OutputFilename = "@user@/fps_log.csv";
@@ -20,6 +26,28 @@ namespace FPSProfiler
         bool m_SaveGpuData = true;
         bool m_SaveCpuData = true;
         float m_NearZeroPrecision = 0.01f;
+        MovingAverageType m_avgFpsType = MovingAverageType::Exponential;
+        bool m_AverageMedianFilter = true;
         bool m_ShowFps = true;
     };
+
+    struct FPSProfilerConfigStats
+    {
+        bool m_SaveFpsData = true;
+        bool m_SaveGpuData = true;
+        bool m_SaveCpuData = true;
+    };
+
+    struct FPSProfilerConfigPrecision
+    {
+        float m_NearZeroPrecision = 0.01f;
+        MovingAverageType m_avgFpsType = MovingAverageType::Exponential;
+        bool m_AverageMedianFilter = true;
+    };
+
+    struct FPSProfilerConfigDebug
+    {
+        bool m_ShowFps = true;
+    };
+
 } // namespace FPSProfiler
