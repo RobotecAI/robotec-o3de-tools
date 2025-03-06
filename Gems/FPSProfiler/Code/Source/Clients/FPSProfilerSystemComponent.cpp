@@ -132,12 +132,10 @@ namespace FPSProfiler
 
         if (m_configRecord.m_framesToRecord != 0)
         {
-            static int localFrameCount = 0;
-            if (m_configRecord.m_framesToRecord == localFrameCount)
+            if (m_configRecord.m_framesToRecord == m_recordedFrameCount++)
             {
                 StopProfiling();
             }
-            localFrameCount++;
         }
 
         if (!IsAnySaveOptionEnabled())
@@ -255,6 +253,7 @@ namespace FPSProfiler
         m_currentFps = 0.0f;
         m_totalFrameTime = 0.0f;
         m_frameCount = 0;
+        m_recordedFrameCount = 0;
         m_fpsSamples.clear();
         m_logBuffer.clear();
 
