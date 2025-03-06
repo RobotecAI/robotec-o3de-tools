@@ -128,14 +128,14 @@ namespace FPSProfiler::Configs
                         AZ::Edit::Attributes::ButtonText,
                         [](void* instance) -> AZStd::string
                         {
-                            auto* self = reinterpret_cast<RecordSettings*>(instance);
+                            auto* self = static_cast<RecordSettings*>(instance);
                             return (self->m_RecordStats & RecordStatistics::FPS) ? "Disable FPS" : "Enable FPS";
                         })
                     ->Attribute(
                         AZ::Edit::Attributes::ChangeNotify,
                         [](void* instance)
                         {
-                            auto* self = reinterpret_cast<RecordSettings*>(instance);
+                            auto* self = static_cast<RecordSettings*>(instance);
                             self->m_RecordStats = static_cast<RecordStatistics>(self->m_RecordStats ^ RecordStatistics::FPS); // Toggle bit
                             return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
                         })
@@ -146,14 +146,14 @@ namespace FPSProfiler::Configs
                         AZ::Edit::Attributes::ButtonText,
                         [](void* instance) -> AZStd::string
                         {
-                            auto* self = reinterpret_cast<RecordSettings*>(instance);
+                            auto* self = static_cast<RecordSettings*>(instance);
                             return (self->m_RecordStats & RecordStatistics::CPU) ? "Disable CPU" : "Enable CPU";
                         })
                     ->Attribute(
                         AZ::Edit::Attributes::ChangeNotify,
                         [](void* instance)
                         {
-                            auto* self = reinterpret_cast<RecordSettings*>(instance);
+                            auto* self = static_cast<RecordSettings*>(instance);
                             self->m_RecordStats = static_cast<RecordStatistics>(self->m_RecordStats ^ RecordStatistics::CPU); // Toggle bit
                             return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
                         })
@@ -164,14 +164,14 @@ namespace FPSProfiler::Configs
                         AZ::Edit::Attributes::ButtonText,
                         [](void* instance) -> AZStd::string
                         {
-                            auto* self = reinterpret_cast<RecordSettings*>(instance);
+                            auto* self = static_cast<RecordSettings*>(instance);
                             return (self->m_RecordStats & RecordStatistics::GPU) ? "Disable GPU" : "Enable GPU";
                         })
                     ->Attribute(
                         AZ::Edit::Attributes::ChangeNotify,
                         [](void* instance)
                         {
-                            auto* self = reinterpret_cast<RecordSettings*>(instance);
+                            auto* self = static_cast<RecordSettings*>(instance);
                             self->m_RecordStats = static_cast<RecordStatistics>(self->m_RecordStats ^ RecordStatistics::GPU); // Toggle bit
                             return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
                         });
@@ -188,10 +188,10 @@ namespace FPSProfiler::Configs
                 ->Value("Exponential", MovingAverageType::Exponential);
 
             serializeContext->Class<PrecisionSettings>()
-                ->Version(1)
-                ->Field("NearZeroPrecision", &PrecisionSettings::m_NearZeroPrecision)
-                ->Field("AverageFpsType", &PrecisionSettings::m_avgFpsType)
-                ->Field("UseAverageMedianFilter", &PrecisionSettings::m_useAvgMedianFilter);
+                ->Version(0)
+                ->Field("m_NearZeroPrecision", &PrecisionSettings::m_NearZeroPrecision)
+                ->Field("m_avgFpsType", &PrecisionSettings::m_avgFpsType)
+                ->Field("m_useAvgMedianFilter", &PrecisionSettings::m_useAvgMedianFilter);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -222,7 +222,7 @@ namespace FPSProfiler::Configs
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DebugSettings>()
-                ->Version(1)
+                ->Version(0)
                 ->Field("PrintDebugInfo", &DebugSettings::m_PrintDebugInfo)
                 ->Field("ShowFps", &DebugSettings::m_ShowFps)
                 ->Field("Color", &DebugSettings::m_Color);
