@@ -98,7 +98,10 @@ namespace FPSProfiler
     void FPSProfilerSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        WriteDataToFile();
+        if (m_configRecord.m_framesToRecord == 0)
+        {
+            WriteDataToFile();
+        }
 
         // Notify - File Saved
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileSaved, m_configFile.m_OutputFilename.c_str());
