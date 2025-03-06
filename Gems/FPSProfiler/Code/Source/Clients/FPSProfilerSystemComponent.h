@@ -89,7 +89,7 @@ namespace FPSProfiler
         // Utility Functions
         void CalculateFpsData(const float& deltaTime);
         static float BytesToMB(AZStd::size_t bytes);
-        static bool IsPathValid(const AZ::IO::Path& path);
+        bool IsPathValid(const AZ::IO::Path& path) const;
 
         // Debug Display
         void ShowFps() const;

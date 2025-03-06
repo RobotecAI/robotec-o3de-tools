@@ -69,7 +69,11 @@ namespace FPSProfiler
         if (!IsPathValid(m_configFile.m_OutputFilename))
         {
             m_configFile.m_OutputFilename = "@user@/fps_log.csv";
-            AZ_Warning("FPSProfiler", false, "Invalid output file path. Using default: %s", m_configFile.m_OutputFilename.c_str());
+            AZ_Warning(
+                "FPSProfiler",
+                !m_configDebug.m_PrintDebugInfo,
+                "Invalid output file path. Using default: %s",
+                m_configFile.m_OutputFilename.c_str());
         }
 
         FPSProfilerRequestBus::Handler::BusConnect(); // connect first to broadcast notifications
@@ -198,7 +202,7 @@ namespace FPSProfiler
     {
         if (m_isProfiling)
         {
-            AZ_Warning("FPS Profiler", false, "Profiler already activated.");
+            AZ_Warning("FPS Profiler", !m_configDebug.m_PrintDebugInfo, "Profiler already activated.");
             return;
         }
 
@@ -221,7 +225,7 @@ namespace FPSProfiler
     {
         if (!m_isProfiling)
         {
-            AZ_Warning("FPS Profiler", false, "Profiler already stopped.");
+            AZ_Warning("FPS Profiler", !m_configDebug.m_PrintDebugInfo, "Profiler already stopped.");
             return;
         }
 
@@ -273,7 +277,7 @@ namespace FPSProfiler
         }
 
         m_configFile.m_OutputFilename = newSavePath;
-        AZ_Warning("FPS Profiler", !m_isProfiling, "Path changed during activated profiling.");
+        AZ_Warning("FPS Profiler", !m_configDebug.m_PrintDebugInfo && !m_isProfiling, "Path changed during activated profiling.");
     }
 
     void FPSProfilerSystemComponent::SafeChangeSavePath(const AZ::IO::Path& newSavePath)
@@ -399,14 +403,18 @@ namespace FPSProfiler
     {
         if (!IsAnySaveOptionEnabled())
         {
-            AZ_Warning("FPSProfiler", false, "None save option selected. Skipping file creation.");
+            AZ_Warning("FPSProfiler", !m_configDebug.m_PrintDebugInfo, "None save option selected. Skipping file creation.");
             return;
         }
 
         if (!IsPathValid(m_configFile.m_OutputFilename))
         {
             m_configFile.m_OutputFilename = "@user@/fps_log.csv";
-            AZ_Warning("FPSProfiler", false, "Invalid output file path. Using default: %s", m_configFile.m_OutputFilename.c_str());
+            AZ_Warning(
+                "FPSProfiler",
+                !m_configDebug.m_PrintDebugInfo,
+                "Invalid output file path. Using default: %s",
+                m_configFile.m_OutputFilename.c_str());
         }
 
         // Apply Timestamp
@@ -467,7 +475,7 @@ namespace FPSProfiler
         return static_cast<float>(bytes) / (1024.0f * 1024.0f);
     }
 
-    bool FPSProfilerSystemComponent::IsPathValid(const AZ::IO::Path& path)
+    bool FPSProfilerSystemComponent::IsPathValid(const AZ::IO::Path& path) const
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
@@ -479,7 +487,7 @@ namespace FPSProfiler
                 : !fileIO                     ? "Could not get a FileIO object. Try again."
                                               : "Path is not registered or recognizable by O3DE FileIO System.";
 
-            AZ_Warning("FPSProfiler::ChangeSavePath", false, "%s", reason);
+            AZ_Warning("FPSProfiler::ChangeSavePath", !m_configDebug.m_PrintDebugInfo, "%s", reason);
             return false;
         }
 
