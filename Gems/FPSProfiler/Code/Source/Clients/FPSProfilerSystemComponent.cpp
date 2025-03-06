@@ -150,21 +150,21 @@ namespace FPSProfiler
         float usedGpu = -1.0f, reservedGpu = -1.0f;
         const char* logEntryFormat = "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f,%.2f,%.2f\n";
 
-        if (m_configRecord.m_RecordStats | Configs::RecordStatistics::CPU)
+        if (m_configRecord.m_RecordStats & Configs::RecordStatistics::CPU)
         {
             auto [cpuUsed, cpuReserved] = GetCpuMemoryUsed();
             usedCpu = BytesToMB(cpuUsed);
             reservedCpu = BytesToMB(cpuReserved);
         }
 
-        if (m_configRecord.m_RecordStats | Configs::RecordStatistics::GPU)
+        if (m_configRecord.m_RecordStats & Configs::RecordStatistics::GPU)
         {
             auto [gpuUsed, gpuReserved] = GetGpuMemoryUsed();
             usedGpu = BytesToMB(gpuUsed);
             reservedGpu = BytesToMB(gpuReserved);
         }
 
-        if (m_configRecord.m_RecordStats | Configs::RecordStatistics::FPS)
+        if (m_configRecord.m_RecordStats & Configs::RecordStatistics::FPS)
         {
             logEntryFormat = "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n";
         }
@@ -266,7 +266,7 @@ namespace FPSProfiler
 
     bool FPSProfilerSystemComponent::IsAnySaveOptionEnabled() const
     {
-        return !(m_configRecord.m_RecordStats | Configs::RecordStatistics::None);
+        return m_configRecord.m_RecordStats != Configs::RecordStatistics::None;
     }
 
     void FPSProfilerSystemComponent::ChangeSavePath(const AZ::IO::Path& newSavePath)
