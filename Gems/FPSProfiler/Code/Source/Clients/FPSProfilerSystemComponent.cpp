@@ -99,7 +99,7 @@ namespace FPSProfiler
     {
         AZ::TickBus::Handler::BusDisconnect();
 
-        if (!m_configFile.m_AutoSave || m_configRecord.m_framesToRecord == 0)
+        if (!m_configFile.m_AutoSave || m_configRecord.m_framesToRecord == 0 || m_logBuffer.size() < m_configFile.m_AutoSaveAtFrame)
         {
             WriteDataToFile();
         }
