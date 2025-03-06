@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder RandomizeUtils/Assets": {
+                    "watch": "@GEMROOT:RandomizeUtils@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder RandomizeUtils/Registry": {
+                    "watch": "@GEMROOT:RandomizeUtils@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
