@@ -15,7 +15,7 @@ namespace FPSProfiler::Configs
     };
     AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(MovingAverageType);
 
-    enum RecordType
+    enum RecordType : uint8_t
     {
         GameStart = 0,
         FramePick = 1,
@@ -53,7 +53,7 @@ namespace FPSProfiler::Configs
 
         RecordType m_recordType = RecordType::GameStart;
         int m_framesToSkip = 0; // Available only for FramePick
-        float m_framesToRecord = 0.0f;
+        int m_framesToRecord = 0;
         RecordStatistics m_RecordStats = RecordStatistics::All;
     };
 

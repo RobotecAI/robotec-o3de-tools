@@ -99,28 +99,16 @@ namespace FPSProfiler::Configs
                             return data && data->m_recordType == RecordType::FramePick ? AZ::Edit::PropertyVisibility::Show
                                                                                        : AZ::Edit::PropertyVisibility::Hide;
                         })
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &RecordSettings::m_recordType,
-                        "Record Type",
-                        "Specifies the type of desired record.")
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &RecordSettings::m_framesToSkip,
-                        "Frames To Skip",
-                        "Number of frames to skip before starting recording.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.)
+                    ->Attribute(AZ::Edit::Attributes::Step, 1)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &RecordSettings::m_framesToRecord,
                         "Frames To Record",
                         "Number of frames to capture. If set to 0.0f it will be skipped.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 100.0f)
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.)
+                    ->Attribute(AZ::Edit::Attributes::Step, 100)
 
                     // FPS Button
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Toggle Save FPS", "Toggle FPS recording")
