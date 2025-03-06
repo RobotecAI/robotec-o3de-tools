@@ -197,6 +197,7 @@ namespace FPSProfiler::Configs
                         "Select the type of moving average to use")
                     ->EnumAttribute(MovingAverageType::Simple, "Simple")
                     ->EnumAttribute(MovingAverageType::Exponential, "Exponential")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PrecisionSettings::m_smoothingFactor,
