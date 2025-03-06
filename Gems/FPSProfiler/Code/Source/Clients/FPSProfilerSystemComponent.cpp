@@ -366,7 +366,25 @@ namespace FPSProfiler
             m_fpsSamples.pop_front();
         }
 
-        m_avgFps = AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / static_cast<float>(m_fpsSamples.size());
+        if (m_configPrecision.m_avgFpsType == Configs::MovingAverageType::Simple)
+        {
+            m_avgFps = AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / static_cast<float>(m_fpsSamples.size());
+        }
+        else
+        {
+            const float alpha = m_configPrecision.m_smoothingFactor / (m_configFile.m_AutoSaveAtFrame + 1); // Smoothing factor
+            // Compute EMA
+            if (m_fpsSamples.size() == 1)
+            {
+                // Initialize EMA with the first FPS value
+                m_avgFps = m_currentFps;
+            }
+            else
+            {
+                // Apply EMA formula
+                m_avgFps = (alpha * m_currentFps) + ((1.0f - alpha) * m_avgFps);
+            }
+        }
 
         // Using m_NearZeroPrecision, since m_currentFPS cannot be equal to 0 if delta time is valid.
         if (m_currentFps >= m_configPrecision.m_NearZeroPrecision)

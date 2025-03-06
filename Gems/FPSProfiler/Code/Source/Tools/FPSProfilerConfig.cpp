@@ -99,7 +99,7 @@ namespace FPSProfiler::Configs
                             return data && data->m_recordType == RecordType::FramePick ? AZ::Edit::PropertyVisibility::Show
                                                                                        : AZ::Edit::PropertyVisibility::Hide;
                         })
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.)
+                    ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Step, 1)
 
                     ->DataElement(
@@ -107,7 +107,7 @@ namespace FPSProfiler::Configs
                         &RecordSettings::m_framesToRecord,
                         "Frames To Record",
                         "Number of frames to capture. If set to 0.0f it will be skipped.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.)
+                    ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Step, 100)
 
                     // FPS Button
@@ -179,6 +179,7 @@ namespace FPSProfiler::Configs
                 ->Version(0)
                 ->Field("m_NearZeroPrecision", &PrecisionSettings::m_NearZeroPrecision)
                 ->Field("m_avgFpsType", &PrecisionSettings::m_avgFpsType)
+                ->Field("m_smoothingFactor", &PrecisionSettings::m_smoothingFactor)
                 ->Field("m_useAvgMedianFilter", &PrecisionSettings::m_useAvgMedianFilter);
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -196,6 +197,21 @@ namespace FPSProfiler::Configs
                         "Select the type of moving average to use")
                     ->EnumAttribute(MovingAverageType::Simple, "Simple")
                     ->EnumAttribute(MovingAverageType::Exponential, "Exponential")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &PrecisionSettings::m_smoothingFactor,
+                        "Alpha Smoothing Factor",
+                        "Alpha Smoothing Factor for Exponential Average Calculation.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.1)
+                    ->Attribute(
+                        AZ::Edit::Attributes::Visibility,
+                        [](const void* instance)
+                        {
+                            const PrecisionSettings* data = static_cast<const PrecisionSettings*>(instance);
+                            return data && data->m_avgFpsType == Exponential ? AZ::Edit::PropertyVisibility::Show
+                                                                             : AZ::Edit::PropertyVisibility::Hide;
+                        })
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox,
                         &PrecisionSettings::m_useAvgMedianFilter,

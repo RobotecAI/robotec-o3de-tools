@@ -63,7 +63,8 @@ namespace FPSProfiler::Configs
         static void Reflect(AZ::ReflectContext* context);
 
         float m_NearZeroPrecision = 0.01f;
-        MovingAverageType m_avgFpsType = MovingAverageType::Exponential;
+        MovingAverageType m_avgFpsType = MovingAverageType::Simple;
+        float m_smoothingFactor = 2.0f;
         bool m_useAvgMedianFilter = true;
     };
 
