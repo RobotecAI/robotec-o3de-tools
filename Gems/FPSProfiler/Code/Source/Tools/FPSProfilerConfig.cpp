@@ -62,6 +62,18 @@ namespace FPSProfiler::Configs
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext->Enum<RecordType>()
+                ->Value("GameStart", RecordType::GameStart)
+                ->Value("FramePick", RecordType::FramePick)
+                ->Value("Await", RecordType::Await);
+
+            serializeContext->Enum<RecordStatistics>()
+                ->Value("None", RecordStatistics::None)
+                ->Value("FPS", RecordStatistics::FPS)
+                ->Value("CPU", RecordStatistics::CPU)
+                ->Value("GPU", RecordStatistics::GPU)
+                ->Value("MemoryUsage", RecordStatistics::MemoryUsage);
+
             serializeContext->Class<RecordSettings>()
                 ->Version(0)
                 ->Field("m_recordType", &RecordSettings::m_recordType)
