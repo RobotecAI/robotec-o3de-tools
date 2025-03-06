@@ -192,10 +192,10 @@ namespace FPSProfiler::Configs
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &PrecisionSettings::m_avgFpsType,
-                        "Average FPS Type",
+                        "Moving Average Type",
                         "Select the type of moving average to use")
-                    ->EnumAttribute(MovingAverageType::Simple, "Simple Moving Average")
-                    ->EnumAttribute(MovingAverageType::Exponential, "Exponential Moving Average")
+                    ->EnumAttribute(MovingAverageType::Simple, "Simple")
+                    ->EnumAttribute(MovingAverageType::Exponential, "Exponential")
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox,
                         &PrecisionSettings::m_useAvgMedianFilter,

@@ -8,7 +8,7 @@
 
 namespace FPSProfiler::Configs
 {
-    enum MovingAverageType : bool
+    enum MovingAverageType
     {
         Simple = 0,
         Exponential = 1,
