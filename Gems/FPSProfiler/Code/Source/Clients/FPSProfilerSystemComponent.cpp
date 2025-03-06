@@ -98,7 +98,8 @@ namespace FPSProfiler
     void FPSProfilerSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        if (m_configRecord.m_framesToRecord == 0)
+
+        if (!m_configFile.m_AutoSave || m_configRecord.m_framesToRecord == 0)
         {
             WriteDataToFile();
         }
@@ -123,7 +124,7 @@ namespace FPSProfiler
             ShowFps();
         }
 
-        if (m_configRecord.m_recordType == Configs::RecordType::FramePick && m_frameCount < m_configRecord.m_framesToSkip)
+        if (m_configRecord.m_recordType == Configs::RecordType::FramePick && m_frameCount <= m_configRecord.m_framesToSkip)
         {
             // Wait for selected frame
             return;
