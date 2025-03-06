@@ -74,7 +74,7 @@ namespace FPSProfiler
         float m_currentFps = 0.0f; //!< FPS in the current frame
         float m_totalFrameTime = 0.0f; //!< Time taken for the current frame
         int m_frameCount = 0; //!< Total number of frames processed
-        int m_recordedFrameCount = 0; //!< Total number of frames recorded.
+        int m_recordedFrameCount = 0; //!< Total number of frames recorded. Used when @ref m_configRecord.m_framesToRecord != 0
 
         AZStd::deque<float> m_fpsSamples; //!< Stores recent FPS values for averaging
 
