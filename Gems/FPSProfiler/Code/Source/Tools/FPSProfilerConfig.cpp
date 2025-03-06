@@ -53,7 +53,7 @@ namespace FPSProfiler::Configs
                         AZ::Edit::UIHandlers::Default,
                         &FileSaveSettings::m_SaveWithTimestamp,
                         "Timestamp",
-                        "When enabled, system will save files with timestamp postfix of current date and hour.");
+                        "When enabled, system will save files with timestamp postfix of current date, hour, minutes and seconds.");
             }
         }
     }

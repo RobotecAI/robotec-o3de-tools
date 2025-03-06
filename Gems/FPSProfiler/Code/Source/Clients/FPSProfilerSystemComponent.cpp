@@ -426,9 +426,9 @@ namespace FPSProfiler
             std::tm timeInfo{};
             localtime_r(&now_time_t, &timeInfo);
 
-            // Format the timestamp as YYYYMMDD_HHMM
-            char timestamp[16];
-            strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M", &timeInfo);
+            // Format the timestamp as YYYYMMDD_HHMMSS
+            char timestamp[20];
+            strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", &timeInfo);
 
             m_configFile.m_OutputFilename.ReplaceFilename(
                 (m_configFile.m_OutputFilename.Stem().String() + "_" + timestamp + m_configFile.m_OutputFilename.Extension().String())
