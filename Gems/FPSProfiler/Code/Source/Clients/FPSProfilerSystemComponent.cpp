@@ -130,12 +130,9 @@ namespace FPSProfiler
             return;
         }
 
-        if (m_configRecord.m_framesToRecord != 0)
+        if (m_configRecord.m_framesToRecord != 0 && m_configRecord.m_framesToRecord == m_recordedFrameCount++)
         {
-            if (m_configRecord.m_framesToRecord == m_recordedFrameCount++)
-            {
-                StopProfiling();
-            }
+            StopProfiling();
         }
 
         if (!IsAnySaveOptionEnabled())
