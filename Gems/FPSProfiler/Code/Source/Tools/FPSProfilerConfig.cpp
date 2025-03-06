@@ -62,18 +62,6 @@ namespace FPSProfiler::Configs
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Enum<RecordType>()
-                ->Value("GameStart", RecordType::GameStart)
-                ->Value("FramePick", RecordType::FramePick)
-                ->Value("Await", RecordType::Await);
-
-            serializeContext->Enum<RecordStatistics>()
-                ->Value("None", RecordStatistics::None)
-                ->Value("FPS", RecordStatistics::FPS)
-                ->Value("CPU", RecordStatistics::CPU)
-                ->Value("GPU", RecordStatistics::GPU)
-                ->Value("MemoryUsage", RecordStatistics::MemoryUsage);
-
             serializeContext->Class<RecordSettings>()
                 ->Version(0)
                 ->Field("m_recordType", &RecordSettings::m_recordType)
@@ -87,17 +75,13 @@ namespace FPSProfiler::Configs
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    // Reflect enum with ComboBox:
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &RecordSettings::m_recordType, "Record Type", "Specifies the type of record.")
-                    // Provide the combo‐box choices:
                     ->EnumAttribute(RecordType::GameStart, "Game Start")
                     ->EnumAttribute(RecordType::FramePick, "Frame Pick")
                     ->EnumAttribute(RecordType::Await, "Await")
-                    // Ensure the UI updates when the enum changes:
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
-                    // Conditionally show m_framesToSkip only if "Frame Pick" is selected:
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &RecordSettings::m_framesToSkip,
@@ -122,59 +106,18 @@ namespace FPSProfiler::Configs
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Step, 100)
 
-                    // FPS Button
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Toggle Save FPS", "Toggle FPS recording")
-                    ->Attribute(
-                        AZ::Edit::Attributes::ButtonText,
-                        [](void* instance) -> AZStd::string
-                        {
-                            auto* self = static_cast<RecordSettings*>(instance);
-                            return (self->m_RecordStats & RecordStatistics::FPS) ? "Disable FPS" : "Enable FPS";
-                        })
-                    ->Attribute(
-                        AZ::Edit::Attributes::ChangeNotify,
-                        [](void* instance)
-                        {
-                            auto* self = static_cast<RecordSettings*>(instance);
-                            self->m_RecordStats = static_cast<RecordStatistics>(self->m_RecordStats ^ RecordStatistics::FPS); // Toggle bit
-                            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-                        })
-
-                    // CPU Button
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Toggle Save CPU", "Toggle CPU recording")
-                    ->Attribute(
-                        AZ::Edit::Attributes::ButtonText,
-                        [](void* instance) -> AZStd::string
-                        {
-                            auto* self = static_cast<RecordSettings*>(instance);
-                            return (self->m_RecordStats & RecordStatistics::CPU) ? "Disable CPU" : "Enable CPU";
-                        })
-                    ->Attribute(
-                        AZ::Edit::Attributes::ChangeNotify,
-                        [](void* instance)
-                        {
-                            auto* self = static_cast<RecordSettings*>(instance);
-                            self->m_RecordStats = static_cast<RecordStatistics>(self->m_RecordStats ^ RecordStatistics::CPU); // Toggle bit
-                            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-                        })
-
-                    // GPU Button
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Save Save GPU", "Toggle GPU recording")
-                    ->Attribute(
-                        AZ::Edit::Attributes::ButtonText,
-                        [](void* instance) -> AZStd::string
-                        {
-                            auto* self = static_cast<RecordSettings*>(instance);
-                            return (self->m_RecordStats & RecordStatistics::GPU) ? "Disable GPU" : "Enable GPU";
-                        })
-                    ->Attribute(
-                        AZ::Edit::Attributes::ChangeNotify,
-                        [](void* instance)
-                        {
-                            auto* self = static_cast<RecordSettings*>(instance);
-                            self->m_RecordStats = static_cast<RecordStatistics>(self->m_RecordStats ^ RecordStatistics::GPU); // Toggle bit
-                            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
-                        });
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox,
+                        &RecordSettings::m_RecordStats,
+                        "Record Stats",
+                        "Specifies the type of stats that will be saved to file.")
+                    ->EnumAttribute(RecordStatistics::None, "None")
+                    ->EnumAttribute(RecordStatistics::FPS, "FPS")
+                    ->EnumAttribute(RecordStatistics::CPU, "CPU")
+                    ->EnumAttribute(RecordStatistics::GPU, "GPU")
+                    ->EnumAttribute(RecordStatistics::MemoryUsage, "MemoryUsage")
+                    ->EnumAttribute(RecordStatistics::All, "All")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree);
             }
         }
     }
