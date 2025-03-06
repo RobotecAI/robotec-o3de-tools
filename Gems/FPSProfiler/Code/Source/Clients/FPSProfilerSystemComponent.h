@@ -23,7 +23,11 @@ namespace FPSProfiler
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         FPSProfilerSystemComponent();
-        explicit FPSProfilerSystemComponent(const Configs::FileSaveSettings& config, bool profileOnGameStart);
+        explicit FPSProfilerSystemComponent(
+            const Configs::FileSaveSettings& configF,
+            const Configs::RecordSettings& configS,
+            const Configs::PrecisionSettings& configP,
+            const Configs::DebugSettings& configD);
         ~FPSProfilerSystemComponent() override;
 
     protected:
@@ -62,7 +66,6 @@ namespace FPSProfiler
 
         // Profiling State
         bool m_isProfiling = false; //!< Flag to indicate if profiling is active
-        bool m_profileOnGameStart = false; //!< Should start profiling at game start.
 
         // FPS Tracking Data
         float m_minFps = 0.0f; //!< Lowest FPS value recorded

@@ -17,12 +17,10 @@ namespace FPSProfiler::Configs
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext
-                    ->Class<FileSaveSettings>("FPS Profiler Configuration", "Tracks FPS, GPU and CPU performance and saves it into .csv")
+                editContext->Class<FileSaveSettings>("File Settings", "Settings controlling save file operations.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "File Settings")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &FileSaveSettings::m_OutputFilename,

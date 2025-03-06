@@ -30,7 +30,9 @@ namespace FPSProfiler
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        Configs::FileSaveSettings m_configuration;
-        bool m_profileOnGameStart = false;
+        Configs::FileSaveSettings m_configFile; //!< Stores editor settings for the profiler
+        Configs::RecordSettings m_configRecord; //!< Stores editor settings for the profiler
+        Configs::PrecisionSettings m_configPrecision; //!< Stores editor settings for the profiler
+        Configs::DebugSettings m_configDebug; //!< Stores editor settings for the profiler
     };
 } // namespace FPSProfiler

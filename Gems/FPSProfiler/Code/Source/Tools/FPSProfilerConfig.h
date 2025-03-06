@@ -52,7 +52,7 @@ namespace FPSProfiler::Configs
         static void Reflect(AZ::ReflectContext* context);
 
         RecordType m_recordType = RecordType::GameStart;
-        float m_framesToSkip = 0.0f; // Available only for FramePick
+        int m_framesToSkip = 0; // Available only for FramePick
         float m_framesToRecord = 0.0f;
         RecordStatistics m_RecordStats = RecordStatistics::All;
     };
@@ -74,7 +74,7 @@ namespace FPSProfiler::Configs
 
         bool m_PrintDebugInfo = true;
         bool m_ShowFps = true;
-        AZ::Color m_Color = AZ::Colors::Blue;
+        AZ::Color m_Color = AZ::Colors::DarkRed;
     };
 
 } // namespace FPSProfiler::Configs

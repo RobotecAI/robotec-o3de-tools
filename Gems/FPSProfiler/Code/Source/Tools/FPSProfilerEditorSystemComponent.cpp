@@ -8,13 +8,18 @@ namespace FPSProfiler
     void FPSProfilerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         Configs::FileSaveSettings::Reflect(context);
+        Configs::RecordSettings::Reflect(context);
+        Configs::PrecisionSettings::Reflect(context);
+        Configs::DebugSettings::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<FPSProfilerEditorSystemComponent, EditorComponentBase>()
                 ->Version(0)
-                ->Field("m_Configuration", &FPSProfilerEditorSystemComponent::m_configuration)
-                ->Field("m_profileOnGameStart", &FPSProfilerEditorSystemComponent::m_profileOnGameStart);
+                ->Field("m_configFile", &FPSProfilerEditorSystemComponent::m_configFile)
+                ->Field("m_configRecord", &FPSProfilerEditorSystemComponent::m_configRecord)
+                ->Field("m_configPrecision", &FPSProfilerEditorSystemComponent::m_configPrecision)
+                ->Field("m_configDebug", &FPSProfilerEditorSystemComponent::m_configDebug);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -24,13 +29,10 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::Category, "Performance")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configuration)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &FPSProfilerEditorSystemComponent::m_profileOnGameStart,
-                        "Profile On Game Start",
-                        "Should system start profiling data instantly after game is launched, or await for other system to activate it?");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configFile)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configRecord)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configPrecision)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configDebug);
             }
         }
     }
@@ -57,6 +59,6 @@ namespace FPSProfiler
 
     void FPSProfilerEditorSystemComponent::BuildGameEntity(AZ::Entity* entity)
     {
-        entity->CreateComponent<FPSProfilerSystemComponent>(m_configuration, m_profileOnGameStart);
+        entity->CreateComponent<FPSProfilerSystemComponent>(m_configFile, m_configRecord, m_configPrecision, m_configDebug);
     }
 } // namespace FPSProfiler

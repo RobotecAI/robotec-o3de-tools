@@ -15,8 +15,10 @@ namespace FPSProfiler
         {
             serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()
                 ->Version(0)
-                ->Field("m_Configuration", &FPSProfilerSystemComponent::m_configFile)
-                ->Field("m_profileOnGameStart", &FPSProfilerSystemComponent::m_profileOnGameStart);
+                ->Field("m_configFile", &FPSProfilerSystemComponent::m_configFile)
+                ->Field("m_configRecord", &FPSProfilerSystemComponent::m_configRecord)
+                ->Field("m_configPrecision", &FPSProfilerSystemComponent::m_configPrecision)
+                ->Field("m_configDebug", &FPSProfilerSystemComponent::m_configDebug);
         }
     }
 
@@ -38,9 +40,15 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(const Configs::FileSaveSettings& config, bool profileOnGameStart)
-        : m_configFile(AZStd::move(config))
-        , m_profileOnGameStart(profileOnGameStart)
+    FPSProfilerSystemComponent::FPSProfilerSystemComponent(
+        const Configs::FileSaveSettings& configF,
+        const Configs::RecordSettings& configS,
+        const Configs::PrecisionSettings& configP,
+        const Configs::DebugSettings& configD)
+        : m_configFile(AZStd::move(configF))
+        , m_configRecord(AZStd::move(configS))
+        , m_configPrecision(AZStd::move(configP))
+        , m_configDebug(AZStd::move(configD))
     {
         if (FPSProfilerInterface::Get() == nullptr)
         {
@@ -71,7 +79,7 @@ namespace FPSProfiler
         m_configFile.m_AutoSave ? m_logBuffer.reserve(MAX_LOG_BUFFER_LINE_SIZE * m_configFile.m_AutoSaveAtFrame * 2)
                                 : m_logBuffer.reserve(MAX_LOG_BUFFER_SIZE);
 
-        if (m_profileOnGameStart)
+        if (m_configRecord.m_recordType == Configs::RecordType::GameStart)
         {
             AZ::TickBus::QueueFunction(
                 [this]()
@@ -106,6 +114,22 @@ namespace FPSProfiler
         if (m_configDebug.m_ShowFps)
         {
             ShowFps();
+        }
+
+        if (m_configRecord.m_recordType == Configs::RecordType::FramePick && m_configRecord.m_framesToSkip > m_frameCount)
+        {
+            // Wait for selected frame
+            return;
+        }
+
+        if (m_configRecord.m_framesToRecord <= m_configPrecision.m_NearZeroPrecision)
+        {
+            static int localFrameCount = 0;
+            if (m_configRecord.m_framesToRecord == localFrameCount)
+            {
+                StopProfiling();
+            }
+            localFrameCount++;
         }
 
         if (!IsAnySaveOptionEnabled())
