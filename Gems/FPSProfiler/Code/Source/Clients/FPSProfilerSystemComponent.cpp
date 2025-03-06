@@ -363,7 +363,7 @@ namespace FPSProfiler
         m_totalFrameTime += deltaTime;
         m_frameCount++;
 
-        // Latest fps hisotry for avg fps calculation
+        // Latest fps history for avg fps calculation
         m_fpsSamples.push_back(m_currentFps);
         if (m_fpsSamples.size() > m_configFile.m_AutoSaveAtFrame)
         {
