@@ -122,7 +122,7 @@ namespace FPSProfiler
             return;
         }
 
-        if (m_configRecord.m_framesToRecord <= m_configPrecision.m_NearZeroPrecision)
+        if (m_configRecord.m_framesToRecord != 0)
         {
             static int localFrameCount = 0;
             if (m_configRecord.m_framesToRecord == localFrameCount)
