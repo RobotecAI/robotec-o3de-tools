@@ -76,14 +76,14 @@ namespace FPSProfiler
                 m_configFile.m_OutputFilename.c_str());
         }
 
-        FPSProfilerRequestBus::Handler::BusConnect(); // connect first to broadcast notifications
-        AZ::TickBus::Handler::BusConnect(); // connect last, after setup
-
         // Reserve log entries buffer size based on known auto save per frame
         m_configFile.m_AutoSave ? m_logBuffer.reserve(MAX_LOG_BUFFER_LINE_SIZE * m_configFile.m_AutoSaveAtFrame * 2)
                                 : m_logBuffer.reserve(MAX_LOG_BUFFER_SIZE);
 
-        if (m_configRecord.m_recordType == Configs::RecordType::GameStart)
+        FPSProfilerRequestBus::Handler::BusConnect(); // connect first to broadcast notifications
+        AZ::TickBus::Handler::BusConnect(); // connect last, after setup
+
+        if (m_configRecord.m_recordType != Configs::RecordType::Await)
         {
             AZ::TickBus::QueueFunction(
                 [this]()
@@ -123,7 +123,7 @@ namespace FPSProfiler
             ShowFps();
         }
 
-        if (m_configRecord.m_recordType == Configs::RecordType::FramePick && m_configRecord.m_framesToSkip > m_frameCount)
+        if (m_configRecord.m_recordType == Configs::RecordType::FramePick && m_frameCount < m_configRecord.m_framesToSkip)
         {
             // Wait for selected frame
             return;
