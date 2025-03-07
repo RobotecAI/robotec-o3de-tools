@@ -30,6 +30,7 @@ namespace GeoJSONSpawner
     inline constexpr const char* GeoJSONSpawnableAssetConfigurationTypeId = "{cee254bb-edc8-45b1-b85a-aaf19ec3af83}";
     inline constexpr const char* GeoJSONSpawnableEntityInfoTypeId = "{170bb487-fbae-4394-8176-069045a3a316}";
     inline constexpr const char* FeatureObjectInfoTypeId = "{00f38302-9f4d-4bac-805b-72a29e42a704}";
+    inline constexpr const char* GeoJSONSpawnerEditorTerrainSettingsConfigTypeId = "{9bb9e1c6-dd7c-435f-8fe1-bd5498c3e8f2}";
 
     // Components TypeIds
     inline constexpr const char* GeoJSONSpawnerComponentTypeId = "{839ede69-92f1-45b0-a60e-035d0b84e1fd}";

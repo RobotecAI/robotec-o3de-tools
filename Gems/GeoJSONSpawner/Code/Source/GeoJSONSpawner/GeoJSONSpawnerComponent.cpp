@@ -30,11 +30,15 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerComponent::Activate()
     {
-        AZ::TickBus::QueueFunction(
-            [this]()
-            {
-                SpawnEntities();
-            });
+        if (GeoJSONUtils::IsTerrainAvailable())
+        {
+            AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        }
+        else
+        {
+            OnTerrainDataCreateEnd();
+        }
+
         GeoJSONSpawnerRequestBus::Handler::BusConnect(GetEntityId());
     }
 
@@ -44,6 +48,8 @@ namespace GeoJSONSpawner
         {
             AZ::TickBus::Handler::BusDisconnect();
         }
+
+        OnTerrainDataDestroyBegin();
         GeoJSONSpawnerRequestBus::Handler::BusDisconnect();
     }
 
@@ -268,6 +274,29 @@ namespace GeoJSONSpawner
         }
 
         return AZ::Success(result);
+    }
+
+    void GeoJSONSpawnerComponent::OnTerrainDataCreateEnd()
+    {
+        if (m_terrainCreatedOnlyOnce)
+        {
+            return;
+        }
+
+        AZ::TickBus::QueueFunction(
+            [this]()
+            {
+                SpawnEntities();
+            });
+
+        // Init only once, even if level have multiple terrains
+        m_terrainCreatedOnlyOnce = true;
+    }
+
+    void GeoJSONSpawnerComponent::OnTerrainDataDestroyBegin()
+    {
+        m_terrainCreatedOnlyOnce = false;
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 
     void GeoJSONSpawnerComponent::FillGroupIdToTicketIdMap()
