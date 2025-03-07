@@ -126,10 +126,6 @@ namespace FPSProfiler::Configs
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Enum<MovingAverageType>()
-                ->Value("Simple", MovingAverageType::Simple)
-                ->Value("Exponential", MovingAverageType::Exponential);
-
             serializeContext->Class<PrecisionSettings>()
                 ->Version(0)
                 ->Field("m_NearZeroPrecision", &PrecisionSettings::m_NearZeroPrecision)
