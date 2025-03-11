@@ -346,3 +346,60 @@ Refer to script canvas example below:
 ![alt text](doc/imguizmo.png)
 
 *Note* Only one gizmo can be rendered at the time!
+
+# FPSProfiler
+This gem provides a tool to collect statistics in the game mode of the FPS, CPU and GPU into `csv` file.
+
+The Profiler has a EBus which can control profiling in runtime (start/stop/reset), save profiled data, change save path, access current frame memory data or fps (avg, min, max).
+It is also provided with a set of notification functions, making it highly customizable for end user.
+
+![FpsProfiler Editor](doc/FpsProfiler.png)
+
+| Variable Name              | Description                                                                                        |
+|----------------------------|----------------------------------------------------------------------------------------------------|
+| **Csv Save Path**          | Path where collected data will be saved.                                                           |
+| **Auto Save**              | Enable to auto save. Auto save is performed when target defined variable is reached.               |
+| **Auto Save At Frame**     | Auto saves collected data at selected frame occurrence.                                            |
+| **Timestamp**              | Applies timestamp Year-Month-Day-Hour-Minutes to file name. Let's you save multiple files at once. |
+| **Near Zero Precision**    | Floating point precision when comparing to 0.                                                      |
+| **Save FPS Data**          | Save collected FPS statistics.                                                                     |
+| **Save CPU Data**          | Save collected CPU statistics.                                                                     |
+| **Save GPU Data**          | Save collected GPU statistics.                                                                     |
+| **Show FPS**               | Show the FPS value in the left-top corner.                                                         |
+| **Profile On Game Start**  | Start profiling data at once into csv file, after entering game mode.                              |
+
+## Setup
+To start using the tool, add a `FPSProfiler` to the **Level** entity.
+
+### Profiling data using API Interface:
+```c++
+// Get Interface and validate it
+auto profiler = FPSProfiler::FPSProfilerInterface::Get();
+if (!profiler)
+{
+    return;
+}
+
+profiler->StartProfiling();
+float currentFps = profiler->GetCurrentFps();
+```
+
+### Profiling data using API Broadcast:
+```c++
+// Start profiling
+FPSProfilerRequestBus::Broadcast(&FPSProfilerRequests::StartProfiling);
+
+// Retrieve FPS using the request bus
+float currentFps = 0.0f;
+FPSProfilerRequestBus::BroadcastResult(currentFps, &FPSProfilerRequests::GetCurrentFps);
+```
+
+## CSV File Example
+| Frame | FrameTime | CurrentFPS | MinFPS | MaxFPS | AvgFPS | CpuMemoryUsed | CpuMemoryReserved | GpuMemoryUsed | GpuMemoryReserved  |
+|-------|-----------|------------|--------|--------|--------|---------------|-------------------|---------------|--------------------|
+| 1     | 0.3943    | 2.54       | 2.54   | 2.54   | 2.54   | 2166.44       | 237568            | 3756.19       | 6930.19            |
+| 2     | 0.1643    | 6.09       | 2.54   | 6.09   | 4.31   | 2182.99       | 237568            | 4126.19       | 6928.12            |
+| 3     | 0.1150    | 8.69       | 2.54   | 8.69   | 5.77   | 2183.49       | 237568            | 3134.19       | 6928.69            |
+| 4     | 0.0203    | 49.33      | 2.54   | 49.33  | 16.66  | 2181.58       | 237568            | 2654.19       | 6928.69            |
+| 5     | 0.0282    | 35.46      | 2.54   | 49.33  | 20.42  | 2181.20       | 237568            | 2654.19       | 6928.69            |
+
