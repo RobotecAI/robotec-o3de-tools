@@ -1,7 +1,7 @@
 #pragma once
 
+#include <Configurations/FPSProfilerConfig.h>
 #include <FPSProfiler/FPSProfilerTypeIds.h>
-#include <Tools/FPSProfilerConfig.h>
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path_fwd.h>

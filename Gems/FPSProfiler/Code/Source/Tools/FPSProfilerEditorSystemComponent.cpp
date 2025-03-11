@@ -1,5 +1,7 @@
 #include "FPSProfilerEditorSystemComponent.h"
 
+#include <Clients/FPSProfilerSystemComponent.h>
+
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

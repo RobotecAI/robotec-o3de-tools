@@ -1,7 +1,7 @@
 #pragma once
 
+#include <Configurations/FPSProfilerConfig.h>
 #include <FPSProfiler/FPSProfilerBus.h>
-#include <Tools/FPSProfilerConfig.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>

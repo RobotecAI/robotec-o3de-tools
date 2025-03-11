@@ -1,7 +1,6 @@
 #pragma once
 
-#include "FPSProfilerConfig.h"
-#include <Clients/FPSProfilerSystemComponent.h>
+#include <Configurations/FPSProfilerConfig.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <ToolsComponents/EditorComponentBase.h>
