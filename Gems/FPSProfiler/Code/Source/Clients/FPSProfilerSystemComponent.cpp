@@ -39,7 +39,7 @@ namespace FPSProfiler
 
     FPSProfilerSystemComponent::FPSProfilerSystemComponent()
     {
-        if (FPSProfilerInterface::Get() == nullptr)
+        if (!FPSProfilerInterface::Get())
         {
             FPSProfilerInterface::Register(this);
         }
@@ -55,7 +55,7 @@ namespace FPSProfiler
         , m_configPrecision(AZStd::move(configP))
         , m_configDebug(AZStd::move(configD))
     {
-        if (FPSProfilerInterface::Get() == nullptr)
+        if (!FPSProfilerInterface::Get())
         {
             FPSProfilerInterface::Register(this);
         }

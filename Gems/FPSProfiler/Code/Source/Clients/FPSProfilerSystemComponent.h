@@ -9,7 +9,7 @@
 
 namespace FPSProfiler
 {
-    class FPSProfilerSystemComponent final
+    class FPSProfilerSystemComponent
         : public AZ::Component
         , protected FPSProfilerRequestBus::Handler
         , public AZ::TickBus::Handler
@@ -90,7 +90,7 @@ namespace FPSProfiler
         // Utility Functions
         void CalculateFpsData(const float& deltaTime);
         static float BytesToMB(AZStd::size_t bytes);
-        bool IsPathValid(const AZ::IO::Path& path) const;
+        [[nodiscard]] bool IsPathValid(const AZ::IO::Path& path) const;
 
         // Debug Display
         void ShowFps() const;
