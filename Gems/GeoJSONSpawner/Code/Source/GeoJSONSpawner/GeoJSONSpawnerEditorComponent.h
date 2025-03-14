@@ -10,11 +10,13 @@
 
 #pragma once
 
+#include "EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h"
+#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 #include "GeoJSONSpawnerUtils.h"
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 namespace GeoJSONSpawner
@@ -27,9 +29,13 @@ namespace GeoJSONSpawner
     class GeoJSONSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(GeoJSONSpawnerEditorComponent, GeoJSONSpawnerEditorComponentTypeId);
+
+        GeoJSONSpawnerEditorComponent() = default;
+        ~GeoJSONSpawnerEditorComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -37,6 +43,9 @@ namespace GeoJSONSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        // AzFramework::Terrain::TerrainDataNotificationBus::Handler overrides
+        void OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
@@ -54,6 +63,8 @@ namespace GeoJSONSpawner
 
         AZStd::vector<GeoJSONUtils::GeoJSONSpawnableEntityInfo> m_spawnableEntityInfo;
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_spawnedTicketsGroups;
+
+        GeoJSONSpawnerEditorTerrainSettingsConfig m_terrainSettingsConfig; //!< Terrain Editor Settings Configuration for GeoJSONSpawner
     };
 
 } // namespace GeoJSONSpawner

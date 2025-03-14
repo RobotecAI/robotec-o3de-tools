@@ -10,19 +10,18 @@
 
 #pragma once
 
-#include "API/ToolsApplicationAPI.h"
 #include "CsvSpawnerUtils.h"
+#include "EditorConfigurations/CsvSpawnerEditorTerrainSettingsConfig.h"
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 namespace CsvSpawner
 {
-
     //! Editor component for the CsvSpawner component.
     //! This component is used to spawn Csvs in the editor.
     //! It loads a CSV file that contains location of Csvs to spawn.
@@ -30,12 +29,12 @@ namespace CsvSpawner
     class CsvSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
-        , protected AZ::TickBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(CsvSpawnerEditorComponent, CsvSpawnerEditorComponentTypeId);
         CsvSpawnerEditorComponent() = default;
-        ~CsvSpawnerEditorComponent() = default;
+        ~CsvSpawnerEditorComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -43,8 +42,9 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
+
+        // AzFramework::Terrain::TerrainDataNotificationBus interface overrides ...
+        void OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides
@@ -52,10 +52,9 @@ namespace CsvSpawner
 
         void OnSpawnButton();
 
-        void OnOnShowLabelsChanged();
+        void OnShowLabelsChanged();
 
         void SpawnEntities();
-        int m_frameCounter;
 
         AZStd::vector<CsvSpawnerUtils::CsvSpawnableAssetConfiguration>
             m_spawnableAssetConfigurations; //!< List of spawnable "types" (e.g. pineCsv, oakTre, mapleCsv, etc.)
@@ -65,6 +64,8 @@ namespace CsvSpawner
         bool m_showLabels{ true }; //!< Whether to show labels or not in Editorullq
 
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets; //!< Tickets for editor-time spawned entities
-        int m_numberOfEntries{ 0 }; //! Number of entries in the csv file
+        int m_numberOfEntries{ 0 }; //!< Number of entries in the csv file
+
+        CsvSpawnerEditorTerrainSettingsConfig m_terrainSettingsConfig; //!< Terrain Editor Settings Configuration for CsvSpawner
     };
 } // namespace CsvSpawner
