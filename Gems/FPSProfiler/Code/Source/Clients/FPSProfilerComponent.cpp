@@ -484,16 +484,16 @@ namespace FPSProfiler
     bool FPSProfilerComponent::IsPathValid(const AZStd::string& path) const
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ::IO::Path pathToValidate(path.c_str());
 
-        AZ::IO::Path tempPath(path.c_str());
-
-        if (tempPath.empty() || !tempPath.HasFilename() || !tempPath.HasExtension() || !fileIO || !fileIO->ResolvePath(tempPath))
+        if (pathToValidate.empty() || !pathToValidate.HasFilename() || !pathToValidate.HasExtension() || !fileIO ||
+            !fileIO->ResolvePath(pathToValidate))
         {
-            const char* reason = tempPath.empty() ? "Path cannot be empty."
-                : !tempPath.HasFilename()         ? "Path must have a file at the end."
-                : !tempPath.HasExtension()        ? "Path must have a *.csv extension."
-                : !fileIO                         ? "Could not get a FileIO object. Try again."
-                                                  : "Path is not registered or recognizable by O3DE FileIO System.";
+            const char* reason = pathToValidate.empty() ? "Path cannot be empty."
+                : !pathToValidate.HasFilename()         ? "Path must have a file at the end."
+                : !pathToValidate.HasExtension()        ? "Path must have a *.csv extension."
+                : !fileIO                               ? "Could not get a FileIO object. Try again."
+                                                        : "Path is not registered or recognizable by O3DE FileIO System.";
 
             AZ_Warning("FPSProfiler::IsPathValid", !m_configDebug.m_PrintDebugInfo, "%s", reason);
             return false;
