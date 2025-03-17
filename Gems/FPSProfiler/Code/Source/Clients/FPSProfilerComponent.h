@@ -15,7 +15,7 @@ namespace FPSProfiler
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(FPSProfilerComponent, FPSProfilerSystemComponentTypeId, Component);
+        AZ_COMPONENT(FPSProfilerComponent, FPSProfilerComponentTypeId, Component);
 
         static void Reflect(AZ::ReflectContext* context);
 

@@ -11,7 +11,7 @@ namespace FPSProfiler
     class FPSProfilerEditorComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
-        AZ_EDITOR_COMPONENT(FPSProfilerEditorComponent, FPSProfilerEditorSystemComponentTypeId, EditorComponentBase);
+        AZ_EDITOR_COMPONENT(FPSProfilerEditorComponent, FPSProfilerEditorComponentTypeId, EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
 
