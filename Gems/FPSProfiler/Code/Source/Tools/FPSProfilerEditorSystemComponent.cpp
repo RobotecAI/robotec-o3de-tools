@@ -1,12 +1,10 @@
 #include "FPSProfilerEditorSystemComponent.h"
-
-#include "AzQtComponents/Components/Widgets/FileDialog.h"
-#include "UI/UICore/WidgetHelpers.h"
-
 #include <Clients/FPSProfilerSystemComponent.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <UI/UICore/WidgetHelpers.h>
 
 namespace FPSProfiler
 {
