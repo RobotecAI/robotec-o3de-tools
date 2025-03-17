@@ -182,8 +182,9 @@ namespace FPSProfiler::Configs
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox,
                         &PrecisionSettings::m_keepHistory,
-                        "Use Average Median Filter",
-                        "Enable median filtering for averaging");
+                        "Keep History",
+                        "Enabled saves entire history for better avg fps smoothing, otherwise history is cleared per auto save if "
+                        "enabled.");
             }
         }
     }
