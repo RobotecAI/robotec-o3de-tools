@@ -9,4 +9,6 @@ set(FILES
     Source/GeoJSONSpawner/Schemas/GeoJSONSchema.h
     Source/GeoJSONSpawner/GeoJSONSpawnerUtils.cpp
     Source/GeoJSONSpawner/GeoJSONSpawnerUtils.h
+    Source/GeoJSONSpawner/EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.cpp
+    Source/GeoJSONSpawner/EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h
 )

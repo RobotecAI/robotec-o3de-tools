@@ -9,7 +9,7 @@
  */
 
 #include "GeoJSONSpawnerEditorComponent.h"
-
+#include "EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h"
 #include "GeoJSONSpawnerComponent.h"
 
 #include <AzCore/Component/TickBus.h>
@@ -25,12 +25,15 @@ namespace GeoJSONSpawner
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            GeoJSONSpawnerEditorTerrainSettingsConfig::Reflect(context);
+
             serializeContext->Class<GeoJSONSpawnerEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Version(0)
                 ->Field("GeoJSONAssetId", &GeoJSONSpawnerEditorComponent::m_geoJsonAssetId)
                 ->Field("Configuration", &GeoJSONSpawnerEditorComponent::m_spawnableAssetConfigurations)
                 ->Field("DefaultSeed", &GeoJSONSpawnerEditorComponent::m_defaultSeed)
-                ->Field("ShowLabels", &GeoJSONSpawnerEditorComponent::m_showLabels);
+                ->Field("ShowLabels", &GeoJSONSpawnerEditorComponent::m_showLabels)
+                ->Field("ConfigTerrainSettings", &GeoJSONSpawnerEditorComponent::m_terrainSettingsConfig);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -63,7 +66,12 @@ namespace GeoJSONSpawner
                         &GeoJSONSpawnerEditorComponent::m_showLabels,
                         "Show labels in Editor",
                         "Show labels in Editor.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorComponent::OnShowLabelsChanged);
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorComponent::OnShowLabelsChanged)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &GeoJSONSpawnerEditorComponent::m_terrainSettingsConfig,
+                        "Spawn Behaviour Settings",
+                        "Settings to configure spawn behaviour in editor.");
             }
         }
     }
@@ -71,22 +79,34 @@ namespace GeoJSONSpawner
     void GeoJSONSpawnerEditorComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         if (m_showLabels)
         {
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
-        AZ::TickBus::QueueFunction(
-            [this]()
-            {
-                SpawnEntities();
-            });
+        if (m_terrainSettingsConfig.m_spawnOnComponentActivated && !m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce)
+        {
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    // If there is no Terrain handlers (which means no active terrain in this level), just spawn entities on next available
+                    // tick. Since terrain is initiated on tick, IsTerrainAvailable will return real information when used inside tick.
+                    if (!GeoJSONUtils::IsTerrainAvailable() && !m_terrainSettingsConfig.m_spawnOnTerrainUpdate)
+                    {
+                        m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = true;
+                        SpawnEntities();
+                    }
+                });
+        }
     }
 
     void GeoJSONSpawnerEditorComponent::Deactivate()
     {
         m_spawnedTicketsGroups.clear();
+        m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = false;
 
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
@@ -185,6 +205,27 @@ namespace GeoJSONSpawner
         gameEntity->CreateComponent<GeoJSONSpawnerComponent>(
             spawnableAssetConfigurationsMap, sourceAssetInfo.m_relativePath.c_str(), m_defaultSeed);
         m_spawnedTicketsGroups.clear();
+    }
+
+    void GeoJSONSpawnerEditorComponent::OnTerrainDataChanged(
+        [[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
+    {
+        // Ignore on update with selected flags
+        if (static_cast<bool>(dataChangedMask & m_terrainSettingsConfig.m_terrainMasksToIgnore))
+        {
+            return;
+        }
+
+        if ((m_terrainSettingsConfig.m_spawnOnComponentActivated && !m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce) ||
+            m_terrainSettingsConfig.m_spawnOnTerrainUpdate)
+        {
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    SpawnEntities();
+                    m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = true;
+                });
+        }
     }
 
     void GeoJSONSpawnerEditorComponent::DisplayViewport(

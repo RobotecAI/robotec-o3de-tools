@@ -17,13 +17,13 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <ROS2/Georeference/GeoreferenceBus.h>
-#include <random>
-#include <rapidjson/schema.h>
-
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <ROS2/Georeference/GeoreferenceBus.h>
+#include <random>
+#include <rapidjson/schema.h>
 
 namespace GeoJSONSpawner::GeoJSONUtils
 {
@@ -569,4 +569,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
         return GeometryType::Unknown;
     }
 
+    bool IsTerrainAvailable()
+    {
+        return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
+    }
 } // namespace GeoJSONSpawner::GeoJSONUtils
