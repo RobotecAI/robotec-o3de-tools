@@ -4,7 +4,7 @@
 
 #include <FPSProfiler/FPSProfilerTypeIds.h>
 
-#include <Clients/FPSProfilerSystemComponent.h>
+#include <Clients/FPSProfilerComponent.h>
 
 namespace FPSProfiler
 {
@@ -16,19 +16,19 @@ namespace FPSProfiler
     {
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
         // Add ALL components descriptors associated with this gem to m_descriptors.
-        // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
+        // This will associate the AzTypeInfo information for the components with the SerializeContext, BehaviorContext and EditContext.
         // This happens through the [MyComponent]::Reflect() function.
         m_descriptors.insert(
             m_descriptors.end(),
             {
-                FPSProfilerSystemComponent::CreateDescriptor(),
+                FPSProfilerComponent::CreateDescriptor(),
             });
     }
 
     AZ::ComponentTypeList FPSProfilerModuleInterface::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
-            azrtti_typeid<FPSProfilerSystemComponent>(),
+            azrtti_typeid<FPSProfilerComponent>(),
         };
     }
 } // namespace FPSProfiler

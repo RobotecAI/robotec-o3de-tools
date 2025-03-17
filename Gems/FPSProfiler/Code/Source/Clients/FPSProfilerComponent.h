@@ -9,26 +9,26 @@
 
 namespace FPSProfiler
 {
-    class FPSProfilerSystemComponent final
+    class FPSProfilerComponent final
         : public AZ::Component
         , protected FPSProfilerRequestBus::Handler
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(FPSProfilerSystemComponent, FPSProfilerSystemComponentTypeId, Component);
+        AZ_COMPONENT(FPSProfilerComponent, FPSProfilerSystemComponentTypeId, Component);
 
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
-        FPSProfilerSystemComponent();
-        explicit FPSProfilerSystemComponent(
+        FPSProfilerComponent();
+        explicit FPSProfilerComponent(
             const Configs::FileSaveSettings& configF,
             const Configs::RecordSettings& configS,
             const Configs::PrecisionSettings& configP,
             const Configs::DebugSettings& configD);
-        ~FPSProfilerSystemComponent() override;
+        ~FPSProfilerComponent() override;
 
     protected:
         // AZ::Component interface implementation

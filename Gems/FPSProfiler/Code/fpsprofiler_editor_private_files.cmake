@@ -1,5 +1,5 @@
 
 set(FILES
-    Source/Tools/FPSProfilerEditorSystemComponent.cpp
-    Source/Tools/FPSProfilerEditorSystemComponent.h
+        Source/Tools/FPSProfilerEditorComponent.cpp
+        Source/Tools/FPSProfilerEditorComponent.h
 )

@@ -1,5 +1,5 @@
 
-#include "FPSProfilerSystemComponent.h"
+#include "FPSProfilerComponent.h"
 #include <FPSProfiler/FPSProfilerTypeIds.h>
 #include <FPSProfilerModuleInterface.h>
 

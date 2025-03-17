@@ -8,17 +8,15 @@
 namespace FPSProfiler
 {
     /// System component for FPSProfiler editor
-    class FPSProfilerEditorSystemComponent
-        : public AzToolsFramework::Components::EditorComponentBase
-        , protected AzToolsFramework::EditorEvents::Bus::Handler
+    class FPSProfilerEditorComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
-        AZ_EDITOR_COMPONENT(FPSProfilerEditorSystemComponent, FPSProfilerEditorSystemComponentTypeId, EditorComponentBase);
+        AZ_EDITOR_COMPONENT(FPSProfilerEditorComponent, FPSProfilerEditorSystemComponentTypeId, EditorComponentBase);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        FPSProfilerEditorSystemComponent() = default;
-        ~FPSProfilerEditorSystemComponent() override = default;
+        FPSProfilerEditorComponent() = default;
+        ~FPSProfilerEditorComponent() override = default;
 
         // AZ::Component
         void Activate() override;

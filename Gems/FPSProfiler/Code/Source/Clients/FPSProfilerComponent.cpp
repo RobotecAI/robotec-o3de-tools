@@ -1,4 +1,4 @@
-#include "FPSProfilerSystemComponent.h"
+#include "FPSProfilerComponent.h"
 
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
@@ -9,7 +9,7 @@
 
 namespace FPSProfiler
 {
-    void FPSProfilerSystemComponent::Reflect(AZ::ReflectContext* context)
+    void FPSProfilerComponent::Reflect(AZ::ReflectContext* context)
     {
         Configs::FileSaveSettings::Reflect(context);
         Configs::RecordSettings::Reflect(context);
@@ -18,26 +18,26 @@ namespace FPSProfiler
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<FPSProfilerSystemComponent, AZ::Component>()
+            serializeContext->Class<FPSProfilerComponent, AZ::Component>()
                 ->Version(0)
-                ->Field("m_configFile", &FPSProfilerSystemComponent::m_configFile)
-                ->Field("m_configRecord", &FPSProfilerSystemComponent::m_configRecord)
-                ->Field("m_configPrecision", &FPSProfilerSystemComponent::m_configPrecision)
-                ->Field("m_configDebug", &FPSProfilerSystemComponent::m_configDebug);
+                ->Field("m_configFile", &FPSProfilerComponent::m_configFile)
+                ->Field("m_configRecord", &FPSProfilerComponent::m_configRecord)
+                ->Field("m_configPrecision", &FPSProfilerComponent::m_configPrecision)
+                ->Field("m_configDebug", &FPSProfilerComponent::m_configDebug);
         }
     }
 
-    void FPSProfilerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void FPSProfilerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("FPSProfilerService"));
     }
 
-    void FPSProfilerSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void FPSProfilerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("FPSProfilerService"));
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent()
+    FPSProfilerComponent::FPSProfilerSystemComponent()
     {
         if (!FPSProfilerInterface::Get())
         {
@@ -45,7 +45,7 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerSystemComponent::FPSProfilerSystemComponent(
+    FPSProfilerComponent::FPSProfilerSystemComponent(
         const Configs::FileSaveSettings& configF,
         const Configs::RecordSettings& configS,
         const Configs::PrecisionSettings& configP,
@@ -61,7 +61,7 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerSystemComponent::~FPSProfilerSystemComponent()
+    FPSProfilerComponent::~FPSProfilerSystemComponent()
     {
         if (FPSProfilerInterface::Get() == this)
         {
@@ -69,7 +69,7 @@ namespace FPSProfiler
         }
     }
 
-    void FPSProfilerSystemComponent::Activate()
+    void FPSProfilerComponent::Activate()
     {
         if (!IsPathValid(m_configFile.m_OutputFilename))
         {
@@ -100,7 +100,7 @@ namespace FPSProfiler
         AZ_Printf("FPS Profiler", "FPSProfiler activated.");
     }
 
-    void FPSProfilerSystemComponent::Deactivate()
+    void FPSProfilerComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
 
@@ -114,7 +114,7 @@ namespace FPSProfiler
         FPSProfilerRequestBus::Handler::BusDisconnect();
     }
 
-    void FPSProfilerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void FPSProfilerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         if (!m_isProfiling)
         {
@@ -197,12 +197,12 @@ namespace FPSProfiler
         }
     }
 
-    int FPSProfilerSystemComponent::GetTickOrder()
+    int FPSProfilerComponent::GetTickOrder()
     {
         return AZ::TICK_GAME;
     }
 
-    void FPSProfilerSystemComponent::StartProfiling()
+    void FPSProfilerComponent::StartProfiling()
     {
         if (m_isProfiling)
         {
@@ -225,7 +225,7 @@ namespace FPSProfiler
         AZ_Printf("FPS Profiler", "Profiling started.");
     }
 
-    void FPSProfilerSystemComponent::StopProfiling()
+    void FPSProfilerComponent::StopProfiling()
     {
         if (!m_isProfiling)
         {
@@ -247,7 +247,7 @@ namespace FPSProfiler
         AZ_Printf("FPS Profiler", "Profiling stopped.");
     }
 
-    void FPSProfilerSystemComponent::ResetProfilingData()
+    void FPSProfilerComponent::ResetProfilingData()
     {
         m_minFps = AZ::Constants::FloatMax; // Start at max to ensure the first valid FPS sets the minimum correctly in AZStd::min
         m_maxFps = 0.0f;
@@ -264,17 +264,17 @@ namespace FPSProfiler
         AZ_Printf("FPS Profiler", "Profiling data reseted.");
     }
 
-    bool FPSProfilerSystemComponent::IsProfiling() const
+    bool FPSProfilerComponent::IsProfiling() const
     {
         return m_isProfiling;
     }
 
-    bool FPSProfilerSystemComponent::IsAnySaveOptionEnabled() const
+    bool FPSProfilerComponent::IsAnySaveOptionEnabled() const
     {
         return m_configRecord.m_RecordStats != Configs::RecordStatistics::None;
     }
 
-    void FPSProfilerSystemComponent::ChangeSavePath(const AZStd::string& newSavePath)
+    void FPSProfilerComponent::ChangeSavePath(const AZStd::string& newSavePath)
     {
         if (!IsPathValid(newSavePath))
         {
@@ -285,34 +285,34 @@ namespace FPSProfiler
         AZ_Warning("FPS Profiler", !m_configDebug.m_PrintDebugInfo && !m_isProfiling, "Path changed during activated profiling.");
     }
 
-    void FPSProfilerSystemComponent::SafeChangeSavePath(const AZStd::string& newSavePath)
+    void FPSProfilerComponent::SafeChangeSavePath(const AZStd::string& newSavePath)
     {
         // If profiling is enabled, save current opened file and stop profiling.
         StopProfiling();
         ChangeSavePath(newSavePath);
     }
 
-    float FPSProfilerSystemComponent::GetMinFps() const
+    float FPSProfilerComponent::GetMinFps() const
     {
         return m_minFps;
     }
 
-    float FPSProfilerSystemComponent::GetMaxFps() const
+    float FPSProfilerComponent::GetMaxFps() const
     {
         return m_maxFps;
     }
 
-    float FPSProfilerSystemComponent::GetAvgFps() const
+    float FPSProfilerComponent::GetAvgFps() const
     {
         return m_avgFps;
     }
 
-    float FPSProfilerSystemComponent::GetCurrentFps() const
+    float FPSProfilerComponent::GetCurrentFps() const
     {
         return m_currentFps;
     }
 
-    AZStd::pair<AZStd::size_t, AZStd::size_t> FPSProfilerSystemComponent::GetCpuMemoryUsed() const
+    AZStd::pair<AZStd::size_t, AZStd::size_t> FPSProfilerComponent::GetCpuMemoryUsed() const
     {
         AZStd::size_t usedBytes = 0;
         AZStd::size_t reservedBytes = 0;
@@ -321,7 +321,7 @@ namespace FPSProfiler
         return { usedBytes, reservedBytes };
     }
 
-    AZStd::pair<AZStd::size_t, AZStd::size_t> FPSProfilerSystemComponent::GetGpuMemoryUsed() const
+    AZStd::pair<AZStd::size_t, AZStd::size_t> FPSProfilerComponent::GetGpuMemoryUsed() const
     {
         if (AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get())
         {
@@ -338,12 +338,12 @@ namespace FPSProfiler
         return { 0, 0 };
     }
 
-    void FPSProfilerSystemComponent::SaveLogToFile()
+    void FPSProfilerComponent::SaveLogToFile()
     {
         WriteDataToFile();
     }
 
-    void FPSProfilerSystemComponent::SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath)
+    void FPSProfilerComponent::SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath)
     {
         if (useSafeChangePath)
         {
@@ -357,12 +357,12 @@ namespace FPSProfiler
         WriteDataToFile();
     }
 
-    void FPSProfilerSystemComponent::ShowFpsOnScreen(bool enable)
+    void FPSProfilerComponent::ShowFpsOnScreen(bool enable)
     {
         m_configDebug.m_ShowFps = enable;
     }
 
-    void FPSProfilerSystemComponent::CalculateFpsData(const float& deltaTime)
+    void FPSProfilerComponent::CalculateFpsData(const float& deltaTime)
     {
         m_currentFps = deltaTime > 0 ? (1.0f / deltaTime) : 0.0f;
         m_totalFrameTime += deltaTime;
@@ -404,7 +404,7 @@ namespace FPSProfiler
         m_maxFps = AZStd::max(m_maxFps, m_currentFps);
     }
 
-    void FPSProfilerSystemComponent::CreateLogFile()
+    void FPSProfilerComponent::CreateLogFile()
     {
         if (!IsAnySaveOptionEnabled())
         {
@@ -452,7 +452,7 @@ namespace FPSProfiler
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileCreated, m_configFile.m_OutputFilename.c_str());
     }
 
-    void FPSProfilerSystemComponent::WriteDataToFile()
+    void FPSProfilerComponent::WriteDataToFile()
     {
         if (m_logBuffer.empty())
         {
@@ -476,12 +476,12 @@ namespace FPSProfiler
         FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configFile.m_OutputFilename.c_str());
     }
 
-    float FPSProfilerSystemComponent::BytesToMB(AZStd::size_t bytes)
+    float FPSProfilerComponent::BytesToMB(AZStd::size_t bytes)
     {
         return static_cast<float>(bytes) / (1024.0f * 1024.0f);
     }
 
-    bool FPSProfilerSystemComponent::IsPathValid(const AZStd::string& path) const
+    bool FPSProfilerComponent::IsPathValid(const AZStd::string& path) const
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
@@ -501,7 +501,7 @@ namespace FPSProfiler
         return true;
     }
 
-    void FPSProfilerSystemComponent::ShowFps() const
+    void FPSProfilerComponent::ShowFps() const
     {
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
         AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);

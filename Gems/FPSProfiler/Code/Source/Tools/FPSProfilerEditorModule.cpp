@@ -1,5 +1,5 @@
 
-#include "FPSProfilerEditorSystemComponent.h"
+#include "FPSProfilerEditorComponent.h"
 #include <FPSProfiler/FPSProfilerTypeIds.h>
 #include <FPSProfilerModuleInterface.h>
 
@@ -20,7 +20,7 @@ namespace FPSProfiler
             m_descriptors.insert(
                 m_descriptors.end(),
                 {
-                    FPSProfilerEditorSystemComponent::CreateDescriptor(),
+                    FPSProfilerEditorComponent::CreateDescriptor(),
                 });
         }
 
@@ -31,7 +31,7 @@ namespace FPSProfiler
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<FPSProfilerEditorSystemComponent>(),
+                azrtti_typeid<FPSProfilerEditorComponent>(),
             };
         }
     };
