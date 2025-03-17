@@ -37,7 +37,8 @@ namespace FPSProfiler::Configs
                         AZ::Edit::UIHandlers::Default,
                         &FileSaveSettings::m_AutoSave,
                         "Auto Save",
-                        "When enabled, system will auto save after specified frame occurrence.")
+                        "When enabled, system will auto save after specified frame occurrence. Recommended for optimization and long "
+                        "recordings.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(
@@ -58,7 +59,8 @@ namespace FPSProfiler::Configs
                         AZ::Edit::UIHandlers::Default,
                         &FileSaveSettings::m_SaveWithTimestamp,
                         "Timestamp",
-                        "When enabled, system will save files with timestamp postfix of current date, hour, minutes and seconds.");
+                        "When enabled, the system will save files with a timestamp postfix of the current date, hour, minutes, and "
+                        "seconds. This allows you to save automatically without manual input each time.");
             }
         }
     }
