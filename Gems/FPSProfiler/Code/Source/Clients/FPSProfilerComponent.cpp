@@ -485,16 +485,17 @@ namespace FPSProfiler
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
-        if (path.empty() || !static_cast<AZ::IO::Path>(path.c_str()).HasFilename() || !static_cast<AZ::IO::Path>(path.c_str()).HasExtension() || !fileIO ||
-            !fileIO->ResolvePath(path.c_str()))
-        {
-            const char* reason = path.empty()                     ? "Path cannot be empty."
-                : !static_cast<AZ::IO::Path>(path.c_str()).HasFilename()  ? "Path must have a file at the end."
-                : !static_cast<AZ::IO::Path>(path.c_str()).HasExtension() ? "Path must have a *.csv extension."
-                : !fileIO                                         ? "Could not get a FileIO object. Try again."
-                                                                  : "Path is not registered or recognizable by O3DE FileIO System.";
+        AZ::IO::Path tempPath(path.c_str());
 
-            AZ_Warning("FPSProfiler::ChangeSavePath", !m_configDebug.m_PrintDebugInfo, "%s", reason);
+        if (tempPath.empty() || !tempPath.HasFilename() || !tempPath.HasExtension() || !fileIO || !fileIO->ResolvePath(tempPath))
+        {
+            const char* reason = tempPath.empty() ? "Path cannot be empty."
+                : !tempPath.HasFilename()         ? "Path must have a file at the end."
+                : !tempPath.HasExtension()        ? "Path must have a *.csv extension."
+                : !fileIO                         ? "Could not get a FileIO object. Try again."
+                                                  : "Path is not registered or recognizable by O3DE FileIO System.";
+
+            AZ_Warning("FPSProfiler::IsPathValid", !m_configDebug.m_PrintDebugInfo, "%s", reason);
             return false;
         }
 
