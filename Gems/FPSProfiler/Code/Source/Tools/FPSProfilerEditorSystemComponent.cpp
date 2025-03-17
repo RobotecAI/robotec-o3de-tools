@@ -34,7 +34,7 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Pick or Create a CSV")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &FPSProfilerEditorSystemComponent::PickOrCreateCsvFile)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &FPSProfilerEditorSystemComponent::SelectCsvPath)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configFile)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configRecord)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configPrecision)
@@ -68,13 +68,13 @@ namespace FPSProfiler
         entity->CreateComponent<FPSProfilerSystemComponent>(m_configFile, m_configRecord, m_configPrecision, m_configDebug);
     }
 
-    AZ::u32 FPSProfilerEditorSystemComponent::PickOrCreateCsvFile()
+    AZ::u32 FPSProfilerEditorSystemComponent::SelectCsvPath()
     {
-        QString fileName = QFileDialog::getSaveFileName(AzToolsFramework::GetActiveWindow(), "Save CSV File", "", "Saves CSV Files (*.csv)");
+        QString fileName = QFileDialog::getSaveFileName(AzToolsFramework::GetActiveWindow(), "Pick *.csv file path.", "", "Pick *.csv file path.");
 
         if (fileName.isEmpty())
         {
-            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", "Please specify file", QMessageBox::Ok);
+            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", "Please specify file path!", QMessageBox::Ok);
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
