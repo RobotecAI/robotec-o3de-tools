@@ -485,12 +485,12 @@ namespace FPSProfiler
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
-        if (path.empty() || !static_cast<AZ::IO::Path>(path).HasFilename() || !static_cast<AZ::IO::Path>(path).HasExtension() || !fileIO ||
+        if (path.empty() || !static_cast<AZ::IO::Path>(path.c_str()).HasFilename() || !static_cast<AZ::IO::Path>(path.c_str()).HasExtension() || !fileIO ||
             !fileIO->ResolvePath(path.c_str()))
         {
             const char* reason = path.empty()                     ? "Path cannot be empty."
-                : !static_cast<AZ::IO::Path>(path).HasFilename()  ? "Path must have a file at the end."
-                : !static_cast<AZ::IO::Path>(path).HasExtension() ? "Path must have a *.csv extension."
+                : !static_cast<AZ::IO::Path>(path.c_str()).HasFilename()  ? "Path must have a file at the end."
+                : !static_cast<AZ::IO::Path>(path.c_str()).HasExtension() ? "Path must have a *.csv extension."
                 : !fileIO                                         ? "Could not get a FileIO object. Try again."
                                                                   : "Path is not registered or recognizable by O3DE FileIO System.";
 
