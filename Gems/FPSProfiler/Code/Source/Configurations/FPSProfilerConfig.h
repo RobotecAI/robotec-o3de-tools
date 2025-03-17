@@ -65,7 +65,7 @@ namespace FPSProfiler::Configs
         float m_NearZeroPrecision = 0.01f;
         MovingAverageType m_avgFpsType = MovingAverageType::Simple;
         float m_smoothingFactor = 2.0f;
-        bool m_useAvgMedianFilter = true;
+        bool m_keepHistory = false;
     };
 
     struct DebugSettings

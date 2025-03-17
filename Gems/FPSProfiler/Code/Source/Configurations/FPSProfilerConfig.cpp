@@ -146,7 +146,7 @@ namespace FPSProfiler::Configs
                 ->Field("m_NearZeroPrecision", &PrecisionSettings::m_NearZeroPrecision)
                 ->Field("m_avgFpsType", &PrecisionSettings::m_avgFpsType)
                 ->Field("m_smoothingFactor", &PrecisionSettings::m_smoothingFactor)
-                ->Field("m_useAvgMedianFilter", &PrecisionSettings::m_useAvgMedianFilter);
+                ->Field("m_keepHistory", &PrecisionSettings::m_keepHistory);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -181,7 +181,7 @@ namespace FPSProfiler::Configs
                         })
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox,
-                        &PrecisionSettings::m_useAvgMedianFilter,
+                        &PrecisionSettings::m_keepHistory,
                         "Use Average Median Filter",
                         "Enable median filtering for averaging");
             }

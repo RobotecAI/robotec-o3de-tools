@@ -404,7 +404,7 @@ namespace FPSProfiler
 
         // Latest fps history for avg fps calculation
         m_fpsSamples.push_back(m_currentFps);
-        if (m_fpsSamples.size() > m_configFile.m_AutoSaveAtFrame)
+        if (!m_configPrecision.m_keepHistory && m_fpsSamples.size() > m_configFile.m_AutoSaveAtFrame)
         {
             m_fpsSamples.pop_front();
         }
