@@ -11,8 +11,8 @@ namespace FPSProfiler
 {
     class FPSProfilerComponent final
         : public AZ::Component
-        , protected FPSProfilerRequestBus::Handler
         , protected AZ::TickBus::Handler
+        , protected FPSProfilerRequestBus::Handler
     {
     public:
         AZ_COMPONENT(FPSProfilerComponent, FPSProfilerComponentTypeId, Component);
