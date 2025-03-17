@@ -12,7 +12,7 @@ namespace FPSProfiler
     class FPSProfilerComponent final
         : public AZ::Component
         , protected FPSProfilerRequestBus::Handler
-        , public AZ::TickBus::Handler
+        , protected AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT(FPSProfilerComponent, FPSProfilerComponentTypeId, Component);
@@ -30,11 +30,11 @@ namespace FPSProfiler
             const Configs::DebugSettings& configD);
         ~FPSProfilerComponent() override;
 
-    protected:
         // AZ::Component interface implementation
         void Activate() override;
         void Deactivate() override;
 
+    protected:
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
