@@ -469,10 +469,10 @@ namespace FPSProfiler
             char timestamp[20];
             strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", &timeInfo);
 
-            static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename)
-                .ReplaceFilename((static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).Stem().String() + "_" + timestamp +
-                                  static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).Extension().String())
-                                     .data());
+            AZ::IO::Path logFilePath(m_configFile.m_OutputFilename);
+            logFilePath.ReplaceFilename((logFilePath.Stem().String() + "_" + timestamp + logFilePath.Extension().String()).data());
+
+            m_configFile.m_OutputFilename = logFilePath.c_str();
         }
 
         // Write profiling headers to file
