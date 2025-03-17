@@ -25,6 +25,40 @@ namespace FPSProfiler
                 ->Field("m_configPrecision", &FPSProfilerComponent::m_configPrecision)
                 ->Field("m_configDebug", &FPSProfilerComponent::m_configDebug);
         }
+
+        // Reflect EBus for Lua and Script Canvas
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            // Request Bus - Calls made to FPS Profiler
+            behaviorContext->EBus<FPSProfilerRequestBus>("FPSProfilerRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "FPS Profiler")
+                ->Attribute(AZ::Script::Attributes::Module, "FPSProfiler")
+                ->Event("StartProfiling", &FPSProfilerRequests::StartProfiling)
+                ->Event("StopProfiling", &FPSProfilerRequests::StopProfiling)
+                ->Event("ResetProfilingData", &FPSProfilerRequests::ResetProfilingData)
+                ->Event("IsProfiling", &FPSProfilerRequests::IsProfiling)
+                ->Event("IsAnySaveOptionEnabled", &FPSProfilerRequests::IsAnySaveOptionEnabled)
+                ->Event("ChangeSavePath", &FPSProfilerRequests::ChangeSavePath)
+                ->Event("SafeChangeSavePath", &FPSProfilerRequests::SafeChangeSavePath)
+                ->Event("GetMinFps", &FPSProfilerRequests::GetMinFps)
+                ->Event("GetMaxFps", &FPSProfilerRequests::GetMaxFps)
+                ->Event("GetAvgFps", &FPSProfilerRequests::GetAvgFps)
+                ->Event("GetCurrentFps", &FPSProfilerRequests::GetCurrentFps)
+                ->Event("GetCpuMemoryUsed", &FPSProfilerRequests::GetCpuMemoryUsed)
+                ->Event("GetGpuMemoryUsed", &FPSProfilerRequests::GetGpuMemoryUsed)
+                ->Event("SaveLogToFile", &FPSProfilerRequests::SaveLogToFile)
+                ->Event("SaveLogToFileWithNewPath", &FPSProfilerRequests::SaveLogToFileWithNewPath)
+                ->Event("ShowFpsOnScreen", &FPSProfilerRequests::ShowFpsOnScreen);
+
+            behaviorContext->EBus<FPSProfilerNotificationBus>("FPSProfilerNotificationBus")
+                ->Handler<FPSProfilerNotificationBusHandler>()
+                ->Event("OnFileCreated", &FPSProfilerNotifications::OnFileCreated)
+                ->Event("OnFileUpdate", &FPSProfilerNotifications::OnFileUpdate)
+                ->Event("OnFileSaved", &FPSProfilerNotifications::OnFileSaved)
+                ->Event("OnProfileStart", &FPSProfilerNotifications::OnProfileStart)
+                ->Event("OnProfileReset", &FPSProfilerNotifications::OnProfileReset)
+                ->Event("OnProfileStop", &FPSProfilerNotifications::OnProfileStop);
+        }
     }
 
     void FPSProfilerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

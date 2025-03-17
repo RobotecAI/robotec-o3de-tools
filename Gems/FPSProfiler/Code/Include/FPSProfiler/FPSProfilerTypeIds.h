@@ -24,4 +24,5 @@ namespace FPSProfiler
     // Interface TypeIds
     inline constexpr const char* FPSProfilerRequestsTypeId = "{D585EA71-B052-4C97-8647-4B3511CC7C5B}";
     inline constexpr const char* FPSProfilerNotificationsTypeId = "{63E04945-AD56-4BB6-888E-41C2FA71CC2F}";
+    inline constexpr const char* FPSProfilerNotificationBusHandlerTypeId = "{0D957B03-F245-40C5-B069-98344B68ED8F}";
 } // namespace FPSProfiler

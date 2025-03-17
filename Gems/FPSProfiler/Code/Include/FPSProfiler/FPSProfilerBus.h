@@ -4,8 +4,8 @@
 #include <FPSProfiler/FPSProfilerTypeIds.h>
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace FPSProfiler
 {
@@ -196,5 +196,52 @@ namespace FPSProfiler
     };
 
     using FPSProfilerNotificationBus = AZ::EBus<FPSProfilerNotifications, FPSProfilerNotificationBusTraits>;
+
+    class FPSProfilerNotificationBusHandler
+        : public FPSProfilerNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            FPSProfilerNotificationBusHandler,
+            FPSProfilerNotificationBusHandlerTypeId,
+            AZ::SystemAllocator,
+            OnFileCreated,
+            OnFileUpdate,
+            OnFileSaved,
+            OnProfileStart,
+            OnProfileReset,
+            OnProfileStop);
+
+        void OnFileCreated(const AZStd::string& filePath) override
+        {
+            Call(FN_OnFileCreated, filePath);
+        }
+
+        void OnFileUpdate(const AZStd::string& filePath) override
+        {
+            Call(FN_OnFileUpdate, filePath);
+        }
+
+        void OnFileSaved(const AZStd::string& filePath) override
+        {
+            Call(FN_OnFileSaved, filePath);
+        }
+
+        void OnProfileStart(const Configs::FileSaveSettings& config) override
+        {
+            Call(FN_OnProfileStart, config);
+        }
+
+        void OnProfileReset(const Configs::FileSaveSettings& config) override
+        {
+            Call(FN_OnProfileReset, config);
+        }
+
+        void OnProfileStop(const Configs::FileSaveSettings& config) override
+        {
+            Call(FN_OnProfileStop, config);
+        }
+    };
 
 } // namespace FPSProfiler
