@@ -22,8 +22,8 @@ namespace FPSProfiler::Configs
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<FileSaveSettings>("File Settings", "Settings controlling save file operations.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                editContext->Class<FileSaveSettings>("File Save Settings", "Settings for managing how FPS data is saved to a file.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Configure file-saving options for recorded FPS data.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(
@@ -83,8 +83,8 @@ namespace FPSProfiler::Configs
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<RecordSettings>("Record Settings", "Settings controlling the recording behavior.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                editContext->Class<RecordSettings>("Recording Settings", "Options for configuring how FPS data is recorded.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Control the behavior of FPS data recording.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(
@@ -152,12 +152,15 @@ namespace FPSProfiler::Configs
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PrecisionSettings>("Precision Settings", "Settings for FPS profiler precision")
+                editContext->Class<PrecisionSettings>("Precision Settings", "Defines the precision level of the FPS Profiler measurements.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Adjust how precisely the FPS Profiler records data.")
+
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PrecisionSettings::m_NearZeroPrecision,
                         "Near Zero Precision",
                         "Threshold for near-zero values")
+
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &PrecisionSettings::m_avgFpsType,
@@ -166,6 +169,7 @@ namespace FPSProfiler::Configs
                     ->EnumAttribute(MovingAverageType::Simple, "Simple")
                     ->EnumAttribute(MovingAverageType::Exponential, "Exponential")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PrecisionSettings::m_smoothingFactor,
@@ -181,6 +185,7 @@ namespace FPSProfiler::Configs
                             return data && data->m_avgFpsType == Exponential ? AZ::Edit::PropertyVisibility::Show
                                                                              : AZ::Edit::PropertyVisibility::Hide;
                         })
+
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox,
                         &PrecisionSettings::m_keepHistory,
@@ -208,13 +213,17 @@ namespace FPSProfiler::Configs
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DebugSettings>("Debug Settings", "Settings for debugging the FPS Profiler")
+                editContext->Class<DebugSettings>("Debug Settings", "Configuration options for debugging the FPS Profiler.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Customize debugging settings for the FPS Profiler.")
+
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox,
                         &DebugSettings::m_PrintDebugInfo,
                         "Print Debug Info",
                         "Enable or disable debug information printing")
+
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DebugSettings::m_ShowFps, "Show FPS", "Toggle FPS display on screen")
+
                     ->DataElement(
                         AZ::Edit::UIHandlers::Color, &DebugSettings::m_Color, "Debug Color", "Set the debug information display color");
             }

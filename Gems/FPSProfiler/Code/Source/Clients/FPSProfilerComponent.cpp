@@ -26,7 +26,7 @@ namespace FPSProfiler
                 ->Field("m_configDebug", &FPSProfilerComponent::m_configDebug);
         }
 
-        // Reflect EBus for Lua and Script Canvas
+        // EBus Reflect for Lua and Script Canvas
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             // Request Bus - Calls made to FPS Profiler
