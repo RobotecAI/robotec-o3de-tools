@@ -5,6 +5,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <RandomizeUtils/RandomizeUtilsTypeIds.h>
+
 namespace RandomizeUtils
 {
     struct RandomizePoseComponentConfig
@@ -18,6 +19,7 @@ namespace RandomizeUtils
         float m_probabilityOfActivation = 1.0f;
         // Add your component properties here
     };
+
     class RandomizePoseComponent
         : public AZ::Component
         , public AZ::EntityBus::Handler

@@ -1,6 +1,7 @@
 
 #include <RandomizeUtils/RandomizeUtilsTypeIds.h>
 #include <RandomizeUtilsModuleInterface.h>
+
 namespace RandomizeUtils
 {
     class RandomizeUtilsModule : public RandomizeUtilsModuleInterface
