@@ -1,5 +1,8 @@
 #include "FPSProfilerEditorSystemComponent.h"
 
+#include "AzQtComponents/Components/Widgets/FileDialog.h"
+#include "UI/UICore/WidgetHelpers.h"
+
 #include <Clients/FPSProfilerSystemComponent.h>
 
 #include <AzCore/Serialization/EditContext.h>
@@ -31,6 +34,9 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::Category, "Performance")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Pick or Create a CSV")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &FPSProfilerEditorSystemComponent::PickOrCreateCsvFile)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configFile)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configRecord)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configPrecision)
@@ -62,5 +68,25 @@ namespace FPSProfiler
     void FPSProfilerEditorSystemComponent::BuildGameEntity(AZ::Entity* entity)
     {
         entity->CreateComponent<FPSProfilerSystemComponent>(m_configFile, m_configRecord, m_configPrecision, m_configDebug);
+    }
+
+    AZ::u32 FPSProfilerEditorSystemComponent::PickOrCreateCsvFile()
+    {
+        QString fileName = QFileDialog::getSaveFileName(AzToolsFramework::GetActiveWindow(), "Save CSV File", "", "Saves CSV Files (*.csv)");
+
+        if (fileName.isEmpty())
+        {
+            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Error", "Please specify file", QMessageBox::Ok);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        // Ensure the file has the .csv extension
+        if (!fileName.endsWith(".csv", Qt::CaseInsensitive))
+        {
+            fileName += ".csv";  // Auto-append .csv if missing
+        }
+
+        m_configFile.m_OutputFilename = AZStd::string(fileName.toUtf8().constData());
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 } // namespace FPSProfiler

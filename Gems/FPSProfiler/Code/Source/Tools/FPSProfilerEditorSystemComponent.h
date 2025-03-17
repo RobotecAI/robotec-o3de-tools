@@ -33,5 +33,7 @@ namespace FPSProfiler
         Configs::RecordSettings m_configRecord; //!< Stores editor settings for the profiler
         Configs::PrecisionSettings m_configPrecision; //!< Stores editor settings for the profiler
         Configs::DebugSettings m_configDebug; //!< Stores editor settings for the profiler
+
+        AZ::u32 PickOrCreateCsvFile();
     };
 } // namespace FPSProfiler

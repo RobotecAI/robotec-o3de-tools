@@ -52,14 +52,14 @@ namespace FPSProfiler
          * @warning This function is NOT runtime safe. Use @ref SafeChangeSavePath instead.
          * @param newSavePath The new file path where profiling data should be saved.
          */
-        virtual void ChangeSavePath(const AZ::IO::Path& newSavePath) = 0;
+        virtual void ChangeSavePath(const AZStd::string& newSavePath) = 0;
 
         /**
          * @brief Safely changes the save path during runtime.
          * This method stops profiling, saves the current data, and then updates the path.
          * @param newSavePath The new file path where profiling data should be saved.
          */
-        virtual void SafeChangeSavePath(const AZ::IO::Path& newSavePath) = 0;
+        virtual void SafeChangeSavePath(const AZStd::string& newSavePath) = 0;
 
         /**
          * @brief Retrieves the minimum recorded FPS during the profiling session.
@@ -107,7 +107,7 @@ namespace FPSProfiler
          * @param newSavePath The csv file path where the log should be saved.
          * @param useSafeChangePath If true, the function will use @ref SafeChangeSavePath to ensure runtime safety.
          */
-        virtual void SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath) = 0;
+        virtual void SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath) = 0;
 
         /**
          * @brief Enables or disables FPS display on-screen.
@@ -140,7 +140,7 @@ namespace FPSProfiler
          * @brief Called when a new file is created.
          * @param filePath The path of the newly created file.
          */
-        virtual void OnFileCreated(const AZ::IO::Path& filePath)
+        virtual void OnFileCreated(const AZStd::string& filePath)
         {
         }
 
@@ -148,7 +148,7 @@ namespace FPSProfiler
          * @brief Called when an existing file is updated.
          * @param filePath The path of the file that was modified.
          */
-        virtual void OnFileUpdate(const AZ::IO::Path& filePath)
+        virtual void OnFileUpdate(const AZStd::string& filePath)
         {
         }
 
@@ -156,7 +156,7 @@ namespace FPSProfiler
          * @brief Called when a file is successfully saved.
          * @param filePath The path of the saved file.
          */
-        virtual void OnFileSaved(const AZ::IO::Path& filePath)
+        virtual void OnFileSaved(const AZStd::string& filePath)
         {
         }
 

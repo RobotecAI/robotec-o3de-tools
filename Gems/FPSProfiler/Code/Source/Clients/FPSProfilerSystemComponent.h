@@ -45,8 +45,8 @@ namespace FPSProfiler
         void ResetProfilingData() override;
         [[nodiscard]] bool IsProfiling() const override;
         [[nodiscard]] bool IsAnySaveOptionEnabled() const override;
-        void ChangeSavePath(const AZ::IO::Path& newSavePath) override;
-        void SafeChangeSavePath(const AZ::IO::Path& newSavePath) override;
+        void ChangeSavePath(const AZStd::string& newSavePath) override;
+        void SafeChangeSavePath(const AZStd::string& newSavePath) override;
         [[nodiscard]] float GetMinFps() const override;
         [[nodiscard]] float GetMaxFps() const override;
         [[nodiscard]] float GetAvgFps() const override;
@@ -54,7 +54,7 @@ namespace FPSProfiler
         [[nodiscard]] AZStd::pair<AZStd::size_t, AZStd::size_t> GetCpuMemoryUsed() const override;
         [[nodiscard]] AZStd::pair<AZStd::size_t, AZStd::size_t> GetGpuMemoryUsed() const override;
         void SaveLogToFile() override;
-        void SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath) override;
+        void SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath) override;
         void ShowFpsOnScreen(bool enable) override;
 
     private:
@@ -90,7 +90,7 @@ namespace FPSProfiler
         // Utility Functions
         void CalculateFpsData(const float& deltaTime);
         static float BytesToMB(AZStd::size_t bytes);
-        [[nodiscard]] bool IsPathValid(const AZ::IO::Path& path) const;
+        [[nodiscard]] bool IsPathValid(const AZStd::string& path) const;
 
         // Debug Display
         void ShowFps() const;

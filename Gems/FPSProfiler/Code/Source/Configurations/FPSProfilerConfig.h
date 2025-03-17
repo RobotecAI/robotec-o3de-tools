@@ -40,7 +40,7 @@ namespace FPSProfiler::Configs
         AZ_TYPE_INFO(FileSaveSettings, FPSProfilerConfigFileTypeId);
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::IO::Path m_OutputFilename = "@user@/fps_log.csv";
+        AZStd::string m_OutputFilename = "@user@/fps_log.csv";
         bool m_AutoSave = true;
         int m_AutoSaveAtFrame = 100;
         bool m_SaveWithTimestamp = true;

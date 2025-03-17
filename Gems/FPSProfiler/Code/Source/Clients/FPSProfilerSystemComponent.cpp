@@ -274,7 +274,7 @@ namespace FPSProfiler
         return m_configRecord.m_RecordStats != Configs::RecordStatistics::None;
     }
 
-    void FPSProfilerSystemComponent::ChangeSavePath(const AZ::IO::Path& newSavePath)
+    void FPSProfilerSystemComponent::ChangeSavePath(const AZStd::string& newSavePath)
     {
         if (!IsPathValid(newSavePath))
         {
@@ -285,7 +285,7 @@ namespace FPSProfiler
         AZ_Warning("FPS Profiler", !m_configDebug.m_PrintDebugInfo && !m_isProfiling, "Path changed during activated profiling.");
     }
 
-    void FPSProfilerSystemComponent::SafeChangeSavePath(const AZ::IO::Path& newSavePath)
+    void FPSProfilerSystemComponent::SafeChangeSavePath(const AZStd::string& newSavePath)
     {
         // If profiling is enabled, save current opened file and stop profiling.
         StopProfiling();
@@ -343,7 +343,7 @@ namespace FPSProfiler
         WriteDataToFile();
     }
 
-    void FPSProfilerSystemComponent::SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath)
+    void FPSProfilerSystemComponent::SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath)
     {
         if (useSafeChangePath)
         {
@@ -435,8 +435,8 @@ namespace FPSProfiler
             char timestamp[20];
             strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", &timeInfo);
 
-            m_configFile.m_OutputFilename.ReplaceFilename(
-                (m_configFile.m_OutputFilename.Stem().String() + "_" + timestamp + m_configFile.m_OutputFilename.Extension().String())
+            static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).ReplaceFilename(
+                (static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).Stem().String() + "_" + timestamp + static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).Extension().String())
                     .data());
         }
 
@@ -480,15 +480,15 @@ namespace FPSProfiler
         return static_cast<float>(bytes) / (1024.0f * 1024.0f);
     }
 
-    bool FPSProfilerSystemComponent::IsPathValid(const AZ::IO::Path& path) const
+    bool FPSProfilerSystemComponent::IsPathValid(const AZStd::string& path) const
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
-        if (path.empty() || !path.HasFilename() || !path.HasExtension() || !fileIO || !fileIO->ResolvePath(path.c_str()))
+        if (path.empty() || !static_cast<AZ::IO::Path>(path).HasFilename() || !static_cast<AZ::IO::Path>(path).HasExtension() || !fileIO || !fileIO->ResolvePath(path.c_str()))
         {
             const char* reason = path.empty() ? "Path cannot be empty."
-                : !path.HasFilename()         ? "Path must have a file at the end."
-                : !path.HasExtension()        ? "Path must have a *.csv extension."
+                : !static_cast<AZ::IO::Path>(path).HasFilename()         ? "Path must have a file at the end."
+                : !static_cast<AZ::IO::Path>(path).HasExtension()        ? "Path must have a *.csv extension."
                 : !fileIO                     ? "Could not get a FileIO object. Try again."
                                               : "Path is not registered or recognizable by O3DE FileIO System.";
 
