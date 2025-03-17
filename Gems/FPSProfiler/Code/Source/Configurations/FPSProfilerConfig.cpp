@@ -8,6 +8,11 @@ namespace FPSProfiler::Configs
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            if (serializeContext->FindClassData(azrtti_typeid<FileSaveSettings>())) // Prevent duplicate registration
+            {
+                return;
+            }
+
             serializeContext->Class<FileSaveSettings>()
                 ->Version(0)
                 ->Field("m_OutputFilename", &FileSaveSettings::m_OutputFilename)
@@ -62,6 +67,11 @@ namespace FPSProfiler::Configs
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            if (serializeContext->FindClassData(azrtti_typeid<RecordSettings>())) // Prevent duplicate registration
+            {
+                return;
+            }
+
             serializeContext->Class<RecordSettings>()
                 ->Version(0)
                 ->Field("m_recordType", &RecordSettings::m_recordType)
@@ -126,6 +136,11 @@ namespace FPSProfiler::Configs
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            if (serializeContext->FindClassData(azrtti_typeid<PrecisionSettings>())) // Prevent duplicate registration
+            {
+                return;
+            }
+
             serializeContext->Class<PrecisionSettings>()
                 ->Version(0)
                 ->Field("m_NearZeroPrecision", &PrecisionSettings::m_NearZeroPrecision)
@@ -177,6 +192,11 @@ namespace FPSProfiler::Configs
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            if (serializeContext->FindClassData(azrtti_typeid<DebugSettings>())) // Prevent duplicate registration
+            {
+                return;
+            }
+
             serializeContext->Class<DebugSettings>()
                 ->Version(0)
                 ->Field("PrintDebugInfo", &DebugSettings::m_PrintDebugInfo)
