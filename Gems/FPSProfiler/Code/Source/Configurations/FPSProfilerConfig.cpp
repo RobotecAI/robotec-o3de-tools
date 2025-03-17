@@ -187,7 +187,7 @@ namespace FPSProfiler::Configs
                         })
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::CheckBox,
+                        AZ::Edit::UIHandlers::Default,
                         &PrecisionSettings::m_keepHistory,
                         "Keep History",
                         "Enabled saves entire history for better avg fps smoothing, otherwise history is cleared per auto save if "
@@ -220,12 +220,20 @@ namespace FPSProfiler::Configs
                         AZ::Edit::UIHandlers::CheckBox,
                         &DebugSettings::m_PrintDebugInfo,
                         "Print Debug Info",
-                        "Enable or disable debug information printing")
+                        "Enable or disable debug information printing.")
 
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DebugSettings::m_ShowFps, "Show FPS", "Toggle FPS display on screen")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DebugSettings::m_ShowFps, "Show FPS", "Toggle FPS display on screen.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Color, &DebugSettings::m_Color, "Debug Color", "Set the debug information display color");
+                        AZ::Edit::UIHandlers::Color, &DebugSettings::m_Color, "Debug Color", "Set the debug information display color.")
+                    ->Attribute(
+                        AZ::Edit::Attributes::Visibility,
+                        [](const void* instance)
+                        {
+                            const DebugSettings* data = static_cast<const DebugSettings*>(instance);
+                            return data && data->m_ShowFps ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+                        });
             }
         }
     }
