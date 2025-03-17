@@ -56,12 +56,10 @@ namespace FPSProfiler
 
     void FPSProfilerEditorComponent::Activate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void FPSProfilerEditorComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }
 
     void FPSProfilerEditorComponent::BuildGameEntity(AZ::Entity* entity)

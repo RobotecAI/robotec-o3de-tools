@@ -37,7 +37,7 @@ namespace FPSProfiler
         incompatible.push_back(AZ_CRC_CE("FPSProfilerService"));
     }
 
-    FPSProfilerComponent::FPSProfilerSystemComponent()
+    FPSProfilerComponent::FPSProfilerComponent()
     {
         if (!FPSProfilerInterface::Get())
         {
@@ -45,7 +45,7 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerComponent::FPSProfilerSystemComponent(
+    FPSProfilerComponent::FPSProfilerComponent(
         const Configs::FileSaveSettings& configF,
         const Configs::RecordSettings& configS,
         const Configs::PrecisionSettings& configP,
@@ -61,7 +61,7 @@ namespace FPSProfiler
         }
     }
 
-    FPSProfilerComponent::~FPSProfilerSystemComponent()
+    FPSProfilerComponent::~FPSProfilerComponent()
     {
         if (FPSProfilerInterface::Get() == this)
         {
