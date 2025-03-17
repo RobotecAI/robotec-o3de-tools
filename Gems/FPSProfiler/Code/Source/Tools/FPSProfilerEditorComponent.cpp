@@ -32,7 +32,7 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Click to open file dialog.")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Select Csv File Path")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &FPSProfilerEditorComponent::SelectCsvPath)
 
