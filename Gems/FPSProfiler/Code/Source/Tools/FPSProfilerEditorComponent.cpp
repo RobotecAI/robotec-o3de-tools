@@ -64,7 +64,13 @@ namespace FPSProfiler
 
     void FPSProfilerEditorComponent::BuildGameEntity(AZ::Entity* entity)
     {
-        entity->CreateComponent<FPSProfilerComponent>(m_configFile, m_configRecord, m_configPrecision, m_configDebug);
+        if (FPSProfilerComponent* gameComponent = entity->CreateComponent<FPSProfilerComponent>())
+        {
+            gameComponent->m_configFile = m_configFile;
+            gameComponent->m_configRecord = m_configRecord;
+            gameComponent->m_configPrecision = m_configPrecision;
+            gameComponent->m_configDebug = m_configDebug;
+        }
     }
 
     AZ::u32 FPSProfilerEditorComponent::SelectCsvPath()

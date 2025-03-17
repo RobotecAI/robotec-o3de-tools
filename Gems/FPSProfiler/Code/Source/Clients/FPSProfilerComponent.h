@@ -57,17 +57,16 @@ namespace FPSProfiler
         void SaveLogToFileWithNewPath(const AZStd::string& newSavePath, bool useSafeChangePath) override;
         void ShowFpsOnScreen(bool enable) override;
 
-    private:
+    public:
         // Profiler Configurations
         Configs::FileSaveSettings m_configFile; //!< Stores editor settings for the profiler
         Configs::RecordSettings m_configRecord; //!< Stores editor settings for the profiler
         Configs::PrecisionSettings m_configPrecision; //!< Stores editor settings for the profiler
         Configs::DebugSettings m_configDebug; //!< Stores editor settings for the profiler
 
-        // Profiling State
-        bool m_isProfiling = false; //!< Flag to indicate if profiling is active
-
+    private:
         // FPS Tracking Data
+        bool m_isProfiling = false; //!< Flag to indicate if profiling is active
         float m_minFps = 0.0f; //!< Lowest FPS value recorded
         float m_maxFps = 0.0f; //!< Highest FPS value recorded
         float m_avgFps = 0.0f; //!< Mean value of collected FPS samples
@@ -75,7 +74,6 @@ namespace FPSProfiler
         float m_totalFrameTime = 0.0f; //!< Time taken for the current frame
         int m_frameCount = 0; //!< Total number of frames processed
         int m_recordedFrameCount = 0; //!< Total number of frames recorded. Used when @ref m_configRecord.m_framesToRecord != 0
-
         AZStd::deque<float> m_fpsSamples; //!< Stores recent FPS values for averaging
 
         // Log Buffer
