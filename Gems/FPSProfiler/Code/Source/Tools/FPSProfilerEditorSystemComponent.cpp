@@ -33,7 +33,7 @@ namespace FPSProfiler
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Pick or Create a CSV")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Select Csv File Path")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &FPSProfilerEditorSystemComponent::SelectCsvPath)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configFile)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerEditorSystemComponent::m_configRecord)
@@ -70,7 +70,7 @@ namespace FPSProfiler
 
     AZ::u32 FPSProfilerEditorSystemComponent::SelectCsvPath()
     {
-        QString fileName = QFileDialog::getSaveFileName(AzToolsFramework::GetActiveWindow(), "Pick *.csv file path.", "", "Pick *.csv file path.");
+        QString fileName = QFileDialog::getSaveFileName(AzToolsFramework::GetActiveWindow(), "Pick a csv file path.", "", "*.csv");
 
         if (fileName.isEmpty())
         {
@@ -81,7 +81,7 @@ namespace FPSProfiler
         // Ensure the file has the .csv extension
         if (!fileName.endsWith(".csv", Qt::CaseInsensitive))
         {
-            fileName += ".csv";  // Auto-append .csv if missing
+            fileName += ".csv"; // Auto-append .csv if missing
         }
 
         m_configFile.m_OutputFilename = AZStd::string(fileName.toUtf8().constData());

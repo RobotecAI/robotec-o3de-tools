@@ -435,9 +435,10 @@ namespace FPSProfiler
             char timestamp[20];
             strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", &timeInfo);
 
-            static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).ReplaceFilename(
-                (static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).Stem().String() + "_" + timestamp + static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).Extension().String())
-                    .data());
+            static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename)
+                .ReplaceFilename((static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).Stem().String() + "_" + timestamp +
+                                  static_cast<AZ::IO::Path>(m_configFile.m_OutputFilename).Extension().String())
+                                     .data());
         }
 
         // Write profiling headers to file
@@ -484,13 +485,14 @@ namespace FPSProfiler
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
-        if (path.empty() || !static_cast<AZ::IO::Path>(path).HasFilename() || !static_cast<AZ::IO::Path>(path).HasExtension() || !fileIO || !fileIO->ResolvePath(path.c_str()))
+        if (path.empty() || !static_cast<AZ::IO::Path>(path).HasFilename() || !static_cast<AZ::IO::Path>(path).HasExtension() || !fileIO ||
+            !fileIO->ResolvePath(path.c_str()))
         {
-            const char* reason = path.empty() ? "Path cannot be empty."
-                : !static_cast<AZ::IO::Path>(path).HasFilename()         ? "Path must have a file at the end."
-                : !static_cast<AZ::IO::Path>(path).HasExtension()        ? "Path must have a *.csv extension."
-                : !fileIO                     ? "Could not get a FileIO object. Try again."
-                                              : "Path is not registered or recognizable by O3DE FileIO System.";
+            const char* reason = path.empty()                     ? "Path cannot be empty."
+                : !static_cast<AZ::IO::Path>(path).HasFilename()  ? "Path must have a file at the end."
+                : !static_cast<AZ::IO::Path>(path).HasExtension() ? "Path must have a *.csv extension."
+                : !fileIO                                         ? "Could not get a FileIO object. Try again."
+                                                                  : "Path is not registered or recognizable by O3DE FileIO System.";
 
             AZ_Warning("FPSProfiler::ChangeSavePath", !m_configDebug.m_PrintDebugInfo, "%s", reason);
             return false;
