@@ -356,8 +356,10 @@ This functionality can be accessed in c++, lua and script canvas.
 
 > *To start using the tool, add a `FPSProfiler` to the **Level** entity.*
 
+## Component Functionality
 ![FpsProfiler Editor](doc/FpsProfiler.png)
 
+### Save Settings
 | File Save Settings   | Description                                                                                                    |
 |----------------------|----------------------------------------------------------------------------------------------------------------|
 | Select Csv File Path | Button that opens a File Dialog.                                                                               |
@@ -366,20 +368,23 @@ This functionality can be accessed in c++, lua and script canvas.
 | Auto Save At Frame   | Specifies the frame interval for auto-saving.                                                                  |
 | Timestamp            | Includes timestamps in the FPS log file name.</br>Allows to save automatically without manual input each time. |
 
+### Recording Settings
 | Recording Settings     | Description                                                                                                          |
 |------------------------|----------------------------------------------------------------------------------------------------------------------|
 | Record Type            | Specify when to start recording:</br>- at game start</br>- selected frame</br>- await for other system to call start |
-| Frames To Skip         | Number of frames to skip before recording. Only enabled when type is `SelectFrame`.                                  |
+| Frames To Skip         | Number of frames to skip before recording.</br>Only enabled when type is `SelectFrame`.                              |
 | Frames To Record       | Total number of frames to record. If set to 0 - unlimited.                                                           |
 | Record Stats           | Specifies what type of stats to record (FPS data, CPU and GPU).                                                      |
 
-| Precision Settings     | Description                                                                                            |
-|------------------------|--------------------------------------------------------------------------------------------------------|
-| Near Zero Precision    | Precision threshold for near-zero values.                                                              |
-| Moving Average Type    | Type of moving average used for smoothing average FPS:</br>- Simple</br>- Exponential                  |
-| Alpha Smoothing Factor | Factor applied to control smoothing effect when `Exponential` enabled.                                 |
-| Keep History           | Keeps a history of recorded FPS data or clear after every auto-save. For better effect - keep enabled. |
+### Precision Settings
+| Precision Settings     | Description                                                                                                |
+|------------------------|------------------------------------------------------------------------------------------------------------|
+| Near Zero Precision    | Precision threshold for near-zero values.                                                                  |
+| Moving Average Type    | Type of moving average used for smoothing average FPS:</br>- Simple</br>- Exponential                      |
+| Alpha Smoothing Factor | Factor applied to control smoothing effect when `Exponential` enabled.                                     |
+| Keep History           | Keeps a history of recorded FPS data or clear after every auto-save.</br>For better effect - keep enabled. |
 
+### Debug Settings
 | Debug Settings         | Description                             |
 |------------------------|-----------------------------------------|
 | Print Debug Info       | Displays debug information in the logs. |
