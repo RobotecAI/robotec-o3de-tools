@@ -5,8 +5,8 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 #include <ROS2/Communication/TopicConfiguration.h>
+#include <ROS2/Frame/ROS2FrameComponent.h>
 #include <SplineTools/SplineToolsTypeIds.h>
-
 #include <nav_msgs/msg/path.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -32,7 +32,7 @@ namespace SplineTools
 
         SplinePublisher() = default;
         ~SplinePublisher() override = default;
-        explicit SplinePublisher(const SplinePublisherConfiguration& config);
+        explicit SplinePublisher(SplinePublisherConfiguration config);
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
@@ -48,5 +48,6 @@ namespace SplineTools
 
         SplinePublisherConfiguration m_config;
         rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr m_publisher;
+        ROS2::ROS2FrameComponent* m_ros2FramePtr = nullptr;
     };
 } // namespace SplineTools

@@ -1,8 +1,9 @@
 #include "SplinePublisher.h"
 
-#include <ROS2/Frame/ROS2FrameComponent.h>
 #include <ROS2/ROS2Bus.h>
 #include <ROS2/Utilities/ROS2Names.h>
+
+#include <utility>
 
 namespace SplineTools
 {
@@ -52,8 +53,8 @@ namespace SplineTools
         }
     }
 
-    SplinePublisher::SplinePublisher(const SplinePublisherConfiguration& config)
-        : m_config(config)
+    SplinePublisher::SplinePublisher(SplinePublisherConfiguration config)
+        : m_config(std::move(config))
     {
     }
 
@@ -65,22 +66,21 @@ namespace SplineTools
 
     void SplinePublisher::Activate()
     {
-        const ROS2::ROS2FrameComponent* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
-        if (!ros2Frame)
+        m_ros2FramePtr = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
+        if (!m_ros2FramePtr)
         {
             AZ_Warning("SplinePublisher::Activate", false, "ROS 2 frame component is not available!");
             return;
         }
 
-        AZStd::string frameNamespace = ros2Frame->GetNamespace();
-        if (!frameNamespace.empty())
+        if (!m_ros2FramePtr->GetNamespace().empty())
         {
-            m_config.m_TopicConfig.m_topic = AZStd::string::format("%s/%s", frameNamespace.c_str(), m_config.m_TopicConfig.m_topic.c_str());
+            m_config.m_TopicConfig.m_topic =
+                AZStd::string::format("%s/%s", m_ros2FramePtr->GetNamespace().c_str(), m_config.m_TopicConfig.m_topic.c_str());
         }
 
         // Create the ROS2 Publisher
-        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
-        if (ros2Node)
+        if (const auto ros2Node = ROS2::ROS2Interface::Get()->GetNode())
         {
             m_publisher =
                 ros2Node->create_publisher<nav_msgs::msg::Path>(m_config.m_TopicConfig.m_topic.c_str(), m_config.m_TopicConfig.GetQoS());
@@ -107,15 +107,14 @@ namespace SplineTools
             return;
         }
 
-        const ROS2::ROS2FrameComponent* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
-        if (!ros2Frame)
+        if (!m_ros2FramePtr)
         {
             AZ_Warning("SplinePublisher::PublishSplineAsPath", false, "ROS 2 frame component is not available!");
             return;
         }
 
         nav_msgs::msg::Path pathMessage;
-        pathMessage.header.frame_id = ros2Frame->GetFrameID().data();
+        pathMessage.header.frame_id = m_ros2FramePtr->GetFrameID().data();
         pathMessage.header.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
 
         // Retrieve spline data
