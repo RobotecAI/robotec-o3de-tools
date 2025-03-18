@@ -351,29 +351,47 @@ Refer to script canvas example below:
 This gem provides a tool to collect statistics in the game mode of the FPS, CPU and GPU into `csv` file.
 
 The Profiler has a EBus which can control profiling in runtime (start/stop/reset), save profiled data, change save path, access current frame memory data or fps (avg, min, max).
-It is also provided with a set of notification functions, making it highly customizable for end user.
+It is also provided with a set of notification functions, making it highly customizable for end user. 
+This functionality can be accessed in c++, lua and script canvas.
+
+> *To start using the tool, add a `FPSProfiler` to the **Level** entity.*
 
 ![FpsProfiler Editor](doc/FpsProfiler.png)
 
-| Variable Name              | Description                                                                                        |
-|----------------------------|----------------------------------------------------------------------------------------------------|
-| **Csv Save Path**          | Path where collected data will be saved.                                                           |
-| **Auto Save**              | Enable to auto save. Auto save is performed when target defined variable is reached.               |
-| **Auto Save At Frame**     | Auto saves collected data at selected frame occurrence.                                            |
-| **Timestamp**              | Applies timestamp Year-Month-Day-Hour-Minutes to file name. Let's you save multiple files at once. |
-| **Near Zero Precision**    | Floating point precision when comparing to 0.                                                      |
-| **Save FPS Data**          | Save collected FPS statistics.                                                                     |
-| **Save CPU Data**          | Save collected CPU statistics.                                                                     |
-| **Save GPU Data**          | Save collected GPU statistics.                                                                     |
-| **Show FPS**               | Show the FPS value in the left-top corner.                                                         |
-| **Profile On Game Start**  | Start profiling data at once into csv file, after entering game mode.                              |
+| File Save Settings   | Description                                                                                                    |
+|----------------------|----------------------------------------------------------------------------------------------------------------|
+| Select Csv File Path | Button that opens a File Dialog.                                                                               |
+| Csv Save Path        | A path where *.csv will be saved.                                                                              |
+| Auto Save            | Enables automatic saving of FPS logs per frame.                                                                |
+| Auto Save At Frame   | Specifies the frame interval for auto-saving.                                                                  |
+| Timestamp            | Includes timestamps in the FPS log file name.</br>Allows to save automatically without manual input each time. |
 
-## Setup
-To start using the tool, add a `FPSProfiler` to the **Level** entity.
+| Recording Settings     | Description                                                                                                          |
+|------------------------|----------------------------------------------------------------------------------------------------------------------|
+| Record Type            | Specify when to start recording:</br>- at game start</br>- selected frame</br>- await for other system to call start |
+| Frames To Skip         | Number of frames to skip before recording. Only enabled when type is `SelectFrame`.                                  |
+| Frames To Record       | Total number of frames to record. If set to 0 - unlimited.                                                           |
+| Record Stats           | Specifies what type of stats to record (FPS data, CPU and GPU).                                                      |
 
-### Profiling data using API Interface:
+| Precision Settings     | Description                                                                                            |
+|------------------------|--------------------------------------------------------------------------------------------------------|
+| Near Zero Precision    | Precision threshold for near-zero values.                                                              |
+| Moving Average Type    | Type of moving average used for smoothing average FPS:</br>- Simple</br>- Exponential                  |
+| Alpha Smoothing Factor | Factor applied to control smoothing effect when `Exponential` enabled.                                 |
+| Keep History           | Keeps a history of recorded FPS data or clear after every auto-save. For better effect - keep enabled. |
+
+| Debug Settings         | Description                             |
+|------------------------|-----------------------------------------|
+| Print Debug Info       | Displays debug information in the logs. |
+| Show FPS               | Enables FPS display on screen.          |
+| Debug Color            | Color used for debugging FPS display.   |
+
+## API Access
+Example workflows how to access and use a Fps Profiler Events and Notifications.
+
+### In C++:
 ```c++
-// Get Interface and validate it
+// Example with Interface
 auto profiler = FPSProfiler::FPSProfilerInterface::Get();
 if (!profiler)
 {
@@ -382,24 +400,92 @@ if (!profiler)
 
 profiler->StartProfiling();
 float currentFps = profiler->GetCurrentFps();
+
+// Example with Broadcast
+float avgFPS = 0.0f;
+FPSProfilerRequestBus::BroadcastResult(avgFPS, &FPSProfilerRequests::GetAvgFps);
+FPSProfilerRequestBus::Broadcast(&FPSProfilerRequests::StopProfiling);
+
+// Notification Bus - override from FPSProfilerNotificationBus::Handler
+// class YourClass : protected FPSProfilerNotificationBus::Handler
+
+void OnProfileStart(const Configs::FileSaveSettings& config) override
+{
+    // Your logic ...
+}
 ```
 
-### Profiling data using API Broadcast:
-```c++
-// Start profiling
-FPSProfilerRequestBus::Broadcast(&FPSProfilerRequests::StartProfiling);
+### In Lua
+```shell
+-- Table to hold our script functions
+local profilerScript = {}
 
-// Retrieve FPS using the request bus
-float currentFps = 0.0f;
-FPSProfilerRequestBus::BroadcastResult(currentFps, &FPSProfilerRequests::GetCurrentFps);
+-- Function called when profiling starts
+function profilerScript:OnProfileStart(config)
+    Debug.Log("Profiling started. Stopping in 60 seconds...")
+
+    -- Start a 60-second timer before stopping profiling
+    self:StartTimer(60, function()
+        Debug.Log("Stopping profiling now...")
+        FPSProfilerRequestBus.Broadcast.StopProfiling()
+    end)
+end
+
+-- Function to start a timer
+function profilerScript:StartTimer(delay, callback)
+    if self.timerEventId then
+        -- Prevent multiple timers from stacking
+        TickBus.Disconnect(self, self.timerEventId)
+    end
+
+    self.timerTimeRemaining = delay
+    self.timerCallback = callback
+    self.timerEventId = TickBus.Connect(self)
+end
+
+-- Tick event to track time
+function profilerScript:OnTick(deltaTime, timePoint)
+    if self.timerTimeRemaining then
+        self.timerTimeRemaining = self.timerTimeRemaining - deltaTime
+        if self.timerTimeRemaining <= 0 then
+            -- Time is up, trigger callback and disconnect
+            if self.timerCallback then
+                self.timerCallback()
+            end
+            TickBus.Disconnect(self, self.timerEventId)
+            self.timerEventId = nil
+        end
+    end
+end
+
+-- Register as an FPSProfilerNotificationBus listener
+function profilerScript:OnActivate()
+    FPSProfilerNotificationBus.Connect(self)
+end
+
+-- Cleanup when script is deactivated
+function profilerScript:OnDeactivate()
+    FPSProfilerNotificationBus.Disconnect(self)
+
+    -- Disconnect timer if still active
+    if self.timerEventId then
+        TickBus.Disconnect(self, self.timerEventId)
+    end
+end
+
+-- Return the table so O3DE can use it
+return profilerScript
 ```
 
-## CSV File Example
-| Frame | FrameTime | CurrentFPS | MinFPS | MaxFPS | AvgFPS | CpuMemoryUsed | CpuMemoryReserved | GpuMemoryUsed | GpuMemoryReserved  |
-|-------|-----------|------------|--------|--------|--------|---------------|-------------------|---------------|--------------------|
-| 1     | 0.3943    | 2.54       | 2.54   | 2.54   | 2.54   | 2166.44       | 237568            | 3756.19       | 6930.19            |
-| 2     | 0.1643    | 6.09       | 2.54   | 6.09   | 4.31   | 2182.99       | 237568            | 4126.19       | 6928.12            |
-| 3     | 0.1150    | 8.69       | 2.54   | 8.69   | 5.77   | 2183.49       | 237568            | 3134.19       | 6928.69            |
-| 4     | 0.0203    | 49.33      | 2.54   | 49.33  | 16.66  | 2181.58       | 237568            | 2654.19       | 6928.69            |
-| 5     | 0.0282    | 35.46      | 2.54   | 49.33  | 20.42  | 2181.20       | 237568            | 2654.19       | 6928.69            |
+### In Script Canvas
+Example how to stop profiling after 60 seconds have passed in Script Canvas.
+![FpsProfiler Editor](doc/FpsProfiler_ScriptCanvas.png)
 
+## Csv Output File - Example
+| Frame | FrameTime | CurrentFPS  | MinFPS | MaxFPS  | AvgFPS  | CpuMemoryUsed  | CpuMemoryReserved  | GpuMemoryUsed  | GpuMemoryReserved  |
+|-------|-----------|-------------|--------|---------|---------|----------------|--------------------|----------------|--------------------|
+| 1     | 0.0293    | 34.12       | 34.12  | 34.12   | 34.12   | 231.91         | 237568             | 691.44         | 7214               |
+| 2     | 0.0054    | 185.53      | 34.12  | 185.53  | 37.11   | 232            | 237568             | 691.44         | 7214               |
+| 3     | 0.005     | 199.2       | 34.12  | 199.2   | 40.32   | 231.95         | 237568             | 691.44         | 7214               |
+| 4     | 0.0038    | 259.88      | 34.12  | 259.88  | 44.67   | 231.64         | 237568             | 691.44         | 7214               |
+| 5     | 0.004     | 247.65      | 34.12  | 259.88  | 48.69   | 231.64         | 237568             | 691.44         | 7214               |
