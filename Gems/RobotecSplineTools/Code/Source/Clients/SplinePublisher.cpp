@@ -38,7 +38,7 @@ namespace SplineTools
             serializeContext->Class<SplinePublisher, AZ::Component>()->Version(0)->Field("m_config", &SplinePublisher::m_config);
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SplinePublisher>("SplinePathPublisher", "Enables to publish spline as a ros2 path.")
+                editContext->Class<SplinePublisher>("SplinePathPublisher", "Enables to publish spline as a ROS 2 path.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "SplinePathPublisher")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "RobotecTools")
