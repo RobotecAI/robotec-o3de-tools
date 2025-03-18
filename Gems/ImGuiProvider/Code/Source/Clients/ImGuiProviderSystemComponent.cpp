@@ -166,6 +166,7 @@ namespace ImGuiProvider
         {
             m_showFeature = false;
             m_guiHideOrderSent = true;
+            ImGuiProviderNotificationBus::Event(m_currentGUIOwner.m_featurePath, &ImGuiProviderNotifications::OnImGuiUnselected);
         }
     }
 
@@ -251,6 +252,7 @@ namespace ImGuiProvider
             // reset state
             m_guiHideOrderSent = false;
             m_showFeature = m_currentGUIOwner.m_state == ImGui::DisplayState::Visible;
+            ImGuiProviderNotificationBus::Event(m_currentGUIOwner.m_featurePath, &ImGuiProviderNotifications::OnImGuiSelected);
         }
     }
 
