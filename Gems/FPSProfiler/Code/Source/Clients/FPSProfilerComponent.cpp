@@ -144,7 +144,7 @@ namespace FPSProfiler
         }
 
         // Notify - File Saved
-        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileSaved, m_configFile.m_OutputFilename.c_str());
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileSaved, m_configFile);
         FPSProfilerRequestBus::Handler::BusDisconnect();
     }
 
@@ -255,7 +255,7 @@ namespace FPSProfiler
         }
 
         // Notify - Profile Started
-        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileStart, m_configFile);
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileStart, m_configRecord, m_configPrecision, m_configDebug);
         AZ_Printf("FPS Profiler", "Profiling started.");
     }
 
@@ -277,7 +277,8 @@ namespace FPSProfiler
         SaveLogToFile();
 
         // Notify - Profile Stopped
-        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileStop, m_configFile);
+        FPSProfilerNotificationBus::Broadcast(
+            &FPSProfilerNotifications::OnProfileStop, m_configFile, m_configRecord, m_configPrecision, m_configDebug);
         AZ_Printf("FPS Profiler", "Profiling stopped.");
     }
 
@@ -294,7 +295,7 @@ namespace FPSProfiler
         m_logBuffer.clear();
 
         // Notify - Profile Reset
-        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileReset, m_configFile);
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileReset, m_configRecord, m_configPrecision);
         AZ_Printf("FPS Profiler", "Profiling data reseted.");
     }
 
@@ -483,7 +484,7 @@ namespace FPSProfiler
         file.Close();
 
         // Notify - File Created
-        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileCreated, m_configFile.m_OutputFilename.c_str());
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileCreated, m_configFile);
     }
 
     void FPSProfilerComponent::WriteDataToFile()
@@ -507,7 +508,7 @@ namespace FPSProfiler
         m_logBuffer.clear();
 
         // Notify - File Update
-        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configFile.m_OutputFilename.c_str());
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configFile);
     }
 
     float FPSProfilerComponent::BytesToMB(AZStd::size_t bytes)

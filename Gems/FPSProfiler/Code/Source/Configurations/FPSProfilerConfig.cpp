@@ -1,5 +1,6 @@
 #include "FPSProfilerConfig.h"
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
 namespace FPSProfiler::Configs
@@ -62,6 +63,22 @@ namespace FPSProfiler::Configs
                         "When enabled, the system will save files with a timestamp postfix of the current date, hour, minutes, and "
                         "seconds. This allows you to save automatically without manual input each time.");
             }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            if (behaviorContext->m_classes.contains("FileSaveSettings"))
+            {
+                return;
+            }
+
+            behaviorContext->Class<FileSaveSettings>("FileSaveSettings")
+                ->Attribute(AZ::Script::Attributes::Category, "FPSProfiler")
+                ->Constructor<>()
+                ->Property("outputFilename", BehaviorValueProperty(&FileSaveSettings::m_OutputFilename))
+                ->Property("autoSave", BehaviorValueProperty(&FileSaveSettings::m_AutoSave))
+                ->Property("autoSaveAtFrame", BehaviorValueProperty(&FileSaveSettings::m_AutoSaveAtFrame))
+                ->Property("saveWithTimestamp", BehaviorValueProperty(&FileSaveSettings::m_SaveWithTimestamp));
         }
     }
 
@@ -132,6 +149,22 @@ namespace FPSProfiler::Configs
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree);
             }
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            if (behaviorContext->m_classes.contains("RecordSettings"))
+            {
+                return;
+            }
+
+            behaviorContext->Class<RecordSettings>("RecordSettings")
+                ->Attribute(AZ::Script::Attributes::Category, "FPSProfiler")
+                ->Constructor<>()
+                ->Property("recordType", BehaviorValueProperty(&RecordSettings::m_recordType))
+                ->Property("framesToSkip", BehaviorValueProperty(&RecordSettings::m_framesToSkip))
+                ->Property("framesToRecord", BehaviorValueProperty(&RecordSettings::m_framesToRecord))
+                ->Property("recordStats", BehaviorValueProperty(&RecordSettings::m_RecordStats));
+        }
     }
 
     void PrecisionSettings::Reflect(AZ::ReflectContext* context)
@@ -194,6 +227,22 @@ namespace FPSProfiler::Configs
                         "enabled.");
             }
         }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            if (behaviorContext->m_classes.contains("PrecisionSettings"))
+            {
+                return;
+            }
+
+            behaviorContext->Class<PrecisionSettings>("PrecisionSettings")
+                ->Attribute(AZ::Script::Attributes::Category, "FPSProfiler")
+                ->Constructor<>()
+                ->Property("NearZeroPrecision", BehaviorValueProperty(&PrecisionSettings::m_NearZeroPrecision))
+                ->Property("AvgFpsType", BehaviorValueProperty(&PrecisionSettings::m_avgFpsType))
+                ->Property("SmoothingFactor", BehaviorValueProperty(&PrecisionSettings::m_smoothingFactor))
+                ->Property("KeepHistory", BehaviorValueProperty(&PrecisionSettings::m_keepHistory));
+        }
     }
 
     void DebugSettings::Reflect(AZ::ReflectContext* context)
@@ -235,6 +284,21 @@ namespace FPSProfiler::Configs
                             return data && data->m_ShowFps ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
                         });
             }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            if (behaviorContext->m_classes.contains("DebugSettings"))
+            {
+                return;
+            }
+
+            behaviorContext->Class<DebugSettings>("DebugSettings")
+                ->Attribute(AZ::Script::Attributes::Category, "FPSProfiler")
+                ->Constructor<>()
+                ->Property("PrintDebugInfo", BehaviorValueProperty(&DebugSettings::m_PrintDebugInfo))
+                ->Property("ShowFps", BehaviorValueProperty(&DebugSettings::m_ShowFps))
+                ->Property("Color", BehaviorValueProperty(&DebugSettings::m_Color));
         }
     }
 } // namespace FPSProfiler::Configs
