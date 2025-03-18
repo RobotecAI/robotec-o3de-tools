@@ -99,4 +99,37 @@ namespace CsvSpawner::CsvSpawnerUtils
         const AZStd::string& physicsSceneName = AZStd::string(),
         AZ::EntityId parentId = AZ::EntityId());
 
-}; // namespace CsvSpawner::CsvSpawnerUtils
+    /**
+     * @brief Flags representing the status of an CsvSpawner::Spawn() operation.
+     *
+     * SpawnStatus provides various status indicators for entity spawning.
+     * These flags help track whether spawning was successful, stopped, or failed.
+     */
+    enum class SpawnStatus : uint8_t
+    {
+        Success = 0, ///< Operation succeeded.
+        Fail = 1 << 0, ///< Generic failure.
+        Stopped = 1 << 1, ///< Spawning was stopped prematurely but not necessarily a failure.
+        Warning = 1 << 2, ///< An warning or error occurred during spawning (potentially recoverable).
+    };
+
+    /// Enable bitwise operations for SpawnStatus.
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatus);
+
+    /**
+     * @brief Structure holding data related to CsvSpawner entity spawning.
+     *
+     * SpawnInfo contains information about the entities to be spawned, the physics scene
+     * they belong to, and the parent entity responsible for the spawn operation.
+     */
+    struct SpawnInfo
+    {
+        AZ_TYPE_INFO(SpawnInfo, CsvSpawnerSpawnInfoTypeId);
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZStd::vector<CsvSpawnableEntityInfo> m_entitiesToSpawn; ///< List of entities to spawn.
+        AZStd::string m_physicsSceneName; ///< Name of the physics scene where entities will be spawned.
+        AZ::EntityId m_spawnerParentEntityId; ///< Parent entity ID managing the spawn process.
+    };
+
+} // namespace CsvSpawner::CsvSpawnerUtils
