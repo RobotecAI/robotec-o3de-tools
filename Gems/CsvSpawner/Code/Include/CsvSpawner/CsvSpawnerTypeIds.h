@@ -22,5 +22,6 @@ namespace CsvSpawner
 
     // Interface TypeIds
     inline constexpr const char* CsvSpawnerInterfaceTypeId = "{77ACBD4E-069E-4610-8154-E1AC28CEE05A}";
+    inline constexpr const char* CsvSpawnerNotificationBusHandlerTypeId = "{1F142F00-4E79-431B-9C1D-3AB157838FF8}";
     inline constexpr const char* CsvSpawnerSpawnInfoTypeId = "{81E5A014-3232-4359-98F5-7F9D7152629E}";
 } // namespace CsvSpawner
