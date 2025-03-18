@@ -11,14 +11,13 @@
 
 #pragma once
 
-#include "AzFramework/Physics/Collision/CollisionGroups.h"
-#include "AzFramework/Physics/Collision/CollisionLayers.h"
-#include "CsvSpawner/CsvSpawnerTypeIds.h"
+#include <CsvSpawner/CsvSpawnerTypeIds.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
