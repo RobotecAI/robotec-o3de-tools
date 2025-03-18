@@ -1,3 +1,12 @@
+/**
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders. If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 
 #pragma once
 
@@ -7,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 #include <ROS2/Communication/TopicConfiguration.h>
+#include <ROS2PoseControl/ROS2PoseControlRequestBus.h>
 
 namespace ROS2PoseControl
 {
@@ -22,15 +32,9 @@ namespace ROS2PoseControl
 
         AZ::Crc32 isTrackingModePoseMessagesVisibility() const;
 
-        AZ::Crc32 isGroudOffsetVisible() const;
+        AZ::Crc32 isGroundOffsetVisible() const;
 
         AZ::Crc32 isUseTagOffset() const;
-
-        enum class TrackingMode
-        {
-            PoseMessages,
-            TF2
-        };
 
         TrackingMode m_tracking_mode = TrackingMode::PoseMessages;
         ROS2::TopicConfiguration m_poseTopicConfiguration;
@@ -47,5 +51,8 @@ namespace ROS2PoseControl
         AZStd::string m_startOffsetTag;
 
         bool m_useWGS = false;
+
+        bool m_enablePhysics{ true };
+        bool m_isKinematic{ false };
     };
 } // namespace ROS2PoseControl

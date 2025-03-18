@@ -10,16 +10,15 @@
 
 #pragma once
 
+#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
+#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 #include "GeoJSONSpawnerUtils.h"
 
-#include <GeoJSONSpawner/GeoJSONSpawnerBus.h>
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
-
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace GeoJSONSpawner
 {
@@ -35,6 +34,7 @@ namespace GeoJSONSpawner
         : public AZ::Component
         , public GeoJSONSpawnerRequestBus::Handler
         , public AZ::TickBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(GeoJSONSpawnerComponent, GeoJSONSpawnerComponentTypeId);
@@ -59,6 +59,10 @@ namespace GeoJSONSpawner
         Result DeleteAll() override;
         Result DeleteById(const AZStd::unordered_set<int>& idsToDelete) override;
         GetIdsResult GetIds() const override;
+
+        // AzFramework::Terrain::TerrainDataNotificationBus overrides
+        void OnTerrainDataCreateEnd() override;
+        void OnTerrainDataDestroyBegin() override;
 
     private:
         // AZ::TickBus::Handler overrides
@@ -91,5 +95,8 @@ namespace GeoJSONSpawner
 
         SpawnerState m_spawnerState{ SpawnerState::Idle };
         AZStd::queue<SpawnerState> m_spawnerStateQueue;
+
+        // Terrain notify
+        bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
     };
 } // namespace GeoJSONSpawner

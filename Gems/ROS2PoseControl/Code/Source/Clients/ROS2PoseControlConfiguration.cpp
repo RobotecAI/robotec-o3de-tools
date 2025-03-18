@@ -1,5 +1,14 @@
+/**
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders. If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 
-#include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
+#include "ROS2PoseControlConfiguration.h"
 
 #include <AzCore/Serialization/EditContext.h>
 
@@ -15,7 +24,7 @@ namespace ROS2PoseControl
         return m_tracking_mode == TrackingMode::PoseMessages ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    AZ::Crc32 ROS2PoseControlConfiguration::isGroudOffsetVisible() const
+    AZ::Crc32 ROS2PoseControlConfiguration::isGroundOffsetVisible() const
     {
         return m_clampToGround ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
@@ -99,7 +108,7 @@ namespace ROS2PoseControl
                         &ROS2PoseControlConfiguration::m_groundOffset,
                         "Ground Offset",
                         "Offset from the ground")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isGroudOffsetVisible);
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ROS2PoseControlConfiguration::isGroundOffsetVisible);
             }
         }
     };

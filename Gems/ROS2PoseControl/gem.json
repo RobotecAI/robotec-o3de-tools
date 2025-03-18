@@ -1,11 +1,11 @@
 {
     "gem_name": "ROS2PoseControl",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "display_name": "ROS2PoseControl",
-    "license": "License used i.e. Apache-2.0 or MIT",
-    "license_url": "Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
     "origin": "RobotecAI",
-    "origin_url": "TBD",
+    "origin_url": "https://www.robotec.ai",
     "type": "Code",
     "summary": "Allows for control of a entities pose using ROS2",
     "canonical_tags": [
@@ -18,7 +18,7 @@
         ""
     ],
     "icon_path": "preview.png",
-    "requirements": "Notice of any requirements for this Gem i.e. This requires X other gem",
+    "requirements": "ROS2 Gem, ImGui Gem",
     "documentation_url": "See the docs in the repo",
     "dependencies": [
         "ROS2",

@@ -1,6 +1,14 @@
+/**
+ * Copyright (C) Robotec AI - All Rights Reserved
+ *
+ * This source code is protected under international copyright law.  All rights
+ * reserved and protected by the copyright holders.
+ * This file is confidential and only available to authorized individuals with the
+ * permission of the copyright holders. If you encounter this file and do not have
+ * permission, please contact the copyright holders and delete this file.
+ */
 
 #include "ROS2PoseControl.h"
-#include "AzCore/Debug/Trace.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -17,7 +25,6 @@
 #include <ROS2/Georeference/GeoreferenceBus.h>
 #include <ROS2/Utilities/ROS2Conversions.h>
 #include <ROS2/Utilities/ROS2Names.h>
-#include <ROS2PoseControl/ROS2PoseControlConfiguration.h>
 #include <RigidBodyComponent.h>
 #include <imgui/imgui.h>
 #include <tf2_ros/transform_listener.h>
@@ -39,15 +46,42 @@ namespace ROS2PoseControl
 
     void ROS2PoseControl::Activate()
     {
+        InitializeROSConnection();
+        ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
+        ROS2PoseControlRequestsBus::Handler::BusConnect(GetEntityId());
+
+        AZ::TickBus::QueueFunction(
+            [this]()
+            {
+                AZStd::vector<AZ::EntityId> entityIds;
+                AZ::TransformBus::EventResult(entityIds, GetEntityId(), &AZ::TransformBus::Events::GetAllDescendants);
+                for (const auto& entityId : entityIds)
+                {
+                    AZ::Transform localTM = AZ::Transform::CreateIdentity();
+                    AZ::TransformBus::EventResult(localTM, entityId, &AZ::TransformBus::Events::GetLocalTM);
+                    m_localTransforms[entityId] = localTM;
+                }
+            });
+    }
+
+    void ROS2PoseControl::Deactivate()
+    {
+        ROS2PoseControlRequestsBus::Handler::BusDisconnect();
+        ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
+        DeinitializeROSConnection();
+    }
+
+    void ROS2PoseControl::InitializeROSConnection()
+    {
         auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
         m_tf_buffer = std::make_unique<tf2_ros::Buffer>(ros2Node->get_clock());
         m_tf_listener = std::make_shared<tf2_ros::TransformListener>(*m_tf_buffer);
 
-        if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
+        if (m_configuration.m_tracking_mode == TrackingMode::TF2)
         {
             AZ::TickBus::Handler::BusConnect();
         }
-        else if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::PoseMessages)
+        else if (m_configuration.m_tracking_mode == TrackingMode::PoseMessages)
         {
             // Get odom frame Id
             const auto* ros2_frame_component = m_entity->FindComponent<ROS2::ROS2FrameComponent>();
@@ -72,16 +106,14 @@ namespace ROS2PoseControl
 
             );
         }
-        ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
     }
 
-    void ROS2PoseControl::Deactivate()
+    void ROS2PoseControl::DeinitializeROSConnection()
     {
         m_poseSubscription.reset();
         m_tf_buffer.reset();
         m_tf_listener.reset();
         AZ::TickBus::Handler::BusDisconnect();
-        ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
     }
 
     void ROS2PoseControl::EnablePhysics()
@@ -92,6 +124,63 @@ namespace ROS2PoseControl
     void ROS2PoseControl::DisablePhysics()
     {
         SetPhysicsEnabled(false);
+    }
+
+    void ROS2PoseControl::SetTrackingMode(TrackingMode trackingMode)
+    {
+        m_configuration.m_tracking_mode = trackingMode;
+        m_configurationChanged = true;
+    }
+
+    void ROS2PoseControl::SetTargetFrame(const AZStd::string& targetFrame)
+    {
+        m_configuration.m_targetFrame = targetFrame;
+        m_configurationChanged = true;
+    }
+
+    void ROS2PoseControl::SetReferenceFrame(const AZStd::string& referenceFrame)
+    {
+        m_configuration.m_referenceFrame = referenceFrame;
+        m_configurationChanged = true;
+    }
+
+    void ROS2PoseControl::SetEnablePhysics(bool enable)
+    {
+        if (m_configuration.m_enablePhysics != enable)
+        {
+            SetPhysicsEnabled(enable);
+            m_configuration.m_enablePhysics = enable;
+        }
+    }
+
+    void ROS2PoseControl::SetRigidBodiesToKinematic(bool enable)
+    {
+        if (m_configuration.m_isKinematic != enable)
+        {
+            AZStd::vector<AZ::EntityId> entityIds;
+            AZ::TransformBus::EventResult(entityIds, GetEntityId(), &AZ::TransformBus::Events::GetAllDescendants);
+            entityIds.push_back(GetEntityId());
+            for (const AZ::EntityId& entityId : entityIds)
+            {
+                AZ::Entity* entity;
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+                if (auto* rigidBodyComponent = entity->FindComponent<PhysX::RigidBodyComponent>())
+                {
+                    rigidBodyComponent->SetKinematic(enable);
+                }
+            }
+            m_configuration.m_isKinematic = enable;
+        }
+    }
+
+    void ROS2PoseControl::ApplyConfiguration()
+    {
+        if (m_configurationChanged)
+        {
+            DeinitializeROSConnection();
+            InitializeROSConnection();
+            m_configurationChanged = false;
+        }
     }
 
     void ROS2PoseControl::SetPhysicsEnabled(bool enabled)
@@ -138,16 +227,21 @@ namespace ROS2PoseControl
         if (m_tf_buffer->canTransform(targetFrame.c_str(), sourceFrame.c_str(), tf2::TimePointZero, &errorString))
         {
             transformStamped = m_tf_buffer->lookupTransform(targetFrame.c_str(), sourceFrame.c_str(), tf2::TimePointZero);
+            m_tfWarningLogShown = false;
         }
         else
         {
-            AZ_Warning(
-                "ROS2PositionControl",
-                false,
-                "Could not transform %s to %s, error: %s",
-                m_configuration.m_targetFrame.c_str(),
-                m_configuration.m_referenceFrame.c_str(),
-                errorString.c_str());
+            if (!m_tfWarningLogShown)
+            {
+                AZ_Warning(
+                    "ROS2PoseControl",
+                    false,
+                    "Could not transform %s to %s, error: %s",
+                    m_configuration.m_targetFrame.c_str(),
+                    m_configuration.m_referenceFrame.c_str(),
+                    errorString.c_str());
+                m_tfWarningLogShown = true;
+            }
             return AZ::Failure();
         }
 
@@ -185,7 +279,7 @@ namespace ROS2PoseControl
 
     void ROS2PoseControl::OnPoseMessageReceived(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
     {
-        if (m_configuration.m_tracking_mode != ROS2PoseControlConfiguration::TrackingMode::PoseMessages)
+        if (m_configuration.m_tracking_mode != TrackingMode::PoseMessages)
         {
             return;
         }
@@ -235,7 +329,7 @@ namespace ROS2PoseControl
 
     void ROS2PoseControl::OnTick(float deltaTime, AZ::ScriptTimePoint time)
     {
-        if (m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2)
+        if (m_configuration.m_tracking_mode == TrackingMode::TF2)
         {
             const AZ::Outcome<AZ::Transform, void> transform_outcome = GetCurrentTransformViaTF2();
             if (!transform_outcome.IsSuccess())
@@ -250,7 +344,7 @@ namespace ROS2PoseControl
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<ROS2PoseControl, AZ::Component>()->Version(1)->Field("m_configuration", &ROS2PoseControl::m_configuration);
+            serialize->Class<ROS2PoseControl, AZ::Component>()->Version(2)->Field("m_configuration", &ROS2PoseControl::m_configuration);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
@@ -274,9 +368,7 @@ namespace ROS2PoseControl
         ImGui::Begin(ss.str().c_str());
         ImGui::Checkbox("Lock Z Axis", &m_configuration.m_lockZAxis);
         ImGui::Checkbox("Clamp to Ground", &m_configuration.m_clampToGround);
-        ImGui::Text(
-            "Tracking Mode: %s",
-            m_configuration.m_tracking_mode == ROS2PoseControlConfiguration::TrackingMode::TF2 ? "TF2" : "Pose Messages");
+        ImGui::Text("Tracking Mode: %s", m_configuration.m_tracking_mode == TrackingMode::TF2 ? "TF2" : "Pose Messages");
 
         ImGui::Text(
             "Position %f %f %f",
@@ -361,8 +453,25 @@ namespace ROS2PoseControl
             return;
         }
 
-        // Disable physics to allow transform movement.
-        DisablePhysics();
+        if (m_configuration.m_enablePhysics)
+        {
+            // Disable physics to allow transform movement.
+            DisablePhysics();
+        }
+
+        // If prefab has physics disabled or all of its rigid bodies are set to 'Kinematic'
+        // then we want to restore the initial positions of all entities. These positions
+        // may have changed before the physics or kinematics were enabled/disabled via
+        // the EBus request
+        if (!m_initialPositionRestored && (!m_configuration.m_enablePhysics || m_configuration.m_isKinematic))
+        {
+            for (const auto& [entityId, localTM] : m_localTransforms)
+            {
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalTM, localTM);
+            }
+
+            m_initialPositionRestored = true;
+        }
 
         AZ::Transform modifiedTransform = m_configuration.m_lockZAxis ? RemoveTilt(transform) : transform;
 
@@ -390,8 +499,11 @@ namespace ROS2PoseControl
 
         AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, modifiedTransform);
 
-        // Re-enable physics after the transform is applied.
-        EnablePhysics();
+        if (m_configuration.m_enablePhysics)
+        {
+            // Re-enable physics after the transform is applied.
+            EnablePhysics();
+        }
     }
 
     AZStd::optional<AZ::Vector3> ROS2PoseControl::QueryGround(
