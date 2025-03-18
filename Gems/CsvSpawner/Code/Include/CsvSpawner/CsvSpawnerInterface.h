@@ -22,19 +22,19 @@ namespace CsvSpawner
     /**
      * @brief Flags representing the status of an CsvSpawner::Spawn() operation.
      *
-     * SpawnStatusCode provides various status indicators for entity spawning.
+     * SpawnStatus provides various status indicators for entity spawning.
      * These flags help track whether spawning was successful, stopped, or failed.
      */
-    enum class SpawnStatusCode : uint8_t
+    enum class SpawnStatus : uint8_t
     {
         Success = 0, ///< Operation succeeded.
         Fail = 1 << 0, ///< Generic failure.
-        SpawnStopped = 1 << 1, ///< Spawning was stopped prematurely but not necessarily a failure.
-        ErrorGenerated = 1 << 2, ///< An error occurred during spawning (potentially recoverable).
+        Stopped = 1 << 1, ///< Spawning was stopped prematurely but not necessarily a failure.
+        Warning = 1 << 2, ///< An warning or error occurred during spawning (potentially recoverable).
     };
 
-    /// Enable bitwise operations for SpawnStatusCode.
-    AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatusCode);
+    /// Enable bitwise operations for SpawnStatus.
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatus);
 
     /**
      * @brief Structure holding data related to CsvSpawner entity spawning.
@@ -44,9 +44,9 @@ namespace CsvSpawner
      */
     struct SpawnInfo
     {
-        const AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo>& m_entitiesToSpawn; ///< List of entities to spawn.
-        const AZStd::string& m_physicsSceneName; ///< Name of the physics scene where entities will be spawned.
-        const AZ::EntityId& m_spawnerParentEntityId; ///< Parent entity ID managing the spawn process.
+        AZStd::vector<CsvSpawnerUtils::CsvSpawnableEntityInfo> m_entitiesToSpawn; ///< List of entities to spawn.
+        AZStd::string m_physicsSceneName; ///< Name of the physics scene where entities will be spawned.
+        AZ::EntityId m_spawnerParentEntityId; ///< Parent entity ID managing the spawn process.
     };
 
     /**
@@ -73,7 +73,7 @@ namespace CsvSpawner
          * @param m_spawnInfo Struct holding information about entities to be spawned.
          * @param m_statusCode Status code indicating success, failure and warnings of the spawn.
          */
-        virtual void OnEntitiesSpawnFinished(SpawnInfo& m_spawnInfo, SpawnStatusCode& m_statusCode)
+        virtual void OnEntitiesSpawnFinished(SpawnInfo& m_spawnInfo, SpawnStatus& m_statusCode)
         {
         }
 
