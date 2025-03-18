@@ -12,7 +12,9 @@
 #pragma once
 
 #include <CsvSpawner/CsvSpawnerUtils.h>
+
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace CsvSpawner
 {
@@ -52,4 +54,26 @@ namespace CsvSpawner
     // Create an EBus using the notification interface
     using CsvSpawnerNotificationBus = AZ::EBus<CsvSpawnerInterface>;
 
+    class CsvSpawnerNotificationBusHandler
+        : public CsvSpawnerNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            CsvSpawnerNotificationBusHandler,
+            CsvSpawnerNotificationBusHandlerTypeId,
+            AZ::SystemAllocator,
+            OnEntitiesSpawnBegin,
+            OnEntitiesSpawnFinished);
+
+        void OnEntitiesSpawnBegin(CsvSpawnerUtils::SpawnInfo& m_spawnInfo) override
+        {
+            Call(FN_OnEntitiesSpawnBegin, m_spawnInfo);
+        }
+
+        void OnEntitiesSpawnFinished(CsvSpawnerUtils::SpawnInfo& m_spawnInfo, CsvSpawnerUtils::SpawnStatus& m_statusCode) override
+        {
+            Call(FN_OnEntitiesSpawnFinished, m_spawnInfo, m_statusCode);
+        }
+    };
 } // namespace CsvSpawner
