@@ -14,16 +14,17 @@ namespace SplineTools
 {
     struct SplinePublisherConfiguration
     {
-        SplinePublisherConfiguration();
-
         AZ_TYPE_INFO(SplinePublisherConfiguration, SplinePublisherConfigTypeId);
         static void Reflect(AZ::ReflectContext* context);
+
         ROS2::TopicConfiguration m_TopicConfig{ rclcpp::ServicesQoS() };
+        int m_updateFrequency = 10;
+        SplinePublisherConfiguration();
     };
 
-    class SplinePublisher
+    class SplinePublisher final
         : public AZ::Component
-        , public AZ::TickBus::Handler
+        , protected AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT(SplinePublisher, SplinePublisherComponentTypeId);
@@ -40,6 +41,7 @@ namespace SplineTools
         void Activate() override;
         void Deactivate() override;
 
+    protected:
         // AZ::TickBus::Handler interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
@@ -47,6 +49,7 @@ namespace SplineTools
         void PublishSplineAsPath() const;
 
         SplinePublisherConfiguration m_config;
+        int m_frameNumber = 0;
         rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr m_publisher;
         ROS2::ROS2FrameComponent* m_ros2FramePtr = nullptr;
     };

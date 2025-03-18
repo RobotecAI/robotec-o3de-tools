@@ -2,31 +2,34 @@
 
 #include <ROS2/ROS2Bus.h>
 #include <ROS2/Utilities/ROS2Names.h>
-
 #include <utility>
 
 namespace SplineTools
 {
-    SplinePublisherConfiguration::SplinePublisherConfiguration()
-    {
-        m_TopicConfig.m_type = "nav_msgs::msg::Path";
-        m_TopicConfig.m_topic = "spline";
-    }
-
     void SplinePublisherConfiguration::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (const auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SplinePublisherConfiguration>()->Version(0)->Field(
-                "m_topicName", &SplinePublisherConfiguration::m_TopicConfig);
-            if (auto editContext = serializeContext->GetEditContext())
+            serializeContext->Class<SplinePublisherConfiguration>()
+                ->Version(0)
+                ->Field("m_topicName", &SplinePublisherConfiguration::m_TopicConfig)
+                ->Field("m_updateFrequency", &SplinePublisherConfiguration::m_updateFrequency);
+
+            if (const auto editContext = serializeContext->GetEditContext())
             {
                 editContext
                     ->Class<SplinePublisherConfiguration>(
                         "SplinePublisherConfiguration", "Configuration for the SplineSubscriber component")
                     ->ClassElement(AZ::Edit::ClassElements::Group, "SplineSubscriber Configuration")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &SplinePublisherConfiguration::m_TopicConfig, "Topic Config", "Topic Config");
+                        AZ::Edit::UIHandlers::Default, &SplinePublisherConfiguration::m_TopicConfig, "Topic Config", "Topic Config")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SplinePublisherConfiguration::m_updateFrequency,
+                        "Update Frequency",
+                        "How often path should be published.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0)
+                    ->Attribute(AZ::Edit::Attributes::Step, 1.0);
             }
         }
     }
@@ -34,10 +37,11 @@ namespace SplineTools
     void SplinePublisher::Reflect(AZ::ReflectContext* context)
     {
         SplinePublisherConfiguration::Reflect(context);
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (const auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<SplinePublisher, AZ::Component>()->Version(0)->Field("m_config", &SplinePublisher::m_config);
-            if (auto editContext = serializeContext->GetEditContext())
+
+            if (const auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<SplinePublisher>("SplinePathPublisher", "Enables to publish spline as a ROS 2 path.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "SplinePathPublisher")
@@ -51,6 +55,12 @@ namespace SplineTools
                         "Configuration for the SplinePathPublisher component");
             }
         }
+    }
+
+    SplinePublisherConfiguration::SplinePublisherConfiguration()
+    {
+        m_TopicConfig.m_type = "nav_msgs::msg::Path";
+        m_TopicConfig.m_topic = "spline";
     }
 
     SplinePublisher::SplinePublisher(SplinePublisherConfiguration config)
@@ -73,6 +83,7 @@ namespace SplineTools
             return;
         }
 
+        // Format Ros Topic
         if (!m_ros2FramePtr->GetNamespace().empty())
         {
             m_config.m_TopicConfig.m_topic =
@@ -97,7 +108,11 @@ namespace SplineTools
 
     void SplinePublisher::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        PublishSplineAsPath();
+        if (m_frameNumber++ == m_config.m_updateFrequency)
+        {
+            PublishSplineAsPath();
+            m_frameNumber = 0;
+        }
     }
 
     void SplinePublisher::PublishSplineAsPath() const
@@ -107,33 +122,30 @@ namespace SplineTools
             return;
         }
 
-        if (!m_ros2FramePtr)
-        {
-            AZ_Warning("SplinePublisher::PublishSplineAsPath", false, "ROS 2 frame component is not available!");
-            return;
-        }
+        AZ_Assert(m_ros2FramePtr, "ROS 2 frame component is not available!");
 
         nav_msgs::msg::Path pathMessage;
         pathMessage.header.frame_id = m_ros2FramePtr->GetFrameID().data();
         pathMessage.header.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
 
-        // Retrieve spline data
+        // Get Spline
         AZStd::shared_ptr<AZ::Spline> spline;
         LmbrCentral::SplineComponentRequestBus::EventResult(spline, GetEntityId(), &LmbrCentral::SplineComponentRequests::GetSpline);
-
         if (!spline)
         {
             AZ_Warning("SplinePublisher::PublishSplineAsPath", false, "Spline not found. Cannot generate spline path.");
             return;
         }
 
-        // Retrieve vertices from the spline
+        // Get vertices from the spline
         const size_t vertexCount = spline->GetVertexCount();
+        pathMessage.poses.reserve(vertexCount); // Reserve known size
+
         for (size_t i = 0; i < vertexCount; ++i)
         {
             const AZ::Vector3& vertex = spline->GetVertex(i);
 
-            // Use emplace_back to construct PoseStamped in-place
+            // Use emplace_back to construct PoseStamped in place
             pathMessage.poses.emplace_back();
             auto& poseStamped = pathMessage.poses.back();
 
