@@ -22,14 +22,14 @@ namespace SplineTools
                         "SplinePublisherConfiguration", "Configuration for the SplineSubscriber component")
                     ->ClassElement(AZ::Edit::ClassElements::Group, "SplineSubscriber Configuration")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &SplinePublisherConfiguration::m_TopicConfig, "Topic Config", "Topic Config")
-                    ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &SplinePublisherConfiguration::m_updateFrequency,
                         "Update Frequency",
-                        "How often path should be published.")
+                        "How often path should be published (in ticks).")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0)
-                    ->Attribute(AZ::Edit::Attributes::Step, 1.0);
+                    ->Attribute(AZ::Edit::Attributes::Step, 1.0)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &SplinePublisherConfiguration::m_TopicConfig, "Topic Config", "Topic Config");
             }
         }
     }
