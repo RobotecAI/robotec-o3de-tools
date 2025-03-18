@@ -198,7 +198,7 @@ namespace CsvSpawner::CsvSpawnerUtils
     {
         SpawnInfo broadcastSpawnInfo =
             SpawnInfo{ entitiesToSpawn, physicsSceneName, parentId }; // Spawn Info used in CsvSpawner EBus notify.
-        SpawnStatusCode spawnStatusCode = SpawnStatusCode::Success; // Spawn Status Code used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
+        SpawnStatus spawnStatusCode = SpawnStatus::Success; // Spawn Status Code used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
 
         // Call CsvSpawner EBus notification - Begin
         CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin, broadcastSpawnInfo);
@@ -233,7 +233,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 AZ_Error("CsvSpawner", false, "SpawnableAssetConfiguration %s not found", entityConfig.m_name.c_str());
 
                 // Add notify code status
-                spawnStatusCode |= SpawnStatusCode::ErrorGenerated;
+                spawnStatusCode |= SpawnStatus::Warning;
                 continue;
             }
 
@@ -264,7 +264,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 else
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated;
+                    spawnStatusCode |= SpawnStatus::Warning;
 
                     continue; // Skip this entity if we can't find a valid position and
                               // place on terrain is enabled.
@@ -280,7 +280,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated | SpawnStatusCode::SpawnStopped;
+                    spawnStatusCode |= SpawnStatus::Warning | SpawnStatus::Stopped;
 
                     return;
                 }
@@ -297,7 +297,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated | SpawnStatusCode::SpawnStopped;
+                    spawnStatusCode |= SpawnStatus::Warning | SpawnStatus::Stopped;
 
                     return;
                 }
@@ -310,7 +310,7 @@ namespace CsvSpawner::CsvSpawnerUtils
         }
 
         // Check is success spawn
-        tickets.empty() ? spawnStatusCode |= SpawnStatusCode::Fail : spawnStatusCode |= SpawnStatusCode::Success;
+        tickets.empty() ? spawnStatusCode |= SpawnStatus::Fail : spawnStatusCode |= SpawnStatus::Success;
         // Call CsvSpawner EBus notification - Finished
         CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
 
