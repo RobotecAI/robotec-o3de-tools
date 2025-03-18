@@ -376,3 +376,41 @@ It allows:
 
 **Note:** that only given entity is modified (not all descendants).
 
+# ImGuiProvider
+
+This gem adds support for displaying user defined ImGui GUI. Users can define their own gui using `ImGuiProvider::ImGuiProviderNotificationBus`. User's component should be handler of the `ImGuiProvider::ImGuiProviderNotificationBus::Handler` and define method `OnImGuiUpdate`. Mentioned method should contain all code related to displayed GUI. Acquiring ImGui context and its releasing is handled by the Gem and its system component. User's component should connect to `ImGuiProvider::ImGuiProviderNotificationBus` using `ImGuiProvider::ImGuiFeaturePath` aka `AZ::IO::Path`. Each segment of path represents one depth in the toolbar.
+
+Below example on how to register new feature during component activation:
+
+```cpp
+void ExampleComponent::Activate()
+{
+    /*
+    some implementation
+    */
+    auto pathToFeature = ImGuiProvider::ImGuiFeaturePath{ "Tools/ExampleFeature" };
+    ImGuiProvider::ImGuiProviderNotificationBus::Handler::BusConnect(pathToFeature);
+    /*
+    some implementation
+    */
+}
+```
+
+Gem monitors number of active handler, so ImGui features are available as long as the lifetime of component which registered it. 
+
+Gem handles correct displaying of debug menu available using `home` button. If Gem detects debug menu, registered GUIs disappear. After disabling debug menu, previous state of registered features is restored.
+If Gem detects custom GUI feature registered in Editor, viewport icons are moved to prevent covering the registered features.
+
+## API
+
+Gem defines `ImGuiProvider::ImGuiProviderNotificationBus` and `ImGuiProvider::ImGuiProviderRequestBus`.
+
+**Notification bus methods**
+
+Besides `OnImGuiUpdate` used for updating displayed GUI, notification bus defines methods: `OnImGuiSelected` and `OnImGuiUnselected`. Methods are triggered during registered GUI state change, respectively hidden -> visible and visible -> hidden.
+
+**Request bus methods**
+
+`AZStd::optional<ImGuiFeaturePath> GetActiveGuiId()` - returns optional with ImGuiProvider::ImGuiFeaturePath. Optional is empty if there is no active GUI.
+
+`void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given id as active. Doesn't check if given guiId exists.
