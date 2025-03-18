@@ -421,65 +421,20 @@ void OnProfileStart(const Configs::FileSaveSettings& config) override
 ```
 
 ### In Lua
-```shell
--- Table to hold our script functions
-local profilerScript = {}
+```lua
+FPSProfilerHandler = {}
 
--- Function called when profiling starts
-function profilerScript:OnProfileStart(config)
-    Debug.Log("Profiling started. Stopping in 60 seconds...")
-
-    -- Start a 60-second timer before stopping profiling
-    self:StartTimer(60, function()
-        Debug.Log("Stopping profiling now...")
-        FPSProfilerRequestBus.Broadcast.StopProfiling()
-    end)
+-- Called when a new file is created
+function FPSProfilerHandler:OnFileCreated(config)
+	Debug.Log("File Created: " .. config.m_OutputFilename)
 end
 
--- Function to start a timer
-function profilerScript:StartTimer(delay, callback)
-    if self.timerEventId then
-        -- Prevent multiple timers from stacking
-        TickBus.Disconnect(self, self.timerEventId)
-    end
-
-    self.timerTimeRemaining = delay
-    self.timerCallback = callback
-    self.timerEventId = TickBus.Connect(self)
+function FPSProfilerHandler:OnActivate()
+	-- Connect the handler to listen for notifications
+	FPSProfilerNotificationBus.Connect(FPSProfilerHandler)
 end
 
--- Tick event to track time
-function profilerScript:OnTick(deltaTime, timePoint)
-    if self.timerTimeRemaining then
-        self.timerTimeRemaining = self.timerTimeRemaining - deltaTime
-        if self.timerTimeRemaining <= 0 then
-            -- Time is up, trigger callback and disconnect
-            if self.timerCallback then
-                self.timerCallback()
-            end
-            TickBus.Disconnect(self, self.timerEventId)
-            self.timerEventId = nil
-        end
-    end
-end
-
--- Register as an FPSProfilerNotificationBus listener
-function profilerScript:OnActivate()
-    FPSProfilerNotificationBus.Connect(self)
-end
-
--- Cleanup when script is deactivated
-function profilerScript:OnDeactivate()
-    FPSProfilerNotificationBus.Disconnect(self)
-
-    -- Disconnect timer if still active
-    if self.timerEventId then
-        TickBus.Disconnect(self, self.timerEventId)
-    end
-end
-
--- Return the table so O3DE can use it
-return profilerScript
+return FPSProfilerHandler
 ```
 
 ### In Script Canvas

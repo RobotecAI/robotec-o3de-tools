@@ -75,10 +75,10 @@ namespace FPSProfiler::Configs
             behaviorContext->Class<FileSaveSettings>("FileSaveSettings")
                 ->Attribute(AZ::Script::Attributes::Category, "FPSProfiler")
                 ->Constructor<>()
-                ->Property("outputFilename", BehaviorValueProperty(&FileSaveSettings::m_OutputFilename))
-                ->Property("autoSave", BehaviorValueProperty(&FileSaveSettings::m_AutoSave))
-                ->Property("autoSaveAtFrame", BehaviorValueProperty(&FileSaveSettings::m_AutoSaveAtFrame))
-                ->Property("saveWithTimestamp", BehaviorValueProperty(&FileSaveSettings::m_SaveWithTimestamp));
+                ->Property("m_OutputFilename", BehaviorValueProperty(&FileSaveSettings::m_OutputFilename))
+                ->Property("m_AutoSave", BehaviorValueProperty(&FileSaveSettings::m_AutoSave))
+                ->Property("m_AutoSaveAtFrame", BehaviorValueProperty(&FileSaveSettings::m_AutoSaveAtFrame))
+                ->Property("m_SaveWithTimestamp", BehaviorValueProperty(&FileSaveSettings::m_SaveWithTimestamp));
         }
     }
 
@@ -160,10 +160,10 @@ namespace FPSProfiler::Configs
             behaviorContext->Class<RecordSettings>("RecordSettings")
                 ->Attribute(AZ::Script::Attributes::Category, "FPSProfiler")
                 ->Constructor<>()
-                ->Property("recordType", BehaviorValueProperty(&RecordSettings::m_recordType))
-                ->Property("framesToSkip", BehaviorValueProperty(&RecordSettings::m_framesToSkip))
-                ->Property("framesToRecord", BehaviorValueProperty(&RecordSettings::m_framesToRecord))
-                ->Property("recordStats", BehaviorValueProperty(&RecordSettings::m_RecordStats));
+                ->Property("m_recordType", BehaviorValueProperty(&RecordSettings::m_recordType))
+                ->Property("m_framesToSkip", BehaviorValueProperty(&RecordSettings::m_framesToSkip))
+                ->Property("m_framesToRecord", BehaviorValueProperty(&RecordSettings::m_framesToRecord))
+                ->Property("m_RecordStats", BehaviorValueProperty(&RecordSettings::m_RecordStats));
         }
     }
 
@@ -238,10 +238,10 @@ namespace FPSProfiler::Configs
             behaviorContext->Class<PrecisionSettings>("PrecisionSettings")
                 ->Attribute(AZ::Script::Attributes::Category, "FPSProfiler")
                 ->Constructor<>()
-                ->Property("NearZeroPrecision", BehaviorValueProperty(&PrecisionSettings::m_NearZeroPrecision))
-                ->Property("AvgFpsType", BehaviorValueProperty(&PrecisionSettings::m_avgFpsType))
-                ->Property("SmoothingFactor", BehaviorValueProperty(&PrecisionSettings::m_smoothingFactor))
-                ->Property("KeepHistory", BehaviorValueProperty(&PrecisionSettings::m_keepHistory));
+                ->Property("m_NearZeroPrecision", BehaviorValueProperty(&PrecisionSettings::m_NearZeroPrecision))
+                ->Property("m_avgFpsType", BehaviorValueProperty(&PrecisionSettings::m_avgFpsType))
+                ->Property("m_smoothingFactor", BehaviorValueProperty(&PrecisionSettings::m_smoothingFactor))
+                ->Property("m_keepHistory", BehaviorValueProperty(&PrecisionSettings::m_keepHistory));
         }
     }
 
@@ -256,9 +256,9 @@ namespace FPSProfiler::Configs
 
             serializeContext->Class<DebugSettings>()
                 ->Version(0)
-                ->Field("PrintDebugInfo", &DebugSettings::m_PrintDebugInfo)
-                ->Field("ShowFps", &DebugSettings::m_ShowFps)
-                ->Field("Color", &DebugSettings::m_Color);
+                ->Field("m_PrintDebugInfo", &DebugSettings::m_PrintDebugInfo)
+                ->Field("m_ShowFps", &DebugSettings::m_ShowFps)
+                ->Field("m_Color", &DebugSettings::m_Color);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -296,9 +296,9 @@ namespace FPSProfiler::Configs
             behaviorContext->Class<DebugSettings>("DebugSettings")
                 ->Attribute(AZ::Script::Attributes::Category, "FPSProfiler")
                 ->Constructor<>()
-                ->Property("PrintDebugInfo", BehaviorValueProperty(&DebugSettings::m_PrintDebugInfo))
-                ->Property("ShowFps", BehaviorValueProperty(&DebugSettings::m_ShowFps))
-                ->Property("Color", BehaviorValueProperty(&DebugSettings::m_Color));
+                ->Property("m_PrintDebugInfo", BehaviorValueProperty(&DebugSettings::m_PrintDebugInfo))
+                ->Property("m_ShowFps", BehaviorValueProperty(&DebugSettings::m_ShowFps))
+                ->Property("m_Color", BehaviorValueProperty(&DebugSettings::m_Color));
         }
     }
 } // namespace FPSProfiler::Configs
