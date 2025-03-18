@@ -10,12 +10,12 @@
 
 #pragma once
 
-#include "API/ToolsApplicationAPI.h"
+#include <CsvSpawner/CsvSpawnerTypeIds.h>
 #include <CsvSpawner/CsvSpawnerUtils.h>
 
+#include <API/ToolsApplicationAPI.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>

@@ -9,7 +9,7 @@
  * file.
  */
 
-#include <CsvSpawner/CsvSpawnerUtils.h>
+#include "CsvSpawnerUtils.h"
 
 #include <AzFramework/Physics/CollisionBus.h>
 #include <CsvSpawner/CsvSpawnerInterface.h>
