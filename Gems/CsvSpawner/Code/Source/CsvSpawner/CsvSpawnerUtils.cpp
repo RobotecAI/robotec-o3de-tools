@@ -40,6 +40,32 @@ namespace CsvSpawner::CsvSpawnerUtils
                 ->Field("Transform", &CsvSpawnableEntityInfo::m_transform)
                 ->Field("Name", &CsvSpawnableEntityInfo::m_name)
                 ->Field("Seed", &CsvSpawnableEntityInfo::m_seed);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<CsvSpawnableEntityInfo>("Csv Spawnable Entity Info", "An entity configuration for spawning")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnableEntityInfo::m_id, "ID", "Optional ID for the entity")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &CsvSpawnableEntityInfo::m_transform, "Transform", "Transform of the entity")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CsvSpawnableEntityInfo::m_name,
+                        "Name",
+                        "Name of the spawnable entity configuration")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &CsvSpawnableEntityInfo::m_seed, "Seed", "Optional seed value for randomization");
+            }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<CsvSpawnableEntityInfo>("CsvSpawnableEntityInfo")
+                ->Constructor<>()
+                ->Property("Id", BehaviorValueProperty(&CsvSpawnableEntityInfo::m_id))
+                ->Property("Transform", BehaviorValueProperty(&CsvSpawnableEntityInfo::m_transform))
+                ->Property("Name", BehaviorValueProperty(&CsvSpawnableEntityInfo::m_name))
+                ->Property("Seed", BehaviorValueProperty(&CsvSpawnableEntityInfo::m_seed));
         }
     }
     void CsvSpawnableAssetConfiguration::Reflect(AZ::ReflectContext* context)
@@ -360,8 +386,15 @@ namespace CsvSpawner::CsvSpawnerUtils
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            behaviorContext->EnumProperty<static_cast<int>(CsvSpawnerUtils::SpawnStatus::Success)>("SpawnStatus_Success");
+            behaviorContext->EnumProperty<static_cast<int>(CsvSpawnerUtils::SpawnStatus::Fail)>("SpawnStatus_Fail");
+            behaviorContext->EnumProperty<static_cast<int>(CsvSpawnerUtils::SpawnStatus::Stopped)>("SpawnStatus_Stopped");
+            behaviorContext->EnumProperty<static_cast<int>(CsvSpawnerUtils::SpawnStatus::Warning)>("SpawnStatus_Warning");
+
             behaviorContext->Class<SpawnInfo>("SpawnInfo")
                 ->Constructor()
+                ->Attribute(AZ::Script::Attributes::Category, "CsvSpawner")
+                ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Property("m_entitiesToSpawn", BehaviorValueProperty(&SpawnInfo::m_entitiesToSpawn))
                 ->Property("m_physicsSceneName", BehaviorValueProperty(&SpawnInfo::m_physicsSceneName))
                 ->Property("m_spawnerParentEntityId", BehaviorValueProperty(&SpawnInfo::m_spawnerParentEntityId));
