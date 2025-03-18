@@ -86,6 +86,18 @@ Useful for robots' movement smoothing.
 Component that spawns prefabs using coordinates stored in CSV file. It supports XYZ format as well as WGS84 coordinate system.   
 ![](doc/CsvSpawner.png)
 
+## API
+This Gem has defined notification bus - `CsvSpawnerNotificationBus`.
+
+Available functions:
+
+| Name                      | Parameters                                                                                                                                    | Description                            |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------|
+| `OnEntitiesSpawnBegin`    | `SpawnInfo` - Struct holding information about entities to be spawned                                                                         | Called when entity spawning begins.    |
+| `OnEntitiesSpawnFinished` | `SpawnInfo` - Struct holding information about entities to be spawned</br>`SpawnStatus` - Status code of the spawn (success, warnings, fail). | Called when entity spawning finishes.  |
+
+> *Supports **Lua** and **Script Canvas***
+
 ## Load object from CSV file
 
 CSV file format for coordinates in XYZ system:
@@ -98,7 +110,6 @@ x	y	z	name
 5.1	65	0	object_name
 5.1	72	0	object_name
 5.1	79	0	object_name
-
 ```
 
 CSV file format for coordinates in WGS84 system:
@@ -111,7 +122,6 @@ alt	lat	lon	name
 0	12.5897180240288	30.1932813604207	ball
 0	12.5897414039641	30.1933370085065	ball
 0	12.5897646831551	30.1933927129084	ball
-
 ```
 
 # ExposeConsoleToRos
