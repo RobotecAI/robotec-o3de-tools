@@ -27,6 +27,8 @@ namespace CsvSpawner
 
     void CsvSpawnerEditorComponent::Reflect(AZ::ReflectContext* context)
     {
+        CsvSpawner::SpawnInfo::Reflect(context);
+
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
