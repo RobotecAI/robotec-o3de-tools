@@ -55,7 +55,7 @@ namespace CsvSpawner
      * CsvSpawnerInterface is an Event Bus interface that notifies multiple
      * listeners when entity spawning begins and finishes.
      */
-    class CsvSpawnerInterface final : public AZ::EBusTraits
+    class CsvSpawnerInterface : public AZ::EBusTraits
     {
     public:
         virtual ~CsvSpawnerInterface() = default;
