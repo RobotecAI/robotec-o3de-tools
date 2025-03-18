@@ -30,7 +30,7 @@ namespace CsvSpawner
         Success = 0, ///< Operation succeeded.
         Fail = 1 << 0, ///< Generic failure.
         SpawnStopped = 1 << 1, ///< Spawning was stopped prematurely but not necessarily a failure.
-        ErrorOccurred = 1 << 2, ///< An error occurred during spawning (potentially recoverable).
+        ErrorGenerated = 1 << 2, ///< An error occurred during spawning (potentially recoverable).
     };
 
     /// Enable bitwise operations for SpawnStatusCode.
@@ -64,7 +64,7 @@ namespace CsvSpawner
          * @brief Called when entity spawning begins.
          * @param m_spawnInfo Struct holding information about entities to be spawned.
          */
-        virtual void OnEntitiesSpawnBegin(const SpawnInfo& m_spawnInfo)
+        virtual void OnEntitiesSpawnBegin(SpawnInfo& m_spawnInfo)
         {
         }
 
@@ -73,7 +73,7 @@ namespace CsvSpawner
          * @param m_spawnInfo Struct holding information about entities to be spawned.
          * @param m_statusCode Status code indicating success, failure and warnings of the spawn.
          */
-        virtual void OnEntitiesSpawnFinished(const SpawnInfo& m_spawnInfo, const SpawnStatusCode& m_statusCode)
+        virtual void OnEntitiesSpawnFinished(SpawnInfo& m_spawnInfo, SpawnStatusCode& m_statusCode)
         {
         }
 

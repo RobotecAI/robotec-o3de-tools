@@ -233,7 +233,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 AZ_Error("CsvSpawner", false, "SpawnableAssetConfiguration %s not found", entityConfig.m_name.c_str());
 
                 // Add notify code status
-                spawnStatusCode |= SpawnStatusCode::ErrorOccurred;
+                spawnStatusCode |= SpawnStatusCode::ErrorGenerated;
                 continue;
             }
 
@@ -264,7 +264,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 else
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatusCode::ErrorOccurred;
+                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated;
 
                     continue; // Skip this entity if we can't find a valid position and
                               // place on terrain is enabled.
@@ -280,7 +280,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatusCode::ErrorOccurred;
+                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated;
 
                     return;
                 }
@@ -297,7 +297,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatusCode::ErrorOccurred;
+                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated;
 
                     return;
                 }
