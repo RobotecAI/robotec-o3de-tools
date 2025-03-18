@@ -78,7 +78,7 @@ namespace CsvSpawner
         }
 
         /// EBus Configuration - Allows multiple listeners to handle events.
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
     };
 
     // Create an EBus using the notification interface
