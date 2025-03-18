@@ -8,12 +8,11 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "CsvSpawnerUtils.h"
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <CsvSpawner/CsvSpawnerUtils.h>
 #include <ROS2/Georeference/GeoreferenceBus.h>
 #include <csv/csv.hpp>
 
