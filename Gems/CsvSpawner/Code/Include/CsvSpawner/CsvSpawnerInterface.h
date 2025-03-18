@@ -34,18 +34,14 @@ namespace CsvSpawner
          * @brief Called when entity spawning begins.
          * @param m_spawnInfo Struct holding information about entities to be spawned.
          */
-        virtual void OnEntitiesSpawnBegin(CsvSpawnerUtils::SpawnInfo& m_spawnInfo)
-        {
-        }
+        virtual void OnEntitiesSpawnBegin(CsvSpawnerUtils::SpawnInfo& m_spawnInfo) = 0;
 
         /**
          * @brief Called when entity spawning finishes.
          * @param m_spawnInfo Struct holding information about entities to be spawned.
          * @param m_statusCode Status code indicating success, failure and warnings of the spawn.
          */
-        virtual void OnEntitiesSpawnFinished(CsvSpawnerUtils::SpawnInfo& m_spawnInfo, CsvSpawnerUtils::SpawnStatus& m_statusCode)
-        {
-        }
+        virtual void OnEntitiesSpawnFinished(CsvSpawnerUtils::SpawnInfo& m_spawnInfo, CsvSpawnerUtils::SpawnStatus& m_statusCode) = 0;
 
         /// EBus Configuration - Allows multiple listeners to handle events.
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
