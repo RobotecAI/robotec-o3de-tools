@@ -54,6 +54,7 @@ ly_add_target(
             Gem::ImGui
             Gem::ROS2.Static
             Gem::ROS2.API
+            Gem::PhysX5.Static
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
