@@ -198,7 +198,7 @@ namespace CsvSpawner::CsvSpawnerUtils
     {
         SpawnInfo broadcastSpawnInfo =
             SpawnInfo{ entitiesToSpawn, physicsSceneName, parentId }; // Spawn Info used in CsvSpawner EBus notify.
-        SpawnStatusCode spawnStatusCode; // Spawn Status Code used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
+        SpawnStatusCode spawnStatusCode = SpawnStatusCode::Success; // Spawn Status Code used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
 
         // Call CsvSpawner EBus notification - Begin
         CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin, broadcastSpawnInfo);
@@ -280,7 +280,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated;
+                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated | SpawnStatusCode::SpawnStopped;
 
                     return;
                 }
@@ -297,7 +297,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated;
+                    spawnStatusCode |= SpawnStatusCode::ErrorGenerated | SpawnStatusCode::SpawnStopped;
 
                     return;
                 }
