@@ -11,9 +11,10 @@
 
 #pragma once
 
+#include <CsvSpawner/CsvSpawnerUtils.h>
+
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
-#include <CsvSpawner/CsvSpawnerUtils.h>
 
 namespace CsvSpawner
 {
