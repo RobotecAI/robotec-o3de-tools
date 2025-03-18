@@ -68,7 +68,7 @@ namespace SplineTools
         const ROS2::ROS2FrameComponent* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
         if (!ros2Frame)
         {
-            AZ_Warning("SplinePublisher::Activate", false, "ROS2 Frame Component is not available!");
+            AZ_Warning("SplinePublisher::Activate", false, "ROS 2 frame component is not available!");
             return;
         }
 
@@ -110,7 +110,7 @@ namespace SplineTools
         const ROS2::ROS2FrameComponent* ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
         if (!ros2Frame)
         {
-            AZ_Warning("SplinePublisher::PublishSplineAsPath", false, "ROS2 Frame Component is not available!");
+            AZ_Warning("SplinePublisher::PublishSplineAsPath", false, "ROS 2 frame component is not available!");
             return;
         }
 
