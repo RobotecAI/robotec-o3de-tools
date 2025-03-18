@@ -35,7 +35,7 @@ If you switch `Local Coordinates` to true, the component will interpret coordina
 ![](doc/SplineToolsEditorComponent.png)
 
 To publish spline path, add `SplinePublisher` next to the [Spline component](https://docs.o3de.org/docs/user-guide/components/reference/shape/spline/).
-Adjust **frequency update** to set how often the path will be published.
+Adjust **update frequency** to set how often the path will be published.
 
 ## Using geo-referenced data
 
