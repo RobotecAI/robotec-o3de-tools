@@ -198,7 +198,7 @@ namespace CsvSpawner::CsvSpawnerUtils
     {
         SpawnInfo broadcastSpawnInfo =
             SpawnInfo{ entitiesToSpawn, physicsSceneName, parentId }; // Spawn Info used in CsvSpawner EBus notify.
-        SpawnStatusCode spawnStatusCode; // Spawn Status Code Status used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
+        SpawnStatusCode spawnStatusCode; // Spawn Status Code used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
 
         // Call CsvSpawner EBus notification - Begin
         CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin, broadcastSpawnInfo);
