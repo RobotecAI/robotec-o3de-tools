@@ -9,7 +9,7 @@ namespace SplineTools
     SplinePublisherConfiguration::SplinePublisherConfiguration()
     {
         m_TopicConfig.m_type = "nav_msgs::msg::Path";
-        m_TopicConfig.m_topic = "spline_path";
+        m_TopicConfig.m_topic = "spline";
     }
 
     void SplinePublisherConfiguration::Reflect(AZ::ReflectContext* context)
