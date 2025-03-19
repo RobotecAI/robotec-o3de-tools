@@ -30,6 +30,7 @@ namespace GeoJSONSpawner
     class GeoJSONSpawnerRequests : public AZ::ComponentBus
     {
     public:
+        AZ_RTTI(GeoJSONSpawnerRequests, GeoJSONSpawnerRequestsTypeId);
         using BusIdType = AZ::EntityId;
         using MutexType = AZStd::mutex;
 
