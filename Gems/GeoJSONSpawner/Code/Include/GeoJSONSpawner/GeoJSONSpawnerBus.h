@@ -88,6 +88,14 @@ namespace GeoJSONSpawner
          */
         virtual void OnEntitiesSpawnFinished(GeoJSONUtils::SpawnInfo& m_spawnInfo, GeoJSONUtils::SpawnStatus m_statusCode) = 0;
 
+        virtual void OnEntitiesDespawnBegin() = 0;
+
+        virtual void OnEntiteisDespawnFinished() = 0;
+
+        virtual void OnEntitySpawn() = 0;
+
+        virtual void OnEntityDespawn() = 0;
+
         /// EBus Configuration - Allows multiple listeners to handle events.
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
     };
@@ -104,7 +112,11 @@ namespace GeoJSONSpawner
             GeoJSONSpawnerNotificationBusHandlerTypeId,
             AZ::SystemAllocator,
             OnEntitiesSpawnBegin,
-            OnEntitiesSpawnFinished);
+            OnEntitiesSpawnFinished,
+            OnEntitiesDespawnBegin,
+            OnEntiteisDespawnFinished,
+            OnEntitySpawn,
+            OnEntityDespawn);
 
         void OnEntitiesSpawnBegin(GeoJSONUtils::SpawnInfo& m_spawnInfo) override
         {
@@ -114,6 +126,21 @@ namespace GeoJSONSpawner
         void OnEntitiesSpawnFinished(GeoJSONUtils::SpawnInfo& m_spawnInfo, GeoJSONUtils::SpawnStatus m_statusCode) override
         {
             Call(FN_OnEntitiesSpawnFinished, m_spawnInfo, m_statusCode);
+        }
+
+        void OnEntitiesDespawnBegin() override
+        {
+            Call(FN_OnEntitiesDespawnBegin);
+        }
+
+        void OnEntiteisDespawnFinished() override
+        {
+            Call(FN_OnEntiteisDespawnFinished);
+        }
+
+        void OnEntityDespawn() override
+        {
+            Call(FN_OnEntityDespawn);
         }
     };
 } // namespace GeoJSONSpawner

@@ -208,8 +208,5 @@ namespace GeoJSONSpawner::GeoJSONUtils
         AZ_TYPE_INFO(SpawnInfo, GeoJSONSpawnerSpawnInfoTypeId);
         static void Reflect(AZ::ReflectContext* context);
 
-        // AZStd::vector<CsvSpawnableEntityInfo> m_entitiesToSpawn; ///< List of entities to spawn.
-        AZStd::string m_physicsSceneName; ///< Name of the physics scene where entities will be spawned.
-        AZ::EntityId m_spawnerParentEntityId; ///< Parent entity ID managing the spawn process.
     };
 } // namespace GeoJSONSpawner::GeoJSONUtils

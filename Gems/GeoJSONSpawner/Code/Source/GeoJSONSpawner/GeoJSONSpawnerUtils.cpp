@@ -10,6 +10,7 @@
 
 #include "GeoJSONSpawnerUtils.h"
 #include "Schemas/GeoJSONSchema.h"
+#include <GeoJSONSpawner/GeoJSONSpawnerBus.h>
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
@@ -259,6 +260,12 @@ namespace GeoJSONSpawner::GeoJSONUtils
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
         AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>>& ticketsToSpawn)
     {
+        SpawnInfo broadcastSpawnInfo = SpawnInfo{ }; // Spawn Info used in GeoJSONSpawner EBus notify.
+        SpawnStatus spawnStatusCode = SpawnStatus::Success; // Spawn Status Code used for GeoJSONSpawner EBus notify - OnEntitiesSpawnFinished.
+
+        // Call GeoJSONSpawner EBus notification - Begin
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin, broadcastSpawnInfo);
+        
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
         AZ_Assert(spawner, "Unable to get spawnable entities definition.");
 
@@ -268,14 +275,28 @@ namespace GeoJSONSpawner::GeoJSONUtils
             if (!groupIdToTicketsMap.contains(groupIdToSpawn.first))
             {
                 groupIdToTicketsMap[groupIdToSpawn.first] = {};
+                // Add notify code status
+                spawnStatusCode |= SpawnStatus::Warning;
             }
             for (auto& ticketToSpawn : groupIdToSpawn.second)
             {
                 spawner->SpawnAllEntities(ticketToSpawn.first, ticketToSpawn.second);
                 groupIdToTicketsMap.at(groupIdToSpawn.first).emplace_back(AZStd::move(ticketToSpawn.first));
+                
+                // Call GeoJSONSpawner EBus notification - Spawn
+                GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitySpawn);
             }
         }
 
+        // Add notify code status
+        if (!spawner || groupIdToTicketsMap.empty())
+        {
+            spawnStatusCode |= SpawnStatus::Fail;
+        }
+
+        // Call GeoJSONSpawner EBus notification - Finished
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
+        
         return groupIdToTicketsMap;
     }
 
@@ -572,5 +593,10 @@ namespace GeoJSONSpawner::GeoJSONUtils
     bool IsTerrainAvailable()
     {
         return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
+    }
+
+    void SpawnInfo::Reflect(AZ::ReflectContext* context)
+    {
+
     }
 } // namespace GeoJSONSpawner::GeoJSONUtils
