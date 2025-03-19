@@ -196,17 +196,4 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
     /// Enable bitwise operations for SpawnStatus.
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatus);
-
-    /**
-     * @brief Structure holding data related to GeoJSONSpawner entity spawning.
-     *
-     * SpawnInfo contains information about the entities to be spawned, the physics scene
-     * they belong to, and the parent entity responsible for the spawn operation.
-     */
-    struct SpawnInfo
-    {
-        AZ_TYPE_INFO(SpawnInfo, GeoJSONSpawnerSpawnInfoTypeId);
-        static void Reflect(AZ::ReflectContext* context);
-
-    };
 } // namespace GeoJSONSpawner::GeoJSONUtils

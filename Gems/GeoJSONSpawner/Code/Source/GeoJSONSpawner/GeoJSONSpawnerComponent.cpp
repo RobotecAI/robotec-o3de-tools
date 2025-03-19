@@ -61,11 +61,27 @@ namespace GeoJSONSpawner
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext->Enum<GeoJSONUtils::SpawnStatus>()
+                ->Version(0)
+                ->Value("Success", GeoJSONUtils::SpawnStatus::Success)
+                ->Value("Fail", GeoJSONUtils::SpawnStatus::Fail)
+                ->Value("Stopped", GeoJSONUtils::SpawnStatus::Stopped)
+                ->Value("Warning", GeoJSONUtils::SpawnStatus::Warning);
+
             serializeContext->Class<GeoJSONSpawnerComponent, AZ::Component>()
                 ->Version(0)
                 ->Field("SpawnableAssetConfigurations", &GeoJSONSpawnerComponent::m_spawnableAssetConfigurations)
                 ->Field("GeoJsonFilePath", &GeoJSONSpawnerComponent::m_geoJsonFilePath)
                 ->Field("DefaultSeed", &GeoJSONSpawnerComponent::m_defaultSeed);
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Success)>("SpawnStatus_Success");
+            ;
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Fail)>("SpawnStatus_Fail");
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Stopped)>("SpawnStatus_Stopped");
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Warning)>("SpawnStatus_Warning");
         }
     }
 
@@ -344,6 +360,12 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerComponent::Despawn(AzFramework::EntitySpawnTicket& ticketToDespawn)
     {
+        if (!ticketToDespawn.IsValid())
+        {
+            m_despawnStatus |= GeoJSONUtils::SpawnStatus::Warning;
+            return;
+        }
+
         GeoJSONUtils::DespawnEntity(
             ticketToDespawn,
             [this](auto id)
@@ -357,6 +379,7 @@ namespace GeoJSONSpawner
                     if (pair.second.empty())
                     {
                         m_spawnableTickets.erase(pair.first);
+                        m_despawnStatus |= GeoJSONUtils::SpawnStatus::Warning;
                     }
                 }
                 m_ticketsToDespawn--;
@@ -367,6 +390,7 @@ namespace GeoJSONSpawner
     {
         // Call GeoJSONSpawner EBus notification - Despawn Begin
         GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+        m_despawnStatus = m_spawnableTicketsIds.empty() ? GeoJSONUtils::SpawnStatus::Success : GeoJSONUtils::SpawnStatus::Fail;
 
         FillGroupIdToTicketIdMap();
 
@@ -379,13 +403,14 @@ namespace GeoJSONSpawner
         }
 
         // Call GeoJSONSpawner EBus notification - Despawn Finished
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntiteisDespawnFinished);
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_spawnableTickets, m_despawnStatus);
     }
 
     void GeoJSONSpawnerComponent::DespawnEntitiesById(const GeoJSONUtils::Ids& ids)
     {
         // Call GeoJSONSpawner EBus notification - Despawn Begin
         GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+        m_despawnStatus = m_spawnableTicketsIds.empty() ? GeoJSONUtils::SpawnStatus::Success : GeoJSONUtils::SpawnStatus::Fail;
 
         FillGroupIdToTicketIdMap(ids);
 
@@ -395,6 +420,8 @@ namespace GeoJSONSpawner
             {
                 AZ_Error(
                     "GeoJSONSpawnerComponent", false, "Cannot delete entities. Entities group with ID: %d does not exist.", idToDespawn);
+
+                m_despawnStatus |= GeoJSONUtils::SpawnStatus::Warning;
                 continue;
             }
 
@@ -405,7 +432,7 @@ namespace GeoJSONSpawner
         }
 
         // Call GeoJSONSpawner EBus notification - Despawn Finished
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntiteisDespawnFinished);
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_spawnableTickets, m_despawnStatus);
     }
 
 } // namespace GeoJSONSpawner

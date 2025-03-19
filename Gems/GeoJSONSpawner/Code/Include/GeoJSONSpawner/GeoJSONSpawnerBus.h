@@ -17,8 +17,8 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/string/string.h>
 
 namespace GeoJSONSpawner
 {
@@ -64,11 +64,11 @@ namespace GeoJSONSpawner
     using GeoJSONSpawnerRequestBus = AZ::EBus<GeoJSONSpawnerRequests>;
 
     /**
-    * @brief Interface for handling entity spawn events for GeoJSON Spawner.
-    *
-    * GeoJSONSpawnerInterface is an Event Bus interface that notifies multiple
-    * listeners when entity spawning begins and finishes.
-    */
+     * @brief Interface for handling entity spawn events for GeoJSON Spawner.
+     *
+     * GeoJSONSpawnerInterface is an Event Bus interface that notifies multiple
+     * listeners when entity spawning begins and finishes.
+     */
     class GeoJSONSpawnerInterface : public AZ::EBusTraits
     {
     public:
@@ -77,24 +77,27 @@ namespace GeoJSONSpawner
 
         /**
          * @brief Called when entity spawning begins.
-         * @param m_spawnInfo Struct holding information about entities to be spawned.
          */
-        virtual void OnEntitiesSpawnBegin(GeoJSONUtils::SpawnInfo& m_spawnInfo) = 0;
+        virtual void OnEntitiesSpawnBegin() = 0;
 
         /**
          * @brief Called when entity spawning finishes.
-         * @param m_spawnInfo Struct holding information about entities to be spawned.
+         * @param spawnedEntityTickets Map of int and vector of entity spawn tickets.
          * @param m_statusCode Status code indicating success, failure and warnings of the spawn.
          */
-        virtual void OnEntitiesSpawnFinished(GeoJSONUtils::SpawnInfo& m_spawnInfo, GeoJSONUtils::SpawnStatus m_statusCode) = 0;
+        virtual void OnEntitiesSpawnFinished(
+            AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& spawnedEntityTickets,
+            GeoJSONUtils::SpawnStatus m_statusCode) = 0;
 
         virtual void OnEntitiesDespawnBegin() = 0;
 
-        virtual void OnEntiteisDespawnFinished() = 0;
+        virtual void OnEntitiesDespawnFinished(
+            AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& despawnedEntityTickets,
+            GeoJSONUtils::SpawnStatus m_statusCode) = 0;
 
-        virtual void OnEntitySpawn() = 0;
+        virtual void OnEntitySpawn(AzFramework::EntitySpawnTicket& spawnedEntityTicket) = 0;
 
-        virtual void OnEntityDespawn() = 0;
+        virtual void OnEntityDespawn(AzFramework::EntitySpawnTicket& despawnedEntityTicket) = 0;
 
         /// EBus Configuration - Allows multiple listeners to handle events.
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -114,18 +117,20 @@ namespace GeoJSONSpawner
             OnEntitiesSpawnBegin,
             OnEntitiesSpawnFinished,
             OnEntitiesDespawnBegin,
-            OnEntiteisDespawnFinished,
+            OnEntitiesDespawnFinished,
             OnEntitySpawn,
             OnEntityDespawn);
 
-        void OnEntitiesSpawnBegin(GeoJSONUtils::SpawnInfo& m_spawnInfo) override
+        void OnEntitiesSpawnBegin() override
         {
-            Call(FN_OnEntitiesSpawnBegin, m_spawnInfo);
+            Call(FN_OnEntitiesSpawnBegin);
         }
 
-        void OnEntitiesSpawnFinished(GeoJSONUtils::SpawnInfo& m_spawnInfo, GeoJSONUtils::SpawnStatus m_statusCode) override
+        void OnEntitiesSpawnFinished(
+            AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& spawnedEntityTickets,
+            GeoJSONUtils::SpawnStatus m_statusCode) override
         {
-            Call(FN_OnEntitiesSpawnFinished, m_spawnInfo, m_statusCode);
+            Call(FN_OnEntitiesSpawnFinished, spawnedEntityTickets, m_statusCode);
         }
 
         void OnEntitiesDespawnBegin() override
@@ -133,14 +138,21 @@ namespace GeoJSONSpawner
             Call(FN_OnEntitiesDespawnBegin);
         }
 
-        void OnEntiteisDespawnFinished() override
+        void OnEntitiesDespawnFinished(
+            AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& despawnedEntityTickets,
+            GeoJSONUtils::SpawnStatus m_statusCode) override
         {
-            Call(FN_OnEntiteisDespawnFinished);
+            Call(FN_OnEntitiesDespawnFinished, despawnedEntityTickets, m_statusCode);
         }
 
-        void OnEntityDespawn() override
+        void OnEntitySpawn(AzFramework::EntitySpawnTicket& spawnedEntityTicket) override
         {
-            Call(FN_OnEntityDespawn);
+            Call(FN_OnEntitySpawn, spawnedEntityTicket);
+        }
+
+        void OnEntityDespawn(AzFramework::EntitySpawnTicket& despawnedEntityTicket) override
+        {
+            Call(FN_OnEntityDespawn, despawnedEntityTicket);
         }
     };
 } // namespace GeoJSONSpawner
