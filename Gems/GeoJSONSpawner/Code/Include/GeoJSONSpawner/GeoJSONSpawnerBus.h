@@ -10,11 +10,15 @@
 
 #pragma once
 
+#include "GeoJSONSpawnerTypeIds.h"
+#include <GeoJSONSpawner/GeoJSONSpawnerUtils.h>
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace GeoJSONSpawner
 {
@@ -59,4 +63,57 @@ namespace GeoJSONSpawner
 
     using GeoJSONSpawnerRequestBus = AZ::EBus<GeoJSONSpawnerRequests>;
 
+    /**
+    * @brief Interface for handling entity spawn events for GeoJSON Spawner.
+    *
+    * GeoJSONSpawnerInterface is an Event Bus interface that notifies multiple
+    * listeners when entity spawning begins and finishes.
+    */
+    class GeoJSONSpawnerInterface : public AZ::EBusTraits
+    {
+    public:
+        AZ_RTTI(GeoJSONSpawnerInterface, GeoJSONSpawnerNotificationsTypeId);
+        virtual ~GeoJSONSpawnerInterface() = default;
+
+        /**
+         * @brief Called when entity spawning begins.
+         * @param m_spawnInfo Struct holding information about entities to be spawned.
+         */
+        virtual void OnEntitiesSpawnBegin(GeoJSONUtils::SpawnInfo& m_spawnInfo) = 0;
+
+        /**
+         * @brief Called when entity spawning finishes.
+         * @param m_spawnInfo Struct holding information about entities to be spawned.
+         * @param m_statusCode Status code indicating success, failure and warnings of the spawn.
+         */
+        virtual void OnEntitiesSpawnFinished(GeoJSONUtils::SpawnInfo& m_spawnInfo, GeoJSONUtils::SpawnStatus m_statusCode) = 0;
+
+        /// EBus Configuration - Allows multiple listeners to handle events.
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+    };
+    // Create an EBus using the notification interface
+    using GeoJSONSpawnerNotificationBus = AZ::EBus<GeoJSONSpawnerInterface>;
+
+    class GeoJSONSpawnerNotificationBusHandler
+        : public GeoJSONSpawnerNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            GeoJSONSpawnerNotificationBusHandler,
+            GeoJSONSpawnerNotificationBusHandlerTypeId,
+            AZ::SystemAllocator,
+            OnEntitiesSpawnBegin,
+            OnEntitiesSpawnFinished);
+
+        void OnEntitiesSpawnBegin(GeoJSONUtils::SpawnInfo& m_spawnInfo) override
+        {
+            Call(FN_OnEntitiesSpawnBegin, m_spawnInfo);
+        }
+
+        void OnEntitiesSpawnFinished(GeoJSONUtils::SpawnInfo& m_spawnInfo, GeoJSONUtils::SpawnStatus m_statusCode) override
+        {
+            Call(FN_OnEntitiesSpawnFinished, m_spawnInfo, m_statusCode);
+        }
+    };
 } // namespace GeoJSONSpawner
