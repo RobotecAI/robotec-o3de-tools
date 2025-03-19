@@ -207,6 +207,22 @@ Example of supported GeoJSON:
 }
 
 ```
+## API
+
+This Gem has defined notification bus - `GeoJSONSpawnerNotificationBus`.
+
+Available functions:
+
+| Function                             | Trigger Event                  | Description                                                |
+|--------------------------------------|--------------------------------|------------------------------------------------------------|
+| `OnEntitiesSpawnBegin()`             | When spawning starts           | Notifies when batch spawning begins.                       |
+| `OnEntitiesSpawnFinished()`          | When spawning ends             | Provides a list of spawned entities and the status code.   |
+| `OnEntitiesDespawnBegin()`           | When despawning starts         | Notifies when batch despawning begins.                     |
+| `OnEntitiesDespawnFinished()`        | When despawning ends           | Provides a list of despawned entities and the status code. |
+| `OnEntitySpawn()`                    | When a single entity spawns    | Called per one entity spawn.                               |
+| `OnEntityDespawn()`                  | When a single entity despawns  | Called per one entity despawn.                             |
+
+> *Supports **Lua** and **Script Canvas***
 
 # GeoJSONSpawnerROS2
 

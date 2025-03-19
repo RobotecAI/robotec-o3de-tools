@@ -64,10 +64,10 @@ namespace GeoJSONSpawner
     using GeoJSONSpawnerRequestBus = AZ::EBus<GeoJSONSpawnerRequests>;
 
     /**
-     * @brief Interface for handling entity spawn events for GeoJSON Spawner.
+     * @brief Interface for handling entity spawn events in GeoJSON Spawner.
      *
-     * GeoJSONSpawnerInterface is an Event Bus interface that notifies multiple
-     * listeners when entity spawning begins and finishes.
+     * GeoJSONSpawnerInterface is an Event Bus (EBus) interface that notifies multiple listeners
+     * when entity spawning and despawning begins or finishes.
      */
     class GeoJSONSpawnerInterface : public AZ::EBusTraits
     {
@@ -77,26 +77,58 @@ namespace GeoJSONSpawner
 
         /**
          * @brief Called when entity spawning begins.
+         *
+         * Notifies multiple listeners that a batch entity spawning process has started.
          */
         virtual void OnEntitiesSpawnBegin() = 0;
 
         /**
          * @brief Called when entity spawning finishes.
-         * @param spawnedEntityTickets Map of int and vector of entity spawn tickets.
-         * @param m_statusCode Status code indicating success, failure and warnings of the spawn.
+         *
+         * @param spawnedEntityTickets A map linking an integer ID to a list of spawned entity tickets.
+         * @param m_statusCode Status code indicating success, failure, or warnings.
+         *
+         * This function is triggered when all entities in a spawn operation are processed.
          */
         virtual void OnEntitiesSpawnFinished(
             AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& spawnedEntityTickets,
             GeoJSONUtils::SpawnStatus m_statusCode) = 0;
 
+        /**
+         * @brief Called when entity despawning begins.
+         *
+         * Notifies multiple listeners that a batch entity despawning process has started.
+         */
         virtual void OnEntitiesDespawnBegin() = 0;
 
+        /**
+         * @brief Called when entity despawning finishes.
+         *
+         * @param despawnedEntityTickets A map linking an integer ID to a list of despawned entity tickets.
+         * @param m_statusCode Status code indicating success, failure, or warnings.
+         *
+         * This function is triggered when all entities in a despawn operation are processed.
+         */
         virtual void OnEntitiesDespawnFinished(
             AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& despawnedEntityTickets,
             GeoJSONUtils::SpawnStatus m_statusCode) = 0;
 
+        /**
+         * @brief Called when an individual entity is successfully spawned.
+         *
+         * @param spawnedEntityTicket The spawn ticket representing the successfully spawned entity.
+         *
+         * This function is triggered per entity when it spawns.
+         */
         virtual void OnEntitySpawn(AzFramework::EntitySpawnTicket& spawnedEntityTicket) = 0;
 
+        /**
+         * @brief Called when an individual entity is successfully despawned.
+         *
+         * @param despawnedEntityTicket The spawn ticket representing the successfully despawned entity.
+         *
+         * This function is triggered per entity when it despawns.
+         */
         virtual void OnEntityDespawn(AzFramework::EntitySpawnTicket& despawnedEntityTicket) = 0;
 
         /// EBus Configuration - Allows multiple listeners to handle events.
