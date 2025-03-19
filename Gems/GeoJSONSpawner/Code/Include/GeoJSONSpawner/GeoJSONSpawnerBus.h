@@ -72,7 +72,7 @@ namespace GeoJSONSpawner
     class GeoJSONSpawnerInterface : public AZ::EBusTraits
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerInterface, GeoJSONSpawnerNotificationsTypeId);
+        AZ_RTTI(GeoJSONSpawnerInterface, GeoJSONSpawnerInterfaceTypeId);
         virtual ~GeoJSONSpawnerInterface() = default;
 
         /**

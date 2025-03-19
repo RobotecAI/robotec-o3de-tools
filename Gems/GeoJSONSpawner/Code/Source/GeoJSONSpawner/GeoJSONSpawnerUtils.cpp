@@ -95,7 +95,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain,
                         "Place on terrain",
-                        "Performscene query raytrace to place spawnable on terrain.")
+                        "Performance query raytrace to place spawnable on terrain.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_raytraceStartingHeight,
@@ -310,6 +310,9 @@ namespace GeoJSONSpawner::GeoJSONUtils
             callback(id);
         };
         spawner->DespawnAllEntities(ticket, optionalArgs);
+
+        // Call GeoJSONSpawner EBus notification - Spawn
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntityDespawn);
     }
 
     AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
