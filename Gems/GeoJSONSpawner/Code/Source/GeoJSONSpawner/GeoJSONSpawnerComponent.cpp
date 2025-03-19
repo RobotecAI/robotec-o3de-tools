@@ -365,6 +365,9 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerComponent::DespawnAllEntities()
     {
+        // Call GeoJSONSpawner EBus notification - Despawn Begin
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+
         FillGroupIdToTicketIdMap();
 
         for (auto& pair : m_spawnableTickets)
@@ -374,10 +377,16 @@ namespace GeoJSONSpawner
                 Despawn(ticket);
             }
         }
+
+        // Call GeoJSONSpawner EBus notification - Despawn Finished
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntiteisDespawnFinished);
     }
 
     void GeoJSONSpawnerComponent::DespawnEntitiesById(const GeoJSONUtils::Ids& ids)
     {
+        // Call GeoJSONSpawner EBus notification - Despawn Begin
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+
         FillGroupIdToTicketIdMap(ids);
 
         for (const auto idToDespawn : ids)
@@ -394,6 +403,9 @@ namespace GeoJSONSpawner
                 Despawn(ticket);
             }
         }
+
+        // Call GeoJSONSpawner EBus notification - Despawn Finished
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntiteisDespawnFinished);
     }
 
 } // namespace GeoJSONSpawner
