@@ -10,7 +10,11 @@
 
 #pragma once
 
+#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/string/string.h>
 
 namespace GeoJSONSpawner
 {
