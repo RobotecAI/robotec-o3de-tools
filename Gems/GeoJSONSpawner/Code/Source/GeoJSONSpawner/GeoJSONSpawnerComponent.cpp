@@ -78,10 +78,12 @@ namespace GeoJSONSpawner
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Success)>("SpawnStatus_Success");
-            ;
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Fail)>("SpawnStatus_Fail");
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Stopped)>("SpawnStatus_Stopped");
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Warning)>("SpawnStatus_Warning");
+
+            behaviorContext->EBus<GeoJSONSpawner::GeoJSONSpawnerNotificationBus>("GeoJSONSpawnerNotificationBus")
+                ->Handler<GeoJSONSpawner::GeoJSONSpawnerNotificationBusHandler>();
         }
     }
 
