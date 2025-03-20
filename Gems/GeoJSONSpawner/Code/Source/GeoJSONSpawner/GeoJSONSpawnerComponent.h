@@ -10,9 +10,9 @@
 
 #pragma once
 
+#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
 #include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 #include "GeoJSONSpawnerUtils.h"
-#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>

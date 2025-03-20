@@ -9,8 +9,8 @@
  */
 
 #include "GeoJSONSpawnerUtils.h"
-#include "Schemas/GeoJSONSchema.h"
 #include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
+#include "Schemas/GeoJSONSchema.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
@@ -260,14 +260,14 @@ namespace GeoJSONSpawner::GeoJSONUtils
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
         AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>>& ticketsToSpawn)
     {
-        // Spawn Status Code used for GeoJSONSpawner EBus notify - OnEntitiesSpawnFinished.
-        SpawnStatus spawnStatusCode = SpawnStatus::Success;
-
         // Call GeoJSONSpawner EBus notification - Begin
         GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
 
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
         AZ_Assert(spawner, "Unable to get spawnable entities definition.");
+
+        // Spawn Status Code used for GeoJSONSpawner EBus notify - OnEntitiesSpawnFinished.
+        SpawnStatus spawnStatusCode = spawner ? SpawnStatus::Success : SpawnStatus::Fail;
 
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> groupIdToTicketsMap;
         for (auto& groupIdToSpawn : ticketsToSpawn)
@@ -288,8 +288,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
             }
         }
 
-        // Add notify code status
-        if (!spawner || groupIdToTicketsMap.empty())
+        if (groupIdToTicketsMap.empty())
         {
             spawnStatusCode |= SpawnStatus::Fail;
         }
