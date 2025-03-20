@@ -10,7 +10,7 @@
 
 #include "GeoJSONSpawnerUtils.h"
 #include "Schemas/GeoJSONSchema.h"
-#include <GeoJSONSpawner/GeoJSONSpawnerBus.h>
+#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
