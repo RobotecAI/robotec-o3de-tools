@@ -275,8 +275,6 @@ namespace GeoJSONSpawner::GeoJSONUtils
             if (!groupIdToTicketsMap.contains(groupIdToSpawn.first))
             {
                 groupIdToTicketsMap[groupIdToSpawn.first] = {};
-                // Add notify code status
-                spawnStatusCode |= SpawnStatus::Warning;
             }
             for (auto& ticketToSpawn : groupIdToSpawn.second)
             {
