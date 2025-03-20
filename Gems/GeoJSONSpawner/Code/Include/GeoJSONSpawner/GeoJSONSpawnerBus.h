@@ -87,13 +87,13 @@ namespace GeoJSONSpawner
          * @brief Called when entity spawning finishes.
          *
          * @param spawnedEntityTickets A map linking an integer ID to a list of spawned entity tickets.
-         * @param m_statusCode Status code indicating success, failure, or warnings.
+         * @param m_statusFlag Status code indicating success, failure, or warnings.
          *
          * This function is triggered when all entities in a spawn operation are processed.
          */
         virtual void OnEntitiesSpawnFinished(
             AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& spawnedEntityTickets,
-            GeoJSONUtils::SpawnStatus m_statusCode) = 0;
+            GeoJSONUtils::SpawnDespawnStatus m_statusFlag) = 0;
 
         /**
          * @brief Called when entity despawning begins.
@@ -106,13 +106,13 @@ namespace GeoJSONSpawner
          * @brief Called when entity despawning finishes.
          *
          * @param despawnedEntityTickets A map linking an integer ID to a list of despawned entity tickets.
-         * @param m_statusCode Status code indicating success, failure, or warnings.
+         * @param m_statusFlag Status code indicating success, failure, or warnings.
          *
          * This function is triggered when all entities in a despawn operation are processed.
          */
         virtual void OnEntitiesDespawnFinished(
             AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& despawnedEntityTickets,
-            GeoJSONUtils::SpawnStatus m_statusCode) = 0;
+            GeoJSONUtils::SpawnDespawnStatus m_statusFlag) = 0;
 
         /**
          * @brief Called when an individual entity is successfully spawned.
@@ -161,9 +161,9 @@ namespace GeoJSONSpawner
 
         void OnEntitiesSpawnFinished(
             AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& spawnedEntityTickets,
-            GeoJSONUtils::SpawnStatus m_statusCode) override
+            GeoJSONUtils::SpawnDespawnStatus m_statusFlag) override
         {
-            Call(FN_OnEntitiesSpawnFinished, spawnedEntityTickets, m_statusCode);
+            Call(FN_OnEntitiesSpawnFinished, spawnedEntityTickets, m_statusFlag);
         }
 
         void OnEntitiesDespawnBegin() override
@@ -173,9 +173,9 @@ namespace GeoJSONSpawner
 
         void OnEntitiesDespawnFinished(
             AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& despawnedEntityTickets,
-            GeoJSONUtils::SpawnStatus m_statusCode) override
+            GeoJSONUtils::SpawnDespawnStatus m_statusFlag) override
         {
-            Call(FN_OnEntitiesDespawnFinished, despawnedEntityTickets, m_statusCode);
+            Call(FN_OnEntitiesDespawnFinished, despawnedEntityTickets, m_statusFlag);
         }
 
         void OnEntitySpawn(AzFramework::EntitySpawnTicket& spawnedEntityTicket) override

@@ -186,15 +186,16 @@ namespace GeoJSONSpawner::GeoJSONUtils
      * Provides various status indicators for entity spawning / despawning.
      * These flags help to track or filter mentioned operations.
      */
-    enum class SpawnStatus : uint8_t
+    enum class SpawnDespawnStatus : uint8_t
     {
         Success = 0, ///< Operation succeeded.
         Fail = 1 << 0, ///< Operation failed, generic result.
         Stopped = 1 << 1, ///< Spawning was stopped prematurely but not necessarily a failure.
         Warning = 1 << 2, ///< An warning or error occurred during spawning / despawning (potentially recoverable).
         Invalid = 1 << 3, ///< Something went wrong while spawning / despawning.
+
     };
 
-    AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatus);
-    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(SpawnStatus)
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnDespawnStatus);
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(SpawnDespawnStatus)
 } // namespace GeoJSONSpawner::GeoJSONUtils

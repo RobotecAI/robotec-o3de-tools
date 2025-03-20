@@ -267,7 +267,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         AZ_Assert(spawner, "Unable to get spawnable entities definition.");
 
         // Spawn Status Code used for GeoJSONSpawner EBus notify - OnEntitiesSpawnFinished.
-        SpawnStatus spawnStatusCode = spawner ? SpawnStatus::Success : SpawnStatus::Fail;
+        SpawnDespawnStatus spawnStatusCode = spawner ? SpawnDespawnStatus::Success : SpawnDespawnStatus::Fail;
 
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> groupIdToTicketsMap;
         for (auto& groupIdToSpawn : ticketsToSpawn)
@@ -288,7 +288,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
         if (groupIdToTicketsMap.empty())
         {
-            spawnStatusCode |= SpawnStatus::Fail;
+            spawnStatusCode |= SpawnDespawnStatus::Fail;
         }
 
         // Call GeoJSONSpawner EBus notification - Finished
