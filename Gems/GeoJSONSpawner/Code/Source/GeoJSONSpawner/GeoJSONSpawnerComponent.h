@@ -92,6 +92,7 @@ namespace GeoJSONSpawner
         AZStd::atomic<unsigned int> m_ticketsToDespawn{ 0 };
         AZStd::atomic<unsigned int> m_ticketsToSpawn{ 0 };
         AZStd::vector<GeoJSONUtils::GeoJSONSpawnableEntityInfo> m_spawnableEntityInfo;
+        GeoJSONUtils::SpawnStatus m_despawnStatus = GeoJSONUtils::SpawnStatus::Success;
 
         SpawnerState m_spawnerState{ SpawnerState::Idle };
         AZStd::queue<SpawnerState> m_spawnerStateQueue;

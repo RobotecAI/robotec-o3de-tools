@@ -179,4 +179,21 @@ namespace GeoJSONSpawner::GeoJSONUtils
     //! This function checks if the Terrain is available in the level.
     //! @returns True if level has any valid Terrain handlers, false otherwise.
     [[nodiscard]] bool IsTerrainAvailable();
+
+    /**
+     * @brief Flags representing the status of an GeoJSONSpawner::Spawn() operation.
+     *
+     * SpawnStatus provides various status indicators for entity spawning.
+     * These flags help track whether spawning was successful, stopped, or failed.
+     */
+    enum class SpawnStatus : uint8_t
+    {
+        Success = 0, ///< Operation succeeded.
+        Fail = 1 << 0, ///< Generic failure.
+        Stopped = 1 << 1, ///< Spawning was stopped prematurely but not necessarily a failure.
+        Warning = 1 << 2, ///< An warning or error occurred during spawning (potentially recoverable).
+    };
+
+    /// Enable bitwise operations for SpawnStatus.
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnStatus);
 } // namespace GeoJSONSpawner::GeoJSONUtils

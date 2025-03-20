@@ -27,6 +27,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         INTERFACE
             Include
+            Source
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
