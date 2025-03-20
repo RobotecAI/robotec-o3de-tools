@@ -381,7 +381,6 @@ namespace GeoJSONSpawner
                     if (pair.second.empty())
                     {
                         m_spawnableTickets.erase(pair.first);
-                        m_despawnStatus |= GeoJSONUtils::SpawnStatus::Warning;
                     }
                 }
                 m_ticketsToDespawn--;
