@@ -391,9 +391,13 @@ namespace GeoJSONSpawner
     {
         // Call GeoJSONSpawner EBus notification - Despawn Begin
         GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
-        m_despawnStatus = m_spawnableTicketsIds.empty() ? GeoJSONUtils::SpawnStatus::Success : GeoJSONUtils::SpawnStatus::Fail;
+
+        // Reset previous spawn status
+        m_despawnStatus = m_spawnableTicketsIds.empty() ? GeoJSONUtils::SpawnStatus::Fail : GeoJSONUtils::SpawnStatus::Success;
 
         FillGroupIdToTicketIdMap();
+
+        auto copyOfTickets = m_spawnableTickets;
 
         for (auto& pair : m_spawnableTickets)
         {
@@ -403,21 +407,30 @@ namespace GeoJSONSpawner
             }
         }
 
+        if (m_ticketsToDespawn > 0)
+        {
+            m_despawnStatus |= GeoJSONUtils::SpawnStatus::Warning;
+        }
+
         // Call GeoJSONSpawner EBus notification - Despawn Finished
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_spawnableTickets, m_despawnStatus);
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, copyOfTickets, m_despawnStatus);
     }
 
     void GeoJSONSpawnerComponent::DespawnEntitiesById(const GeoJSONUtils::Ids& ids)
     {
         // Call GeoJSONSpawner EBus notification - Despawn Begin
         GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
-        m_despawnStatus = m_spawnableTicketsIds.empty() ? GeoJSONUtils::SpawnStatus::Success : GeoJSONUtils::SpawnStatus::Fail;
+
+        // Reset previous spawn status
+        m_despawnStatus = m_spawnableTicketsIds.empty() ? GeoJSONUtils::SpawnStatus::Fail : GeoJSONUtils::SpawnStatus::Success;
+        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> copyOfTickets;
 
         FillGroupIdToTicketIdMap(ids);
 
         for (const auto idToDespawn : ids)
         {
-            if (auto it = m_spawnableTickets.find(idToDespawn); it == m_spawnableTickets.end())
+            auto it = m_spawnableTickets.find(idToDespawn);
+            if (it == m_spawnableTickets.end())
             {
                 AZ_Error(
                     "GeoJSONSpawnerComponent", false, "Cannot delete entities. Entities group with ID: %d does not exist.", idToDespawn);
@@ -426,14 +439,21 @@ namespace GeoJSONSpawner
                 continue;
             }
 
+            copyOfTickets[idToDespawn] = it->second; // Copy before modification
+
             for (auto& ticket : m_spawnableTickets[idToDespawn])
             {
                 Despawn(ticket);
             }
         }
 
+        if (copyOfTickets.empty())
+        {
+            m_despawnStatus |= GeoJSONUtils::SpawnStatus::Warning | GeoJSONUtils::SpawnStatus::Fail;
+        }
+
         // Call GeoJSONSpawner EBus notification - Despawn Finished
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_spawnableTickets, m_despawnStatus);
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, copyOfTickets, m_despawnStatus);
     }
 
 } // namespace GeoJSONSpawner
