@@ -66,7 +66,8 @@ namespace GeoJSONSpawner
                 ->Value("Success", GeoJSONUtils::SpawnStatus::Success)
                 ->Value("Fail", GeoJSONUtils::SpawnStatus::Fail)
                 ->Value("Stopped", GeoJSONUtils::SpawnStatus::Stopped)
-                ->Value("Warning", GeoJSONUtils::SpawnStatus::Warning);
+                ->Value("Warning", GeoJSONUtils::SpawnStatus::Warning)
+                ->Value("Invalid", GeoJSONUtils::SpawnStatus::Invalid);
 
             serializeContext->Class<GeoJSONSpawnerComponent, AZ::Component>()
                 ->Version(0)
@@ -81,6 +82,7 @@ namespace GeoJSONSpawner
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Fail)>("SpawnStatus_Fail");
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Stopped)>("SpawnStatus_Stopped");
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Warning)>("SpawnStatus_Warning");
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnStatus::Invalid)>("SpawnStatus_Invalid");
 
             behaviorContext->EBus<GeoJSONSpawner::GeoJSONSpawnerNotificationBus>("GeoJSONSpawnerNotificationBus")
                 ->Handler<GeoJSONSpawner::GeoJSONSpawnerNotificationBusHandler>();
