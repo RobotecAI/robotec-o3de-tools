@@ -95,7 +95,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain,
                         "Place on terrain",
-                        "Performance query raytrace to place spawnable on terrain.")
+                        "Perform scene query raytrace to place spawnable on terrain.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_raytraceStartingHeight,
