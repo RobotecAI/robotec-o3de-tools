@@ -58,7 +58,7 @@ namespace GeoJSONSpawner
         Result Modify(const AZStd::string& rawJsonString) override;
         Result DeleteAll() override;
         Result DeleteById(const AZStd::unordered_set<int>& idsToDelete) override;
-        GetIdsResult GetIds() const override;
+        [[nodiscard]] GetIdsResult GetIds() const override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides
         void OnTerrainDataCreateEnd() override;
@@ -75,7 +75,7 @@ namespace GeoJSONSpawner
         void FillGroupIdToTicketIdMap();
         void FillGroupIdToTicketIdMap(const AZStd::unordered_set<int>& groupIds);
 
-        unsigned int CountTicketsToSpawn(
+        [[nodiscard]] unsigned int CountTicketsToSpawn(
             const AZStd::unordered_map<int, AZStd::vector<GeoJSONUtils::TicketToSpawnPair>>& ticketsToSpawn) const;
 
         void DespawnAllEntities();
