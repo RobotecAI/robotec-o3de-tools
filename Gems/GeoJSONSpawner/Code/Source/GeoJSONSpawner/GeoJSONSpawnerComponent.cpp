@@ -181,6 +181,8 @@ namespace GeoJSONSpawner
     {
         if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
+            m_spawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Fail | GeoJSONUtils::SpawnDespawnStatus::Invalid |
+                GeoJSONUtils::SpawnDespawnStatus::Stopped;
             return AZ::Failure(AZStd::string("Spawner is handling previous request. Action aborted."));
         }
 
@@ -366,7 +368,8 @@ namespace GeoJSONSpawner
     {
         if (!ticketToDespawn.IsValid())
         {
-            m_despawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning;
+            m_despawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning | GeoJSONUtils::SpawnDespawnStatus::Invalid |
+                GeoJSONUtils::SpawnDespawnStatus::Stopped | GeoJSONUtils::SpawnDespawnStatus::Fail;
             return;
         }
 
@@ -441,7 +444,7 @@ namespace GeoJSONSpawner
                 continue;
             }
 
-            copyOfTickets[idToDespawn] = it->second; // Copy before modification
+            copyOfTickets[idToDespawn] = it->second; // Copy
 
             for (auto& ticket : m_spawnableTickets[idToDespawn])
             {
