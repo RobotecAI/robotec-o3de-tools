@@ -106,6 +106,8 @@ namespace GeoJSONSpawner
         GeoJSONUtils::SpawnDespawnStatus m_despawnStatus = GeoJSONUtils::SpawnDespawnStatus::Success;
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_copyDespawnTickets;
 
-        [[nodiscard]] GeoJSONUtils::SpawnDespawnStatus ResetSpawnDespawnStatus();
+        void ResetSpawnDespawnStatus(
+            GeoJSONUtils::SpawnDespawnStatus& status,
+            AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& mapCopy) const;
     };
 } // namespace GeoJSONSpawner
