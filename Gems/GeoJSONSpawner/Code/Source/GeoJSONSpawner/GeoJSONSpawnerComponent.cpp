@@ -166,7 +166,7 @@ namespace GeoJSONSpawner
 
         if (m_spawnableTickets.empty())
         {
-            m_spawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Invalid | GeoJSONUtils::SpawnDespawnStatus::Invalid;
+            m_spawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning | GeoJSONUtils::SpawnDespawnStatus::Invalid;
         }
     }
 

@@ -82,6 +82,9 @@ namespace GeoJSONSpawner
         void DespawnEntitiesById(const GeoJSONUtils::Ids& ids);
         void Despawn(AzFramework::EntitySpawnTicket& ticketToDespawn);
 
+        // Spawn & Despawn
+        void ResetSpawnDespawnStatus(GeoJSONUtils::SpawnDespawnStatus& status, GeoJSONWrappers::SpawnTicketMapWrapper& mapCopy);
+
         AZStd::unordered_map<AZStd::string, GeoJSONUtils::GeoJSONSpawnableAssetConfiguration> m_spawnableAssetConfigurations;
         AZ::u64 m_defaultSeed;
         AZ::IO::Path m_geoJsonFilePath;
@@ -100,12 +103,10 @@ namespace GeoJSONSpawner
         bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
 
         // Spawn & Despawn notify
-        GeoJSONUtils::SpawnDespawnStatus m_spawnStatus = GeoJSONUtils::SpawnDespawnStatus::Success;
+        GeoJSONUtils::SpawnDespawnStatus m_spawnStatus{ GeoJSONUtils::SpawnDespawnStatus::Success };
         GeoJSONWrappers::SpawnTicketMapWrapper m_copySpawnTickets;
 
-        GeoJSONUtils::SpawnDespawnStatus m_despawnStatus = GeoJSONUtils::SpawnDespawnStatus::Success;
+        GeoJSONUtils::SpawnDespawnStatus m_despawnStatus{ GeoJSONUtils::SpawnDespawnStatus::Success };
         GeoJSONWrappers::SpawnTicketMapWrapper m_copyDespawnTickets;
-
-        void ResetSpawnDespawnStatus(GeoJSONUtils::SpawnDespawnStatus& status, GeoJSONWrappers::SpawnTicketMapWrapper& mapCopy);
     };
 } // namespace GeoJSONSpawner
