@@ -101,13 +101,11 @@ namespace GeoJSONSpawner
 
         // Spawn & Despawn notify
         GeoJSONUtils::SpawnDespawnStatus m_spawnStatus = GeoJSONUtils::SpawnDespawnStatus::Success;
-        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_copySpawnTickets;
+        GeoJSONWrappers::SpawnTicketMapWrapper m_copySpawnTickets;
 
         GeoJSONUtils::SpawnDespawnStatus m_despawnStatus = GeoJSONUtils::SpawnDespawnStatus::Success;
-        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_copyDespawnTickets;
+        GeoJSONWrappers::SpawnTicketMapWrapper m_copyDespawnTickets;
 
-        void ResetSpawnDespawnStatus(
-            GeoJSONUtils::SpawnDespawnStatus& status,
-            AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& mapCopy) const;
+        void ResetSpawnDespawnStatus(GeoJSONUtils::SpawnDespawnStatus& status, GeoJSONWrappers::SpawnTicketMapWrapper& mapCopy);
     };
 } // namespace GeoJSONSpawner

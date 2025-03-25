@@ -10,6 +10,8 @@
 
 #include "GeoJSONSpawnerComponent.h"
 
+#include "Wrappers/SpawnTicketMapWrapper.h"
+
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -58,6 +60,7 @@ namespace GeoJSONSpawner
         GeoJSONUtils::GeoJSONSpawnableAssetConfiguration::Reflect(context);
         GeoJSONUtils::GeoJSONSpawnableEntityInfo::Reflect(context);
         GeoJSONUtils::FeatureObjectInfo::Reflect(context);
+        GeoJSONWrappers::SpawnTicketMapWrapper::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -196,7 +199,7 @@ namespace GeoJSONSpawner
         }
 
         // Copy Spawn Tickets for notification bus
-        m_copySpawnTickets = m_spawnableTickets;
+        m_copySpawnTickets.SetMap(m_spawnableTickets);
     }
 
     Result GeoJSONSpawnerComponent::SpawnWithRawString(const AZStd::string& rawJsonString)
@@ -421,7 +424,7 @@ namespace GeoJSONSpawner
         ResetSpawnDespawnStatus(m_despawnStatus, m_copyDespawnTickets);
 
         // Copy Spawn Tickets for notification bus
-        m_copyDespawnTickets = m_spawnableTickets;
+        m_copyDespawnTickets.SetMap(m_spawnableTickets);
 
         FillGroupIdToTicketIdMap();
 
@@ -461,7 +464,7 @@ namespace GeoJSONSpawner
             }
 
             // Copy Spawn Tickets for notification bus
-            m_copyDespawnTickets[idToDespawn] = it->second;
+            m_copyDespawnTickets.SetValues(idToDespawn, it->second);
 
             for (auto& ticket : m_spawnableTickets[idToDespawn])
             {
@@ -470,17 +473,17 @@ namespace GeoJSONSpawner
         }
 
         // Notify - Copied tickets cannot be empty
-        if (m_copyDespawnTickets.empty())
+        if (m_copyDespawnTickets.GetMap().empty())
         {
             m_despawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Invalid | GeoJSONUtils::SpawnDespawnStatus::Fail;
         }
     }
 
     void GeoJSONSpawnerComponent::ResetSpawnDespawnStatus(
-        GeoJSONUtils::SpawnDespawnStatus& status, AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>>& mapCopy) const
+        GeoJSONUtils::SpawnDespawnStatus& status, GeoJSONWrappers::SpawnTicketMapWrapper& mapCopy)
     {
-        mapCopy.clear();
-
         status = m_spawnableTickets.empty() ? GeoJSONUtils::SpawnDespawnStatus::Fail : GeoJSONUtils::SpawnDespawnStatus::Success;
+        mapCopy.Clear();
     }
+
 } // namespace GeoJSONSpawner
