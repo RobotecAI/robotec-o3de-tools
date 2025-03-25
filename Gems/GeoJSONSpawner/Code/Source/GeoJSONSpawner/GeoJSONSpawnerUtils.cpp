@@ -588,4 +588,5 @@ namespace GeoJSONSpawner::GeoJSONUtils
     {
         return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
     }
+
 } // namespace GeoJSONSpawner::GeoJSONUtils
