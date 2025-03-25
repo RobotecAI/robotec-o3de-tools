@@ -101,7 +101,11 @@ namespace GeoJSONSpawner
 
         // Spawn & Despawn notify
         GeoJSONUtils::SpawnDespawnStatus m_spawnStatus = GeoJSONUtils::SpawnDespawnStatus::Success;
+        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_copySpawnTickets;
+
         GeoJSONUtils::SpawnDespawnStatus m_despawnStatus = GeoJSONUtils::SpawnDespawnStatus::Success;
-        [[nodiscard]] GeoJSONUtils::SpawnDespawnStatus InitSpawnDespawnStatus() const;
+        AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_copyDespawnTickets;
+
+        [[nodiscard]] GeoJSONUtils::SpawnDespawnStatus ResetSpawnDespawnStatus();
     };
 } // namespace GeoJSONSpawner

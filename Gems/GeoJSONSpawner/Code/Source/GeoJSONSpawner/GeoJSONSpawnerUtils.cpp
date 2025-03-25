@@ -260,9 +260,6 @@ namespace GeoJSONSpawner::GeoJSONUtils
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
         AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>>& ticketsToSpawn)
     {
-        // Call GeoJSONSpawner EBus notification - Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
-
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
         AZ_Assert(spawner, "Unable to get spawnable entities definition.");
 
@@ -291,9 +288,6 @@ namespace GeoJSONSpawner::GeoJSONUtils
             spawnStatusCode |= SpawnDespawnStatus::Fail;
         }
 
-        // Call GeoJSONSpawner EBus notification - Finished
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnFinished, groupIdToTicketsMap, spawnStatusCode);
-
         return groupIdToTicketsMap;
     }
 
@@ -308,7 +302,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         };
         spawner->DespawnAllEntities(ticket, optionalArgs);
 
-        // Call GeoJSONSpawner EBus notification - Spawn
+        // Call GeoJSONSpawner EBus notification - Despawn
         GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntityDespawn, ticket);
     }
 
