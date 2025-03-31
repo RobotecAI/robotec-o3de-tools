@@ -168,6 +168,9 @@ namespace GeoJSONSpawner
         {
             m_spawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning | GeoJSONUtils::SpawnDespawnStatus::Invalid;
         }
+
+        // Copy Spawn Tickets for notification bus
+        m_copySpawnTickets.SetMap(m_spawnableTickets);
     }
 
     void GeoJSONSpawnerComponent::SpawnCachedEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& cachedObjectsToSpawn)
