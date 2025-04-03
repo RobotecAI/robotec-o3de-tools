@@ -140,25 +140,19 @@ namespace FPSProfiler
          * @brief Called when a new file is created.
          * @param config File Save Settings Configuration.
          */
-        virtual void OnFileCreated(const Configs::FileSaveSettings& config)
-        {
-        }
+        virtual void OnFileCreated(Configs::FileSaveSettings& config) = 0;
 
         /**
          * @brief Called when an existing file is updated.
          * @param config File Save Settings Configuration.
          */
-        virtual void OnFileUpdate(const Configs::FileSaveSettings& config)
-        {
-        }
+        virtual void OnFileUpdate(Configs::FileSaveSettings& config) = 0;
 
         /**
          * @brief Called when a file is successfully saved.
          * @param config File Save Settings Configuration.
          */
-        virtual void OnFileSaved(const Configs::FileSaveSettings& config)
-        {
-        }
+        virtual void OnFileSaved(Configs::FileSaveSettings& config) = 0;
 
         /**
          * @brief Called when the profiling process starts.
@@ -167,20 +161,14 @@ namespace FPSProfiler
          * @param debugConfig The configuration settings used for the debugging.
          */
         virtual void OnProfileStart(
-            const Configs::RecordSettings& recordConfig,
-            const Configs::PrecisionSettings& precisionConfig,
-            const Configs::DebugSettings& debugConfig)
-        {
-        }
+            Configs::RecordSettings& recordConfig, Configs::PrecisionSettings& precisionConfig, Configs::DebugSettings& debugConfig) = 0;
 
         /**
          * @brief Called when the profiling data is reset.
          * @param recordConfig The configuration settings used for the record session.
          * @param precisionConfig The configuration settings used for the precision.
          */
-        virtual void OnProfileReset(const Configs::RecordSettings& recordConfig, const Configs::PrecisionSettings& precisionConfig)
-        {
-        }
+        virtual void OnProfileReset(Configs::RecordSettings& recordConfig, Configs::PrecisionSettings& precisionConfig) = 0;
 
         /**
          * @brief Called when the profiling process stops.
@@ -190,12 +178,10 @@ namespace FPSProfiler
          * @param debugConfig The configuration settings used for the debugging.
          */
         virtual void OnProfileStop(
-            const Configs::FileSaveSettings& saveConfig,
-            const Configs::RecordSettings& recordConfig,
-            const Configs::PrecisionSettings& precisionConfig,
-            const Configs::DebugSettings& debugConfig)
-        {
-        }
+            Configs::FileSaveSettings& saveConfig,
+            Configs::RecordSettings& recordConfig,
+            Configs::PrecisionSettings& precisionConfig,
+            Configs::DebugSettings& debugConfig) = 0;
     };
 
     class FPSProfilerNotificationBusTraits : public AZ::EBusTraits
@@ -226,39 +212,39 @@ namespace FPSProfiler
             OnProfileReset,
             OnProfileStop);
 
-        void OnFileCreated(const Configs::FileSaveSettings& config) override
+        void OnFileCreated(Configs::FileSaveSettings& config) override
         {
             Call(FN_OnFileCreated, config);
         }
 
-        void OnFileUpdate(const Configs::FileSaveSettings& config) override
+        void OnFileUpdate(Configs::FileSaveSettings& config) override
         {
             Call(FN_OnFileUpdate, config);
         }
 
-        void OnFileSaved(const Configs::FileSaveSettings& config) override
+        void OnFileSaved(Configs::FileSaveSettings& config) override
         {
             Call(FN_OnFileSaved, config);
         }
 
         void OnProfileStart(
-            const Configs::RecordSettings& recordConfig,
-            const Configs::PrecisionSettings& precisionConfig,
-            const Configs::DebugSettings& debugConfig) override
+            Configs::RecordSettings& recordConfig,
+            Configs::PrecisionSettings& precisionConfig,
+            Configs::DebugSettings& debugConfig) override
         {
             Call(FN_OnProfileStart, recordConfig, precisionConfig, debugConfig);
         }
 
-        void OnProfileReset(const Configs::RecordSettings& recordConfig, const Configs::PrecisionSettings& precisionConfig) override
+        void OnProfileReset(Configs::RecordSettings& recordConfig, Configs::PrecisionSettings& precisionConfig) override
         {
             Call(FN_OnProfileReset, recordConfig, precisionConfig);
         }
 
         void OnProfileStop(
-            const Configs::FileSaveSettings& saveConfig,
-            const Configs::RecordSettings& recordConfig,
-            const Configs::PrecisionSettings& precisionConfig,
-            const Configs::DebugSettings& debugConfig) override
+            Configs::FileSaveSettings& saveConfig,
+            Configs::RecordSettings& recordConfig,
+            Configs::PrecisionSettings& precisionConfig,
+            Configs::DebugSettings& debugConfig) override
         {
             Call(FN_OnProfileStop, saveConfig, recordConfig, precisionConfig, debugConfig);
         }
