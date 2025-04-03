@@ -57,14 +57,25 @@ namespace FPSProfiler
         void SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath) override;
         void ShowFpsOnScreen(bool enable) override;
 
-    public:
+    private:
+        // File Operations
+        void CreateLogFile();
+        void WriteDataToFile();
+
+        // Utility Functions
+        void CalculateFpsData(const float& deltaTime);
+        static float BytesToMB(AZStd::size_t bytes);
+        [[nodiscard]] bool IsPathValid(const AZ::IO::Path& path) const;
+
+        // Debug Display
+        void ShowFps() const;
+
         // Profiler Configurations
         Configs::FileSaveSettings m_configFile; //!< Stores editor settings for the profiler
         Configs::RecordSettings m_configRecord; //!< Stores editor settings for the profiler
         Configs::PrecisionSettings m_configPrecision; //!< Stores editor settings for the profiler
         Configs::DebugSettings m_configDebug; //!< Stores editor settings for the profiler
 
-    private:
         // FPS Tracking Data
         bool m_isProfiling = false; //!< Flag to indicate if profiling is active
         float m_minFps = 0.0f; //!< Lowest FPS value recorded
@@ -80,17 +91,5 @@ namespace FPSProfiler
         AZStd::vector<char> m_logBuffer; //!< Buffer for log entries, cleared periodically if auto save enabled.
         static constexpr AZStd::size_t MAX_LOG_BUFFER_SIZE = 1024 * 128; //!< Max log buffer size
         static constexpr AZStd::size_t MAX_LOG_BUFFER_LINE_SIZE = 128; //!< Max length per log line
-
-        // File Operations
-        void CreateLogFile();
-        void WriteDataToFile();
-
-        // Utility Functions
-        void CalculateFpsData(const float& deltaTime);
-        static float BytesToMB(AZStd::size_t bytes);
-        [[nodiscard]] bool IsPathValid(const AZ::IO::Path& path) const;
-
-        // Debug Display
-        void ShowFps() const;
     };
 } // namespace FPSProfiler
