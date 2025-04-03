@@ -427,37 +427,28 @@ This functionality can be accessed in c++, lua and script canvas.
 ## Component Functionality
 ![FpsProfiler Editor](doc/FpsProfiler.png)
 
-### Save Settings
-| File Save Settings   | Description                                                                                                    |
-|----------------------|----------------------------------------------------------------------------------------------------------------|
-| Select Csv File Path | Button that opens a File Dialog.                                                                               |
-| Csv Save Path        | A path where *.csv will be saved.                                                                              |
-| Auto Save            | Enables automatic saving of FPS logs per frame.                                                                |
-| Auto Save At Frame   | Specifies the frame interval for auto-saving.                                                                  |
-| Timestamp            | Includes timestamps in the FPS log file name.</br>Allows to save automatically without manual input each time. |
-
-### Recording Settings
-| Recording Settings     | Description                                                                                                          |
+| Config                 | Description                                                                                                          |
 |------------------------|----------------------------------------------------------------------------------------------------------------------|
+| **File Save Settings** |                                                                                                                      |
+| Select Csv File Path   | Button that opens a File Dialog.                                                                                     |
+| Csv Save Path          | A path where *.csv will be saved.                                                                                    |
+| Auto Save              | Enables automatic saving of FPS logs per frame.                                                                      |
+| Auto Save At Frame     | Specifies the frame interval for auto-saving.                                                                        |
+| Timestamp              | Includes timestamps in the FPS log file name.</br>Allows to save automatically without manual input each time.       |
+| **Recording Settings** |                                                                                                                      |
 | Record Type            | Specify when to start recording:</br>- at game start</br>- selected frame</br>- await for other system to call start |
 | Frames To Skip         | Number of frames to skip before recording.</br>Only enabled when type is `SelectFrame`.                              |
 | Frames To Record       | Total number of frames to record. If set to 0 - unlimited.                                                           |
 | Record Stats           | Specifies what type of stats to record (FPS data, CPU and GPU).                                                      |
-
-### Precision Settings
-| Precision Settings     | Description                                                                                                |
-|------------------------|------------------------------------------------------------------------------------------------------------|
-| Near Zero Precision    | Precision threshold for near-zero values.                                                                  |
-| Moving Average Type    | Type of moving average used for smoothing average FPS:</br>- Simple</br>- Exponential                      |
-| Alpha Smoothing Factor | Factor applied to control smoothing effect when `Exponential` enabled.                                     |
-| Keep History           | Keeps a history of recorded FPS data or clear after every auto-save.</br>For better effect - keep enabled. |
-
-### Debug Settings
-| Debug Settings         | Description                             |
-|------------------------|-----------------------------------------|
-| Print Debug Info       | Displays debug information in the logs. |
-| Show FPS               | Enables FPS display on screen.          |
-| Debug Color            | Color used for debugging FPS display.   |
+| **Precision Settings** |                                                                                                                      |
+| Near Zero Precision    | Precision threshold for near-zero values.                                                                            |
+| Moving Average Type    | Type of moving average used for smoothing average FPS:</br>- Simple</br>- Exponential                                |
+| Alpha Smoothing Factor | Factor applied to control smoothing effect when `Exponential` enabled.                                               |
+| Keep History           | Keeps a history of recorded FPS data or clear after every auto-save.</br>For better effect - keep enabled.           |
+| **Debug Settings**     |                                                                                                                      |
+| Print Debug Info       | Displays debug information in the logs.                                                                              |
+| Show FPS               | Enables FPS display on screen.                                                                                       |
+| Debug Color            | Color used for debugging FPS display.                                                                                |
 
 ## API Access
 Example workflows how to access and use a Fps Profiler Events and Notifications.
@@ -507,7 +498,7 @@ return FPSProfilerHandler
 
 ### In Script Canvas
 Example how to stop profiling after 60 seconds have passed in Script Canvas.
-![FpsProfiler Editor](doc/FpsProfiler_ScriptCanvas.png)
+![FpsProfiler Script Canvas](doc/FpsProfiler_ScriptCanvas.png)
 
 ## Csv Output File - Example
 | Frame | FrameTime | CurrentFPS  | MinFPS | MaxFPS  | AvgFPS  | CpuMemoryUsed  | CpuMemoryReserved  | GpuMemoryUsed  | GpuMemoryReserved  |
