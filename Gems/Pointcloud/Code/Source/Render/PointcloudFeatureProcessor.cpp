@@ -158,7 +158,12 @@ namespace Pointcloud
             if (m_meshPipelineState && pcData.m_drawSrg && pcData.m_meshStreamBufferViews.front().GetByteCount() != 0)
             {
                 pcData.m_drawPacket = BuildDrawPacket(
-                    pcData.m_drawSrg, m_meshPipelineState, m_drawListTag, pcData.m_meshStreamBufferViews, pcData.m_geometryView, pcData.m_vertices);
+                    pcData.m_drawSrg,
+                    m_meshPipelineState,
+                    m_drawListTag,
+                    pcData.m_meshStreamBufferViews,
+                    pcData.m_geometryView,
+                    pcData.m_vertices);
             }
         }
     }
@@ -247,7 +252,7 @@ namespace Pointcloud
         drawInstanceArgs.m_instanceCount = 1;
         drawInstanceArgs.m_instanceOffset = 0;
         geometryView.SetDrawArguments(drawLinear);
-        
+
         for (size_t i = 0; i < streamBufferViews.size(); ++i)
         {
             geometryView.AddStreamBufferView(streamBufferViews[i]);
@@ -377,7 +382,7 @@ namespace Pointcloud
         }
         return AZStd::nullopt;
     }
-    
+
     void PointcloudFeatureProcessor::ConnectChangeEventHandler(
         const PointcloudHandle& pointcloudHandle, PointcloudChangedEvent::Handler& handler)
     {

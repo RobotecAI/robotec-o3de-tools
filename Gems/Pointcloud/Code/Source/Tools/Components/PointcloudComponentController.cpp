@@ -135,8 +135,8 @@ namespace Pointcloud
                         AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
                     }
                 }
-                
-                if(m_featureProcessor)
+
+                if (m_featureProcessor)
                 {
                     m_featureProcessor->ConnectChangeEventHandler(m_config.m_pointcloudHandle, m_changeEventHandler);
                 }
