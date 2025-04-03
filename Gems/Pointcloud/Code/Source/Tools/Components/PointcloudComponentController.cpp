@@ -96,27 +96,24 @@ namespace Pointcloud
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            serializeContext->Class<PointcloudComponentController>()->Version(1)->Field(
+                "Configuration", &PointcloudComponentController::m_config);
+
+            AZ::EditContext* editContext = serializeContext->GetEditContext();
+            if (editContext)
             {
-                serializeContext->Class<PointcloudComponentController>()->Version(1)->Field(
-                    "Configuration", &PointcloudComponentController::m_config);
+                editContext->Class<PointcloudComponentController>("PointcloudComponentController", "PointcloudComponentController")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "PointcloudComponentController")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(AZ::Edit::Attributes::Category, "RobotecTools")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                AZ::EditContext* editContext = serializeContext->GetEditContext();
-                if (editContext)
-                {
-                    editContext->Class<PointcloudComponentController>("PointcloudComponentController", "PointcloudComponentController")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "PointcloudComponentController")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                        ->Attribute(AZ::Edit::Attributes::Category, "RobotecTools")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::Default,
-                            &PointcloudComponentController::m_config,
-                            "Configuration",
-                            "Configuration of the pointcloud")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudComponentController::OnAssetChanged);
-                }
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &PointcloudComponentController::m_config,
+                        "Configuration",
+                        "Configuration of the pointcloud")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PointcloudComponentController::OnAssetChanged);
             }
         }
     }
@@ -138,13 +135,18 @@ namespace Pointcloud
                         AZ_Assert(m_featureProcessor, "Failed to enable PointcloudFeatureProcessorInterface.");
                     }
                 }
-                m_featureProcessor->ConnectChangeEventHandler(m_config.m_pointcloudHandle, m_changeEventHandler);
+                
+                if(m_featureProcessor)
+                {
+                    m_featureProcessor->ConnectChangeEventHandler(m_config.m_pointcloudHandle, m_changeEventHandler);
+                }
                 OnAssetChanged();
             });
     }
 
     void PointcloudComponentController::Deactivate()
     {
+        m_changeEventHandler.Disconnect();
         PointcloudConfigurationBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         if (m_featureProcessor)
