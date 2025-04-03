@@ -5,7 +5,6 @@ namespace FPSProfiler
 {
     // System Component TypeIds
     inline constexpr const char* FPSProfilerComponentTypeId = "{B11CE88E-E1C5-404F-83D2-0D3850445A13}";
-    inline constexpr const char* FPSProfilerEditorComponentTypeId = "{F4308920-CD0B-4A2E-91DE-2EC1E970F97A}";
 
     // Configs TypeIds
     inline constexpr const char* FPSProfilerConfigFileTypeId = "{68627A89-9426-4640-B460-63E6AA42CFBC}";
