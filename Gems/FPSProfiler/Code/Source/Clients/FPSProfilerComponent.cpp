@@ -563,7 +563,7 @@ namespace FPSProfiler
         debugDisplay->SetColor(AZ::Colors::Red);
         debugDisplay->SetAlpha(1.0f);
 
-        AZStd::string debugText = AZStd::string::format("Profiler | FPS: %.2f", m_currentFps);
-        debugDisplay->Draw2dTextLabel(10, 10, 1.0f, debugText.c_str(), true);
+        AZStd::string debugText = AZStd::string::format("FPS: %.2f", m_currentFps);
+        debugDisplay->Draw2dTextLabel(100, 50, 1.0f, debugText.c_str(), true);
     }
 } // namespace FPSProfiler
