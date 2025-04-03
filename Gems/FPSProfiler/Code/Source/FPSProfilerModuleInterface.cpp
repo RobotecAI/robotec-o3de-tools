@@ -24,11 +24,4 @@ namespace FPSProfiler
                 FPSProfilerComponent::CreateDescriptor(),
             });
     }
-
-    AZ::ComponentTypeList FPSProfilerModuleInterface::GetRequiredSystemComponents() const
-    {
-        return AZ::ComponentTypeList{
-            azrtti_typeid<FPSProfilerComponent>(),
-        };
-    }
 } // namespace FPSProfiler

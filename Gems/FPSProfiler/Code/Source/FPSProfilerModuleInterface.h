@@ -14,10 +14,5 @@ namespace FPSProfiler
         AZ_CLASS_ALLOCATOR_DECL
 
         FPSProfilerModuleInterface();
-
-        /**
-         * Add required SystemComponents to the SystemEntity.
-         */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
 } // namespace FPSProfiler
