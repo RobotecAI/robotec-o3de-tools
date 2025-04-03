@@ -4,6 +4,7 @@
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/numeric.h>
 
@@ -24,6 +25,20 @@ namespace FPSProfiler
                 ->Field("m_configRecord", &FPSProfilerComponent::m_configRecord)
                 ->Field("m_configPrecision", &FPSProfilerComponent::m_configPrecision)
                 ->Field("m_configDebug", &FPSProfilerComponent::m_configDebug);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<FPSProfilerComponent>("FPS Profiler", "Tracks FPS, GPU and CPU performance and saves it into .csv")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Performance")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerComponent::m_configFile)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerComponent::m_configRecord)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerComponent::m_configPrecision)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerComponent::m_configDebug);
+            }
         }
 
         // EBus Reflect for Lua and Script Canvas
