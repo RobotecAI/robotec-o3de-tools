@@ -26,9 +26,9 @@ namespace FPSProfiler
     }
 
     /**
-    * Add required SystemComponents to the SystemEntity.
-    * Non-SystemComponents should not be added here
-    */
+     * Add required SystemComponents to the SystemEntity.
+     * Non-SystemComponents should not be added here
+     */
     AZ::ComponentTypeList FPSProfilerModuleInterface::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{};

@@ -120,14 +120,11 @@ namespace FPSProfiler
 
     void FPSProfilerComponent::Activate()
     {
-        if (!IsPathValid(m_configFile.m_OutputFilename))
+        auto pathValidationOutcome = IsPathValid(m_configFile.m_OutputFilename);
+        if (!pathValidationOutcome.IsSuccess())
         {
             m_configFile.m_OutputFilename = "@user@/fps_log.csv";
-            AZ_Warning(
-                "FPSProfiler",
-                !m_configDebug.m_PrintDebugInfo,
-                "Invalid output file path. Using default: %s",
-                m_configFile.m_OutputFilename.c_str());
+            AZ_Warning("FPSProfilerComponent::Activate", !m_configDebug.m_PrintDebugInfo, pathValidationOutcome.GetError().c_str());
         }
 
         // Reserve log entries buffer size based on known auto save per frame
@@ -326,8 +323,10 @@ namespace FPSProfiler
 
     void FPSProfilerComponent::ChangeSavePath(const AZ::IO::Path& newSavePath)
     {
-        if (!IsPathValid(newSavePath))
+        auto pathValidationOutcome = IsPathValid(newSavePath);
+        if (!pathValidationOutcome.IsSuccess())
         {
+            AZ_Warning("FPSProfilerComponent::ChangeSavePath", !m_configDebug.m_PrintDebugInfo, pathValidationOutcome.GetError().c_str());
             return;
         }
 
@@ -462,14 +461,11 @@ namespace FPSProfiler
             return;
         }
 
-        if (!IsPathValid(m_configFile.m_OutputFilename))
+        auto pathValidationOutcome = IsPathValid(m_configFile.m_OutputFilename);
+        if (!pathValidationOutcome.IsSuccess())
         {
             m_configFile.m_OutputFilename = "@user@/fps_log.csv";
-            AZ_Warning(
-                "FPSProfiler",
-                !m_configDebug.m_PrintDebugInfo,
-                "Invalid output file path. Using default: %s",
-                m_configFile.m_OutputFilename.c_str());
+            AZ_Warning("FPSProfilerComponent::CreateLogFile", !m_configDebug.m_PrintDebugInfo, pathValidationOutcome.GetError().c_str());
         }
 
         // Apply Timestamp
@@ -530,23 +526,26 @@ namespace FPSProfiler
         return static_cast<float>(bytes) / (1024.0f * 1024.0f);
     }
 
-    bool FPSProfilerComponent::IsPathValid(const AZ::IO::Path& path) const
+    AZ::Outcome<bool, AZStd::string> FPSProfilerComponent::IsPathValid(const AZ::IO::Path& path) const
     {
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
-        if (path.empty() || !path.HasFilename() || !path.HasExtension() || !fileIO || !fileIO->ResolvePath(path))
-        {
-            const char* reason = path.empty() ? "Path cannot be empty."
-                : !path.HasFilename()         ? "Path must have a file at the end."
-                : !path.HasExtension()        ? "Path must have a *.csv extension."
-                : !fileIO                     ? "Could not get a FileIO object. Try again."
-                                              : "Path is not registered or recognizable by O3DE FileIO System.";
+        if (!fileIO)
+            return AZ::Failure("Could not get a FileIO object. Try again.");
 
-            AZ_Warning("FPSProfiler::IsPathValid", !m_configDebug.m_PrintDebugInfo, "%s", reason);
-            return false;
-        }
+        if (!fileIO->ResolvePath(path))
+            return AZ::Failure("Cannot resolve the path.");
 
-        return true;
+        if (path.empty())
+            return AZ::Failure("Path cannot be empty.");
+
+        if (!path.HasFilename())
+            return AZ::Failure("Path must have a file at the end.");
+
+        if (!path.HasExtension() || path.Extension() != ".csv")
+            return AZ::Failure("Path must have a *.csv extension.");
+
+        return AZ::Success(true);
     }
 
     void FPSProfilerComponent::ShowFps() const
