@@ -140,19 +140,25 @@ namespace FPSProfiler
          * @brief Called when a new file is created.
          * @param config File Save Settings Configuration.
          */
-        virtual void OnFileCreated(Configs::FileSaveSettings& config) = 0;
+        virtual void OnFileCreated(Configs::FileSaveSettings& config)
+        {
+        }
 
         /**
          * @brief Called when an existing file is updated.
          * @param config File Save Settings Configuration.
          */
-        virtual void OnFileUpdate(Configs::FileSaveSettings& config) = 0;
+        virtual void OnFileUpdate(Configs::FileSaveSettings& config)
+        {
+        }
 
         /**
          * @brief Called when a file is successfully saved.
          * @param config File Save Settings Configuration.
          */
-        virtual void OnFileSaved(Configs::FileSaveSettings& config) = 0;
+        virtual void OnFileSaved(Configs::FileSaveSettings& config)
+        {
+        }
 
         /**
          * @brief Called when the profiling process starts.
@@ -161,14 +167,18 @@ namespace FPSProfiler
          * @param debugConfig The configuration settings used for the debugging.
          */
         virtual void OnProfileStart(
-            Configs::RecordSettings& recordConfig, Configs::PrecisionSettings& precisionConfig, Configs::DebugSettings& debugConfig) = 0;
+            Configs::RecordSettings& recordConfig, Configs::PrecisionSettings& precisionConfig, Configs::DebugSettings& debugConfig)
+        {
+        }
 
         /**
          * @brief Called when the profiling data is reset.
          * @param recordConfig The configuration settings used for the record session.
          * @param precisionConfig The configuration settings used for the precision.
          */
-        virtual void OnProfileReset(Configs::RecordSettings& recordConfig, Configs::PrecisionSettings& precisionConfig) = 0;
+        virtual void OnProfileReset(Configs::RecordSettings& recordConfig, Configs::PrecisionSettings& precisionConfig)
+        {
+        }
 
         /**
          * @brief Called when the profiling process stops.
@@ -181,7 +191,9 @@ namespace FPSProfiler
             Configs::FileSaveSettings& saveConfig,
             Configs::RecordSettings& recordConfig,
             Configs::PrecisionSettings& precisionConfig,
-            Configs::DebugSettings& debugConfig) = 0;
+            Configs::DebugSettings& debugConfig)
+        {
+        }
     };
 
     class FPSProfilerNotificationBusTraits : public AZ::EBusTraits
