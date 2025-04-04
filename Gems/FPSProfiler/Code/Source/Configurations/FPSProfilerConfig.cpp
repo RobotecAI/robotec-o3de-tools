@@ -28,6 +28,7 @@ namespace FPSProfiler::Configs
                         "Csv Save Path",
                         "Select a path where *.csv will be saved.")
                     ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.csv")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, true) // todo handle proper path selection, for now only read only
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
