@@ -24,4 +24,13 @@ namespace FPSProfiler
                 FPSProfilerComponent::CreateDescriptor(),
             });
     }
+
+    /**
+    * Add required SystemComponents to the SystemEntity.
+    * Non-SystemComponents should not be added here
+    */
+    AZ::ComponentTypeList FPSProfilerModuleInterface::GetRequiredSystemComponents() const
+    {
+        return AZ::ComponentTypeList{};
+    }
 } // namespace FPSProfiler

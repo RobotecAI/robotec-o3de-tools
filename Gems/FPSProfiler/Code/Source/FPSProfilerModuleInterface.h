@@ -14,5 +14,6 @@ namespace FPSProfiler
         AZ_CLASS_ALLOCATOR_DECL
 
         FPSProfilerModuleInterface();
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
 } // namespace FPSProfiler
