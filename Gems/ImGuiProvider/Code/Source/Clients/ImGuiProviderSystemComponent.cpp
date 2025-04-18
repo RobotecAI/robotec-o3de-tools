@@ -12,6 +12,8 @@
 #include <AzCore/std/utility/pair.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <ImGui/ImGuiPass.h>
+#include <AzCore/Console/IConsole.hr>
+
 #include <ImGuiBus.h>
 #include <ImGuiProvider/ImGuiProviderBus.h>
 #include <ImGuiProvider/ImGuiProviderTypeIds.h>
@@ -22,6 +24,8 @@
 
 namespace ImGuiProvider
 {
+
+    AZ_CVAR(bool, cl_hide_menu_bar, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Hide Menu Bar if the flag is enabled");
 
     AZ_COMPONENT_IMPL(ImGuiProviderSystemComponent, "ImGuiProviderSystemComponent", ImGuiProviderSystemComponentTypeId);
 
@@ -77,14 +81,23 @@ namespace ImGuiProvider
         AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
         m_appInEditor = appType.IsEditor();
 
-        ImGuiProviderRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+        if (!cl_hide_menu_bar)
+        {
+            ImGuiProviderRequestBus::Handler::BusConnect();
+            AZ::TickBus::Handler::BusConnect();
+        }
     }
 
     void ImGuiProviderSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
-        ImGuiProviderRequestBus::Handler::BusDisconnect();
+        if (AZ::TickBus::Handler::BusIsConnected())
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+        }
+        if (ImGuiProviderRequestBus::Handler::BusIsConnected())
+        {
+            ImGuiProviderRequestBus::Handler::BusDisconnect();
+        }
         AZStd::vector<ImGuiFeaturePath> features;
         for (auto& feature : m_registeredFeatures)
         {
