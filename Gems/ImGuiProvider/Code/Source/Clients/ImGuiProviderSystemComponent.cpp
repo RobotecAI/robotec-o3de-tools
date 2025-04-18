@@ -11,7 +11,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/utility/pair.h>
 #include <AzFramework/Viewport/ViewportBus.h>
-#include <ImGui/ImGuiPass.h>
 #include <ImGuiBus.h>
 #include <ImGuiProvider/ImGuiProviderBus.h>
 #include <ImGuiProvider/ImGuiProviderTypeIds.h>
@@ -112,18 +111,19 @@ namespace ImGuiProvider
             // if current context is not available through Imgui system bus, get context from pass and push is to imgui system bus
             if (!m_currentImGuiContext)
             {
-                AZ::Render::ImGuiPass* pass;
-                AZ::Render::ImGuiSystemRequestBus::BroadcastResult(pass, &AZ::Render::ImGuiSystemRequests::GetDefaultImGuiPass);
-                if (pass)
+                bool success;
+                AZ::Render::ImGuiSystemRequestBus::BroadcastResult(
+                    success, &AZ::Render::ImGuiSystemRequests::PushActiveContextFromDefaultPass);
+                if (success)
                 {
-                    auto context = pass->GetContext();
-                    if (context)
-                    {
-                        AZ_Info("ImGuiProviderSystemComponent", "Gathering pass context and pushing as active");
-                        m_currentImGuiContext = context;
-                        m_previousImGuiContext = context;
-                        ImGui::SetCurrentContext(context);
-                    }
+                    AZ::Render::ImGuiSystemRequestBus::BroadcastResult(
+                        m_currentImGuiContext, &AZ::Render::ImGuiSystemRequests::GetActiveContext);
+                    m_previousImGuiContext = m_currentImGuiContext;
+                }
+                else
+                {
+                    AZ_Error("ImGuiProviderSystemComponent::OnTick", false, "Failed to get active context from ImGuiSystemBus");
+                    return;
                 }
             }
             // if needed move viewport icons
