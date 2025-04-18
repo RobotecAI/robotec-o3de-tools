@@ -2,6 +2,7 @@
 #include "ImGuiProviderSystemComponent.h"
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/base.h>
 #include <AzCore/std/algorithm.h>
@@ -12,7 +13,6 @@
 #include <AzCore/std/utility/pair.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <ImGui/ImGuiPass.h>
-#include <AzCore/Console/IConsole.hr>
 
 #include <ImGuiBus.h>
 #include <ImGuiProvider/ImGuiProviderBus.h>
