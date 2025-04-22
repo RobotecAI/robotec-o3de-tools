@@ -382,6 +382,10 @@ This gem adds support for displaying user defined ImGui GUI. Users can define th
 
 Below example on how to register new feature during component activation:
 
+Visibility of the GUI menu bar can be overridden at the app start using `-cl_hide_menu_bar=1`.
+Setting the flag effectively disables the GUI.
+
+
 ```cpp
 void ExampleComponent::Activate()
 {
