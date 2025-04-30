@@ -57,6 +57,7 @@ ly_add_target(
         Gem::ImGui.Static
         Gem::ROS2.Static
         Gem::ROS2.API
+        Gem::LevelGeoreferencing.API
 )
 
 target_depends_on_ros2_packages(${gem_name}.Private.Object geometry_msgs)

@@ -22,7 +22,8 @@
     "documentation_url": "See the docs in the repo",
     "dependencies": [
         "ROS2",
-        "ImGui"
+        "ImGui",
+        "LevelGeoreferencing"
     ],
     "repo_uri": "",
     "compatible_engines": [],
