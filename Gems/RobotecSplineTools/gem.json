@@ -20,9 +20,9 @@
     "icon_path": "preview.png",
     "requirements": "No requirements",
     "documentation_url": "",
-    "dependencies": ["ROS2"],
+    "dependencies": ["ROS2", "LevelGeoreferencing"],
     "repo_uri": "",
-    "compatible_engines": [],
+    "compatible_engines": ["o3de>=4.2.0"],
     "engine_api_dependencies": [],
     "restricted": "SplineTools"
 }
