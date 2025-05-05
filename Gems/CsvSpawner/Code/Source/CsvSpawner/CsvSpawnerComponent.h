@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "AzFramework/Terrain/TerrainDataRequestBus.h"
 #include "CsvSpawnerUtils.h"
 
 #include <AzCore/Component/Component.h>
@@ -25,7 +26,7 @@ namespace CsvSpawner
     //! dependent on a CSV file).
     class CsvSpawnerComponent
         : public AZ::Component
-        , private AZ::TickBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(CsvSpawnerComponent, CsvSpawnerComponentTypeId);
@@ -37,7 +38,7 @@ namespace CsvSpawner
             const AZStd::vector<CsvSpawnableEntityInfo>& spawnableEntityInfo,
             AZ::u64 defaultSeed);
 
-        ~CsvSpawnerComponent() = default;
+        ~CsvSpawnerComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -45,15 +46,18 @@ namespace CsvSpawner
         void Activate() override;
         void Deactivate() override;
 
-    private:
-        // AZ::TickBus::Handler overrides
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
+        // AzFramework::Terrain::TerrainDataNotificationBus::Handler overrides
+        void OnTerrainDataCreateEnd() override;
+        void OnTerrainDataDestroyBegin() override;
 
+    private:
         AZStd::unordered_map<AZStd::string, CsvSpawnableAssetConfiguration> m_spawnableAssetConfigurations; //!< List of assets to spawn
         AZStd::vector<CsvSpawnableEntityInfo> m_spawnableEntityInfo; //!< List of entities to spawn
         AZ::u64 m_defaultSeed{ 0 }; //!< Default seed value
 
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> m_spawnedTickets;
+
+        // Terrain notify
+        bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
     };
 } // namespace CsvSpawner

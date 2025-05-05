@@ -190,7 +190,10 @@ namespace ViewportStreamer
             }
 
             auto imageMessage = CreateImageMessageFromReadBackResult(GetEntityId(), result, header);
-            m_imagePublisher->publish(imageMessage);
+            if (m_imagePublisher)
+            {
+                m_imagePublisher->publish(imageMessage);
+            }
         };
         RequestFrame(passHierarchy, imageReadyCallback);
     }
