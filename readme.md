@@ -10,8 +10,10 @@ Toolset for joystick-controlled cameras and spline animation tools.
 # SplineTools
 The tools for expanding the usability of the Spline component in O3DE. 
 It allows to:
- - Import spline from CSV file
- - Export spline to a CSV file
+- Publish spline points as a path with ROS 2
+- Import spline from CSV file
+- Export spline to a CSV file
+
 Having a CSV file formatted as :
 ```csv
 x,y,z
@@ -31,6 +33,9 @@ You can modify the Spline component in Editor.
 Add SplineToolsEditorComponent next to the [Spline component](https://docs.o3de.org/docs/user-guide/components/reference/shape/spline/), locate your CSV file (it needs to exist as a source asset), and click the Load button.
 If you switch `Local Coordinates` to true, the component will interpret coordinates as local to entity origin.
 ![](doc/SplineToolsEditorComponent.png)
+
+To publish spline path, add `SplinePublisher` next to the [Spline component](https://docs.o3de.org/docs/user-guide/components/reference/shape/spline/).
+Adjust **update frequency** to set how often the path will be published.
 
 ## Using geo-referenced data
 
