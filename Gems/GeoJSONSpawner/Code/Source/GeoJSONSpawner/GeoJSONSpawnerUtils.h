@@ -181,7 +181,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
     [[nodiscard]] bool IsTerrainAvailable();
 
     /**
-     * @brief Flags representing the status of GeoJSONSpawner operations Spawnd and Despawn.
+     * @brief Flags representing the status of GeoJSONSpawner operations Spawn and Despawn.
      *
      * Provides various status indicators for entity spawning / despawning.
      * These flags help to track or filter mentioned operations.
