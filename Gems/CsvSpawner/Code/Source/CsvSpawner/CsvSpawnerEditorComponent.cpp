@@ -9,24 +9,26 @@
  */
 
 #include "CsvSpawnerEditorComponent.h"
-#include "AzCore/Debug/Trace.h"
 #include "CsvSpawnerComponent.h"
 #include "CsvSpawnerCsvParser.h"
 #include "CsvSpawnerUtils.h"
+#include <CsvSpawner/CsvSpawnerInterface.h>
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <thread>
 
 namespace CsvSpawner
 {
 
     void CsvSpawnerEditorComponent::Reflect(AZ::ReflectContext* context)
     {
+        CsvSpawner::SpawnInfo::Reflect(context);
+
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
@@ -62,6 +64,12 @@ namespace CsvSpawner
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_showLabels, "Show labels in Editor", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnOnShowLabelsChanged);
             }
+        }
+
+        if (const auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<CsvSpawner::CsvSpawnerNotificationBus>("CsvSpawnerNotificationBus")
+                ->Handler<CsvSpawner::CsvSpawnerNotificationBusHandler>();
         }
     }
 

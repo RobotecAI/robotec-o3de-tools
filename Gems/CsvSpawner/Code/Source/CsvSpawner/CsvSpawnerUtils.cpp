@@ -11,14 +11,14 @@
 
 #include "CsvSpawnerUtils.h"
 
-#include "AzFramework/Physics/CollisionBus.h"
+#include <AzFramework/Physics/CollisionBus.h>
+#include <CsvSpawner/CsvSpawnerInterface.h>
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
@@ -40,6 +40,32 @@ namespace CsvSpawner::CsvSpawnerUtils
                 ->Field("Transform", &CsvSpawnableEntityInfo::m_transform)
                 ->Field("Name", &CsvSpawnableEntityInfo::m_name)
                 ->Field("Seed", &CsvSpawnableEntityInfo::m_seed);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<CsvSpawnableEntityInfo>("Csv Spawnable Entity Info", "An entity configuration for spawning")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnableEntityInfo::m_id, "ID", "Optional ID for the entity")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &CsvSpawnableEntityInfo::m_transform, "Transform", "Transform of the entity")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CsvSpawnableEntityInfo::m_name,
+                        "Name",
+                        "Name of the spawnable entity configuration")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &CsvSpawnableEntityInfo::m_seed, "Seed", "Optional seed value for randomization");
+            }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<CsvSpawnableEntityInfo>("CsvSpawnableEntityInfo")
+                ->Constructor<>()
+                ->Property("Id", BehaviorValueProperty(&CsvSpawnableEntityInfo::m_id))
+                ->Property("Transform", BehaviorValueProperty(&CsvSpawnableEntityInfo::m_transform))
+                ->Property("Name", BehaviorValueProperty(&CsvSpawnableEntityInfo::m_name))
+                ->Property("Seed", BehaviorValueProperty(&CsvSpawnableEntityInfo::m_seed));
         }
     }
     void CsvSpawnableAssetConfiguration::Reflect(AZ::ReflectContext* context)
@@ -196,6 +222,13 @@ namespace CsvSpawner::CsvSpawnerUtils
         const AZStd::string& physicsSceneName,
         AZ::EntityId parentId)
     {
+        SpawnInfo broadcastSpawnInfo =
+            SpawnInfo{ entitiesToSpawn, physicsSceneName, parentId }; // Spawn Info used in CsvSpawner EBus notify.
+        SpawnStatus spawnStatusCode = SpawnStatus::Success; // Spawn Status Code used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
+
+        // Call CsvSpawner EBus notification - Begin
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin, broadcastSpawnInfo);
+
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "Unable to get physics scene interface");
         const auto sceneHandle = sceneInterface->GetSceneHandle(physicsSceneName);
@@ -224,6 +257,9 @@ namespace CsvSpawner::CsvSpawnerUtils
             if (!spawnableAssetConfiguration.contains(entityConfig.m_name))
             {
                 AZ_Error("CsvSpawner", false, "SpawnableAssetConfiguration %s not found", entityConfig.m_name.c_str());
+
+                // Add notify code status
+                spawnStatusCode |= SpawnStatus::Warning;
                 continue;
             }
 
@@ -253,6 +289,9 @@ namespace CsvSpawner::CsvSpawnerUtils
                 }
                 else
                 {
+                    // Add notify code status
+                    spawnStatusCode |= SpawnStatus::Warning;
+
                     continue; // Skip this entity if we can't find a valid position and
                               // place on terrain is enabled.
                 }
@@ -262,10 +301,13 @@ namespace CsvSpawner::CsvSpawnerUtils
             AzFramework::EntitySpawnTicket ticket(spawnable);
             // Set the pre-spawn callback to set the name of the root entity to the name
             // of the spawnable
-            optionalArgs.m_preInsertionCallback = [transform](auto id, auto view)
+            optionalArgs.m_preInsertionCallback = [transform, &spawnStatusCode](auto id, auto view)
             {
                 if (view.empty())
                 {
+                    // Add notify code status
+                    spawnStatusCode |= SpawnStatus::Warning | SpawnStatus::Stopped;
+
                     return;
                 }
                 AZ::Entity* root = *view.begin();
@@ -275,11 +317,14 @@ namespace CsvSpawner::CsvSpawnerUtils
                 transformInterface->SetWorldTM(transform);
             };
             optionalArgs.m_completionCallback =
-                [parentId](
+                [parentId, &spawnStatusCode](
                     [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableConstEntityContainerView view)
             {
                 if (view.empty())
                 {
+                    // Add notify code status
+                    spawnStatusCode |= SpawnStatus::Warning | SpawnStatus::Stopped;
+
                     return;
                 }
                 const AZ::Entity* root = *view.begin();
@@ -289,7 +334,70 @@ namespace CsvSpawner::CsvSpawnerUtils
             spawner->SpawnAllEntities(ticket, optionalArgs);
             tickets[entityConfig.m_id] = AZStd::move(ticket);
         }
+
+        // Check is success spawn
+        tickets.empty() ? spawnStatusCode |= SpawnStatus::Fail : spawnStatusCode |= SpawnStatus::Success;
+        // Call CsvSpawner EBus notification - Finished
+        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
+
         return tickets;
     }
 
+    void SpawnInfo::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            // Reflect SpawnStatus enum
+            serializeContext->Enum<SpawnStatus>()
+                ->Version(0)
+                ->Value("Success", SpawnStatus::Success)
+                ->Value("Fail", SpawnStatus::Fail)
+                ->Value("Stopped", SpawnStatus::Stopped)
+                ->Value("Warning", SpawnStatus::Warning);
+
+            // Reflect SpawnInfo struct
+            serializeContext->Class<SpawnInfo>()
+                ->Version(0)
+                ->Field("EntitiesToSpawn", &SpawnInfo::m_entitiesToSpawn)
+                ->Field("PhysicsSceneName", &SpawnInfo::m_physicsSceneName)
+                ->Field("SpawnerParentEntityId", &SpawnInfo::m_spawnerParentEntityId);
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<SpawnInfo>("Spawn Info", "Information about entities being spawned")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SpawnInfo::m_entitiesToSpawn,
+                        "Entities to Spawn",
+                        "List of entities to be spawned.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SpawnInfo::m_physicsSceneName,
+                        "Physics Scene",
+                        "Name of the physics scene where entities will be spawned.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SpawnInfo::m_spawnerParentEntityId,
+                        "Parent Entity",
+                        "Parent entity ID responsible for spawning.");
+            }
+        }
+
+        if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EnumProperty<static_cast<int>(CsvSpawnerUtils::SpawnStatus::Success)>("SpawnStatus_Success");
+            behaviorContext->EnumProperty<static_cast<int>(CsvSpawnerUtils::SpawnStatus::Fail)>("SpawnStatus_Fail");
+            behaviorContext->EnumProperty<static_cast<int>(CsvSpawnerUtils::SpawnStatus::Stopped)>("SpawnStatus_Stopped");
+            behaviorContext->EnumProperty<static_cast<int>(CsvSpawnerUtils::SpawnStatus::Warning)>("SpawnStatus_Warning");
+
+            behaviorContext->Class<SpawnInfo>("SpawnInfo")
+                ->Constructor()
+                ->Attribute(AZ::Script::Attributes::Category, "CsvSpawner")
+                ->Attribute(AZ::Script::Attributes::Module, "editor")
+                ->Property("m_entitiesToSpawn", BehaviorValueProperty(&SpawnInfo::m_entitiesToSpawn))
+                ->Property("m_physicsSceneName", BehaviorValueProperty(&SpawnInfo::m_physicsSceneName))
+                ->Property("m_spawnerParentEntityId", BehaviorValueProperty(&SpawnInfo::m_spawnerParentEntityId));
+        }
+    }
 } // namespace CsvSpawner::CsvSpawnerUtils

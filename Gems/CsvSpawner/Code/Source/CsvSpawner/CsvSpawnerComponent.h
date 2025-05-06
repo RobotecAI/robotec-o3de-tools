@@ -10,7 +10,8 @@
 
 #pragma once
 
-#include "CsvSpawnerUtils.h"
+#include <CsvSpawner/CsvSpawnerTypeIds.h>
+#include <CsvSpawner/CsvSpawnerUtils.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
