@@ -58,7 +58,7 @@ namespace GeoJSONSpawner
         Result Modify(const AZStd::string& rawJsonString) override;
         Result DeleteAll() override;
         Result DeleteById(const AZStd::unordered_set<int>& idsToDelete) override;
-        GetIdsResult GetIds() const override;
+        [[nodiscard]] GetIdsResult GetIds() const override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides
         void OnTerrainDataCreateEnd() override;
@@ -75,12 +75,15 @@ namespace GeoJSONSpawner
         void FillGroupIdToTicketIdMap();
         void FillGroupIdToTicketIdMap(const AZStd::unordered_set<int>& groupIds);
 
-        unsigned int CountTicketsToSpawn(
+        [[nodiscard]] unsigned int CountTicketsToSpawn(
             const AZStd::unordered_map<int, AZStd::vector<GeoJSONUtils::TicketToSpawnPair>>& ticketsToSpawn) const;
 
         void DespawnAllEntities();
         void DespawnEntitiesById(const GeoJSONUtils::Ids& ids);
         void Despawn(AzFramework::EntitySpawnTicket& ticketToDespawn);
+
+        // Spawn & Despawn
+        void ResetSpawnDespawnStatus(GeoJSONUtils::SpawnDespawnStatus& status, GeoJSONWrappers::SpawnTicketMapWrapper& mapCopy);
 
         AZStd::unordered_map<AZStd::string, GeoJSONUtils::GeoJSONSpawnableAssetConfiguration> m_spawnableAssetConfigurations;
         AZ::u64 m_defaultSeed;
@@ -98,5 +101,12 @@ namespace GeoJSONSpawner
 
         // Terrain notify
         bool m_terrainCreatedOnlyOnce{ false }; //!< Is terrain fully generated once
+
+        // Spawn & Despawn notify
+        GeoJSONUtils::SpawnDespawnStatus m_spawnStatus{ GeoJSONUtils::SpawnDespawnStatus::Success };
+        GeoJSONWrappers::SpawnTicketMapWrapper m_copySpawnTickets;
+
+        GeoJSONUtils::SpawnDespawnStatus m_despawnStatus{ GeoJSONUtils::SpawnDespawnStatus::Success };
+        GeoJSONWrappers::SpawnTicketMapWrapper m_copyDespawnTickets;
     };
 } // namespace GeoJSONSpawner

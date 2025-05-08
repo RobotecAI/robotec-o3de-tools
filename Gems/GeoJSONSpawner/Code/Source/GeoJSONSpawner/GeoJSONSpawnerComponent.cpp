@@ -10,6 +10,8 @@
 
 #include "GeoJSONSpawnerComponent.h"
 
+#include "Wrappers/SpawnTicketMapWrapper.h"
+
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -58,14 +60,35 @@ namespace GeoJSONSpawner
         GeoJSONUtils::GeoJSONSpawnableAssetConfiguration::Reflect(context);
         GeoJSONUtils::GeoJSONSpawnableEntityInfo::Reflect(context);
         GeoJSONUtils::FeatureObjectInfo::Reflect(context);
+        GeoJSONWrappers::SpawnTicketMapWrapper::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext->Enum<GeoJSONUtils::SpawnDespawnStatus>()
+                ->Version(0)
+                ->Value("Success", GeoJSONUtils::SpawnDespawnStatus::Success)
+                ->Value("Fail", GeoJSONUtils::SpawnDespawnStatus::Fail)
+                ->Value("Stopped", GeoJSONUtils::SpawnDespawnStatus::Stopped)
+                ->Value("Warning", GeoJSONUtils::SpawnDespawnStatus::Warning)
+                ->Value("Invalid", GeoJSONUtils::SpawnDespawnStatus::Invalid);
+
             serializeContext->Class<GeoJSONSpawnerComponent, AZ::Component>()
                 ->Version(0)
                 ->Field("SpawnableAssetConfigurations", &GeoJSONSpawnerComponent::m_spawnableAssetConfigurations)
                 ->Field("GeoJsonFilePath", &GeoJSONSpawnerComponent::m_geoJsonFilePath)
                 ->Field("DefaultSeed", &GeoJSONSpawnerComponent::m_defaultSeed);
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnDespawnStatus::Success)>("SpawnStatus_Success");
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnDespawnStatus::Fail)>("SpawnStatus_Fail");
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnDespawnStatus::Stopped)>("SpawnStatus_Stopped");
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnDespawnStatus::Warning)>("SpawnStatus_Warning");
+            behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnDespawnStatus::Invalid)>("SpawnStatus_Invalid");
+
+            behaviorContext->EBus<GeoJSONSpawner::GeoJSONSpawnerNotificationBus>("GeoJSONSpawnerNotificationBus")
+                ->Handler<GeoJSONSpawner::GeoJSONSpawnerNotificationBusHandler>();
         }
     }
 
@@ -81,6 +104,9 @@ namespace GeoJSONSpawner
         {
             if (m_ticketsToDespawn == 0)
             {
+                // Call GeoJSONSpawner EBus notification - Despawn Finished
+                GeoJSONSpawnerNotificationBus::Broadcast(
+                    &GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_copyDespawnTickets, m_despawnStatus);
                 m_spawnerState = SpawnerState::Idle;
             }
         }
@@ -94,6 +120,9 @@ namespace GeoJSONSpawner
             }
             if (m_ticketsToSpawn == 0)
             {
+                // Call GeoJSONSpawner EBus notification - Spawn Finished
+                GeoJSONSpawnerNotificationBus::Broadcast(
+                    &GeoJSONSpawnerInterface::OnEntitiesSpawnFinished, m_copySpawnTickets, m_spawnStatus);
                 m_spawnerState = SpawnerState::Idle;
             }
         }
@@ -114,6 +143,10 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerComponent::SpawnEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& featureObjectsToSpawn)
     {
+        // Call GeoJSONSpawner EBus notification - Begin
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
+        ResetSpawnDespawnStatus(m_spawnStatus, m_copySpawnTickets);
+
         m_spawnableEntityInfo =
             GeoJSONUtils::GetSpawnableEntitiesFromFeatureObjectVector(featureObjectsToSpawn, m_spawnableAssetConfigurations);
         auto preparedTickets = GeoJSONUtils::PrepareTicketsToSpawn(
@@ -130,10 +163,22 @@ namespace GeoJSONSpawner
         m_ticketsToSpawn = CountTicketsToSpawn(preparedTickets);
 
         m_spawnableTickets = GeoJSONUtils::SpawnEntities(preparedTickets);
+
+        if (m_spawnableTickets.empty())
+        {
+            m_spawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning | GeoJSONUtils::SpawnDespawnStatus::Invalid;
+        }
+
+        // Copy Spawn Tickets for notification bus
+        m_copySpawnTickets.SetMap(m_spawnableTickets);
     }
 
     void GeoJSONSpawnerComponent::SpawnCachedEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& cachedObjectsToSpawn)
     {
+        // Call GeoJSONSpawner EBus notification - Begin
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
+        ResetSpawnDespawnStatus(m_spawnStatus, m_copySpawnTickets);
+
         auto entityInfos = GeoJSONUtils::GetSpawnableEntitiesFromFeatureObjectVector(cachedObjectsToSpawn, m_spawnableAssetConfigurations);
 
         auto preparedTickets = GeoJSONUtils::PrepareTicketsToSpawn(
@@ -155,12 +200,17 @@ namespace GeoJSONSpawner
         {
             m_spawnableTickets[pair.first] = AZStd::move(pair.second);
         }
+
+        // Copy Spawn Tickets for notification bus
+        m_copySpawnTickets.SetMap(m_spawnableTickets);
     }
 
     Result GeoJSONSpawnerComponent::SpawnWithRawString(const AZStd::string& rawJsonString)
     {
         if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
+            m_spawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Fail | GeoJSONUtils::SpawnDespawnStatus::Invalid |
+                GeoJSONUtils::SpawnDespawnStatus::Stopped;
             return AZ::Failure(AZStd::string("Spawner is handling previous request. Action aborted."));
         }
 
@@ -344,6 +394,13 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerComponent::Despawn(AzFramework::EntitySpawnTicket& ticketToDespawn)
     {
+        if (!ticketToDespawn.IsValid())
+        {
+            m_despawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning | GeoJSONUtils::SpawnDespawnStatus::Invalid |
+                GeoJSONUtils::SpawnDespawnStatus::Stopped | GeoJSONUtils::SpawnDespawnStatus::Fail;
+            return;
+        }
+
         GeoJSONUtils::DespawnEntity(
             ticketToDespawn,
             [this](auto id)
@@ -365,6 +422,13 @@ namespace GeoJSONSpawner
 
     void GeoJSONSpawnerComponent::DespawnAllEntities()
     {
+        // Call GeoJSONSpawner EBus notification - Despawn Begin
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+        ResetSpawnDespawnStatus(m_despawnStatus, m_copyDespawnTickets);
+
+        // Copy Spawn Tickets for notification bus
+        m_copyDespawnTickets.SetMap(m_spawnableTickets);
+
         FillGroupIdToTicketIdMap();
 
         for (auto& pair : m_spawnableTickets)
@@ -374,26 +438,55 @@ namespace GeoJSONSpawner
                 Despawn(ticket);
             }
         }
+
+        // Notify - must be 0 after despawn
+        if (m_ticketsToDespawn > 0)
+        {
+            m_despawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning | GeoJSONUtils::SpawnDespawnStatus::Invalid;
+        }
     }
 
     void GeoJSONSpawnerComponent::DespawnEntitiesById(const GeoJSONUtils::Ids& ids)
     {
+        // Call GeoJSONSpawner EBus notification - Despawn Begin
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+        ResetSpawnDespawnStatus(m_despawnStatus, m_copyDespawnTickets);
+
         FillGroupIdToTicketIdMap(ids);
 
         for (const auto idToDespawn : ids)
         {
-            if (auto it = m_spawnableTickets.find(idToDespawn); it == m_spawnableTickets.end())
+            auto it = m_spawnableTickets.find(idToDespawn);
+            if (it == m_spawnableTickets.end())
             {
                 AZ_Error(
                     "GeoJSONSpawnerComponent", false, "Cannot delete entities. Entities group with ID: %d does not exist.", idToDespawn);
+
+                m_despawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning;
                 continue;
             }
+
+            // Copy Spawn Tickets for notification bus
+            m_copyDespawnTickets.SetValues(idToDespawn, it->second);
 
             for (auto& ticket : m_spawnableTickets[idToDespawn])
             {
                 Despawn(ticket);
             }
         }
+
+        // Notify - Copied tickets cannot be empty
+        if (m_copyDespawnTickets.GetMap().empty())
+        {
+            m_despawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Invalid | GeoJSONUtils::SpawnDespawnStatus::Fail;
+        }
+    }
+
+    void GeoJSONSpawnerComponent::ResetSpawnDespawnStatus(
+        GeoJSONUtils::SpawnDespawnStatus& status, GeoJSONWrappers::SpawnTicketMapWrapper& mapCopy)
+    {
+        status = m_spawnableTickets.empty() ? GeoJSONUtils::SpawnDespawnStatus::Fail : GeoJSONUtils::SpawnDespawnStatus::Success;
+        mapCopy.Clear();
     }
 
 } // namespace GeoJSONSpawner

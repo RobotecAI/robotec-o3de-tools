@@ -9,6 +9,7 @@
  */
 
 #include "GeoJSONSpawnerUtils.h"
+#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
 #include "Schemas/GeoJSONSchema.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
@@ -94,7 +95,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain,
                         "Place on terrain",
-                        "Performscene query raytrace to place spawnable on terrain.")
+                        "Perform scene query raytrace to place spawnable on terrain.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_raytraceStartingHeight,
@@ -273,6 +274,9 @@ namespace GeoJSONSpawner::GeoJSONUtils
             {
                 spawner->SpawnAllEntities(ticketToSpawn.first, ticketToSpawn.second);
                 groupIdToTicketsMap.at(groupIdToSpawn.first).emplace_back(AZStd::move(ticketToSpawn.first));
+
+                // Call GeoJSONSpawner EBus notification - Spawn
+                GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitySpawn, ticketToSpawn.first);
             }
         }
 
@@ -289,6 +293,9 @@ namespace GeoJSONSpawner::GeoJSONUtils
             callback(id);
         };
         spawner->DespawnAllEntities(ticket, optionalArgs);
+
+        // Call GeoJSONSpawner EBus notification - Despawn
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntityDespawn, ticket);
     }
 
     AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
@@ -573,4 +580,5 @@ namespace GeoJSONSpawner::GeoJSONUtils
     {
         return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
     }
+
 } // namespace GeoJSONSpawner::GeoJSONUtils
