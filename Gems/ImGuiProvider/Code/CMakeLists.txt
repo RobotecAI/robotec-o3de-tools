@@ -30,7 +30,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
-           Gem::Atom_Feature_Common.Static
+           Gem::Atom_Feature_Common.Public
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -51,7 +51,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
 )
 
 
@@ -138,7 +138,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 ${gem_name}.Private.Object
-                Gem::Atom_Feature_Common.Static
+                Gem::Atom_Feature_Common.Public
     )
 
     ly_add_target(

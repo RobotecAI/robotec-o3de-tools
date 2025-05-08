@@ -62,7 +62,7 @@ namespace Pointcloud
             PointcloudHandle m_index = 0;
             AZ::Data::Asset<AZ::RPI::BufferAsset> m_cloudVertexBufferAsset;
             AZ::Data::Instance<AZ::RPI::Buffer> m_cloudVertexBuffer = nullptr;
-
+            AZ::RHI::GeometryView m_geometryView;
             AZStd::array<AZ::RHI::StreamBufferView, 1> m_meshStreamBufferViews;
             AZStd::vector<PointcloudAsset::CloudVertex> m_pointData;
             uint32_t m_vertices = 0;
@@ -92,6 +92,7 @@ namespace Pointcloud
             const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw>& pipelineState,
             const AZ::RHI::DrawListTag& drawListTag,
             const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
+            AZ::RHI::GeometryView& geometryView,
             uint32_t vertexCount);
 
         AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw> m_meshPipelineState;
