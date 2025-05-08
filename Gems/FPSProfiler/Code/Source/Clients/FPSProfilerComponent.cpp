@@ -1,0 +1,568 @@
+#include "FPSProfilerComponent.h"
+
+#include <Atom/RHI/Device.h>
+#include <Atom/RHI/MemoryStatisticsBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/numeric.h>
+
+namespace FPSProfiler
+{
+    void FPSProfilerComponent::Reflect(AZ::ReflectContext* context)
+    {
+        Configs::FileSaveSettings::Reflect(context);
+        Configs::RecordSettings::Reflect(context);
+        Configs::PrecisionSettings::Reflect(context);
+        Configs::DebugSettings::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<FPSProfilerComponent, AZ::Component>()
+                ->Version(0)
+                ->Field("m_configFile", &FPSProfilerComponent::m_configFile)
+                ->Field("m_configRecord", &FPSProfilerComponent::m_configRecord)
+                ->Field("m_configPrecision", &FPSProfilerComponent::m_configPrecision)
+                ->Field("m_configDebug", &FPSProfilerComponent::m_configDebug);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<FPSProfilerComponent>("FPS Profiler", "Tracks FPS, GPU and CPU performance and saves it into .csv")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Performance")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Level"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerComponent::m_configFile)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerComponent::m_configRecord)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerComponent::m_configPrecision)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &FPSProfilerComponent::m_configDebug);
+            }
+        }
+
+        // EBus Reflect for Lua and Script Canvas
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            // Request Bus - Calls made to FPS Profiler
+            behaviorContext->EBus<FPSProfilerRequestBus>("FPSProfilerRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "FPS Profiler")
+                ->Attribute(AZ::Script::Attributes::Module, "FPSProfiler")
+                ->Event("StartProfiling", &FPSProfilerRequests::StartProfiling)
+                ->Event("StopProfiling", &FPSProfilerRequests::StopProfiling)
+                ->Event("ResetProfilingData", &FPSProfilerRequests::ResetProfilingData)
+                ->Event("IsProfiling", &FPSProfilerRequests::IsProfiling)
+                ->Event("IsAnySaveOptionEnabled", &FPSProfilerRequests::IsAnySaveOptionEnabled)
+                ->Event("ChangeSavePath", &FPSProfilerRequests::ChangeSavePath)
+                ->Event("SafeChangeSavePath", &FPSProfilerRequests::SafeChangeSavePath)
+                ->Event("GetMinFps", &FPSProfilerRequests::GetMinFps)
+                ->Event("GetMaxFps", &FPSProfilerRequests::GetMaxFps)
+                ->Event("GetAvgFps", &FPSProfilerRequests::GetAvgFps)
+                ->Event("GetCurrentFps", &FPSProfilerRequests::GetCurrentFps)
+                ->Event("GetCpuMemoryUsed", &FPSProfilerRequests::GetCpuMemoryUsed)
+                ->Event("GetGpuMemoryUsed", &FPSProfilerRequests::GetGpuMemoryUsed)
+                ->Event("SaveLogToFile", &FPSProfilerRequests::SaveLogToFile)
+                ->Event("SaveLogToFileWithNewPath", &FPSProfilerRequests::SaveLogToFileWithNewPath)
+                ->Event("ShowFpsOnScreen", &FPSProfilerRequests::ShowFpsOnScreen);
+
+            behaviorContext->EBus<FPSProfilerNotificationBus>("FPSProfilerNotificationBus")
+                ->Handler<FPSProfilerNotificationBusHandler>()
+                ->Event("OnFileCreated", &FPSProfilerNotifications::OnFileCreated)
+                ->Event("OnFileUpdate", &FPSProfilerNotifications::OnFileUpdate)
+                ->Event("OnFileSaved", &FPSProfilerNotifications::OnFileSaved)
+                ->Event("OnProfileStart", &FPSProfilerNotifications::OnProfileStart)
+                ->Event("OnProfileReset", &FPSProfilerNotifications::OnProfileReset)
+                ->Event("OnProfileStop", &FPSProfilerNotifications::OnProfileStop);
+        }
+    }
+
+    void FPSProfilerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC_CE("FPSProfilerService"));
+    }
+
+    void FPSProfilerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("FPSProfilerService"));
+    }
+
+    FPSProfilerComponent::FPSProfilerComponent()
+    {
+        if (!FPSProfilerInterface::Get())
+        {
+            FPSProfilerInterface::Register(this);
+        }
+    }
+
+    FPSProfilerComponent::FPSProfilerComponent(
+        const Configs::FileSaveSettings& configF,
+        const Configs::RecordSettings& configS,
+        const Configs::PrecisionSettings& configP,
+        const Configs::DebugSettings& configD)
+        : m_configFile(AZStd::move(configF))
+        , m_configRecord(AZStd::move(configS))
+        , m_configPrecision(AZStd::move(configP))
+        , m_configDebug(AZStd::move(configD))
+    {
+        if (!FPSProfilerInterface::Get())
+        {
+            FPSProfilerInterface::Register(this);
+        }
+    }
+
+    FPSProfilerComponent::~FPSProfilerComponent()
+    {
+        if (FPSProfilerInterface::Get() == this)
+        {
+            FPSProfilerInterface::Unregister(this);
+        }
+    }
+
+    void FPSProfilerComponent::Activate()
+    {
+        auto pathValidationOutcome = IsPathValid(m_configFile.m_OutputFilename);
+        if (!pathValidationOutcome.IsSuccess())
+        {
+            m_configFile.m_OutputFilename = "@user@/fps_log.csv";
+            AZ_Warning("FPSProfilerComponent::Activate", !m_configDebug.m_PrintDebugInfo, pathValidationOutcome.GetError().c_str());
+        }
+
+        // Reserve log entries buffer size based on known auto save per frame
+        m_configFile.m_AutoSave ? m_logBuffer.reserve(MAX_LOG_BUFFER_LINE_SIZE * m_configFile.m_AutoSaveAtFrame * 2)
+                                : m_logBuffer.reserve(MAX_LOG_BUFFER_SIZE);
+
+        FPSProfilerRequestBus::Handler::BusConnect(); // connect first to broadcast notifications
+        AZ::TickBus::Handler::BusConnect(); // connect last, after setup
+
+        if (m_configRecord.m_recordType != Configs::RecordType::Await)
+        {
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    StartProfiling();
+                });
+        }
+
+        AZ_Printf("FPS Profiler", "FPSProfiler activated.");
+    }
+
+    void FPSProfilerComponent::Deactivate()
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+
+        if (!m_configFile.m_AutoSave || m_configRecord.m_framesToRecord == 0 || m_logBuffer.size() < m_configFile.m_AutoSaveAtFrame)
+        {
+            WriteDataToFile();
+        }
+
+        // Notify - File Saved
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileSaved, m_configFile);
+        FPSProfilerRequestBus::Handler::BusDisconnect();
+    }
+
+    void FPSProfilerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        if (!m_isProfiling)
+        {
+            return;
+        }
+
+        // Update FPS data
+        CalculateFpsData(deltaTime);
+
+        if (m_configDebug.m_ShowFps)
+        {
+            ShowFps();
+        }
+
+        if (m_configRecord.m_recordType == Configs::RecordType::FramePick && m_frameCount <= m_configRecord.m_framesToSkip)
+        {
+            // Wait for selected frame
+            return;
+        }
+
+        if (m_configRecord.m_framesToRecord != 0 && m_configRecord.m_framesToRecord == m_recordedFrameCount++)
+        {
+            StopProfiling();
+        }
+
+        if (!IsAnySaveOptionEnabled())
+        {
+            return;
+        }
+
+        // Initialize log entry buffer
+        char logEntry[MAX_LOG_BUFFER_LINE_SIZE];
+        int logEntryLength = 0;
+
+        // Initialize statistics data
+        float usedCpu = -1.0f, reservedCpu = -1.0f;
+        float usedGpu = -1.0f, reservedGpu = -1.0f;
+        const char* logEntryFormat = "-1,-1.0,-1.0,-1.0,-1.0,-1.0,%.2f,%.2f,%.2f,%.2f\n";
+
+        if (m_configRecord.m_RecordStats & Configs::RecordStatistics::CPU)
+        {
+            auto [cpuUsed, cpuReserved] = GetCpuMemoryUsed();
+            usedCpu = BytesToMB(cpuUsed);
+            reservedCpu = BytesToMB(cpuReserved);
+        }
+
+        if (m_configRecord.m_RecordStats & Configs::RecordStatistics::GPU)
+        {
+            auto [gpuUsed, gpuReserved] = GetGpuMemoryUsed();
+            usedGpu = BytesToMB(gpuUsed);
+            reservedGpu = BytesToMB(gpuReserved);
+        }
+
+        if (m_configRecord.m_RecordStats & Configs::RecordStatistics::FPS)
+        {
+            logEntryFormat = "%d,%.4f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n";
+        }
+
+        // Add log entry
+        logEntryLength = azsnprintf(
+            logEntry,
+            MAX_LOG_BUFFER_LINE_SIZE,
+            logEntryFormat,
+            m_frameCount,
+            deltaTime,
+            m_currentFps,
+            m_minFps,
+            m_maxFps,
+            m_avgFps,
+            usedCpu,
+            reservedCpu,
+            usedGpu,
+            reservedGpu);
+        m_logBuffer.insert(m_logBuffer.end(), logEntry, logEntry + logEntryLength);
+
+        // Auto save
+        if (m_configFile.m_AutoSave && (m_frameCount % m_configFile.m_AutoSaveAtFrame == 0))
+        {
+            WriteDataToFile();
+        }
+    }
+
+    int FPSProfilerComponent::GetTickOrder()
+    {
+        return AZ::TICK_GAME;
+    }
+
+    void FPSProfilerComponent::StartProfiling()
+    {
+        if (m_isProfiling)
+        {
+            AZ_Warning("FPS Profiler", !m_configDebug.m_PrintDebugInfo, "Profiler already activated.");
+            return;
+        }
+
+        m_isProfiling = true;
+        ResetProfilingData();
+        CreateLogFile();
+
+        // Connect TickBus only if not already connected
+        if (!AZ::TickBus::Handler::BusIsConnected())
+        {
+            AZ::TickBus::Handler::BusConnect();
+        }
+
+        // Notify - Profile Started
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileStart, m_configRecord, m_configPrecision, m_configDebug);
+        AZ_Printf("FPS Profiler", "Profiling started.");
+    }
+
+    void FPSProfilerComponent::StopProfiling()
+    {
+        if (!m_isProfiling)
+        {
+            AZ_Warning("FPS Profiler", !m_configDebug.m_PrintDebugInfo, "Profiler already stopped.");
+            return;
+        }
+
+        m_isProfiling = false;
+
+        // Disconnect TickBus only if actually connected
+        if (AZ::TickBus::Handler::BusIsConnected())
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+        }
+        SaveLogToFile();
+
+        // Notify - Profile Stopped
+        FPSProfilerNotificationBus::Broadcast(
+            &FPSProfilerNotifications::OnProfileStop, m_configFile, m_configRecord, m_configPrecision, m_configDebug);
+        AZ_Printf("FPS Profiler", "Profiling stopped.");
+    }
+
+    void FPSProfilerComponent::ResetProfilingData()
+    {
+        m_minFps = AZ::Constants::FloatMax; // Start at max to ensure the first valid FPS sets the minimum correctly in AZStd::min
+        m_maxFps = 0.0f;
+        m_avgFps = 0.0f;
+        m_currentFps = 0.0f;
+        m_totalFrameTime = 0.0f;
+        m_frameCount = 0;
+        m_recordedFrameCount = 0;
+        m_fpsSamples.clear();
+        m_logBuffer.clear();
+
+        // Notify - Profile Reset
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnProfileReset, m_configRecord, m_configPrecision);
+        AZ_Printf("FPS Profiler", "Profiling data reseted.");
+    }
+
+    bool FPSProfilerComponent::IsProfiling() const
+    {
+        return m_isProfiling;
+    }
+
+    bool FPSProfilerComponent::IsAnySaveOptionEnabled() const
+    {
+        return m_configRecord.m_RecordStats != Configs::RecordStatistics::None;
+    }
+
+    void FPSProfilerComponent::ChangeSavePath(const AZ::IO::Path& newSavePath)
+    {
+        auto pathValidationOutcome = IsPathValid(newSavePath);
+        if (!pathValidationOutcome.IsSuccess())
+        {
+            AZ_Warning("FPSProfilerComponent::ChangeSavePath", !m_configDebug.m_PrintDebugInfo, pathValidationOutcome.GetError().c_str());
+            return;
+        }
+
+        m_configFile.m_OutputFilename = newSavePath;
+        AZ_Warning("FPS Profiler", !m_configDebug.m_PrintDebugInfo && !m_isProfiling, "Path changed during activated profiling.");
+    }
+
+    void FPSProfilerComponent::SafeChangeSavePath(const AZ::IO::Path& newSavePath)
+    {
+        // If profiling is enabled, save current opened file and stop profiling.
+        StopProfiling();
+        ChangeSavePath(newSavePath);
+    }
+
+    float FPSProfilerComponent::GetMinFps() const
+    {
+        return m_minFps;
+    }
+
+    float FPSProfilerComponent::GetMaxFps() const
+    {
+        return m_maxFps;
+    }
+
+    float FPSProfilerComponent::GetAvgFps() const
+    {
+        return m_avgFps;
+    }
+
+    float FPSProfilerComponent::GetCurrentFps() const
+    {
+        return m_currentFps;
+    }
+
+    AZStd::pair<AZStd::size_t, AZStd::size_t> FPSProfilerComponent::GetCpuMemoryUsed() const
+    {
+        AZStd::size_t usedBytes = 0;
+        AZStd::size_t reservedBytes = 0;
+
+        AZ::AllocatorManager::Instance().GetAllocatorStats(usedBytes, reservedBytes);
+        return { usedBytes, reservedBytes };
+    }
+
+    AZStd::pair<AZStd::size_t, AZStd::size_t> FPSProfilerComponent::GetGpuMemoryUsed() const
+    {
+        if (AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get())
+        {
+            if (AZ::RHI::Device* device = rhiSystem->GetDevice())
+            {
+                AZ::RHI::MemoryStatistics memoryStats;
+                device->CompileMemoryStatistics(memoryStats, AZ::RHI::MemoryStatisticsReportFlags::Basic);
+
+                return { memoryStats.m_heaps.front().m_memoryUsage.m_totalResidentInBytes,
+                         memoryStats.m_heaps.front().m_memoryUsage.m_budgetInBytes };
+            }
+        }
+
+        return { 0, 0 };
+    }
+
+    void FPSProfilerComponent::SaveLogToFile()
+    {
+        WriteDataToFile();
+    }
+
+    void FPSProfilerComponent::SaveLogToFileWithNewPath(const AZ::IO::Path& newSavePath, bool useSafeChangePath)
+    {
+        if (useSafeChangePath)
+        {
+            SafeChangeSavePath(newSavePath);
+        }
+        else
+        {
+            ChangeSavePath(newSavePath);
+        }
+
+        WriteDataToFile();
+    }
+
+    void FPSProfilerComponent::ShowFpsOnScreen(bool enable)
+    {
+        m_configDebug.m_ShowFps = enable;
+    }
+
+    void FPSProfilerComponent::CalculateFpsData(const float& deltaTime)
+    {
+        m_currentFps = deltaTime > 0 ? (1.0f / deltaTime) : 0.0f;
+        m_totalFrameTime += deltaTime;
+        m_frameCount++;
+
+        // Latest fps history for avg fps calculation
+        m_fpsSamples.push_back(m_currentFps);
+        if (!m_configFile.m_AutoSave && !m_configPrecision.m_keepHistory && m_fpsSamples.size() > m_configFile.m_AutoSaveAtFrame)
+        {
+            m_fpsSamples.pop_front();
+        }
+
+        if (m_configPrecision.m_avgFpsType == Configs::MovingAverageType::Simple)
+        {
+            m_avgFps = AZStd::accumulate(m_fpsSamples.begin(), m_fpsSamples.end(), 0.0f) / static_cast<float>(m_fpsSamples.size());
+        }
+        else
+        {
+            const float alpha = m_configPrecision.m_smoothingFactor / (m_configFile.m_AutoSaveAtFrame + 1); // Smoothing factor
+            // Compute EMA
+            if (m_fpsSamples.size() == 1)
+            {
+                // Initialize EMA with the first FPS value
+                m_avgFps = m_currentFps;
+            }
+            else
+            {
+                // Apply EMA formula
+                m_avgFps = (alpha * m_currentFps) + ((1.0f - alpha) * m_avgFps);
+            }
+        }
+
+        // Using m_NearZeroPrecision, since m_currentFPS cannot be equal to 0 if delta time is valid.
+        if (m_currentFps >= m_configPrecision.m_NearZeroPrecision)
+        {
+            m_minFps = AZStd::min(m_minFps, m_currentFps);
+        }
+
+        m_maxFps = AZStd::max(m_maxFps, m_currentFps);
+    }
+
+    void FPSProfilerComponent::CreateLogFile()
+    {
+        if (!IsAnySaveOptionEnabled())
+        {
+            AZ_Warning("FPSProfiler", !m_configDebug.m_PrintDebugInfo, "None save option selected. Skipping file creation.");
+            return;
+        }
+
+        auto pathValidationOutcome = IsPathValid(m_configFile.m_OutputFilename);
+        if (!pathValidationOutcome.IsSuccess())
+        {
+            m_configFile.m_OutputFilename = "@user@/fps_log.csv";
+            AZ_Warning("FPSProfilerComponent::CreateLogFile", !m_configDebug.m_PrintDebugInfo, pathValidationOutcome.GetError().c_str());
+        }
+
+        // Apply Timestamp
+        if (m_configFile.m_SaveWithTimestamp)
+        {
+            auto now = AZStd::chrono::system_clock::now();
+            std::time_t now_time_t = AZStd::chrono::system_clock::to_time_t(now);
+
+            std::tm timeInfo{};
+            localtime_r(&now_time_t, &timeInfo);
+
+            // Format the timestamp as YYYYMMDD_HHMMSS
+            char timestamp[20];
+            strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", &timeInfo);
+
+            m_configFile.m_OutputFilename.ReplaceFilename(
+                (m_configFile.m_OutputFilename.Stem().String() + "_" + timestamp + m_configFile.m_OutputFilename.Extension().String())
+                    .data());
+        }
+
+        // Write profiling headers to file
+        AZ::IO::FileIOStream file(m_configFile.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
+        AZStd::string csvHeader =
+            "Frame,FrameTime,CurrentFPS,MinFPS,MaxFPS,AvgFPS,CpuMemoryUsed,CpuMemoryReserved,GpuMemoryUsed,GpuMemoryReserved\n";
+        file.Write(csvHeader.size(), csvHeader.c_str());
+        file.Close();
+
+        // Notify - File Created
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileCreated, m_configFile);
+    }
+
+    void FPSProfilerComponent::WriteDataToFile()
+    {
+        if (m_logBuffer.empty())
+        {
+            return;
+        }
+
+        if (!IsAnySaveOptionEnabled())
+        {
+            return;
+        }
+
+        AZ::IO::HandleType file;
+        if (AZ::IO::FileIOBase::GetInstance()->Open(m_configFile.m_OutputFilename.c_str(), AZ::IO::OpenMode::ModeAppend, file))
+        {
+            AZ::IO::FileIOBase::GetInstance()->Write(file, m_logBuffer.data(), m_logBuffer.size());
+            AZ::IO::FileIOBase::GetInstance()->Close(file);
+        }
+        m_logBuffer.clear();
+
+        // Notify - File Update
+        FPSProfilerNotificationBus::Broadcast(&FPSProfilerNotifications::OnFileUpdate, m_configFile);
+    }
+
+    float FPSProfilerComponent::BytesToMB(AZStd::size_t bytes)
+    {
+        return static_cast<float>(bytes) / (1024.0f * 1024.0f);
+    }
+
+    AZ::Outcome<bool, AZStd::string> FPSProfilerComponent::IsPathValid(const AZ::IO::Path& path) const
+    {
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+
+        if (!fileIO)
+            return AZ::Failure("Could not get a FileIO object. Try again.");
+
+        if (!fileIO->ResolvePath(path))
+            return AZ::Failure("Cannot resolve the path.");
+
+        if (path.empty())
+            return AZ::Failure("Path cannot be empty.");
+
+        if (!path.HasFilename())
+            return AZ::Failure("Path must have a file at the end.");
+
+        if (!path.HasExtension() || path.Extension() != ".csv")
+            return AZ::Failure("Path must have a *.csv extension.");
+
+        return AZ::Success(true);
+    }
+
+    void FPSProfilerComponent::ShowFps() const
+    {
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+        AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
+        if (!debugDisplay)
+        {
+            return;
+        }
+
+        debugDisplay->SetColor(AZ::Colors::Red);
+        debugDisplay->SetAlpha(1.0f);
+
+        AZStd::string debugText = AZStd::string::format("FPS: %.2f", m_currentFps);
+        debugDisplay->Draw2dTextLabel(100, 50, 1.0f, debugText.c_str(), true);
+    }
+} // namespace FPSProfiler
