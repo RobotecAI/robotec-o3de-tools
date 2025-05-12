@@ -18,10 +18,10 @@
     ""
   ],
   "icon_path": "preview.png",
-  "requirements": "Requires ROS2 Gem",
+  "requirements": "Requires LevelGeoreferencing Gem",
   "documentation_url": "",
   "dependencies": [
-    "ROS2"
+    "LevelGeoreferencing"
   ],
   "repo_uri": "",
   "compatible_engines": [],
