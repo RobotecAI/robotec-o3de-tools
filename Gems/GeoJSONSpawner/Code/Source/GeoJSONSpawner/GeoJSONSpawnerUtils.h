@@ -195,6 +195,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         Invalid = 1 << 3, ///< Something went wrong while spawning / despawning.
 
     };
+    AZ_TYPE_INFO_SPECIALIZE(GeoJSONSpawner::GeoJSONUtils::SpawnDespawnStatus, "{1E22A24E-8365-4CC7-8B99-CC0EF0B25B13}");
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnDespawnStatus);
     AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(SpawnDespawnStatus);
 
