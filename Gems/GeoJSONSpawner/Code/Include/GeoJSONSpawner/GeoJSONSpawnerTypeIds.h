@@ -42,4 +42,7 @@ namespace GeoJSONSpawner
     inline constexpr const char* GeoJSONSpawnerRequestsTypeId = "{EE523E9E-CFDF-4590-BBDE-054848BBA790}";
     inline constexpr const char* GeoJSONSpawnerInterfaceTypeId = "{4770B38A-D018-4184-A672-3F9155B7BEE7}";
     inline constexpr const char* GeoJSONSpawnerNotificationBusHandlerTypeId = "{9D8C5E99-7151-4AA4-9B5F-2D8AE2F097F7}";
+
+    // Enums
+    inline constexpr const char* SpawnDespawnStatusTypeId = "{1E22A24E-8365-4CC7-8B99-CC0EF0B25B13}";
 } // namespace GeoJSONSpawner
