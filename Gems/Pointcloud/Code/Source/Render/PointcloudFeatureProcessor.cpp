@@ -99,7 +99,7 @@ namespace Pointcloud
         else
         {
             AZ::RPI::CommonBufferDescriptor desc;
-            desc.m_poolType = AZ::RPI::CommonBufferPoolType::ReadWrite;
+            desc.m_poolType = AZ::RPI::CommonBufferPoolType::DynamicInputAssembly;
             desc.m_bufferName = AZStd::string::format("PointcloudFeatureProcessor, %d", pcData.m_index);
             desc.m_byteCount = bufferSize;
             desc.m_elementSize = elementSize;
@@ -158,7 +158,12 @@ namespace Pointcloud
             if (m_meshPipelineState && pcData.m_drawSrg && pcData.m_meshStreamBufferViews.front().GetByteCount() != 0)
             {
                 pcData.m_drawPacket = BuildDrawPacket(
-                    pcData.m_drawSrg, m_meshPipelineState, m_drawListTag, pcData.m_meshStreamBufferViews, pcData.m_vertices);
+                    pcData.m_drawSrg,
+                    m_meshPipelineState,
+                    m_drawListTag,
+                    pcData.m_meshStreamBufferViews,
+                    pcData.m_geometryView,
+                    pcData.m_vertices);
             }
         }
     }
@@ -236,23 +241,33 @@ namespace Pointcloud
         const AZ::RPI::Ptr<AZ::RPI::PipelineStateForDraw>& pipelineState,
         const AZ::RHI::DrawListTag& drawListTag,
         const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
+        AZ::RHI::GeometryView& geometryView,
         uint32_t vertexCount)
     {
+        geometryView.Reset();
         AZ::RHI::DrawLinear drawLinear;
         drawLinear.m_vertexCount = vertexCount;
         drawLinear.m_vertexOffset = 0;
-        drawLinear.m_instanceCount = 1;
-        drawLinear.m_instanceOffset = 0;
+        AZ::RHI::DrawInstanceArguments drawInstanceArgs;
+        drawInstanceArgs.m_instanceCount = 1;
+        drawInstanceArgs.m_instanceOffset = 0;
+        geometryView.SetDrawArguments(drawLinear);
 
-        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+        for (size_t i = 0; i < streamBufferViews.size(); ++i)
+        {
+            geometryView.AddStreamBufferView(streamBufferViews[i]);
+        }
+        AZ::RHI::DrawPacketBuilder drawPacketBuilder{ AZ::RHI::MultiDevice::AllDevices };
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(drawLinear);
+        drawPacketBuilder.SetGeometryView(&geometryView);
+        drawPacketBuilder.SetDrawInstanceArguments(drawInstanceArgs);
         drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
 
         AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = drawListTag;
         drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
-        drawRequest.m_streamBufferViews = streamBufferViews;
+        drawRequest.m_streamIndices = geometryView.GetFullStreamBufferIndices();
+
         drawPacketBuilder.AddDrawItem(drawRequest);
         return drawPacketBuilder.End();
     }
@@ -367,6 +382,7 @@ namespace Pointcloud
         }
         return AZStd::nullopt;
     }
+
     void PointcloudFeatureProcessor::ConnectChangeEventHandler(
         const PointcloudHandle& pointcloudHandle, PointcloudChangedEvent::Handler& handler)
     {
