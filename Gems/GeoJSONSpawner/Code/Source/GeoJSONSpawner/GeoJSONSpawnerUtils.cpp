@@ -22,7 +22,7 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <ROS2/Georeference/GeoreferenceBus.h>
+#include <Georeferencing/GeoreferenceBus.h>
 #include <random>
 #include <rapidjson/schema.h>
 
@@ -314,7 +314,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         const AZStd::vector<FeatureObjectInfo>& featureObjects,
         const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations)
     {
-        if (!ROS2::GeoreferenceRequestsBus::HasHandlers())
+        if (!Georeferencing::GeoreferenceRequestsBus::HasHandlers())
         {
             AZ_Error("GeoJSONSpawnerUtils", false, "Cannot convert WGS84 coordinates - Level is not geographically positioned.");
             return {};
@@ -336,14 +336,14 @@ namespace GeoJSONSpawner::GeoJSONUtils
             {
                 constexpr float defaultScale = 1.0f;
                 const AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
-                ROS2::WGS::WGS84Coordinate coordinate;
+                Georeferencing::WGS::WGS84Coordinate coordinate;
                 AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
                 coordinate.m_longitude = point[0];
                 coordinate.m_latitude = point[1];
                 coordinate.m_altitude = spawnableAssetConfig.m_raytraceStartingHeight;
 
-                ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                    coordinateInLevel, &ROS2::GeoreferenceRequestsBus::Events::ConvertFromWGS84ToLevel, coordinate);
+                Georeferencing::GeoreferenceRequestsBus::BroadcastResult(
+                    coordinateInLevel, &Georeferencing::GeoreferenceRequestsBus::Events::ConvertFromWGS84ToLevel, coordinate);
 
                 AZ::Transform transform{ coordinateInLevel, rotation, defaultScale };
                 spawnableEntityInfo.m_positions.emplace_back(AZStd::move(transform));
