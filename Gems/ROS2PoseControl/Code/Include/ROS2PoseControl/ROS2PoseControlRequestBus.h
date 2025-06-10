@@ -58,7 +58,8 @@ namespace ROS2PoseControl
         virtual void SetRigidBodiesToKinematic(bool enable) = 0;
 
         //! Set the initial pose restore policy
-        //! @param initialPoseRestorationPolicy - new initial pose restore policy, to check available policies @see InitialPoseRestorationPolicy
+        //! @param initialPoseRestorationPolicy - new initial pose restore policy, to check available policies @see
+        //! InitialPoseRestorationPolicy
         virtual void SetInitialPoseRestorationPolicy(InitialPoseRestorationPolicy initialPoseRestorationPolicy) = 0;
 
         //! Apply configuration of the ROS2PoseControl in its current state. In general this function reinitialize the ROS2 intestines of
