@@ -54,5 +54,7 @@ namespace ROS2PoseControl
 
         bool m_enablePhysics{ true };
         bool m_isKinematic{ false };
+
+        InitialPoseRestorationPolicy m_initialPoseRestorationPolicy{ InitialPoseRestorationPolicy::Once };
     };
 } // namespace ROS2PoseControl
