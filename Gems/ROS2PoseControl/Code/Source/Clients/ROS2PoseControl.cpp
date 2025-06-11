@@ -453,8 +453,7 @@ namespace ROS2PoseControl
 
     bool ROS2PoseControl::IsRestoreNeeded()
     {
-        if (m_configuration.m_initialPoseRestorationPolicy == InitialPoseRestorationPolicy::Never ||
-            !(!m_configuration.m_enablePhysics || m_configuration.m_isKinematic))
+        if (m_configuration.m_initialPoseRestorationPolicy == InitialPoseRestorationPolicy::Never)
         {
             return false;
         }
@@ -494,8 +493,6 @@ namespace ROS2PoseControl
             {
                 AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalTM, localTM);
             }
-
-            m_initialPositionRestored = true;
         }
 
         AZ::Transform modifiedTransform = m_configuration.m_lockZAxis ? RemoveTilt(transform) : transform;
