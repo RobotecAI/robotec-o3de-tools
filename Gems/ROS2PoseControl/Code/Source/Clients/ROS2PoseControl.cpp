@@ -483,10 +483,6 @@ namespace ROS2PoseControl
             DisablePhysics();
         }
 
-        // If prefab has physics disabled or all of its rigid bodies are set to 'Kinematic'
-        // then we want to restore the initial positions of all entities. These positions
-        // may have changed before the physics or kinematics were enabled/disabled via
-        // the EBus request
         if (IsRestoreNeeded())
         {
             for (const auto& [entityId, localTM] : m_localTransforms)
