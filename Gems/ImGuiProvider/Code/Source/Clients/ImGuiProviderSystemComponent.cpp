@@ -105,6 +105,11 @@ namespace ImGuiProvider
 
         // imgui notification bus is called called only if debug menu is shown, so it cannot be reliably used for imgui displaying
 
+        if (m_registeredFeatures.empty())
+        {
+            return;
+        }
+
         if (IsDebugGUIDeactivated())
         {
             AZ::Render::ImGuiSystemRequestBus::BroadcastResult(m_currentImGuiContext, &AZ::Render::ImGuiSystemRequests::GetActiveContext);
