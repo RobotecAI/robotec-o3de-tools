@@ -40,6 +40,7 @@ namespace ROS2PoseControl
         {
             serializeContext->Class<ROS2PoseControlConfiguration>()
                 ->Version(1)
+                ->Field("m_initialPoseRestorePolicy", &ROS2PoseControlConfiguration::m_initialPoseRestorationPolicy)
                 ->Field("m_tracking_mode", &ROS2PoseControlConfiguration::m_tracking_mode)
                 ->Field("m_poseTopicConfiguration", &ROS2PoseControlConfiguration::m_poseTopicConfiguration)
                 ->Field("m_targetFrame", &ROS2PoseControlConfiguration::m_targetFrame)
@@ -55,6 +56,14 @@ namespace ROS2PoseControl
             {
                 ec->Class<ROS2PoseControlConfiguration>("ROS2PoseControlConfiguration", "Sub configuration for ROS2PoseControl component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox,
+                        &ROS2PoseControlConfiguration::m_initialPoseRestorationPolicy,
+                        "Initial pose restore policy",
+                        "Initial pose restore policy")
+                    ->EnumAttribute(InitialPoseRestorationPolicy::Never, "Never")
+                    ->EnumAttribute(InitialPoseRestorationPolicy::Once, "Once")
+                    ->EnumAttribute(InitialPoseRestorationPolicy::Everytime, "Everytime")
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &ROS2PoseControlConfiguration::m_tracking_mode,

@@ -23,6 +23,13 @@ namespace ROS2PoseControl
         TF2
     };
 
+    enum class InitialPoseRestorationPolicy
+    {
+        Never,
+        Once,
+        Everytime
+    };
+
     //! Interface for the ROS2PoseControl
     //! Used for configuring the ROS2PoseControl at runtime
     class ROS2PoseControlRequests : public AZ::ComponentBus
@@ -31,7 +38,7 @@ namespace ROS2PoseControl
         AZ_RTTI(ROS2PoseControlRequests, ROS2PoseControlRequestsTypeId)
 
         //! Set the tracking mode
-        //! @param trackingMode - new tracking mode, to check available tracking modes @see ROS2PoseControlConfiguration
+        //! @param trackingMode - new tracking mode, to check available tracking modes @see TrackingMode
         virtual void SetTrackingMode(TrackingMode trackingMode) = 0;
 
         //! Set the target frame that is used in the TF2 tracking mode
@@ -49,6 +56,11 @@ namespace ROS2PoseControl
         //! Change the prefab's rigid bodies to either Kinematic (enable==true) or Simulated (enable==false)
         //! @param enable - enable/disable flag
         virtual void SetRigidBodiesToKinematic(bool enable) = 0;
+
+        //! Set the initial pose restore policy
+        //! @param initialPoseRestorationPolicy - new initial pose restore policy, to check available policies @see
+        //! InitialPoseRestorationPolicy
+        virtual void SetInitialPoseRestorationPolicy(InitialPoseRestorationPolicy initialPoseRestorationPolicy) = 0;
 
         //! Apply configuration of the ROS2PoseControl in its current state. In general this function reinitialize the ROS2 intestines of
         //! the ROS2PoseControl

@@ -173,6 +173,12 @@ namespace ROS2PoseControl
         }
     }
 
+    void ROS2PoseControl::SetInitialPoseRestorationPolicy(InitialPoseRestorationPolicy initialPoseRestorationPolicy)
+    {
+        m_configuration.m_initialPoseRestorationPolicy = initialPoseRestorationPolicy;
+        m_configurationChanged = true;
+    }
+
     void ROS2PoseControl::ApplyConfiguration()
     {
         if (m_configurationChanged)
@@ -445,6 +451,24 @@ namespace ROS2PoseControl
         return offsetTransform;
     }
 
+    bool ROS2PoseControl::IsRestoreNeeded()
+    {
+        if (m_configuration.m_initialPoseRestorationPolicy == InitialPoseRestorationPolicy::Never)
+        {
+            return false;
+        }
+
+        if (m_configuration.m_initialPoseRestorationPolicy == InitialPoseRestorationPolicy::Once)
+        {
+            if (m_initialPositionRestored)
+            {
+                return false;
+            }
+            m_initialPositionRestored = true;
+        }
+        return true;
+    }
+
     void ROS2PoseControl::ApplyTransform(const AZ::Transform& transform)
     {
         if (transform.GetRotation().IsZero())
@@ -459,18 +483,12 @@ namespace ROS2PoseControl
             DisablePhysics();
         }
 
-        // If prefab has physics disabled or all of its rigid bodies are set to 'Kinematic'
-        // then we want to restore the initial positions of all entities. These positions
-        // may have changed before the physics or kinematics were enabled/disabled via
-        // the EBus request
-        if (!m_initialPositionRestored && (!m_configuration.m_enablePhysics || m_configuration.m_isKinematic))
+        if (IsRestoreNeeded())
         {
             for (const auto& [entityId, localTM] : m_localTransforms)
             {
                 AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalTM, localTM);
             }
-
-            m_initialPositionRestored = true;
         }
 
         AZ::Transform modifiedTransform = m_configuration.m_lockZAxis ? RemoveTilt(transform) : transform;

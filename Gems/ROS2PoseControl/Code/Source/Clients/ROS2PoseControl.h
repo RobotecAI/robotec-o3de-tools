@@ -115,6 +115,7 @@ namespace ROS2PoseControl
         void SetReferenceFrame(const AZStd::string& referenceFrame) override;
         void SetEnablePhysics(bool enable) override;
         void SetRigidBodiesToKinematic(bool enable) override;
+        void SetInitialPoseRestorationPolicy(InitialPoseRestorationPolicy initialPoseRestorationPolicy) override;
         void ApplyConfiguration() override;
 
         //! Initializes all ROS2-related things (rclcpp::Subscription, tf2_ros::Buffer etc.)
@@ -123,6 +124,10 @@ namespace ROS2PoseControl
         //! Deinitializes all ROS2-related things (rclcpp::Subscription, tf2_ros::Buffer etc.)
         //! Allows to reconfigure tracking mode in the runtime
         void DeinitializeROSConnection();
+
+        //! Checks if the inital pose of the prefab should be restored
+        //! @return boolean flag which determines whether the restore is needed or not
+        bool IsRestoreNeeded();
 
         // Tracks the entities that need physics reenabled.
         AZStd::unordered_set<AZ::EntityId> m_needsPhysicsReenable;
