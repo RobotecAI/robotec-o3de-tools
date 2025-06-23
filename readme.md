@@ -439,3 +439,97 @@ Besides `OnImGuiUpdate` used for updating displayed GUI, notification bus define
 `AZStd::optional<ImGuiFeaturePath> GetActiveGuiId()` - returns optional with ImGuiProvider::ImGuiFeaturePath. Optional is empty if there is no active GUI.
 
 `void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given id as active. Doesn't check if given guiId exists.
+
+# FPSProfiler
+This gem provides a tool to collect statistics in the game mode of the FPS, CPU and GPU into `csv` file.
+
+The Profiler has a EBus which can control profiling in runtime (start/stop/reset), save profiled data, change save path, access current frame memory data or fps (avg, min, max).
+It is also provided with a set of notification functions, making it highly customizable for end user.
+This functionality can be accessed in c++, lua and script canvas.
+
+> *To start using the tool, add a `FPSProfiler` to the **Level** entity.*
+
+## Component Functionality
+![FpsProfiler Editor](doc/FpsProfiler.png)
+
+| Config                 | Description                                                                                                          |
+|------------------------|----------------------------------------------------------------------------------------------------------------------|
+| **File Save Settings** |                                                                                                                      |
+| Select Csv File Path   | Button that opens a File Dialog.                                                                                     |
+| Csv Save Path          | A path where *.csv will be saved.                                                                                    |
+| Auto Save              | Enables automatic saving of FPS logs per frame.                                                                      |
+| Auto Save At Frame     | Specifies the frame interval for auto-saving.                                                                        |
+| Timestamp              | Includes timestamps in the FPS log file name.</br>Allows to save automatically without manual input each time.       |
+| **Recording Settings** |                                                                                                                      |
+| Record Type            | Specify when to start recording:</br>- at game start</br>- selected frame</br>- await for other system to call start |
+| Frames To Skip         | Number of frames to skip before recording.</br>Only enabled when type is `SelectFrame`.                              |
+| Frames To Record       | Total number of frames to record. If set to 0 - unlimited.                                                           |
+| Record Stats           | Specifies what type of stats to record (FPS data, CPU and GPU).                                                      |
+| **Precision Settings** |                                                                                                                      |
+| Near Zero Precision    | Precision threshold for near-zero values.                                                                            |
+| Moving Average Type    | Type of moving average used for smoothing average FPS:</br>- Simple</br>- Exponential                                |
+| Alpha Smoothing Factor | Factor applied to control smoothing effect when `Exponential` enabled.                                               |
+| Keep History           | Keeps a history of recorded FPS data or clear after every auto-save.</br>For better effect - keep enabled.           |
+| **Debug Settings**     |                                                                                                                      |
+| Print Debug Info       | Displays debug information in the logs.                                                                              |
+| Show FPS               | Enables FPS display on screen.                                                                                       |
+| Debug Color            | Color used for debugging FPS display.                                                                                |
+
+## API Access
+Example workflows how to access and use a Fps Profiler Events and Notifications.
+
+### In C++:
+```c++
+// Example with Interface
+auto profiler = FPSProfiler::FPSProfilerInterface::Get();
+if (!profiler)
+{
+    return;
+}
+
+profiler->StartProfiling();
+float currentFps = profiler->GetCurrentFps();
+
+// Example with Broadcast
+float avgFPS = 0.0f;
+FPSProfilerRequestBus::BroadcastResult(avgFPS, &FPSProfilerRequests::GetAvgFps);
+FPSProfilerRequestBus::Broadcast(&FPSProfilerRequests::StopProfiling);
+
+// Notification Bus - override from FPSProfilerNotificationBus::Handler
+// class YourClass : protected FPSProfilerNotificationBus::Handler
+
+void OnProfileStart(const Configs::FileSaveSettings& config) override
+{
+    // Your logic ...
+}
+```
+
+### In Lua
+```lua
+FPSProfilerHandler = {}
+
+-- Called when a new file is created
+function FPSProfilerHandler:OnFileCreated(config)
+	Debug.Log("File Created: " .. config.m_OutputFilename)
+end
+
+function FPSProfilerHandler:OnActivate()
+	-- Connect the handler to listen for notifications
+	FPSProfilerNotificationBus.Connect(FPSProfilerHandler)
+end
+
+return FPSProfilerHandler
+```
+
+### In Script Canvas
+Example how to stop profiling after 60 seconds have passed in Script Canvas.
+![FpsProfiler Script Canvas](doc/FpsProfiler_ScriptCanvas.png)
+
+## Csv Output File - Example
+| Frame | FrameTime | CurrentFPS  | MinFPS | MaxFPS  | AvgFPS  | CpuMemoryUsed  | CpuMemoryReserved  | GpuMemoryUsed  | GpuMemoryReserved  |
+|-------|-----------|-------------|--------|---------|---------|----------------|--------------------|----------------|--------------------|
+| 1     | 0.0293    | 34.12       | 34.12  | 34.12   | 34.12   | 231.91         | 237568             | 691.44         | 7214               |
+| 2     | 0.0054    | 185.53      | 34.12  | 185.53  | 37.11   | 232            | 237568             | 691.44         | 7214               |
+| 3     | 0.005     | 199.2       | 34.12  | 199.2   | 40.32   | 231.95         | 237568             | 691.44         | 7214               |
+| 4     | 0.0038    | 259.88      | 34.12  | 259.88  | 44.67   | 231.64         | 237568             | 691.44         | 7214               |
+| 5     | 0.004     | 247.65      | 34.12  | 259.88  | 48.69   | 231.64         | 237568             | 691.44         | 7214               |
