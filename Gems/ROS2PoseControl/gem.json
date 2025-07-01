@@ -22,6 +22,7 @@
     "documentation_url": "See the docs in the repo",
     "dependencies": [
         "ROS2",
+        "LevelGeoreferencing",
         "ImGui"
     ],
     "repo_uri": "",
