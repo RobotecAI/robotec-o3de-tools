@@ -14,7 +14,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
-#include <ROS2/Georeference/GeoreferenceBus.h>
+#include <Georeferencing/GeoreferenceBus.h>
 #include <csv/csv.hpp>
 
 namespace CsvSpawner::CsvSpawnerUtils
@@ -84,13 +84,13 @@ namespace CsvSpawner::CsvSpawnerUtils
                 }
                 else if (isWGSCoordinates)
                 {
-                    ROS2::WGS::WGS84Coordinate coordinate;
+                    Georeferencing::WGS::WGS84Coordinate coordinate;
                     coordinate.m_latitude = row[index_lat.value()].get<double>();
                     coordinate.m_longitude = row[index_lon.value()].get<double>();
                     coordinate.m_altitude = row[index_alt.value()].get<double>();
                     AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
-                    ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                        coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
+                    Georeferencing::GeoreferenceRequestsBus::BroadcastResult(
+                        coordinateInLevel, &Georeferencing::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
                     AZ_Printf(
                         "TreeSpawnerEditorComponent",
                         "Converted WGS84 coordinate to level coordinate: %f, %f, %f WGS84: %f, %f, %f\n",
