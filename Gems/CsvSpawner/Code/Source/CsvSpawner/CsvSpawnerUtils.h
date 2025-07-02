@@ -131,5 +131,5 @@ namespace CsvSpawner::CsvSpawnerUtils
         AZ::EntityId m_spawnerParentEntityId; ///< Parent entity ID managing the spawn process.
     };
 
-  [[nodiscard]] bool IsTerrainAvailable(); //!< @returns True if level has any valid Terrain handlers, false otherwise.
+    [[nodiscard]] bool IsTerrainAvailable(); //!< @returns True if level has any valid Terrain handlers, false otherwise.
 } // namespace CsvSpawner::CsvSpawnerUtils

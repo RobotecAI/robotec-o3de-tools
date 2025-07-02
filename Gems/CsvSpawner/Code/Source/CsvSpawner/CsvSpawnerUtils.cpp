@@ -11,7 +11,6 @@
 
 #include "CsvSpawnerUtils.h"
 
-
 #include <AzFramework/Physics/CollisionBus.h>
 #include <CsvSpawner/CsvSpawnerInterface.h>
 
@@ -19,7 +18,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
@@ -418,7 +416,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 ->Property("m_spawnerParentEntityId", BehaviorValueProperty(&SpawnInfo::m_spawnerParentEntityId));
         }
     }
-  
+
     bool IsTerrainAvailable()
     {
         return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();

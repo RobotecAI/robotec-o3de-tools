@@ -10,7 +10,6 @@
 
 #pragma once
 
-
 #include <CsvSpawner/CsvSpawnerTypeIds.h>
 #include <CsvSpawner/CsvSpawnerUtils.h>
 
