@@ -252,6 +252,10 @@ namespace CsvSpawner::CsvSpawnerUtils
             }
         }
 
+        // Track how many tickets are spawned and how many have completed
+        size_t totalTickets = 0;
+        std::atomic_size_t completedTickets = 0;
+
         for (const auto& entityConfig : entitiesToSpawn)
         {
             if (!spawnableAssetConfiguration.contains(entityConfig.m_name))
@@ -317,7 +321,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 transformInterface->SetWorldTM(transform);
             };
             optionalArgs.m_completionCallback =
-                [parentId, &spawnStatusCode](
+                [parentId, &spawnStatusCode, &broadcastSpawnInfo, &tickets, totalTickets, &completedTickets](
                     [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableConstEntityContainerView view)
             {
                 if (view.empty())
@@ -329,16 +333,28 @@ namespace CsvSpawner::CsvSpawnerUtils
                 }
                 const AZ::Entity* root = *view.begin();
                 AZ::TransformBus::Event(root->GetId(), &AZ::TransformBus::Events::SetParent, parentId);
+
+                completedTickets++;
+                if (completedTickets == totalTickets)
+                {
+                    // Call CsvSpawner EBus notification - Finished
+                    CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
+                }
             };
             optionalArgs.m_priority = AzFramework::SpawnablePriority_Lowest;
             spawner->SpawnAllEntities(ticket, optionalArgs);
             tickets[entityConfig.m_id] = AZStd::move(ticket);
+
+            totalTickets++;
         }
 
-        // Check is success spawn
-        tickets.empty() ? spawnStatusCode |= SpawnStatus::Fail : spawnStatusCode |= SpawnStatus::Success;
-        // Call CsvSpawner EBus notification - Finished
-        CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
+        // If no tickets were created at all (no entities spawned), send finish immediately
+        if (totalTickets == 0)
+        {
+            spawnStatusCode |= SpawnStatus::Fail;
+            // Call CsvSpawner EBus notification - Finished
+            CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
+        }
 
         return tickets;
     }
