@@ -11,6 +11,8 @@
 
 #include "CsvSpawnerUtils.h"
 
+#include "AzCore/std/smart_ptr/make_shared.h"
+
 #include <AzFramework/Physics/CollisionBus.h>
 #include <CsvSpawner/CsvSpawnerInterface.h>
 
@@ -223,10 +225,21 @@ namespace CsvSpawner::CsvSpawnerUtils
     {
         SpawnInfo broadcastSpawnInfo =
             SpawnInfo{ entitiesToSpawn, physicsSceneName, parentId }; // Spawn Info used in CsvSpawner EBus notify.
-        SpawnStatus spawnStatusCode = SpawnStatus::Success; // Spawn Status Code used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
+        // SpawnStatus spawnStatusCode = SpawnStatus::Success; // Spawn Status Code used for CsvSpawner EBus notify -
+        // OnEntitiesSpawnFinished.
+        auto spawnStatusCode = AZStd::make_shared<SpawnStatus>(
+            SpawnStatus::Success); // Spawn Status Code used for CsvSpawner EBus notify - OnEntitiesSpawnFinished.
 
         // Call CsvSpawner EBus notification - Begin
         CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnBegin, broadcastSpawnInfo);
+
+        // Check if there are no entities to spawn
+        if (entitiesToSpawn.empty())
+        {
+            *spawnStatusCode |= SpawnStatus::Fail;
+            CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, *spawnStatusCode);
+            return {};
+        }
 
         auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "Unable to get physics scene interface");
@@ -235,6 +248,8 @@ namespace CsvSpawner::CsvSpawnerUtils
         AZStd::unordered_map<int, AzFramework::EntitySpawnTicket> tickets{};
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
         AZ_Assert(spawner, "Unable to get spawnable entities definition");
+
+        auto pendingSpawns = AZStd::make_shared<AZStd::atomic_int>(static_cast<int>(entitiesToSpawn.size()));
 
         // get parent transform
         AZ::Transform parentTransform = AZ::Transform::CreateIdentity();
@@ -251,10 +266,6 @@ namespace CsvSpawner::CsvSpawnerUtils
             }
         }
 
-        // Track how many tickets are spawned and how many have completed
-        size_t totalTickets = 0;
-        std::atomic_size_t completedTickets = 0;
-
         for (const auto& entityConfig : entitiesToSpawn)
         {
             if (!spawnableAssetConfiguration.contains(entityConfig.m_name))
@@ -262,7 +273,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 AZ_Error("CsvSpawner", false, "SpawnableAssetConfiguration %s not found", entityConfig.m_name.c_str());
 
                 // Add notify code status
-                spawnStatusCode |= SpawnStatus::Warning;
+                *spawnStatusCode |= SpawnStatus::Warning;
                 continue;
             }
 
@@ -293,7 +304,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 else
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatus::Warning;
+                    *spawnStatusCode |= SpawnStatus::Warning;
 
                     continue; // Skip this entity if we can't find a valid position and
                               // place on terrain is enabled.
@@ -309,7 +320,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (view.empty())
                 {
                     // Add notify code status
-                    spawnStatusCode |= SpawnStatus::Warning | SpawnStatus::Stopped;
+                    *spawnStatusCode |= SpawnStatus::Warning | SpawnStatus::Stopped;
 
                     return;
                 }
@@ -320,40 +331,31 @@ namespace CsvSpawner::CsvSpawnerUtils
                 transformInterface->SetWorldTM(transform);
             };
             optionalArgs.m_completionCallback =
-                [parentId, &spawnStatusCode, &broadcastSpawnInfo, totalTickets, &completedTickets](
+                [parentId, spawnStatusCode, pendingSpawns, broadcastSpawnInfo](
                     [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableConstEntityContainerView view)
             {
                 if (view.empty())
                 {
-                    // Add notify code status
-                    spawnStatusCode |= SpawnStatus::Warning | SpawnStatus::Stopped;
-
-                    return;
+                    *spawnStatusCode |= SpawnStatus::Warning | SpawnStatus::Stopped;
                 }
-                const AZ::Entity* root = *view.begin();
-                AZ::TransformBus::Event(root->GetId(), &AZ::TransformBus::Events::SetParent, parentId);
-
-                completedTickets++;
-                if (completedTickets == totalTickets)
+                else
                 {
-                    // Call CsvSpawner EBus notification - Finished
+                    const AZ::Entity* root = *view.begin();
+                    AZ::TransformBus::Event(root->GetId(), &AZ::TransformBus::Events::SetParent, parentId);
+                }
+
+                // Decrement the pending counter
+                const int remaining = --(*pendingSpawns);
+                if (remaining == 0)
+                {
+                    // All spawns are finished, now broadcast finished notification
                     CsvSpawnerNotificationBus::Broadcast(
-                        &CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
+                        &CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, *spawnStatusCode);
                 }
             };
             optionalArgs.m_priority = AzFramework::SpawnablePriority_Lowest;
             spawner->SpawnAllEntities(ticket, optionalArgs);
             tickets[entityConfig.m_id] = AZStd::move(ticket);
-
-            totalTickets++;
-        }
-
-        // If no tickets were created at all (no entities spawned), send finish immediately
-        if (totalTickets == 0)
-        {
-            spawnStatusCode |= SpawnStatus::Fail;
-            // Call CsvSpawner EBus notification - Finished
-            CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
         }
 
         return tickets;

@@ -34,14 +34,14 @@ namespace CsvSpawner
          * @brief Called when entity spawning begins.
          * @param m_spawnInfo Struct holding information about entities to be spawned.
          */
-        virtual void OnEntitiesSpawnBegin(CsvSpawnerUtils::SpawnInfo& m_spawnInfo) = 0;
+        virtual void OnEntitiesSpawnBegin(CsvSpawnerUtils::SpawnInfo m_spawnInfo) = 0;
 
         /**
          * @brief Called when entity spawning finishes.
          * @param m_spawnInfo Struct holding information about entities to be spawned.
          * @param m_statusCode Status code indicating success, failure and warnings of the spawn.
          */
-        virtual void OnEntitiesSpawnFinished(CsvSpawnerUtils::SpawnInfo& m_spawnInfo, CsvSpawnerUtils::SpawnStatus m_statusCode) = 0;
+        virtual void OnEntitiesSpawnFinished(CsvSpawnerUtils::SpawnInfo m_spawnInfo, CsvSpawnerUtils::SpawnStatus m_statusCode) = 0;
 
         /// EBus Configuration - Allows multiple listeners to handle events.
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
@@ -62,12 +62,12 @@ namespace CsvSpawner
             OnEntitiesSpawnBegin,
             OnEntitiesSpawnFinished);
 
-        void OnEntitiesSpawnBegin(CsvSpawnerUtils::SpawnInfo& m_spawnInfo) override
+        void OnEntitiesSpawnBegin(CsvSpawnerUtils::SpawnInfo m_spawnInfo) override
         {
             Call(FN_OnEntitiesSpawnBegin, m_spawnInfo);
         }
 
-        void OnEntitiesSpawnFinished(CsvSpawnerUtils::SpawnInfo& m_spawnInfo, CsvSpawnerUtils::SpawnStatus m_statusCode) override
+        void OnEntitiesSpawnFinished(CsvSpawnerUtils::SpawnInfo m_spawnInfo, CsvSpawnerUtils::SpawnStatus m_statusCode) override
         {
             Call(FN_OnEntitiesSpawnFinished, m_spawnInfo, m_statusCode);
         }
