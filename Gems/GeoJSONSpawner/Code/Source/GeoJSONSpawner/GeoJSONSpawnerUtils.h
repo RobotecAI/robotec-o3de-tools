@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
+#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -175,4 +175,28 @@ namespace GeoJSONSpawner::GeoJSONUtils
     //! @param geometryType - string with type of the geometry object
     //! @return enum connected with the given geometry type
     GeometryType GetGeometryType(const AZStd::string& geometryType);
+
+    //! This function checks if the Terrain is available in the level.
+    //! @returns True if level has any valid Terrain handlers, false otherwise.
+    [[nodiscard]] bool IsTerrainAvailable();
+
+    /**
+     * @brief Flags representing the status of GeoJSONSpawner operations Spawn and Despawn.
+     *
+     * Provides various status indicators for entity spawning / despawning.
+     * These flags help to track or filter mentioned operations.
+     */
+    enum class SpawnDespawnStatus : uint8_t
+    {
+        Success = 0, ///< Operation succeeded.
+        Fail = 1 << 0, ///< Operation failed, generic result.
+        Stopped = 1 << 1, ///< Spawning was stopped prematurely but not necessarily a failure.
+        Warning = 1 << 2, ///< An warning or error occurred during spawning / despawning (potentially recoverable).
+        Invalid = 1 << 3, ///< Something went wrong while spawning / despawning.
+
+    };
+    AZ_TYPE_INFO_SPECIALIZE(GeoJSONSpawner::GeoJSONUtils::SpawnDespawnStatus, SpawnDespawnStatusTypeId);
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnDespawnStatus);
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(SpawnDespawnStatus);
+
 } // namespace GeoJSONSpawner::GeoJSONUtils

@@ -52,6 +52,23 @@ Refer to [readme](https://github.com/RobotecAI/robotec-o3de-tools/tree/main/Gems
 # RobotecSpectatorCamera
 
 A component that allows to look at an entity from 3rd person perspective and to switch camera mode to the free flying mode (to switch mode press the `C` key). It also allows to enable/disable following the target's rotation and to add a vertical offset to change the `look at` point of the target entity.  
+The Spectator camera component can be configured to centre the cursor when moving the camera (this gives the full range of rotation regardless of the available screen space) or to let the cursor move freely on the screen when moving the camera (this reduces the range of rotation, e.g. in third person mode a full rotation may require a few repeats of the (RMB press ->Rotate camera ->RMB release ->Move cursor to previous start position ->Repeat) cycle). By default this option is set to false (cursor is not centered). This option can be configured via the `setreg` file or by passing `--regset` flag in the command line. Example:
+- `.setreg`:
+```json
+{
+    "O3DE":
+    {
+        "SpectatorCamera":
+        {
+            "MoveCursorToTheCenter": false
+        }
+    }
+}
+```
+- `--regset flag`:
+```
+./Editor --regset="/O3DE/SpectatorCamera/MoveCursorToTheCenter=true"
+```
 ![](doc/RobotecSpectatorCamera.png)
 
 
@@ -205,6 +222,22 @@ Example of supported GeoJSON:
 }
 
 ```
+## API
+
+This Gem has defined notification bus - `GeoJSONSpawnerNotificationBus`.
+
+Available functions:
+
+| Function                             | Trigger Event                  | Description                                                |
+|--------------------------------------|--------------------------------|------------------------------------------------------------|
+| `OnEntitiesSpawnBegin()`             | When spawning starts           | Notifies when batch spawning begins.                       |
+| `OnEntitiesSpawnFinished()`          | When spawning ends             | Provides a list of spawned entities and the status code.   |
+| `OnEntitiesDespawnBegin()`           | When despawning starts         | Notifies when batch despawning begins.                     |
+| `OnEntitiesDespawnFinished()`        | When despawning ends           | Provides a list of despawned entities and the status code. |
+| `OnEntitySpawn()`                    | When a single entity spawns    | Called per one entity spawn.                               |
+| `OnEntityDespawn()`                  | When a single entity despawns  | Called per one entity despawn.                             |
+
+> *Supports **Lua** and **Script Canvas***
 
 # GeoJSONSpawnerROS2
 
@@ -361,3 +394,58 @@ Refer to script canvas example below:
 ![alt text](doc/imguizmo.png)
 
 *Note* Only one gizmo can be rendered at the time!
+
+# RandomizeUtils 
+
+This gem allows to randomize prefab on spawning.
+It has a component called `RandomizePoseComponent` that modifies an entity during activation.
+It allows:
+ - change translation and rotation and uniform scale of the Transform component,
+ - deactivate the entity with given probability
+
+![](doc/RandomizePoseComponent.png)
+
+**Note:** that only given entity is modified (not all descendants).
+
+# ImGuiProvider
+
+This gem adds support for displaying user defined ImGui GUI. Users can define their own gui using `ImGuiProvider::ImGuiProviderNotificationBus`. User's component should be handler of the `ImGuiProvider::ImGuiProviderNotificationBus::Handler` and define method `OnImGuiUpdate`. Mentioned method should contain all code related to displayed GUI. Acquiring ImGui context and its releasing is handled by the Gem and its system component. User's component should connect to `ImGuiProvider::ImGuiProviderNotificationBus` using `ImGuiProvider::ImGuiFeaturePath` aka `AZ::IO::Path`. Each segment of path represents one depth in the toolbar.
+
+Below example on how to register new feature during component activation:
+
+Visibility of the GUI menu bar can be overridden at the app start using `-cl_hide_menu_bar=1`.
+Setting the flag effectively disables the GUI.
+
+
+```cpp
+void ExampleComponent::Activate()
+{
+    /*
+    some implementation
+    */
+    auto pathToFeature = ImGuiProvider::ImGuiFeaturePath{ "Tools/ExampleFeature" };
+    ImGuiProvider::ImGuiProviderNotificationBus::Handler::BusConnect(pathToFeature);
+    /*
+    some implementation
+    */
+}
+```
+
+Gem monitors number of active handler, so ImGui features are available as long as the lifetime of component which registered it. 
+
+Gem handles correct displaying of debug menu available using `home` button. If Gem detects debug menu, registered GUIs disappear. After disabling debug menu, previous state of registered features is restored.
+If Gem detects custom GUI feature registered in Editor, viewport icons are moved to prevent covering the registered features.
+
+## API
+
+Gem defines `ImGuiProvider::ImGuiProviderNotificationBus` and `ImGuiProvider::ImGuiProviderRequestBus`.
+
+**Notification bus methods**
+
+Besides `OnImGuiUpdate` used for updating displayed GUI, notification bus defines methods: `OnImGuiSelected` and `OnImGuiUnselected`. Methods are triggered during registered GUI state change, respectively hidden -> visible and visible -> hidden.
+
+**Request bus methods**
+
+`AZStd::optional<ImGuiFeaturePath> GetActiveGuiId()` - returns optional with ImGuiProvider::ImGuiFeaturePath. Optional is empty if there is no active GUI.
+
+`void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given id as active. Doesn't check if given guiId exists.

@@ -6,4 +6,6 @@ set(FILES
     Source/CsvSpawner/CsvSpawnerUtils.h
     Source/CsvSpawner/CsvSpawnerComponent.cpp
     Source/CsvSpawner/CsvSpawnerComponent.h
+    Source/CsvSpawner/EditorConfigurations/CsvSpawnerEditorTerrainSettingsConfig.cpp
+    Source/CsvSpawner/EditorConfigurations/CsvSpawnerEditorTerrainSettingsConfig.h
 )

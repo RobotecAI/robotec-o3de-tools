@@ -19,12 +19,12 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace CsvSpawner
 {
-
     void CsvSpawnerEditorComponent::Reflect(AZ::ReflectContext* context)
     {
         CsvSpawner::SpawnInfo::Reflect(context);
@@ -32,13 +32,16 @@ namespace CsvSpawner
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<CsvSpawnerEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
+            CsvSpawnerEditorTerrainSettingsConfig::Reflect(context);
+
+            serializeContext->Class<CsvSpawnerEditorComponent, EditorComponentBase>()
                 ->Version(2)
                 ->Field("CsvAssetId", &CsvSpawnerEditorComponent::m_csvAssetId)
                 ->Field("NumberOfEntries", &CsvSpawnerEditorComponent::m_numberOfEntries)
                 ->Field("SpawnableAssetConfigurations", &CsvSpawnerEditorComponent::m_spawnableAssetConfigurations)
                 ->Field("DefaultSeed", &CsvSpawnerEditorComponent::m_defaultSeed)
-                ->Field("ShowLabels", &CsvSpawnerEditorComponent::m_showLabels);
+                ->Field("ShowLabels", &CsvSpawnerEditorComponent::m_showLabels)
+                ->Field("TerrainSettingsConfig", &CsvSpawnerEditorComponent::m_terrainSettingsConfig);
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
@@ -47,12 +50,12 @@ namespace CsvSpawner
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "CsvSpawnerEditorComponent")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "CsvSpawner")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CsvSpawnerEditorComponent::m_spawnableAssetConfigurations,
                         "Asset Config",
                         "Asset configuration")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_csvAssetId, "CSV Asset", "CSV asset")
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Reload Csv", "Reload Csv")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
@@ -62,7 +65,12 @@ namespace CsvSpawner
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_defaultSeed, "Default seed", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CsvSpawnerEditorComponent::m_showLabels, "Show labels in Editor", "")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnOnShowLabelsChanged);
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CsvSpawnerEditorComponent::OnShowLabelsChanged)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CsvSpawnerEditorComponent::m_terrainSettingsConfig,
+                        "Spawn Behaviour Settings",
+                        "Settings to configure spawn behaviour in editor.");
             }
         }
 
@@ -73,42 +81,46 @@ namespace CsvSpawner
         }
     }
 
-    void CsvSpawnerEditorComponent::OnOnShowLabelsChanged()
-    {
-        if (m_showLabels)
-        {
-            AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
-        }
-        else
-        {
-            AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
-        }
-    }
-
     void CsvSpawnerEditorComponent::Activate()
     {
-        AzToolsFramework::Components::EditorComponentBase::Activate();
+        EditorComponentBase::Activate();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+
         if (m_showLabels)
         {
             AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         }
 
-        AZ::TickBus::Handler::BusConnect();
+        if (m_terrainSettingsConfig.m_spawnOnComponentActivated && !m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce)
+        {
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    // If there is no Terrain handlers (which means no active terrain in this level), just spawn entities on next available
+                    // tick. Since terrain is initiated on tick, IsTerrainAvailable will return real information when used inside tick.
+                    if (!IsTerrainAvailable() && !m_terrainSettingsConfig.m_spawnOnTerrainUpdate)
+                    {
+                        m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = true;
+                        SpawnEntities();
+                    }
+                });
+        }
     }
 
     void CsvSpawnerEditorComponent::Deactivate()
     {
         m_spawnedTickets.clear();
+        m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = false;
 
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
-        AzToolsFramework::Components::EditorComponentBase::Deactivate();
+        EditorComponentBase::Deactivate();
     }
 
     void CsvSpawnerEditorComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         // Create Game component
-        const auto config = CsvSpawnerUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
+        const auto config = GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
 
         using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
         AZ::Data::AssetInfo sourceAssetInfo;
@@ -122,28 +134,33 @@ namespace CsvSpawner
 
         AZ_Printf("CsvSpawnerEditorComponent", "Source of CSV file path: %s", sourcePath.c_str());
 
-        auto spawnableEntityInfo = CsvSpawner::CsvSpawnerUtils::GetSpawnableEntityInfoFromCSV(sourcePath.String());
+        auto spawnableEntityInfo = GetSpawnableEntityInfoFromCSV(sourcePath.String());
 
         gameEntity->CreateComponent<CsvSpawnerComponent>(config, spawnableEntityInfo, m_defaultSeed);
+
         // Destroy Editor's spawned entities
         m_spawnedTickets.clear();
     }
 
-    void CsvSpawnerEditorComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    void CsvSpawnerEditorComponent::OnTerrainDataChanged(
+        [[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        ++m_frameCounter;
-
-        if (m_frameCounter == 2)
+        // Ignore on update with selected flags
+        if (static_cast<bool>(dataChangedMask & m_terrainSettingsConfig.m_terrainMasksToIgnore))
         {
-            SpawnEntities();
-            AZ::TickBus::Handler::BusDisconnect();
-            m_frameCounter = 0;
+            return;
         }
-    }
 
-    int CsvSpawnerEditorComponent::GetTickOrder()
-    {
-        return AZ::TICK_LAST;
+        if ((m_terrainSettingsConfig.m_spawnOnComponentActivated && !m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce) ||
+            m_terrainSettingsConfig.m_spawnOnTerrainUpdate)
+        {
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    SpawnEntities();
+                    m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = true;
+                });
+        }
     }
 
     void CsvSpawnerEditorComponent::SpawnEntities()
@@ -153,6 +170,7 @@ namespace CsvSpawner
             AZ_Error("CsvSpawnerEditorComponent", false, "CSV asset is not set");
             return;
         }
+
         m_spawnedTickets.clear();
         using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
         AZ::Data::AssetInfo sourceAssetInfo;
@@ -166,14 +184,26 @@ namespace CsvSpawner
 
         AZ_Printf("CsvSpawnerEditorComponent", "Source of CSV file path: %s", sourcePath.c_str());
 
-        m_spawnableEntityInfo = CsvSpawner::CsvSpawnerUtils::GetSpawnableEntityInfoFromCSV(sourcePath.String());
+        m_spawnableEntityInfo = GetSpawnableEntityInfoFromCSV(sourcePath.String());
         m_numberOfEntries = m_spawnableEntityInfo.size();
 
         AZ_Printf("CsvSpawnerEditorComponent", "Spawning spawnables, %d", m_numberOfEntries);
 
-        const auto config = CsvSpawnerUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
+        const auto config = GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
         m_spawnedTickets =
             CsvSpawnerUtils::SpawnEntities(m_spawnableEntityInfo, config, m_defaultSeed, AzPhysics::EditorPhysicsSceneName, GetEntityId());
+    }
+
+    void CsvSpawnerEditorComponent::OnShowLabelsChanged()
+    {
+        if (m_showLabels)
+        {
+            AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+        }
+        else
+        {
+            AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
+        }
     }
 
     void CsvSpawnerEditorComponent::OnSpawnButton()
@@ -204,5 +234,4 @@ namespace CsvSpawner
         debugDisplay.PopMatrix();
         debugDisplay.SetState(stateBefore);
     }
-
 } // namespace CsvSpawner

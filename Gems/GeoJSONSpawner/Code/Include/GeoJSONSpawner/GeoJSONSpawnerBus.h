@@ -10,7 +10,16 @@
 
 #pragma once
 
+#include "GeoJSONSpawner/GeoJSONSpawnerUtils.h"
+#include "GeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.h"
+#include "GeoJSONSpawnerTypeIds.h"
+
+#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/string/string.h>
 
 namespace GeoJSONSpawner
 {
@@ -22,6 +31,7 @@ namespace GeoJSONSpawner
     class GeoJSONSpawnerRequests : public AZ::ComponentBus
     {
     public:
+        AZ_RTTI(GeoJSONSpawnerRequests, GeoJSONSpawnerRequestsTypeId);
         using BusIdType = AZ::EntityId;
         using MutexType = AZStd::mutex;
 
@@ -55,4 +65,124 @@ namespace GeoJSONSpawner
 
     using GeoJSONSpawnerRequestBus = AZ::EBus<GeoJSONSpawnerRequests>;
 
+    /**
+     * @brief Interface for handling entity spawn events in GeoJSON Spawner.
+     *
+     * GeoJSONSpawnerInterface is an Event Bus (EBus) interface that notifies multiple listeners
+     * when entity spawning and despawning begins or finishes.
+     */
+    class GeoJSONSpawnerInterface : public AZ::EBusTraits
+    {
+    public:
+        AZ_RTTI(GeoJSONSpawnerInterface, GeoJSONSpawnerInterfaceTypeId);
+        virtual ~GeoJSONSpawnerInterface() = default;
+
+        /**
+         * @brief Called when entity spawning begins.
+         *
+         * Notifies multiple listeners that a batch entity spawning process has started.
+         */
+        virtual void OnEntitiesSpawnBegin() = 0;
+
+        /**
+         * @brief Called when entity spawning finishes.
+         *
+         * @param spawnedEntityTickets A map linking an integer ID to a list of spawned entity tickets.
+         * @param m_statusFlag Status code indicating success, failure, or warnings.
+         *
+         * This function is triggered when all entities in a spawn operation are processed.
+         */
+        virtual void OnEntitiesSpawnFinished(
+            GeoJSONWrappers::SpawnTicketMapWrapper& spawnedEntityTickets, GeoJSONUtils::SpawnDespawnStatus m_statusFlag) = 0;
+
+        /**
+         * @brief Called when entity despawning begins.
+         *
+         * Notifies multiple listeners that a batch entity despawning process has started.
+         */
+        virtual void OnEntitiesDespawnBegin() = 0;
+
+        /**
+         * @brief Called when entity despawning finishes.
+         *
+         * @param despawnedEntityTickets A map linking an integer ID to a list of despawned entity tickets.
+         * @param m_statusFlag Status code indicating success, failure, or warnings.
+         *
+         * This function is triggered when all entities in a despawn operation are processed.
+         */
+        virtual void OnEntitiesDespawnFinished(
+            GeoJSONWrappers::SpawnTicketMapWrapper& despawnedEntityTickets, GeoJSONUtils::SpawnDespawnStatus m_statusFlag) = 0;
+
+        /**
+         * @brief Called when an individual entity is successfully spawned.
+         *
+         * @param spawnedEntityTicket The spawn ticket representing the successfully spawned entity.
+         *
+         * This function is triggered per entity when it spawns.
+         */
+        virtual void OnEntitySpawn(AzFramework::EntitySpawnTicket& spawnedEntityTicket) = 0;
+
+        /**
+         * @brief Called when an individual entity is successfully despawned.
+         *
+         * @param despawnedEntityTicket The spawn ticket representing the successfully despawned entity.
+         *
+         * This function is triggered per entity when it despawns.
+         */
+        virtual void OnEntityDespawn(AzFramework::EntitySpawnTicket& despawnedEntityTicket) = 0;
+
+        /// EBus Configuration - Allows multiple listeners to handle events.
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+    };
+    // Create an EBus using the notification interface
+    using GeoJSONSpawnerNotificationBus = AZ::EBus<GeoJSONSpawnerInterface>;
+
+    class GeoJSONSpawnerNotificationBusHandler
+        : public GeoJSONSpawnerNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            GeoJSONSpawnerNotificationBusHandler,
+            GeoJSONSpawnerNotificationBusHandlerTypeId,
+            AZ::SystemAllocator,
+            OnEntitiesSpawnBegin,
+            OnEntitiesSpawnFinished,
+            OnEntitiesDespawnBegin,
+            OnEntitiesDespawnFinished,
+            OnEntitySpawn,
+            OnEntityDespawn);
+
+        void OnEntitiesSpawnBegin() override
+        {
+            Call(FN_OnEntitiesSpawnBegin);
+        }
+
+        void OnEntitiesSpawnFinished(
+            GeoJSONWrappers::SpawnTicketMapWrapper& spawnedEntityTickets, GeoJSONUtils::SpawnDespawnStatus m_statusFlag) override
+        {
+            Call(FN_OnEntitiesSpawnFinished, spawnedEntityTickets, m_statusFlag);
+        }
+
+        void OnEntitiesDespawnBegin() override
+        {
+            Call(FN_OnEntitiesDespawnBegin);
+        }
+
+        void OnEntitiesDespawnFinished(
+            GeoJSONWrappers::SpawnTicketMapWrapper& despawnedEntityTickets, GeoJSONUtils::SpawnDespawnStatus m_statusFlag) override
+        {
+            Call(FN_OnEntitiesDespawnFinished, despawnedEntityTickets, m_statusFlag);
+        }
+
+        void OnEntitySpawn(AzFramework::EntitySpawnTicket& spawnedEntityTicket) override
+        {
+            Call(FN_OnEntitySpawn, spawnedEntityTicket);
+        }
+
+        void OnEntityDespawn(AzFramework::EntitySpawnTicket& despawnedEntityTicket) override
+        {
+            Call(FN_OnEntityDespawn, despawnedEntityTicket);
+        }
+    };
 } // namespace GeoJSONSpawner

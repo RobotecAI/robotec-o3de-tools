@@ -9,6 +9,7 @@
  */
 
 #include "GeoJSONSpawnerUtils.h"
+#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
 #include "Schemas/GeoJSONSchema.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
@@ -17,13 +18,13 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <ROS2/Georeference/GeoreferenceBus.h>
-#include <random>
-#include <rapidjson/schema.h>
-
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <Georeferencing/GeoreferenceBus.h>
+#include <random>
+#include <rapidjson/schema.h>
 
 namespace GeoJSONSpawner::GeoJSONUtils
 {
@@ -94,7 +95,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_placeOnTerrain,
                         "Place on terrain",
-                        "Performscene query raytrace to place spawnable on terrain.")
+                        "Perform scene query raytrace to place spawnable on terrain.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &GeoJSONSpawnableAssetConfiguration::m_raytraceStartingHeight,
@@ -273,6 +274,9 @@ namespace GeoJSONSpawner::GeoJSONUtils
             {
                 spawner->SpawnAllEntities(ticketToSpawn.first, ticketToSpawn.second);
                 groupIdToTicketsMap.at(groupIdToSpawn.first).emplace_back(AZStd::move(ticketToSpawn.first));
+
+                // Call GeoJSONSpawner EBus notification - Spawn
+                GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitySpawn, ticketToSpawn.first);
             }
         }
 
@@ -289,6 +293,9 @@ namespace GeoJSONSpawner::GeoJSONUtils
             callback(id);
         };
         spawner->DespawnAllEntities(ticket, optionalArgs);
+
+        // Call GeoJSONSpawner EBus notification - Despawn
+        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntityDespawn, ticket);
     }
 
     AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
@@ -307,7 +314,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         const AZStd::vector<FeatureObjectInfo>& featureObjects,
         const AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations)
     {
-        if (!ROS2::GeoreferenceRequestsBus::HasHandlers())
+        if (!Georeferencing::GeoreferenceRequestsBus::HasHandlers())
         {
             AZ_Error("GeoJSONSpawnerUtils", false, "Cannot convert WGS84 coordinates - Level is not geographically positioned.");
             return {};
@@ -329,14 +336,14 @@ namespace GeoJSONSpawner::GeoJSONUtils
             {
                 constexpr float defaultScale = 1.0f;
                 const AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
-                ROS2::WGS::WGS84Coordinate coordinate;
+                Georeferencing::WGS::WGS84Coordinate coordinate;
                 AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
                 coordinate.m_longitude = point[0];
                 coordinate.m_latitude = point[1];
                 coordinate.m_altitude = spawnableAssetConfig.m_raytraceStartingHeight;
 
-                ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                    coordinateInLevel, &ROS2::GeoreferenceRequestsBus::Events::ConvertFromWGS84ToLevel, coordinate);
+                Georeferencing::GeoreferenceRequestsBus::BroadcastResult(
+                    coordinateInLevel, &Georeferencing::GeoreferenceRequestsBus::Events::ConvertFromWGS84ToLevel, coordinate);
 
                 AZ::Transform transform{ coordinateInLevel, rotation, defaultScale };
                 spawnableEntityInfo.m_positions.emplace_back(AZStd::move(transform));
@@ -567,6 +574,11 @@ namespace GeoJSONSpawner::GeoJSONUtils
         }
 
         return GeometryType::Unknown;
+    }
+
+    bool IsTerrainAvailable()
+    {
+        return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
     }
 
 } // namespace GeoJSONSpawner::GeoJSONUtils

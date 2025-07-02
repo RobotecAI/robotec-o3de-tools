@@ -18,6 +18,7 @@ namespace CsvSpawner
     inline constexpr const char* CsvSpawnableEntityInfoTypeId = "{6acce47e-9cac-4a6e-8726-ea614fb2d30d}";
     inline constexpr const char* CsvSpawnableAssetConfigurationTypeId = "{d04ea4de-b4dc-4e76-b742-c1d77203bc3e}";
     inline constexpr const char* CsvSpawnerEditorComponentTypeId = "{8b016a40-c585-48a1-a3e5-2814f599418c}";
+    inline constexpr const char* CsvSpawnerEditorTerrainSettingsConfigTypeId = "{589B418A-A2A5-4DDE-9722-2952F79037B0}";
     inline constexpr const char* CsvSpawnerComponentTypeId = "{59b31372-1f3c-4733-b61b-0fe94b5a8f3e}";
 
     // Interface TypeIds
