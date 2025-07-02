@@ -338,7 +338,8 @@ namespace CsvSpawner::CsvSpawnerUtils
                 if (completedTickets == totalTickets)
                 {
                     // Call CsvSpawner EBus notification - Finished
-                    CsvSpawnerNotificationBus::Broadcast(&CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
+                    CsvSpawnerNotificationBus::Broadcast(
+                        &CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, spawnStatusCode);
                 }
             };
             optionalArgs.m_priority = AzFramework::SpawnablePriority_Lowest;
