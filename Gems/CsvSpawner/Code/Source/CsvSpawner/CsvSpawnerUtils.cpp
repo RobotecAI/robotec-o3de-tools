@@ -322,7 +322,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 transformInterface->SetWorldTM(transform);
             };
             optionalArgs.m_completionCallback =
-                [parentId, &spawnStatusCode, &broadcastSpawnInfo, &tickets, totalTickets, &completedTickets](
+                [parentId, &spawnStatusCode, &broadcastSpawnInfo, totalTickets, &completedTickets](
                     [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableConstEntityContainerView view)
             {
                 if (view.empty())

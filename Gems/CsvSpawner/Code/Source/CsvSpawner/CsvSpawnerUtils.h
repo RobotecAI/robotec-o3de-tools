@@ -18,7 +18,6 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
-#include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
