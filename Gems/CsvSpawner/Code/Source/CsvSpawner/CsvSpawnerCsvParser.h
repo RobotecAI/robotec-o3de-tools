@@ -10,12 +10,8 @@
 
 #pragma once
 
-#include "CsvSpawnerUtils.h"
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/Math/Vector3.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <CsvSpawner/CsvSpawnerUtils.h>
 
 namespace CsvSpawner::CsvSpawnerUtils
 {
