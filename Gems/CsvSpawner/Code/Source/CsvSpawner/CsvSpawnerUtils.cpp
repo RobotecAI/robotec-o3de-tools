@@ -225,6 +225,7 @@ namespace CsvSpawner::CsvSpawnerUtils
     {
         SpawnInfo broadcastSpawnInfo =
             SpawnInfo{ entitiesToSpawn, physicsSceneName, parentId }; // Spawn Info used in CsvSpawner EBus notify.
+
         // SpawnStatus spawnStatusCode = SpawnStatus::Success; // Spawn Status Code used for CsvSpawner EBus notify -
         // OnEntitiesSpawnFinished.
         auto spawnStatusCode = AZStd::make_shared<SpawnStatus>(
@@ -313,6 +314,7 @@ namespace CsvSpawner::CsvSpawnerUtils
             AZ_Assert(spawner, "Unable to get spawnable entities definition");
             AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
             AzFramework::EntitySpawnTicket ticket(spawnable);
+
             // Set the pre-spawn callback to set the name of the root entity to the name
             // of the spawnable
             optionalArgs.m_preInsertionCallback = [transform, &spawnStatusCode](auto id, auto view)
@@ -330,6 +332,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 auto* transformInterface = root->FindComponent<AzFramework::TransformComponent>();
                 transformInterface->SetWorldTM(transform);
             };
+
             optionalArgs.m_completionCallback =
                 [parentId, spawnStatusCode, pendingSpawns, broadcastSpawnInfo](
                     [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableConstEntityContainerView view)
@@ -353,6 +356,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                         &CsvSpawnerInterface::OnEntitiesSpawnFinished, broadcastSpawnInfo, *spawnStatusCode);
                 }
             };
+
             optionalArgs.m_priority = AzFramework::SpawnablePriority_Lowest;
             spawner->SpawnAllEntities(ticket, optionalArgs);
             tickets[entityConfig.m_id] = AZStd::move(ticket);
