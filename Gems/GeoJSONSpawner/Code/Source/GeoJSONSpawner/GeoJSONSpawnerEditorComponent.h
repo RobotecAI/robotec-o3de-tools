@@ -46,6 +46,8 @@ namespace GeoJSONSpawner
 
         // AzFramework::Terrain::TerrainDataNotificationBus::Handler overrides
         void OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
         // EntityDebugDisplayEventBus::Handler overrides

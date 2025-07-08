@@ -52,6 +52,9 @@ namespace GeoJSONSpawner
         void Activate() override;
         void Deactivate() override;
 
+        void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
         // GeoJSONSpawnerRequestBus::Handler overrides...
         Result SpawnWithRawString(const AZStd::string& rawJsonString) override;
         Result SpawnWithAssetPath(const AZ::IO::Path& assetPath) override;

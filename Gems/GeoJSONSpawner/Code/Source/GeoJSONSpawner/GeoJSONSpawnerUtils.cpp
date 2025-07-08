@@ -258,7 +258,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
     }
 
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
-        AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>>& ticketsToSpawn)
+        const AZ::EntityId& componentOwnerEntityId, AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>>& ticketsToSpawn)
     {
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
         AZ_Assert(spawner, "Unable to get spawnable entities definition.");
@@ -276,26 +276,25 @@ namespace GeoJSONSpawner::GeoJSONUtils
                 groupIdToTicketsMap.at(groupIdToSpawn.first).emplace_back(AZStd::move(ticketToSpawn.first));
 
                 // Call GeoJSONSpawner EBus notification - Spawn
-                GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitySpawn, ticketToSpawn.first);
+                GeoJSONSpawnerNotificationBus::Event(componentOwnerEntityId, &GeoJSONSpawnerInterface::OnEntitySpawn, ticketToSpawn.first);
             }
         }
 
         return groupIdToTicketsMap;
     }
 
-    void DespawnEntity(AzFramework::EntitySpawnTicket& ticket, DespawnCallback callback)
+    void DespawnEntity(const AZ::EntityId& componentOwnerEntityId, AzFramework::EntitySpawnTicket& ticket, DespawnCallback callback)
     {
         auto spawner = AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Get();
         AZ_Assert(spawner, "Unable to get spawnable entities definition.");
         AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs;
-        optionalArgs.m_completionCallback = [callback](auto id)
+        optionalArgs.m_completionCallback = [componentOwnerEntityId, ticket, callback](auto id) mutable
         {
             callback(id);
+            // Call GeoJSONSpawner EBus notification - Despawn
+            GeoJSONSpawnerNotificationBus::Event(componentOwnerEntityId, &GeoJSONSpawnerInterface::OnEntityDespawn, ticket);
         };
         spawner->DespawnAllEntities(ticket, optionalArgs);
-
-        // Call GeoJSONSpawner EBus notification - Despawn
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntityDespawn, ticket);
     }
 
     AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(

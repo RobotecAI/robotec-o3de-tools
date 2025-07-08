@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "AzCore/Component/EntityId.h"
+#include "AzCore/EBus/Policies.h"
 #include "GeoJSONSpawner/GeoJSONSpawnerUtils.h"
 #include "GeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.h"
 #include "GeoJSONSpawnerTypeIds.h"
@@ -66,10 +68,10 @@ namespace GeoJSONSpawner
     using GeoJSONSpawnerRequestBus = AZ::EBus<GeoJSONSpawnerRequests>;
 
     /**
-     * @brief Interface for handling entity spawn events in GeoJSON Spawner.
+     * @brief Interface for handling entity spawn events in GeoJSON Spawner Component.
      *
      * GeoJSONSpawnerInterface is an Event Bus (EBus) interface that notifies multiple listeners
-     * when entity spawning and despawning begins or finishes.
+     * when entity spawning and despawning begins or finishes by particular GeoJSONSpawnerComponent.
      */
     class GeoJSONSpawnerInterface : public AZ::EBusTraits
     {
@@ -133,6 +135,8 @@ namespace GeoJSONSpawner
 
         /// EBus Configuration - Allows multiple listeners to handle events.
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityId;
     };
     // Create an EBus using the notification interface
     using GeoJSONSpawnerNotificationBus = AZ::EBus<GeoJSONSpawnerInterface>;
@@ -185,4 +189,5 @@ namespace GeoJSONSpawner
             Call(FN_OnEntityDespawn, despawnedEntityTicket);
         }
     };
+
 } // namespace GeoJSONSpawner

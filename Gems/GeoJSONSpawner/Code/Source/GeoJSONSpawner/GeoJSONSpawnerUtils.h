@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "AzCore/Component/EntityId.h"
 #include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
 
 #include <AzCore/Math/Transform.h>
@@ -120,15 +121,17 @@ namespace GeoJSONSpawner::GeoJSONUtils
         AZ::EntityId parentId = AZ::EntityId());
 
     //! This function spawns entities using passed EntitySpawnTicket and SpawnAllEntitiesOptionalArgs pairs
+    //! @param componentOwnerEntityId - entityId of the entity which owns GeoJSONSpawner Component
     //! @param ticketsToSpawn - map containing group id and container of associated EntitySpawnTicket and SpawnAllEntitiesOptionalArgs pairs
     //! @return map containing group id with associated tickets
     AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> SpawnEntities(
-        AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>>& ticketsToSpawn);
+        const AZ::EntityId& componentOwnerEntityId, AZStd::unordered_map<int, AZStd::vector<TicketToSpawnPair>>& ticketsToSpawn);
 
     //! Despawn entities connected with given ticket. When ticked is despawned successfully then callback is called.
+    //! @param componentOwnerEntityId - entityId of the entity which owns GeoJSONSpawner Component
     //! @param ticket - ticket connected with spawned entities, which will be removed from the scene
     //! @param callback - function that is called when ticket is successfully despawned
-    void DespawnEntity(AzFramework::EntitySpawnTicket& ticket, DespawnCallback callback);
+    void DespawnEntity(const AZ::EntityId& componentOwnerEntityId, AzFramework::EntitySpawnTicket& ticket, DespawnCallback callback);
 
     //! This function create map of spawnable asset configuration from vector of spawnable asset configuration, where
     //! the key is the name of the spawnable asset configuration

@@ -92,6 +92,17 @@ namespace GeoJSONSpawner
         }
     }
 
+    // GeoJSONSpawner buses are identified by the EntityId so it must be forbidden to add multiple components of this type to the entity
+    void GeoJSONSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC_CE("GeoJSONSpawnerComponent"));
+    }
+
+    void GeoJSONSpawnerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("GeoJSONSpawnerComponent"));
+    }
+
     void GeoJSONSpawnerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         if (m_spawnerState == SpawnerState::Idle && m_spawnerStateQueue.empty())
@@ -105,8 +116,8 @@ namespace GeoJSONSpawner
             if (m_ticketsToDespawn == 0)
             {
                 // Call GeoJSONSpawner EBus notification - Despawn Finished
-                GeoJSONSpawnerNotificationBus::Broadcast(
-                    &GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_copyDespawnTickets, m_despawnStatus);
+                GeoJSONSpawnerNotificationBus::Event(
+                    GetEntityId(), &GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_copyDespawnTickets, m_despawnStatus);
                 m_spawnerState = SpawnerState::Idle;
             }
         }
@@ -121,8 +132,8 @@ namespace GeoJSONSpawner
             if (m_ticketsToSpawn == 0)
             {
                 // Call GeoJSONSpawner EBus notification - Spawn Finished
-                GeoJSONSpawnerNotificationBus::Broadcast(
-                    &GeoJSONSpawnerInterface::OnEntitiesSpawnFinished, m_copySpawnTickets, m_spawnStatus);
+                GeoJSONSpawnerNotificationBus::Event(
+                    GetEntityId(), &GeoJSONSpawnerInterface::OnEntitiesSpawnFinished, m_copySpawnTickets, m_spawnStatus);
                 m_spawnerState = SpawnerState::Idle;
             }
         }
@@ -144,7 +155,7 @@ namespace GeoJSONSpawner
     void GeoJSONSpawnerComponent::SpawnEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& featureObjectsToSpawn)
     {
         // Call GeoJSONSpawner EBus notification - Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
+        GeoJSONSpawnerNotificationBus::Event(GetEntityId(), &GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
         ResetSpawnDespawnStatus(m_spawnStatus, m_copySpawnTickets);
 
         m_spawnableEntityInfo =
@@ -162,7 +173,7 @@ namespace GeoJSONSpawner
 
         m_ticketsToSpawn = CountTicketsToSpawn(preparedTickets);
 
-        m_spawnableTickets = GeoJSONUtils::SpawnEntities(preparedTickets);
+        m_spawnableTickets = GeoJSONUtils::SpawnEntities(GetEntityId(), preparedTickets);
 
         if (m_spawnableTickets.empty())
         {
@@ -176,7 +187,7 @@ namespace GeoJSONSpawner
     void GeoJSONSpawnerComponent::SpawnCachedEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& cachedObjectsToSpawn)
     {
         // Call GeoJSONSpawner EBus notification - Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
+        GeoJSONSpawnerNotificationBus::Event(GetEntityId(), &GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
         ResetSpawnDespawnStatus(m_spawnStatus, m_copySpawnTickets);
 
         auto entityInfos = GeoJSONUtils::GetSpawnableEntitiesFromFeatureObjectVector(cachedObjectsToSpawn, m_spawnableAssetConfigurations);
@@ -194,7 +205,7 @@ namespace GeoJSONSpawner
 
         m_ticketsToSpawn = CountTicketsToSpawn(preparedTickets);
 
-        const auto spawnableTickets = GeoJSONUtils::SpawnEntities(preparedTickets);
+        const auto spawnableTickets = GeoJSONUtils::SpawnEntities(GetEntityId(), preparedTickets);
 
         for (const auto& pair : spawnableTickets)
         {
@@ -402,6 +413,7 @@ namespace GeoJSONSpawner
         }
 
         GeoJSONUtils::DespawnEntity(
+            GetEntityId(),
             ticketToDespawn,
             [this](auto id)
             {
@@ -423,7 +435,7 @@ namespace GeoJSONSpawner
     void GeoJSONSpawnerComponent::DespawnAllEntities()
     {
         // Call GeoJSONSpawner EBus notification - Despawn Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+        GeoJSONSpawnerNotificationBus::Event(GetEntityId(), &GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
         ResetSpawnDespawnStatus(m_despawnStatus, m_copyDespawnTickets);
 
         // Copy Spawn Tickets for notification bus
@@ -449,7 +461,7 @@ namespace GeoJSONSpawner
     void GeoJSONSpawnerComponent::DespawnEntitiesById(const GeoJSONUtils::Ids& ids)
     {
         // Call GeoJSONSpawner EBus notification - Despawn Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+        GeoJSONSpawnerNotificationBus::Event(GetEntityId(), &GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
         ResetSpawnDespawnStatus(m_despawnStatus, m_copyDespawnTickets);
 
         FillGroupIdToTicketIdMap(ids);

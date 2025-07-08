@@ -76,6 +76,17 @@ namespace GeoJSONSpawner
         }
     }
 
+    // GeoJSONSpawner buses are identified by the EntityId so it must be forbidden to add multiple components of this type to the entity
+    void GeoJSONSpawnerEditorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    {
+        provided.push_back(AZ_CRC_CE("GeoJSONSpawnerEditorComponent"));
+    }
+
+    void GeoJSONSpawnerEditorComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("GeoJSONSpawnerEditorComponent"));
+    }
+
     void GeoJSONSpawnerEditorComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -155,7 +166,7 @@ namespace GeoJSONSpawner
             },
             AzPhysics::EditorPhysicsSceneName,
             GetEntityId());
-        m_spawnedTicketsGroups = GeoJSONUtils::SpawnEntities(ticketsToSpawn);
+        m_spawnedTicketsGroups = GeoJSONUtils::SpawnEntities(GetEntityId(), ticketsToSpawn);
     }
 
     void GeoJSONSpawnerEditorComponent::OnSpawnButton()
