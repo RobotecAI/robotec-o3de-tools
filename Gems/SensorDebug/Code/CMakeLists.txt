@@ -125,7 +125,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
+                ${gem_name}.Private.Object
                 Gem::ImGui.imguilib
                 Gem::ImGui
                 Gem::ROS2.Static
