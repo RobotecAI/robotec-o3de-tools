@@ -42,3 +42,15 @@ The component supports three restoring policies:
 - `Never` - the initial pose will never be restored.
 - `Once` - the initial pose will be restored once after the first goal pose request to the ROS2PoseControl.
 - `Everytime` - the initial pose will be restored every time the ROS2PoseControl receives a goal pose request.
+
+## Usage
+To use the `ROS2PoseControl` add it to an entity, that should be controlled (e.g., the root of the prefab), configure it according to your preferences (see [Configuration](#configuration)) and run GameMode or GameLauncher.
+### Tracking Mode Pose Messages
+If `ROS2PoseControl` component is configured to track `Pose Messages`, use the topic that has been set in the `Topic for control message` to send `geometry_msgs::msg::PoseStamped` messages with the desired pose.
+Example:
+```bash
+ros2 topic pub /goal_pose geometry_msgs/msg/PoseStamped '{header: {stamp: {sec: 0, nanosec: 0}, frame_id: ""}, pose: {position: {x: 10.0, y: 10.0, z: 40.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}' -1
+```
+
+### Tracking Mode TF
+If `ROS2PoseControl` component is configured to track `TF`, ensure that the frames defined in the `Target Frame` and `Reference Frame` fields are present in the scene, rosbag, or other environment to which ROS2 has access. Additionally, both frames must be part of the same TF tree; otherwise, the component will not be able to calculate a lookup transform.
