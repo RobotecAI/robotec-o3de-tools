@@ -127,7 +127,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AtomLyIntegration_CommonFeatures.Public
                 Gem::ROS2.Static
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
+                ${gem_name}.Private.Object
     )
 
     ly_add_target(
