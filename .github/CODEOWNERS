@@ -1,0 +1,23 @@
+# code owners are assigned based on made contributions to Gems
+# command used to find contributors
+# git log --pretty=format:"%ae" -- /path/to/directory | sort | uniq
+
+Gems/CsvSpawner @jhanca-robotecai @michalpelka @patrykantosz @w-czerski
+Gems/DisableMainView @jhanca-robotecai @michalpelka @norbertprokopiuk
+Gems/ExposeConsoleToRos @michalpelka @w-czerski
+Gems/GeoJSONSpawner @patrykantosz @w-czerski
+Gems/GeoJSONSpawnerROS2 @patrykantosz
+Gems/ImGuiProvider @norbertprokopiuk @zakmat
+Gems/ImGuizmo @michalpelka
+Gems/LevelModificationTools @arturkamieniecki @jhanca-robotecai @MateuszWasilewski @michalpelka
+Gems/Pointcloud @norbertprokopiuk @jhanca-robotecai @MateuszWasilewski @michalpelka @zakmat @patrykantosz
+Gems/RandomizeUtils @michalpelka
+Gems/RobotecRecordingTools @jhanca-robotecai @MateuszWasilewski
+Gems/RobotecSpectatorCamera @jhanca-robotecai @patrykantosz
+Gems/RobotecSplineTools @jhanca-robotecai @zakmat @michalpelka @pijaro @w-czerski
+Gems/RobotecWatchdogTools @jhanca-robotecai @MateuszWasilewski @zakmat
+Gems/ROS2PoseControl @arturkamieniecki @jhanca-robotecai @MateuszWasilewski @michalpelka @patrykantosz
+Gems/ROS2ScriptIntegration @jhanca-robotecai @MateuszWasilewski @michalpelka
+Gems/SensorDebug @jhanca-robotecai @MateuszWasilewski @michalpelka
+Gems/Smoothing @michalpelka @w-czerski @pijaro
+Gems/ViewportStreamer @lawendah @patrykantosz
