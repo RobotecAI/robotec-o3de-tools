@@ -9,24 +9,24 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | Gem name                   | Compatibility   |
 | -------------------------- | --------------- |
 | **CsvSpawner**             | incompatible    |
-| **DisableMainView**        | compatible      |
-| **ExposeConsoleToRos**     | compatible      |
+| **DisableMainView**        | not verified    |
+| **ExposeConsoleToRos**     | not verified    |
 | **GeoJSONSpawner**         | compatible      |
 | **GeoJSONSpawnerROS2**     | compatible      |
 | **ImGuiProvider**          | compatible      |
 | **ImGuizmo**               | compatible      |
-| **LevelModificationTools** | compatible      |
+| **LevelModificationTools** | not verified    |
 | **Pointcloud**             | compatible      |
-| **RandomizeUtils**         | compatible      |
-| **RobotecRecordingTools**  | compatible      |
-| **RobotecSpectatorCamera** | compatible      |
+| **RandomizeUtils**         | not verified    |
+| **RobotecRecordingTools**  | not verified    |
+| **RobotecSpectatorCamera** | not verified    |
 | **RobotecSplineTools**     | incompatible    |
-| **RobotecWatchdogTools**   | compatible      |
+| **RobotecWatchdogTools**   | not verified    |
 | **ROS2PoseControl**        | incompatible    |
-| **ROS2ScriptIntegration**  | compatible      |
-| **SensorDebug**            | compatible      |
-| **Smoothing**              | compatible      |
-| **ViewportStreamer**       | compatible      |
+| **ROS2ScriptIntegration**  | not verified    |
+| **SensorDebug**            | not verified    |
+| **Smoothing**              | not verified    |
+| **ViewportStreamer**       | not verified    |
 
 # RobotecRecordingTools
 
