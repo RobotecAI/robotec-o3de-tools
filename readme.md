@@ -20,7 +20,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | **RandomizeUtils**         | not verified    |
 | **RobotecRecordingTools**  | not verified    |
 | **RobotecSpectatorCamera** | not verified    |
-| **RobotecSplineTools**     | incompatible    |
+| **RobotecSplineTools**     | compatible      |
 | **RobotecWatchdogTools**   | not verified    |
 | **ROS2PoseControl**        | incompatible    |
 | **ROS2ScriptIntegration**  | not verified    |
