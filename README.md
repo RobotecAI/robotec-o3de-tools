@@ -192,7 +192,7 @@ Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
 
 # ROS2PoseControl
 
-A utility gem that introduces a way to control robots in simulation as puppets with Pose messages or TFs. For a more detailed description, check the [PoseControl user guide](./doc/UserGuide/PoseControl.md).
+The utility gem enabling controlling robots in simulation as puppets with Pose messages or TFs. For a more detailed description, check the [PoseControl user guide](./doc/UserGuide/PoseControl.md).
 
 # GeoJSONSpawner
 
