@@ -6,27 +6,27 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 # Compatibility
 
-| Gem name                   | Compatibility |
-| -------------------------- | ------------- |
-| **CsvSpawner**             | compatible    |
-| **DisableMainView**        | compatible    |
-| **ExposeConsoleToRos**     | compatible    |
-| **GeoJSONSpawner**         | compatible    |
-| **GeoJSONSpawnerROS2**     | compatible    |
-| **ImGuiProvider**          | compatible    |
-| **ImGuizmo**               | compatible    |
-| **LevelModificationTools** | compatible    |
-| **Pointcloud**             | compatible    |
-| **RandomizeUtils**         | compatible    |
-| **RobotecRecordingTools**  | compatible    |
-| **RobotecSpectatorCamera** | compatible    |
-| **RobotecSplineTools**     | compatible    |
-| **RobotecWatchdogTools**   | compatible    |
-| **ROS2PoseControl**        | compatible    |
-| **ROS2ScriptIntegration**  | compatible    |
-| **SensorDebug**            | compatible    |
-| **Smoothing**              | compatible    |
-| **ViewportStreamer**       | compatible    |
+| Gem name                   | Compatibility   |
+| -------------------------- | --------------- |
+| **CsvSpawner**             | incompatible    |
+| **DisableMainView**        | compatible      |
+| **ExposeConsoleToRos**     | compatible      |
+| **GeoJSONSpawner**         | compatible      |
+| **GeoJSONSpawnerROS2**     | compatible      |
+| **ImGuiProvider**          | compatible      |
+| **ImGuizmo**               | compatible      |
+| **LevelModificationTools** | compatible      |
+| **Pointcloud**             | compatible      |
+| **RandomizeUtils**         | compatible      |
+| **RobotecRecordingTools**  | compatible      |
+| **RobotecSpectatorCamera** | compatible      |
+| **RobotecSplineTools**     | incompatible    |
+| **RobotecWatchdogTools**   | compatible      |
+| **ROS2PoseControl**        | incompatible    |
+| **ROS2ScriptIntegration**  | compatible      |
+| **SensorDebug**            | compatible      |
+| **Smoothing**              | compatible      |
+| **ViewportStreamer**       | compatible      |
 
 # RobotecRecordingTools
 
