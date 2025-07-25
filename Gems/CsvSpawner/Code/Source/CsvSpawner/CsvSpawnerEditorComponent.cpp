@@ -12,6 +12,7 @@
 #include "CsvSpawnerComponent.h"
 #include "CsvSpawnerCsvParser.h"
 #include "CsvSpawnerUtils.h"
+#include <CsvSpawner/CsvSpawnerInterface.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Debug/Trace.h>
@@ -26,6 +27,8 @@ namespace CsvSpawner
 {
     void CsvSpawnerEditorComponent::Reflect(AZ::ReflectContext* context)
     {
+        CsvSpawner::SpawnInfo::Reflect(context);
+
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
@@ -69,6 +72,12 @@ namespace CsvSpawner
                         "Spawn Behaviour Settings",
                         "Settings to configure spawn behaviour in editor.");
             }
+        }
+
+        if (const auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<CsvSpawner::CsvSpawnerNotificationBus>("CsvSpawnerNotificationBus")
+                ->Handler<CsvSpawner::CsvSpawnerNotificationBusHandler>();
         }
     }
 

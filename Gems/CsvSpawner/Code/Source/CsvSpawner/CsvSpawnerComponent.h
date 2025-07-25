@@ -10,8 +10,10 @@
 
 #pragma once
 
+#include <CsvSpawner/CsvSpawnerTypeIds.h>
+#include <CsvSpawner/CsvSpawnerUtils.h>
+
 #include "AzFramework/Terrain/TerrainDataRequestBus.h"
-#include "CsvSpawnerUtils.h"
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
