@@ -8,7 +8,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 | Gem name                   | Compatibility   |
 | -------------------------- | --------------- |
-| **CsvSpawner**             | incompatible    |
+| **CsvSpawner**             | compatible      |
 | **DisableMainView**        | not verified    |
 | **ExposeConsoleToRos**     | not verified    |
 | **GeoJSONSpawner**         | compatible      |
@@ -22,7 +22,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | **RobotecSpectatorCamera** | not verified    |
 | **RobotecSplineTools**     | incompatible    |
 | **RobotecWatchdogTools**   | not verified    |
-| **ROS2PoseControl**        | incompatible    |
+| **ROS2PoseControl**        | compatible      |
 | **ROS2ScriptIntegration**  | not verified    |
 | **SensorDebug**            | not verified    |
 | **Smoothing**              | not verified    |
