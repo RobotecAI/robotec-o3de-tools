@@ -1,6 +1,6 @@
 {
     "gem_name": "ROS2PoseControl",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "display_name": "ROS2PoseControl",
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -22,6 +22,7 @@
     "documentation_url": "See the docs in the repo",
     "dependencies": [
         "ROS2",
+        "LevelGeoreferencing",
         "ImGui"
     ],
     "repo_uri": "",

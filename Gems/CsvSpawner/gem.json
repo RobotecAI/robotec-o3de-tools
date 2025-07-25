@@ -1,6 +1,6 @@
 {
   "gem_name": "CsvSpawner",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "display_name": "CsvSpawner",
   "license": "Apache-2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -21,7 +21,8 @@
   "requirements": "Requires ROS2 Gem",
   "documentation_url": "",
   "dependencies": [
-    "ROS2"
+    "ROS2",
+    "LevelGeoreferencing"
   ],
   "repo_uri": "",
   "compatible_engines": [],

@@ -127,6 +127,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::ROS2.Editor.Static
+                Gem::LevelGeoreferencing.API
                 AZ::AzToolsFramework
                 ${gem_name}.Private.Object
     )

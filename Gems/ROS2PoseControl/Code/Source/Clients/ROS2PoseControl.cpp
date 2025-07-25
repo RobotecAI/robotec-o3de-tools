@@ -20,9 +20,9 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <Georeferencing/GeoreferenceBus.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <ROS2/Frame/ROS2FrameComponent.h>
-#include <ROS2/Georeference/GeoreferenceBus.h>
 #include <ROS2/Utilities/ROS2Conversions.h>
 #include <ROS2/Utilities/ROS2Names.h>
 #include <RigidBodyComponent.h>
@@ -291,7 +291,7 @@ namespace ROS2PoseControl
         }
         bool isWGS = m_configuration.m_useWGS && msg->header.frame_id == "wgs84";
 
-        if (isWGS && !ROS2::GeoreferenceRequestsBus::HasHandlers())
+        if (isWGS && !Georeferencing::GeoreferenceRequestsBus::HasHandlers())
         {
             AZ_Error(
                 "ROS2PoseControl",
@@ -304,15 +304,16 @@ namespace ROS2PoseControl
 
         if (isWGS)
         {
-            ROS2::WGS::WGS84Coordinate coordinate;
+            Georeferencing::WGS::WGS84Coordinate coordinate;
             AZ::Vector3 coordinateInLevel = AZ::Vector3(-1);
             AZ::Quaternion rotationInENU = AZ::Quaternion::CreateIdentity();
             coordinate.m_latitude = msg->pose.position.x;
             coordinate.m_longitude = msg->pose.position.y;
             coordinate.m_altitude = msg->pose.position.z;
-            ROS2::GeoreferenceRequestsBus::BroadcastResult(rotationInENU, &ROS2::GeoreferenceRequests::GetRotationFromLevelToENU);
-            ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
+            Georeferencing::GeoreferenceRequestsBus::BroadcastResult(
+                rotationInENU, &Georeferencing::GeoreferenceRequests::GetRotationFromLevelToENU);
+            Georeferencing::GeoreferenceRequestsBus::BroadcastResult(
+                coordinateInLevel, &Georeferencing::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
 
             rotationInENU =
                 (rotationInENU.GetInverseFast() *
