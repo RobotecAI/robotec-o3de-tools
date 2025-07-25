@@ -3,11 +3,11 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <Georeferencing/GeoreferenceBus.h>
+#include <Georeferencing/GeoreferenceStructures.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <ROS2/Georeference/GeoreferenceBus.h>
-#include <ROS2/Georeference/GeoreferenceStructures.h>
 #include <csv/csv.hpp>
 
 namespace SplineTools
@@ -240,13 +240,13 @@ namespace SplineTools
             {
                 for (csv::CSVRow& row : reader)
                 {
-                    ROS2::WGS::WGS84Coordinate coordinate;
+                    using namespace Georeferencing;
+                    WGS::WGS84Coordinate coordinate;
                     coordinate.m_latitude = row[*indexLat].get<double>();
                     coordinate.m_longitude = row[*indexLon].get<double>();
                     coordinate.m_altitude = row[*indexAlt].get<float>();
                     auto coordinateInLevel = AZ::Vector3(-1);
-                    ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                        coordinateInLevel, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
+                    GeoreferenceRequestsBus::BroadcastResult(coordinateInLevel, &GeoreferenceRequests::ConvertFromWGS84ToLevel, coordinate);
 
                     ret.emplace_back(AZStd::move(coordinateInLevel));
                 }

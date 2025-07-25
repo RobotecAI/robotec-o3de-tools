@@ -3,9 +3,9 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Georeferencing/GeoreferenceBus.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
-#include <ROS2/Georeference/GeoreferenceBus.h>
 
 namespace SplineTools
 {
@@ -115,13 +115,14 @@ namespace SplineTools
             }
             else if (frame == "WGS84" && m_config.m_allowWGS84)
             {
-                ROS2::WGS::WGS84Coordinate currentPositionWGS84;
+                using namespace Georeferencing;
+                WGS::WGS84Coordinate currentPositionWGS84;
                 currentPositionWGS84.m_latitude = pose.position.x;
                 currentPositionWGS84.m_longitude = pose.position.y;
                 currentPositionWGS84.m_altitude = pose.position.z;
                 AZ::Vector3 levelPosition{ 0 };
-                ROS2::GeoreferenceRequestsBus::BroadcastResult(
-                    levelPosition, &ROS2::GeoreferenceRequests::ConvertFromWGS84ToLevel, currentPositionWGS84);
+                GeoreferenceRequestsBus::BroadcastResult(
+                    levelPosition, &GeoreferenceRequests::ConvertFromWGS84ToLevel, currentPositionWGS84);
                 points[i] = worldTm.TransformPoint(levelPosition);
             }
             else
