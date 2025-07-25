@@ -3,7 +3,6 @@
 # git log --pretty=format:"%ae" -- /path/to/directory | sort | uniq
 
 Gems/CsvSpawner @jhanca-robotecai @michalpelka @patrykantosz @w-czerski
-Gems/DisableMainView @jhanca-robotecai @michalpelka @norbertprokopiuk
 Gems/ExposeConsoleToRos @michalpelka @w-czerski
 Gems/GeoJSONSpawner @patrykantosz @w-czerski
 Gems/GeoJSONSpawnerROS2 @patrykantosz

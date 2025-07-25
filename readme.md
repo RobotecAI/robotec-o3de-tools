@@ -7,25 +7,25 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 # Compatibility
 
 | Gem name                   | Compatibility   |
-| -------------------------- | --------------- |
+| -------------------------- |-----------------|
 | **CsvSpawner**             | compatible      |
 | **DisableMainView**        | not verified    |
-| **ExposeConsoleToRos**     | not verified    |
+| **ExposeConsoleToRos**     | compatible      |
 | **GeoJSONSpawner**         | compatible      |
 | **GeoJSONSpawnerROS2**     | compatible      |
 | **ImGuiProvider**          | compatible      |
 | **ImGuizmo**               | compatible      |
-| **LevelModificationTools** | not verified    |
+| **LevelModificationTools** | incompatible    |
 | **Pointcloud**             | compatible      |
-| **RandomizeUtils**         | not verified    |
+| **RandomizeUtils**         | compatible      |
 | **RobotecRecordingTools**  | not verified    |
 | **RobotecSpectatorCamera** | not verified    |
 | **RobotecSplineTools**     | compatible      |
-| **RobotecWatchdogTools**   | not verified    |
+| **RobotecWatchdogTools**   | compatible      |
 | **ROS2PoseControl**        | compatible      |
-| **ROS2ScriptIntegration**  | not verified    |
-| **SensorDebug**            | not verified    |
-| **Smoothing**              | not verified    |
+| **ROS2ScriptIntegration**  | compatible      |
+| **SensorDebug**            | compatible      |
+| **Smoothing**              | compatible      |
 | **ViewportStreamer**       | not verified    |
 
 # RobotecRecordingTools
