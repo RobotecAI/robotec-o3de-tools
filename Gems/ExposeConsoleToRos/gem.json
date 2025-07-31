@@ -18,7 +18,7 @@
         ""
     ],
     "icon_path": "preview.png",
-    "requirements": "User's caution is advised",
+    "requirements": "Requires ROS2 Gem. User's caution is advised.",
     "documentation_url": "https://github.com/RobotecAI/robotec-o3de-tools/blob/main/readme.md",
     "dependencies": [
         "ROS2"

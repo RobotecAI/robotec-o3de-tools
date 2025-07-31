@@ -18,10 +18,10 @@
         ""
     ],
     "icon_path": "preview.png",
-    "requirements": "This Gem requires ROS2 Gem",
+    "requirements": "This Gem requires ROS2 and LevelGeoreferencing Gems",
     "documentation_url": "",
     "dependencies": [
-        "ROS2", 
+        "ROS2",
         "LevelGeoreferencing"
     ],
     "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
