@@ -3,11 +3,11 @@
     "version": "1.0.0",
     "display_name": "Smoothing",
     "license": "Apache-2.0",
-    "license_url": " https://opensource.org/licenses/Apache-2.0",
-    "origin": "RobotecAI",
-    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.ai",
+    "origin_url": "https://www.robotec.ai",
     "type": "Code",
-    "summary": "Tool gem to smooth movement of the entity",
+    "summary": "A tool for smoothing the entity's movement",
     "canonical_tags": [
         "Gem"
     ],
@@ -18,10 +18,10 @@
         ""
     ],
     "icon_path": "preview.png",
-    "requirements": "N/A",
+    "requirements": "",
     "documentation_url": "",
     "dependencies": [],
-    "repo_uri": "",
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
     "compatible_engines": [],
     "engine_api_dependencies": [],
     "restricted": "Smoothing"
