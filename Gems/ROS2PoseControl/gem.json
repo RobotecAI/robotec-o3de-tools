@@ -4,7 +4,7 @@
     "display_name": "ROS2PoseControl",
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
-    "origin": "RobotecAI",
+    "origin": "Robotec.ai",
     "origin_url": "https://www.robotec.ai",
     "type": "Code",
     "summary": "Allows for control of a entities pose using ROS2",
@@ -25,7 +25,7 @@
         "LevelGeoreferencing",
         "ImGui"
     ],
-    "repo_uri": "",
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
     "compatible_engines": [],
     "engine_api_dependencies": [],
     "restricted": "ROS2PoseControl"

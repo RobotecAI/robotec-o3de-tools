@@ -23,7 +23,7 @@
   "dependencies": [
     "LevelGeoreferencing"
   ],
-  "repo_uri": "",
+  "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
   "compatible_engines": [],
   "engine_api_dependencies": [],
   "restricted": "GeoJSONSpawner"

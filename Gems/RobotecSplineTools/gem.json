@@ -4,8 +4,8 @@
     "display_name": "SplineTools",
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
-    "origin": "RobotecAI",
-    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "origin": "Robotec.ai",
+    "origin_url": "https://www.robotec.ai",
     "type": "Code",
     "summary": "A swiss army knife of splines for O3DE",
     "canonical_tags": [
@@ -18,11 +18,16 @@
         ""
     ],
     "icon_path": "preview.png",
-    "requirements": "No requirements",
+    "requirements": "This Gem requires ROS2 and LevelGeoreferencing Gems",
     "documentation_url": "",
-    "dependencies": ["ROS2", "LevelGeoreferencing"],
-    "repo_uri": "",
-    "compatible_engines": ["o3de>=2.4.0"],
+    "dependencies": [
+        "ROS2",
+        "LevelGeoreferencing"
+    ],
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "compatible_engines": [
+        "o3de>=2.4.0"
+    ],
     "engine_api_dependencies": [],
     "restricted": "SplineTools"
 }
