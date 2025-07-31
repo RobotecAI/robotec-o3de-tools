@@ -30,7 +30,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 # RobotecRecordingTools
 
-Toolset for joystick-controlled cameras and spline animation tools.
+A toolset for joystick-controlled cameras and spline animation tools.
 
 # SplineTools
 
@@ -120,7 +120,7 @@ It exposes PrefabVariantRequestsBus to Script Canvas or LUA.
 
 # SensorDebug
 
-A tool that allows the adjusted frequency, activate and deactivate sensor during the game mode.
+A tool that allows to adjust frequency, and activate/deactivate sensor during the game mode.
 
 # Smoothing
 

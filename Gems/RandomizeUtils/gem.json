@@ -5,7 +5,7 @@
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
     "origin": "Robotec.ai",
-    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "origin_url": "https://www.robotec.ai",
     "type": "Code",
     "summary": "This gem allows to randomize prefab on spawning.",
     "canonical_tags": [
@@ -21,7 +21,7 @@
     "requirements": "None",
     "documentation_url": "",
     "dependencies": [],
-    "repo_uri": "",
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
     "compatible_engines": [],
     "engine_api_dependencies": [],
     "restricted": "RandomizeUtils"
