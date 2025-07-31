@@ -20,8 +20,10 @@
     "icon_path": "preview.png",
     "requirements": "User's caution is advised",
     "documentation_url": "https://github.com/RobotecAI/robotec-o3de-tools/blob/main/readme.md",
-    "dependencies": ["ROS2"],
-    "repo_uri": "",
+    "dependencies": [
+        "ROS2"
+    ],
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
     "compatible_engines": [],
     "engine_api_dependencies": [],
     "restricted": "ExposeConsoleToRos"

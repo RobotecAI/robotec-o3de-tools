@@ -4,7 +4,7 @@
     "display_name": "Pointcloud",
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
-    "origin": "Robotec.AI",
+    "origin": "Robotec.ai",
     "origin_url": "https://www.robotec.ai",
     "type": "Code",
     "summary": "Tool Gem to visualize point clouds",

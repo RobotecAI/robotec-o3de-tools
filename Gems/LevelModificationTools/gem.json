@@ -5,7 +5,7 @@
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
     "origin": "Robotec AI",
-    "origin_url": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "origin_url": "https://www.robotec.ai",
     "type": "Code",
     "summary": "Handy interface to replace / modify entities in runtime.",
     "canonical_tags": [
