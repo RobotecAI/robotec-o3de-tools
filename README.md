@@ -27,6 +27,8 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | **SensorDebug**            | compatible      |
 | **Smoothing**              | compatible      |
 | **ViewportStreamer**       | not verified    |
+| **WheelAnimTool**          | compatible      |
+
 
 # RobotecRecordingTools
 
@@ -490,3 +492,18 @@ Besides `OnImGuiUpdate` used for updating displayed GUI, notification bus define
 `AZStd::optional<ImGuiFeaturePath> GetActiveGuiId()` - returns optional with ImGuiProvider::ImGuiFeaturePath. Optional is empty if there is no active GUI.
 
 `void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given id as active. Doesn't check if given guiId exists.
+
+# WheelAnimTool
+
+Gem that gives component (`WheelAnimComponent`) that animates movement of the wheels based on Rigid body velocity.
+It works with mecanum and skid-steering.
+The component needs:
+- list of wheels (visual only entities)
+- model (Mecanum or Differential)
+- roller direction (for Mecanum model)
+- wheel radius in meters
+- wheel axis to animate.
+
+It should be attached to Dynamic rigid body. The component will compute Jacobian matrix (w.r.t wheel locatio, radius and model) of the robot locomotion.
+Jacobian will be used to find wheels rotation speed.
+More in dedicated [readme.md](Gems/WheelAnimTool/readme.md)

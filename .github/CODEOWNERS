@@ -20,3 +20,4 @@ Gems/ROS2ScriptIntegration @jhanca-robotecai @MateuszWasilewski @michalpelka
 Gems/SensorDebug @jhanca-robotecai @MateuszWasilewski @michalpelka
 Gems/Smoothing @michalpelka @w-czerski @pijaro
 Gems/ViewportStreamer @lawendah @patrykantosz
+Gems/WheelAnimTool @michalpelka @jhanca-robotecai
