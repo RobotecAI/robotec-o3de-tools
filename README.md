@@ -506,3 +506,4 @@ The component needs:
 
 It should be attached to Dynamic rigid body. The component will compute Jacobian matrix (w.r.t wheel locatio, radius and model) of the robot locomotion.
 Jacobian will be used to find wheels rotation speed.
+More in dedicated [readme.md](Gems/WheelAnimTool/readme.md)

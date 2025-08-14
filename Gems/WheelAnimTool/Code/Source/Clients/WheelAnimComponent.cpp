@@ -1,5 +1,5 @@
 /*
-* Copyright (c) Contributors to the Open 3D Engine Project.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -237,7 +237,7 @@ namespace WheelAnimTool
             m_wheelEntities.size() == m_rollerDirections.size(), "The same number of wheel entities and roller directions is expected");
         const uint numWheels = static_cast<uint>(m_wheelEntities.size());
         AZ_Assert(numWheels > 0, "At least one wheel entity is expected");
-        if ( m_wheelEntities.size() != m_rollerDirections.size()  || m_wheelEntities.empty())
+        if (m_wheelEntities.size() != m_rollerDirections.size() || m_wheelEntities.empty())
         {
             return false;
         }
@@ -313,7 +313,6 @@ namespace WheelAnimTool
                 AZ::TickBus::Handler::BusDisconnect();
                 return;
             }
-
         }
         AzPhysics::RigidBody* rigidBody = nullptr;
         Physics::RigidBodyRequestBus::EventResult(rigidBody, GetEntityId(), &Physics::RigidBodyRequests::GetRigidBody);
