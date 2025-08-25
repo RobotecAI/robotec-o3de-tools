@@ -8,26 +8,26 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 | Gem name                   | Compatibility   |
 | -------------------------- |-----------------|
-| **CsvSpawner**             | compatible      |
+| **CsvSpawner**             | not verified    |
 | **DisableMainView**        | not verified    |
-| **ExposeConsoleToRos**     | compatible      |
-| **GeoJSONSpawner**         | compatible      |
-| **GeoJSONSpawnerROS2**     | compatible      |
-| **ImGuiProvider**          | compatible      |
-| **ImGuizmo**               | compatible      |
-| **LevelModificationTools** | incompatible    |
-| **Pointcloud**             | compatible      |
-| **RandomizeUtils**         | compatible      |
+| **ExposeConsoleToRos**     | not verified    |
+| **GeoJSONSpawner**         | not verified    |
+| **GeoJSONSpawnerROS2**     | not verified    |
+| **ImGuiProvider**          | not verified    |
+| **ImGuizmo**               | not verified    |
+| **LevelModificationTools** | not verified    |
+| **Pointcloud**             | not verified    |
+| **RandomizeUtils**         | not verified    |
 | **RobotecRecordingTools**  | not verified    |
 | **RobotecSpectatorCamera** | not verified    |
-| **RobotecSplineTools**     | compatible      |
-| **RobotecWatchdogTools**   | compatible      |
-| **ROS2PoseControl**        | compatible      |
-| **ROS2ScriptIntegration**  | compatible      |
-| **SensorDebug**            | compatible      |
-| **Smoothing**              | compatible      |
+| **RobotecSplineTools**     | not verified    |
+| **RobotecWatchdogTools**   | not verified    |
+| **ROS2PoseControl**        | not verified    |
+| **ROS2ScriptIntegration**  | not verified    |
+| **SensorDebug**            | not verified    |
+| **Smoothing**              | not verified    |
 | **ViewportStreamer**       | not verified    |
-| **WheelAnimTool**          | compatible      |
+| **WheelAnimTool**          | not verified    |
 
 
 # RobotecRecordingTools
