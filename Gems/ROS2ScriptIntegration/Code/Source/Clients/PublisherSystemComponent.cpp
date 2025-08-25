@@ -1,6 +1,6 @@
 #include "PublisherSystemComponent.h"
 
-#include "ROS2/Clock/ROS2ClockRequestBus.h"
+#include <ROS2/Clock/ROS2ClockRequestBus.h>
 
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
 #include <ROS2ScriptIntegration/ROS2ScriptSubscriberBus.h>
