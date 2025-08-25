@@ -2,7 +2,8 @@
 #include "SubscriberSystemComponent.h"
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
 #include <ROS2ScriptIntegration/ROS2ScriptSubscriberBus.h>
-
+#include <ROS2/ROS2Bus.h>
+#include <ROS2/Clock/ROS2ClockRequestBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
