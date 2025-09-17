@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder SimpleLidarSensor/Assets": {
+                    "watch": "@GEMROOT:SimpleLidarSensor@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder SimpleLidarSensor/Registry": {
+                    "watch": "@GEMROOT:SimpleLidarSensor@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
