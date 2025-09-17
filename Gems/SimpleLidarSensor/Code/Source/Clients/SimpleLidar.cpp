@@ -51,6 +51,13 @@ namespace SimpleLidarSensor
         m_view.resize(ViewCount);
         m_passHierarchies.resize(ViewCount);
         m_scene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
+
+        m_callback = [](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
+        {
+            //m_pendingFrames.ReportFrameCaptured(result.m_userIdentifier);
+        };
+
+
         for (int i = 0; i < ViewCount; ++i)
         {
             auto& pipeline = m_pipelines[i];
@@ -75,9 +82,9 @@ namespace SimpleLidarSensor
             pipelineDesc.m_allowModification = false;
             pipelineDesc.m_name = pipelineName;
             pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
-            pipelineDesc.m_rootPassTemplate = "PipelineRenderToTextureROSColor";
+            pipelineDesc.m_rootPassTemplate = "PipelineRenderToTextureROSDepth";
             pipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
-            //m_pipeline->RemoveFromRenderTick();
+            pipeline->RemoveFromRenderTick();
             if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(pipeline->GetRootPass().get()))
             {
                 renderToTexturePass->ResizeOutput(
@@ -128,6 +135,15 @@ namespace SimpleLidarSensor
            AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromRows({ 1, 0, 0 }, { 0, -1, 0 }, { 0, 0, -1 }))) };
         const auto EntityPose = GetEntity()->GetTransform()->GetWorldTM();
         const auto EntityPoseNoScaling = AZ::Transform::CreateFromQuaternionAndTranslation(EntityPose.GetRotation(), EntityPose.GetTranslation());
+
+        AZ_Printf("SimpleLidar", "Pending frames %zu, captured %zu", m_pendingFrames.m_framesIdToCapture.size(), m_pendingFrames.m_capturedIdFrames.size());
+        for (const auto& frameId : m_pendingFrames.m_framesIdToCapture)
+        {
+            AZ_Printf("SimpleLidar", "Frame %zu, captures : %s", frameId, m_pendingFrames.m_capturedIdFrames.contains(frameId) ? "yes" : "no");
+        }
+
+        m_pendingFrames.Reset();
+        m_pendingFrames.m_timeStamp = time.GetSeconds();
         for (int i = 0; i < ViewCount; ++i)
         {
             auto& pipeline = m_pipelines[i];
@@ -140,13 +156,29 @@ namespace SimpleLidarSensor
             const AZ::Transform cameraPose = (EntityPoseNoScaling * AtomToRos *  AZ::Transform::CreateFromQuaternion(localRot) ).GetInverse();
             view->SetWorldToViewMatrix(AZ::Matrix4x4::CreateFromTransform(cameraPose));
             pipeline->AddToRenderTickOnce();
-            AZStd::string fileName = AZStd::string::format("/tmp/SimpleLidar_%d.png", i);
             AZ::Render::FrameCaptureOutcome captureOutcome;
-                AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                        captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, fileName, passHierarchy, AZStd::string("Output"),
-                        AZ::RPI::PassAttachmentReadbackOption::Output);
 
-            if (!captureOutcome.IsSuccess())
+
+            // AZStd::string fileName = AZStd::string::format("/tmp/SimpleLidar_%d.png", i);
+            //
+            //     AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+            //             captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, fileName, passHierarchy, AZStd::string("Output"),
+            //             AZ::RPI::PassAttachmentReadbackOption::Output);
+
+
+            auto callback = [this, i, time](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
+            {
+                double ms = time.GetSeconds();
+                m_pendingFrames.ReportFrameCaptured(i, ms);
+            };
+            AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+                    captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,callback, passHierarchy, AZStd::string("Output"),
+                    AZ::RPI::PassAttachmentReadbackOption::Output);
+            if (captureOutcome.IsSuccess())
+            {
+                m_pendingFrames.m_framesIdToCapture.insert(i);
+            }
+            else
             {
                 AZ_Error("SimpleLidar", false, "Failed to capture frame: %s", captureOutcome.GetError().m_errorMessage.c_str());
             }
