@@ -55,6 +55,10 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            Gem::ROS2.Static # For ROS2 sensor base classes
+            Gem::ImGui.Static
+            Gem::Atom_RPI.Public
+            Gem::Atom_Feature_Common.Public # Camera Sensor
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -138,7 +142,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
         BUILD_DEPENDENCIES
             PUBLIC
-                Gem::ROS2.Static # For ROS2 sensor base classes
                 AZ::AzToolsFramework
                 ${gem_name}.Private.Object
     )

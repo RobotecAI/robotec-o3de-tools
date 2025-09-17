@@ -4,6 +4,19 @@
 #include <AzCore/Serialization/EditContext.h>
 
 
+#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
+#include "AzCore/Math/Matrix4x4.h"
+
+#include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/FeatureProcessorFactory.h>
+#include <Atom/RPI.Public/Pass/PassFactory.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <AzCore/Component/TransformBus.h>
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
 namespace SimpleLidarSensor
 {
     // Reflect for serialization and scripting
@@ -29,15 +42,53 @@ namespace SimpleLidarSensor
 
     void SimpleLidar::Activate()
     {
-        AZ_Printf("ExampleComponent", "Activated with value: %f", m_value);
+        AZ::TickBus::Handler::BusConnect();
+        const AZ::Name viewName = AZ::Name("MainCamera");
+        m_view = AZ::RPI::View::CreateView(viewName, AZ::RPI::View::UsageCamera);
+        AZ::Matrix4x4 projectionMatrix;
+        projectionMatrix = AZ::Matrix4x4::CreateProjectionFov(
+            AZ::DegToRad(90.0f), // fov
+            640.0f / 480.0f,    // aspect ratio
+            0.1f,               // near clip
+            100.0f);           // far clip
+        m_view->SetViewToClipMatrix(projectionMatrix);
+        m_scene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
+
+        m_pipelineName = AZStd::string::format("SimpleLidarCamera%s", GetEntityId().ToString().c_str());
+        AZ::RPI::RenderPipelineDescriptor pipelineDesc;
+        pipelineDesc.m_mainViewTagName = "MainCamera";
+
+        pipelineDesc.m_allowModification = false;
+        pipelineDesc.m_name = m_pipelineName;
+        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        pipelineDesc.m_rootPassTemplate = "PipelineRenderToTextureROSColor";
+        m_pipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+        //m_pipeline->RemoveFromRenderTick();
+        if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(m_pipeline->GetRootPass().get()))
+        {
+            renderToTexturePass->ResizeOutput(
+               640,480);
+        }
+        m_scene->AddRenderPipeline(m_pipeline);
+
+        m_passHierarchy.push_back(m_pipelineName);
+        m_passHierarchy.push_back("CopyToSwapChain");
+
+        m_pipeline->SetDefaultView(m_view);
+        if (auto* fp = m_scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessorInterface>())
+        {
+            const AZ::RPI::ViewPtr targetView = m_scene->GetDefaultRenderPipeline()->GetDefaultView();
+            fp->SetViewAlias(m_view, targetView);
+        }
+
+
     }
 
 
     void SimpleLidar::Deactivate()
     {
-        AZ_Printf("ExampleComponent", "Deactivated");
+        AZ::TickBus::Handler::BusDisconnect();
     }
-
 
     void SimpleLidar::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
@@ -54,6 +105,32 @@ namespace SimpleLidarSensor
     void SimpleLidar::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         // required.push_back(AZ_CRC("SomeOtherService"));
+    }
+
+    void SimpleLidar::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    {
+        const AZ::Transform AtomToRos{ AZ::Transform::CreateFromQuaternion(
+          AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromRows({ 1, 0, 0 }, { 0, -1, 0 }, { 0, 0, -1 }))) };
+        AZ_Printf("ExampleComponent", "OnTick: %f", m_value);
+        const auto pose = GetEntity()->GetTransform()->GetWorldTM();
+        const AZ::Transform cameraPoseNoScaling =
+        AZ::Transform::CreateFromQuaternionAndTranslation(pose.GetRotation(), pose.GetTranslation());
+        const AZ::Transform inverse = (cameraPoseNoScaling * AtomToRos).GetInverse();
+        m_view->SetWorldToViewMatrix(AZ::Matrix4x4::CreateFromQuaternionAndTranslation(inverse.GetRotation(), inverse.GetTranslation()));
+        m_pipeline->AddToRenderTickOnce();
+        static int count = 0;
+        AZStd::string fileName = AZStd::string::format("/tmp/SimpleLidar_%03d.png", count++);
+        AZ::Render::FrameCaptureOutcome captureOutcome;
+        AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+            captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, fileName, m_passHierarchy, AZStd::string("Output"),
+            AZ::RPI::PassAttachmentReadbackOption::Output);
+
+        AZ_Printf("SimpleLidar", "Capture %s", captureOutcome.IsSuccess() ? "Success" : "Failed");
+        if (!captureOutcome.IsSuccess())
+        {
+            AZ_Error("SimpleLidar", false, "Failed to capture frame: %s", captureOutcome.GetError().m_errorMessage.c_str());
+        }
+
     }
 
 
