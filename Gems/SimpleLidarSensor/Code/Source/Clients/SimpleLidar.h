@@ -25,14 +25,20 @@ namespace SimpleLidarSensor
 
 
     private:
+
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         float m_value = 0.0f;
-        AZStd::vector<AZStd::string> m_passHierarchy;
-        AZ::RPI::RenderPipelinePtr m_pipeline;
-        AZ::RPI::ViewPtr m_view;
+        static constexpr unsigned int ViewCount = 6;
+        static constexpr float HorizontalFOV = 360.0f / ViewCount;
+        AZStd::vector<AZStd::vector<AZStd::string>> m_passHierarchies;
+        AZStd::vector<AZ::RPI::RenderPipelinePtr> m_pipelines;
+        AZStd::vector<AZ::RPI::ViewPtr> m_view;
+
         AZ::RPI::Scene* m_scene = nullptr;
-        AZStd::string m_pipelineName;
+
+
+
         const AZ::Transform AtomToRos{ AZ::Transform::CreateFromQuaternion(
             AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromRows({ 1, 0, 0 }, { 0, -1, 0 }, { 0, 0, -1 }))) };
 
