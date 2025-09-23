@@ -37,6 +37,7 @@ ly_add_target(
            AZ::AzCore
 )
 
+
 # The ${gem_name}.Private.Object target is an internal target
 # It should not be used outside of this Gems CMakeLists.txt
 ly_add_target(
@@ -60,6 +61,8 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Public # Camera Sensor
 )
+find_package(OpenCV REQUIRED)
+target_link_libraries(${gem_name}.Private.Object PRIVATE ${OpenCV_LIBS})
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
 ly_add_target(

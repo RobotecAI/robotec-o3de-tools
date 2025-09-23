@@ -8,35 +8,29 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
+#include <opencv2/opencv.hpp>
 namespace SimpleLidarSensor
 {
+    static constexpr unsigned int ViewCount = 6;
     struct PendingFrames
     {
-        double m_timeStamp = 0.0;
-        AZStd::unordered_set<unsigned int> m_framesIdToCapture;
-        AZStd::unordered_set<unsigned int> m_capturedIdFrames;
+        AZStd::unordered_map<unsigned int, cv::Mat> m_viewsDataColor;
+        AZStd::unordered_map<unsigned int, cv::Mat> m_viewsDataDepth;
         bool IsComplete()
         {
-            return m_framesIdToCapture.size() == m_capturedIdFrames.size();
+            return m_viewsDataDepth.size() == ViewCount && m_viewsDataColor.size() == ViewCount;
         }
 
-        void ReportFrameCaptured(unsigned int frameId, double timeStamp = 0.0)
+        void ReportDepthFrameCaptured(unsigned int frameId, const cv::Mat& frame)
         {
-            if (m_framesIdToCapture.contains(frameId) && timeStamp == m_timeStamp)
-            {
-                m_capturedIdFrames.insert(frameId);
-            }
-            else
-            {
-                AZ_Warning("SimpleLidar", false, "Received unexpected frameId %u or timestamp %f (expected %f)", frameId, timeStamp, m_timeStamp);
-            }
+            frame.copyTo(m_viewsDataDepth[frameId]);
+        }
+        void ReportColorFrameCaptured(unsigned int frameId, const cv::Mat& frame)
+        {
+            frame.copyTo(m_viewsDataColor[frameId]);
         }
 
-        void Reset()
-        {
-            m_framesIdToCapture.clear();
-            m_capturedIdFrames.clear();
-        }
+
     };
     class SimpleLidar
     : public AZ::Component, private AZ::TickBus::Handler
@@ -54,24 +48,23 @@ namespace SimpleLidarSensor
 
 
     private:
+        void FrameComplete(const PendingFrames& completedFrame);
 
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         float m_value = 0.0f;
-        static constexpr unsigned int ViewCount = 6;
+
         static constexpr float HorizontalFOV = 360.0f / ViewCount;
+        AZ::Matrix3x3 m_cameraMatrix; //! Classical camera intrinsics matrix, the same for all cameras
+        AZStd::vector<AZ::Transform> m_cameraToLidarCoordinate; //! directions for each camera in rig space (Z forward, X right, Y down)
         AZStd::vector<AZStd::vector<AZStd::string>> m_passHierarchies;
         AZStd::vector<AZ::RPI::RenderPipelinePtr> m_pipelines;
+        AZStd::vector<AZStd::string> m_pipelineNames;
         AZStd::vector<AZ::RPI::ViewPtr> m_view;
-        AZ:: RPI::AttachmentReadback::CallbackFunction m_callback;
         AZ::RPI::Scene* m_scene = nullptr;
 
+        AZStd::mutex m_mutex;
+        AZStd::map< AZStd::chrono::steady_clock::time_point, PendingFrames> m_pendingFrames; // cache of frames indexed by time of request
 
-
-
-
-        const AZ::Transform AtomToRos{ AZ::Transform::CreateFromQuaternion(
-            AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromRows({ 1, 0, 0 }, { 0, -1, 0 }, { 0, 0, -1 }))) };
-        PendingFrames m_pendingFrames;
     };
 }
