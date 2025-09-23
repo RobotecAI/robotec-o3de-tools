@@ -1,12 +1,12 @@
 #include "SimpleLidar.h"
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
-
-#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include "AzCore/Math/Matrix4x4.h"
+#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
@@ -16,7 +16,6 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Component/TransformBus.h>
-#include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <fstream>
 namespace SimpleLidarSensor
@@ -44,12 +43,7 @@ namespace SimpleLidarSensor
         {
             AZ::Matrix4x4 localViewToClipMatrix;
             AZ::MakePerspectiveFovMatrixRH(
-                localViewToClipMatrix,
-                AZ::DegToRad(verticalFieldOfViewDeg),
-                GetAspectRatio(width, height),
-                nearDist,
-                farDist,
-                true);
+                localViewToClipMatrix, AZ::DegToRad(verticalFieldOfViewDeg), GetAspectRatio(width, height), nearDist, farDist, true);
             return localViewToClipMatrix;
         }
         //! Returns a transformation matrix (rotation only) for given view index
@@ -63,11 +57,8 @@ namespace SimpleLidarSensor
         // Rotate whole camera camera optical (Z forward) to World (X forward)
         AZ::Transform GetCameraRigRotation()
         {
-            AZ::Matrix3x3 matrix = AZ::Matrix3x3::CreateFromRows(
-                AZ::Vector3::CreateAxisZ(),
-                -AZ::Vector3::CreateAxisX(),
-                -AZ::Vector3::CreateAxisY()
-            );
+            AZ::Matrix3x3 matrix =
+                AZ::Matrix3x3::CreateFromRows(AZ::Vector3::CreateAxisZ(), -AZ::Vector3::CreateAxisX(), -AZ::Vector3::CreateAxisY());
 
             return AZ::Transform::CreateFromMatrix3x3(matrix);
         }
@@ -80,36 +71,33 @@ namespace SimpleLidarSensor
             const float& cy = cameraMatrix.GetElement(1, 2);
             const float uc = u - cx;
             const float vc = v - cy;
-            const float range = planarDepth * AZStd::sqrt((uc*uc) / (fx * fx) + (vc * vc) / (fy * fy) + 1.0f);
+            const float range = planarDepth * AZStd::sqrt((uc * uc) / (fx * fx) + (vc * vc) / (fy * fy) + 1.0f);
             return range;
         }
 
-
-    }
+    } // namespace
 
     // Reflect for serialization and scripting
     void SimpleLidar::Reflect(AZ::ReflectContext* context)
     {
+        SensorBaseType::Reflect(context);
+
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<SimpleLidar, AZ::Component>()
-            ->Version(1)
-            ->Field("value", &SimpleLidar::m_value);
-
+            serialize->Class<SimpleLidar, SensorBaseType>()->Version(1)->Field("value", &SimpleLidar::m_value);
 
             if (auto ec = serialize->GetEditContext())
             {
                 ec->Class<SimpleLidar>("SimpleLidar", "SimpleLidar using graphics pipeline")
-                ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
             }
         }
-
     }
 
     void SimpleLidar::Activate()
     {
-        AZ::TickBus::Handler::BusConnect();
+        SensorBaseType::Activate();
 
         m_pipelines.resize(ViewCount);
         m_view.resize(ViewCount);
@@ -120,8 +108,7 @@ namespace SimpleLidarSensor
         const int height = 640;
         const float VerticalFOV = HorizontalFOV / GetAspectRatio(width, height);
 
-        const AZ::Matrix4x4 localViewToClipMatrix = MakeClipMatrix(
-           width,width, HorizontalFOV, 0.1f, 100.0f);
+        const AZ::Matrix4x4 localViewToClipMatrix = MakeClipMatrix(width, width, HorizontalFOV, 0.1f, 100.0f);
         m_cameraMatrix = MakeCameraIntrinsics(width, height, VerticalFOV);
 
         for (int i = 0; i < ViewCount; ++i)
@@ -146,8 +133,7 @@ namespace SimpleLidarSensor
             pipeline->RemoveFromRenderTick();
             if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(pipeline->GetRootPass().get()))
             {
-                renderToTexturePass->ResizeOutput(
-                   width,height);
+                renderToTexturePass->ResizeOutput(width, height);
             }
             m_scene->AddRenderPipeline(pipeline);
 
@@ -161,15 +147,23 @@ namespace SimpleLidarSensor
                 fp->SetViewAlias(view, targetView);
             }
 
-            const auto viewTransform = GetViewTransform(i, HorizontalFOV)  * GetCameraRigRotation();
-             m_cameraToLidarCoordinate.push_back(viewTransform);
+            const auto viewTransform = GetViewTransform(i, HorizontalFOV) * GetCameraRigRotation();
+            m_cameraToLidarCoordinate.push_back(viewTransform);
         }
-    }
 
+        // Start the sensor with 10Hz frequency
+        StartSensor(
+            m_sensorConfiguration.m_frequency,
+            [this]([[maybe_unused]] auto&&... args)
+            {
+                OnSensorTick();
+            });
+    }
 
     void SimpleLidar::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        StopSensor();
+        SensorBaseType::Deactivate();
     }
 
     void SimpleLidar::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -177,18 +171,14 @@ namespace SimpleLidarSensor
         provided.push_back(AZ_CRC("SimpleLidar"));
     }
 
-
     void SimpleLidar::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("SimpleLidar"));
     }
 
-
     void SimpleLidar::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-
     }
-
 
     void SimpleLidar::FrameComplete(const PendingFrames& completedFrame)
     {
@@ -205,8 +195,7 @@ namespace SimpleLidarSensor
             cv::hconcat(frames, combined);
             cv::imwrite("/tmp/lidar.png", combined);
 
-
-            std::ofstream pc ("/tmp/lidar.txt");
+            std::ofstream pc("/tmp/lidar.txt");
             // loop over 360 degree
 
             AZ_Assert(!completedFrame.m_viewsDataDepth.empty(), "it should not be empty");
@@ -219,54 +208,52 @@ namespace SimpleLidarSensor
             const float height = static_cast<float>(completedFrame.m_viewsDataDepth.at(0).rows);
 
             // test view 0
-            std::ofstream pc_view0 ("/tmp/lidar_view0.txt");
-            const float fx = m_cameraMatrix.GetElement(0,0);
-            const float fy = m_cameraMatrix.GetElement(1,1);
-            const float cx = m_cameraMatrix.GetElement(0,2);
-            const float cy = m_cameraMatrix.GetElement(1,2);
-            for (int i=0; i < ViewCount; ++i)
+            std::ofstream pc_view0("/tmp/lidar_view0.txt");
+            const float fx = m_cameraMatrix.GetElement(0, 0);
+            const float fy = m_cameraMatrix.GetElement(1, 1);
+            const float cx = m_cameraMatrix.GetElement(0, 2);
+            const float cy = m_cameraMatrix.GetElement(1, 2);
+            for (int i = 0; i < ViewCount; ++i)
             {
-                const auto & colorMat = completedFrame.m_viewsDataColor.at(i);
-                const auto & depthMat = completedFrame.m_viewsDataDepth.at(i);
-                const auto & transform = m_cameraToLidarCoordinate.at(i);
+                const auto& colorMat = completedFrame.m_viewsDataColor.at(i);
+                const auto& depthMat = completedFrame.m_viewsDataDepth.at(i);
+                const auto& transform = m_cameraToLidarCoordinate.at(i);
 
-
-                for (int u =0; u < width; ++u)
+                for (int u = 0; u < width; ++u)
                 {
-                    for (int v =0; v < height; ++v)
+                    for (int v = 0; v < height; ++v)
                     {
                         const cv::Vec4b& color = colorMat.at<cv::Vec4b>(v, u);
                         const float depth = depthMat.at<float>(v, u);
                         if (depth > 0.1)
                         {
-
                             const float x = (static_cast<float>(u) - cx) * depth / fx;
                             const float y = (static_cast<float>(v) - cy) * depth / fy;
                             const float z = depth;
-                            const AZ::Vector3 point = transform.TransformPoint(AZ::Vector3(x,y,z));
+                            const AZ::Vector3 point = transform.TransformPoint(AZ::Vector3(x, y, z));
 
-
-                            pc_view0 << (float) point.GetX()<< " " << (float) point.GetY() << " " << (float) point.GetZ() << " "
-                            << (int)color[0] << " " << (int) color[1] <<" " << (int)color[2] << std::endl;
+                            pc_view0 << (float)point.GetX() << " " << (float)point.GetY() << " " << (float)point.GetZ() << " "
+                                     << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << std::endl;
                         }
                     }
                 }
             }
 
-
-            for (float azimuth = 0; azimuth < (2.0*M_PI); azimuth += (2.0*M_PI)/1024)
+            for (float azimuth = 0; azimuth < (2.0 * M_PI); azimuth += (2.0 * M_PI) / 1024)
             {
                 for (float elevation = AZ::DegToRad(-180); elevation < AZ::DegToRad(180); elevation += AZ::DegToRad(0.1))
                 {
-                    AZ::Vector3 direction { AZ::Cos(elevation) * AZ::Cos(azimuth), AZ::Cos(elevation) * AZ::Sin(azimuth), AZ::Sin(elevation)  };
+                    AZ::Vector3 direction{ AZ::Cos(elevation) * AZ::Cos(azimuth),
+                                           AZ::Cos(elevation) * AZ::Sin(azimuth),
+                                           AZ::Sin(elevation) };
                     direction = direction.GetNormalized();
                     for (int viewId = 0; viewId < ViewCount; ++viewId)
                     {
-                        //rotate direction into view space
+                        // rotate direction into view space
                         const AZ::Vector3 localDirection = m_cameraToLidarCoordinate[viewId].GetInverse().TransformPoint(direction);
 
                         // project into image plane
-                        const AZ::Vector3 uvw = m_cameraMatrix *  localDirection.GetNormalized();
+                        const AZ::Vector3 uvw = m_cameraMatrix * localDirection.GetNormalized();
                         const float u = uvw.GetX() / uvw.GetZ();
                         const float v = uvw.GetY() / uvw.GetZ();
                         if (uvw.GetZ() > 0 && u >= 0 && u < width && v >= 0 && v < height)
@@ -281,10 +268,10 @@ namespace SimpleLidarSensor
                             if (depthPlanar > 0.1)
                             {
                                 const AZ::Vector3 point = direction * depthRange;
-                                pc << (float) point.GetX() << " " << (float) point.GetY() << " " << (float) point.GetZ() << " "
-                                << (int)color[0] << " " << (int) color[1] <<" " << (int)color[2] << std::endl;
+                                pc << (float)point.GetX() << " " << (float)point.GetY() << " " << (float)point.GetZ() << " "
+                                   << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << std::endl;
 
-                                 break; // next ray
+                                break; // next ray
                             }
                         }
                     }
@@ -293,16 +280,17 @@ namespace SimpleLidarSensor
         }
     }
 
-    void SimpleLidar::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    void SimpleLidar::OnSensorTick()
     {
+        const auto time = AZStd::chrono::steady_clock::now();
 
         //! Coordinate system conversion from O3DE/Atom to OpenCV (Z forward, X right, -Y down)
         const AZ::Transform AtomToCv{ AZ::Transform::CreateFromQuaternion(
-           AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromRows({ 1, 0, 0 }, { 0, -1, 0 }, { 0, 0, -1 }))) };
+            AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromRows({ 1, 0, 0 }, { 0, -1, 0 }, { 0, 0, -1 }))) };
 
         const auto EntityPose = GetEntity()->GetTransform()->GetWorldTM();
-        const auto EntityPoseNoScaling = AZ::Transform::CreateFromQuaternionAndTranslation(EntityPose.GetRotation(), EntityPose.GetTranslation());
-
+        const auto EntityPoseNoScaling =
+            AZ::Transform::CreateFromQuaternionAndTranslation(EntityPose.GetRotation(), EntityPose.GetTranslation());
 
         // house-keeping for pending frames
         while (m_pendingFrames.size() > 3)
@@ -323,18 +311,15 @@ namespace SimpleLidarSensor
             const auto& viewTransform = m_cameraToLidarCoordinate[i];
             const auto& pipelineName = m_pipelineNames[i];
 
-            const AZ::Transform cameraPose = (EntityPoseNoScaling * viewTransform * AtomToCv  ).GetInverse();
+            const AZ::Transform cameraPose = (EntityPoseNoScaling * viewTransform * AtomToCv).GetInverse();
             view->SetWorldToViewMatrix(AZ::Matrix4x4::CreateFromTransform(cameraPose));
             pipeline->AddToRenderTickOnce();
             AZ::Render::FrameCaptureOutcome captureOutcome;
 
-            auto callback = [this,  viewIndex = i, ts = time.Get()](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
+            auto callback = [this, viewIndex = i, ts = time](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
             {
-
-                const AZStd::unordered_map<AZ::RHI::Format, int> FormatToCvFormat = {
-                    {AZ::RHI::Format::R8G8B8A8_UNORM, CV_8UC4},
-                    {AZ::RHI::Format::R32_FLOAT, CV_32F}
-                };
+                const AZStd::unordered_map<AZ::RHI::Format, int> FormatToCvFormat = { { AZ::RHI::Format::R8G8B8A8_UNORM, CV_8UC4 },
+                                                                                      { AZ::RHI::Format::R32_FLOAT, CV_32F } };
 
                 if (result.m_state == AZ::RPI::AttachmentReadback::ReadbackState::Success)
                 {
@@ -347,8 +332,8 @@ namespace SimpleLidarSensor
                         const AZ::RHI::ImageDescriptor& descriptor = result.m_imageDescriptor;
                         const auto format = descriptor.m_format;
 
-                        auto formatIt  = FormatToCvFormat.find(format);
-                        AZ_Assert(formatIt != FormatToCvFormat.end() , "Unexpected format in result %u", static_cast<uint32_t>(format));
+                        auto formatIt = FormatToCvFormat.find(format);
+                        AZ_Assert(formatIt != FormatToCvFormat.end(), "Unexpected format in result %u", static_cast<uint32_t>(format));
                         if (formatIt != FormatToCvFormat.end())
                         {
                             const int width = descriptor.m_size.m_width;
@@ -362,7 +347,7 @@ namespace SimpleLidarSensor
                             }
                             else
                             {
-                                pendingFrame.ReportColorFrameCaptured(viewIndex,  frame);
+                                pendingFrame.ReportColorFrameCaptured(viewIndex, frame);
                             }
 
                             if (pendingFrame.IsComplete())
@@ -379,8 +364,12 @@ namespace SimpleLidarSensor
                 }
             };
             AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                    captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,callback, passHierarchy, AZStd::string("Output"),
-                    AZ::RPI::PassAttachmentReadbackOption::Output);
+                captureOutcome,
+                &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,
+                callback,
+                passHierarchy,
+                AZStd::string("Output"),
+                AZ::RPI::PassAttachmentReadbackOption::Output);
 
             AZ::Render::FrameCaptureOutcome captureOutcomeDepth;
             AZStd::vector<AZStd::string> passHierarchyDepth{ pipelineName, "DepthPrePass" };
@@ -395,7 +384,7 @@ namespace SimpleLidarSensor
             if (captureOutcome.IsSuccess() && captureOutcomeDepth.IsSuccess())
             {
                 AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-                m_pendingFrames[time.Get()] = PendingFrames();
+                m_pendingFrames[time] = PendingFrames();
             }
             else
             {
@@ -404,6 +393,4 @@ namespace SimpleLidarSensor
         }
     }
 
-
-
-}
+} // namespace SimpleLidarSensor

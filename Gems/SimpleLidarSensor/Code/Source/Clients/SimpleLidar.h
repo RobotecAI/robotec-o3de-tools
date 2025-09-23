@@ -1,4 +1,4 @@
-// File: ExampleComponent.h
+
 #pragma once
 
 #include <SimpleLidarSensor/SimpleLidarSensorTypeIds.h>
@@ -9,6 +9,8 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <opencv2/opencv.hpp>
+#include <ROS2/Sensor/ROS2SensorComponentBase.h>
+#include <ROS2/Sensor/Events/TickBasedSource.h>
 namespace SimpleLidarSensor
 {
     static constexpr unsigned int ViewCount = 6;
@@ -29,16 +31,16 @@ namespace SimpleLidarSensor
         {
             frame.copyTo(m_viewsDataColor[frameId]);
         }
-
-
     };
+
     class SimpleLidar
-    : public AZ::Component, private AZ::TickBus::Handler
+        : public ROS2::ROS2SensorComponentBase<ROS2::TickBasedSource>
     {
     public:
         AZ_COMPONENT(SimpleLidar, SimpleLidarComponentTypeId);
         static void Reflect(AZ::ReflectContext* context);
 
+        // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
 
@@ -50,8 +52,7 @@ namespace SimpleLidarSensor
     private:
         void FrameComplete(const PendingFrames& completedFrame);
 
-        // TickBus
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        void OnSensorTick();
         float m_value = 0.0f;
 
         static constexpr float HorizontalFOV = 360.0f / ViewCount;
