@@ -15,7 +15,7 @@
 #include <rclcpp/rclcpp.hpp>
 namespace SimpleLidarSensor
 {
-    static constexpr unsigned int ViewCount = 3;
+    static constexpr unsigned int ViewCount = 3; // Number of cameras in the rig
     struct PendingFrames
     {
         AZStd::unordered_map<unsigned int, cv::Mat> m_viewsDataColor;

@@ -207,105 +207,6 @@ namespace SimpleLidarSensor
     {
     }
 
-    void SimpleLidar::FrameComplete(const PendingFrames& completedFrame)
-    {
-        static int frameId = 0;
-        frameId++;
-        if (frameId == 10)
-        {
-            std::vector<cv::Mat> frames;
-            for (int i = 0; i < ViewCount; ++i)
-            {
-                frames.push_back(completedFrame.m_viewsDataColor.at(i));
-            }
-            cv::Mat combined;
-            cv::hconcat(frames, combined);
-            cv::imwrite("/tmp/lidar.png", combined);
-
-            std::ofstream pc("/tmp/lidar.txt");
-            // loop over 360 degree
-
-            AZ_Assert(!completedFrame.m_viewsDataDepth.empty(), "it should not be empty");
-            if (completedFrame.m_viewsDataDepth.empty())
-            {
-                return;
-            }
-
-            const float width = static_cast<float>(completedFrame.m_viewsDataDepth.at(0).cols);
-            const float height = static_cast<float>(completedFrame.m_viewsDataDepth.at(0).rows);
-
-            // test view 0
-            std::ofstream pc_view0("/tmp/lidar_view0.txt");
-            const float fx = m_cameraMatrix.GetElement(0, 0);
-            const float fy = m_cameraMatrix.GetElement(1, 1);
-            const float cx = m_cameraMatrix.GetElement(0, 2);
-            const float cy = m_cameraMatrix.GetElement(1, 2);
-            for (int i = 0; i < ViewCount; ++i)
-            {
-                const auto& colorMat = completedFrame.m_viewsDataColor.at(i);
-                const auto& depthMat = completedFrame.m_viewsDataDepth.at(i);
-                const auto& transform = m_cameraToLidarCoordinate.at(i);
-
-                for (int u = 0; u < width; ++u)
-                {
-                    for (int v = 0; v < height; ++v)
-                    {
-                        const cv::Vec4b& color = colorMat.at<cv::Vec4b>(v, u);
-                        const float depth = depthMat.at<float>(v, u);
-                        if (depth > 0.1)
-                        {
-                            const float x = (static_cast<float>(u) - cx) * depth / fx;
-                            const float y = (static_cast<float>(v) - cy) * depth / fy;
-                            const float z = depth;
-                            const AZ::Vector3 point = transform.TransformPoint(AZ::Vector3(x, y, z));
-
-                            pc_view0 << (float)point.GetX() << " " << (float)point.GetY() << " " << (float)point.GetZ() << " "
-                                     << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << std::endl;
-                        }
-                    }
-                }
-            }
-
-            for (float azimuth = 0; azimuth < (2.0 * M_PI); azimuth += (2.0 * M_PI) / 1024)
-            {
-                for (float elevation = AZ::DegToRad(-180); elevation < AZ::DegToRad(180); elevation += AZ::DegToRad(0.1))
-                {
-                    AZ::Vector3 direction{ AZ::Cos(elevation) * AZ::Cos(azimuth),
-                                           AZ::Cos(elevation) * AZ::Sin(azimuth),
-                                           AZ::Sin(elevation) };
-                    direction = direction.GetNormalized();
-                    for (int viewId = 0; viewId < ViewCount; ++viewId)
-                    {
-                        // rotate direction into view space
-                        const AZ::Vector3 localDirection = m_cameraToLidarCoordinate[viewId].GetInverse().TransformPoint(direction);
-
-                        // project into image plane
-                        const AZ::Vector3 uvw = m_cameraMatrix * localDirection.GetNormalized();
-                        const float u = uvw.GetX() / uvw.GetZ();
-                        const float v = uvw.GetY() / uvw.GetZ();
-                        if (uvw.GetZ() > 0 && u >= 0 && u < width && v >= 0 && v < height)
-                        {
-                            // we have a hit
-                            const int ui = static_cast<int>(u);
-                            const int vi = static_cast<int>(v);
-                            const cv::Vec4b& color = completedFrame.m_viewsDataColor.at(viewId).at<cv::Vec4b>(vi, ui);
-                            const float depthPlanar = completedFrame.m_viewsDataDepth.at(viewId).at<float>(vi, ui);
-                            const float depthRange = PlanarDepthToRange(m_cameraMatrix, u, v, depthPlanar);
-
-                            if (depthPlanar > 0.1)
-                            {
-                                const AZ::Vector3 point = direction * depthRange;
-                                pc << (float)point.GetX() << " " << (float)point.GetY() << " " << (float)point.GetZ() << " "
-                                   << (int)color[0] << " " << (int)color[1] << " " << (int)color[2] << std::endl;
-
-                                break; // next ray
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     void SimpleLidar::ImageCallback(const AZStd::chrono::steady_clock::time_point& requestTimestamp ,unsigned int viewIndex, const AZ::RPI::AttachmentReadback::ReadbackResult& result)
     {
@@ -347,20 +248,32 @@ namespace SimpleLidarSensor
                 pendingFrame.ReportColorFrameCaptured(viewIndex, frame);
             }
 
+
             if (pendingFrame.IsComplete())
             {
+
                 AZStd::thread task(
-                    [this, pendingFrame]()
+                    [this, requestTimestamp]()
                     {
-                        FrameComplete(pendingFrame);
+                        PendingFrames completedFrame;
+
+                        // this is run in a separate thread - get the data and remove from pending
+                        {
+                            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+                            auto it = m_pendingFrames.find(requestTimestamp);
+                            AZ_Assert(it != m_pendingFrames.end(), "Request is not found");
+                            AZStd::swap(it->second, completedFrame);
+                            m_pendingFrames.erase(requestTimestamp);
+                        }
+
                         if (m_sensorConfiguration.m_publishingEnabled && m_pointCloudPublisher)
                         {
-                            PublishPointCloud(pendingFrame);
+                            PublishPointCloud(completedFrame);
                         }
                     });
                 task.detach();
 
-                m_pendingFrames.erase(requestTimestamp);
+
             }
         }
     }
@@ -459,9 +372,9 @@ namespace SimpleLidarSensor
             rayDirections.reserve(m_rayCount.value());
         }
         // Generate all ray directions using same loops as original
-        for (float azimuth = 0; azimuth < (2.0 * M_PI); azimuth += (2.0 * M_PI) / 1024)
+        for (float azimuth = 0; azimuth < (2.0 * M_PI); azimuth += (2.0 * M_PI) / (16dd *1024))
         {
-            for (float elevation = AZ::DegToRad(-45); elevation < AZ::DegToRad(45); elevation += AZ::DegToRad(2.0))
+            for (float elevation = AZ::DegToRad(-30); elevation < AZ::DegToRad(30); elevation += AZ::DegToRad(2.0))
             {
                 AZ::Vector3 direction{ AZ::Cos(elevation) * AZ::Cos(azimuth),
                                        AZ::Cos(elevation) * AZ::Sin(azimuth),
