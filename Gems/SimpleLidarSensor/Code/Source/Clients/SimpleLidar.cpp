@@ -372,7 +372,7 @@ namespace SimpleLidarSensor
             rayDirections.reserve(m_rayCount.value());
         }
         // Generate all ray directions using same loops as original
-        for (float azimuth = 0; azimuth < (2.0 * M_PI); azimuth += (2.0 * M_PI) / (16dd *1024))
+        for (float azimuth = 0; azimuth < (2.0 * M_PI); azimuth += (2.0 * M_PI) / (8 * 1024))
         {
             for (float elevation = AZ::DegToRad(-30); elevation < AZ::DegToRad(30); elevation += AZ::DegToRad(2.0))
             {
