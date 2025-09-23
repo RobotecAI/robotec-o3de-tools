@@ -18,6 +18,10 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <fstream>
+#include <ROS2/ROS2Bus.h>
+#include <ROS2/ROS2NamesBus.h>
+#include <ROS2/Clock/ROS2ClockRequestBus.h>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 namespace SimpleLidarSensor
 {
 
@@ -75,12 +79,25 @@ namespace SimpleLidarSensor
             return range;
         }
 
+        const char* PointCloudType = "sensor_msgs::msg::PointCloud2";
     } // namespace
+
+    SimpleLidar::SimpleLidar()
+    {
+        m_cameraMatrix = AZ::Matrix3x3::CreateIdentity();
+        // Set up default ROS2 publisher configuration
+        ROS2::TopicConfiguration pc;
+        AZStd::string type = PointCloudType;
+        pc.m_type = type;
+        pc.m_topic = "point_cloud";
+        m_sensorConfiguration.m_frequency = 10.f;
+        m_sensorConfiguration.m_publishingEnabled = true;
+        m_sensorConfiguration.m_publishersConfigurations.insert(AZStd::make_pair(type, pc));
+    }
 
     // Reflect for serialization and scripting
     void SimpleLidar::Reflect(AZ::ReflectContext* context)
     {
-        SensorBaseType::Reflect(context);
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -151,7 +168,16 @@ namespace SimpleLidarSensor
             m_cameraToLidarCoordinate.push_back(viewTransform);
         }
 
-        // Start the sensor with 10Hz frequency
+        // Set up ROS2 publisher
+        const auto& publisherConfig = m_sensorConfiguration.m_publishersConfigurations[PointCloudType];
+        AZStd::string fullTopic;
+        ROS2::ROS2NamesRequestBus::BroadcastResult(
+            fullTopic, &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName, GetNamespace(), publisherConfig.m_topic);
+
+        auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
+        m_pointCloudPublisher = ros2Node->create_publisher<sensor_msgs::msg::PointCloud2>(fullTopic.data(), publisherConfig.GetQoS());
+
+        // Start the sensor with configured frequency
         StartSensor(
             m_sensorConfiguration.m_frequency,
             [this]([[maybe_unused]] auto&&... args)
@@ -163,6 +189,7 @@ namespace SimpleLidarSensor
     void SimpleLidar::Deactivate()
     {
         StopSensor();
+        m_pointCloudPublisher.reset();
         SensorBaseType::Deactivate();
     }
 
@@ -280,6 +307,64 @@ namespace SimpleLidarSensor
         }
     }
 
+    void SimpleLidar::ImageCallback(const AZStd::chrono::steady_clock::time_point& requestTimestamp ,unsigned int viewIndex, const AZ::RPI::AttachmentReadback::ReadbackResult& result)
+    {
+        const AZStd::unordered_map<AZ::RHI::Format, int> FormatToCvFormat = { { AZ::RHI::Format::R8G8B8A8_UNORM, CV_8UC4 },
+                                                                                    { AZ::RHI::Format::R32_FLOAT, CV_32F } };
+        if (result.m_state != AZ::RPI::AttachmentReadback::ReadbackState::Success)
+        {
+            return;
+        }
+
+        AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
+        const auto it = m_pendingFrames.find(requestTimestamp);
+        if (it == m_pendingFrames.end())
+        {
+            return;
+        }
+
+        auto& pendingFrame = it->second;
+
+        // convert to cv::Mat
+        const AZ::RHI::ImageDescriptor& descriptor = result.m_imageDescriptor;
+        const auto format = descriptor.m_format;
+
+        auto formatIt = FormatToCvFormat.find(format);
+        AZ_Assert(formatIt != FormatToCvFormat.end(), "Unexpected format in result %u", static_cast<uint32_t>(format));
+        if (formatIt != FormatToCvFormat.end())
+        {
+            const int width = descriptor.m_size.m_width;
+            const int height = descriptor.m_size.m_height;
+            auto cvFormat = formatIt->second;
+            cv::Mat frame(height, width, cvFormat, (void*)result.m_dataBuffer->data());
+            const bool isDepth = frame.channels() == 1;
+            if (isDepth)
+            {
+                pendingFrame.ReportDepthFrameCaptured(viewIndex, frame);
+            }
+            else
+            {
+                pendingFrame.ReportColorFrameCaptured(viewIndex, frame);
+            }
+
+            if (pendingFrame.IsComplete())
+            {
+                AZStd::thread task(
+                    [this, pendingFrame]()
+                    {
+                        FrameComplete(pendingFrame);
+                        if (m_sensorConfiguration.m_publishingEnabled && m_pointCloudPublisher)
+                        {
+                            PublishPointCloud(pendingFrame);
+                        }
+                    });
+                task.detach();
+
+                m_pendingFrames.erase(requestTimestamp);
+            }
+        }
+    }
+
     void SimpleLidar::OnSensorTick()
     {
         const auto time = AZStd::chrono::steady_clock::now();
@@ -318,51 +403,16 @@ namespace SimpleLidarSensor
 
             auto callback = [this, viewIndex = i, ts = time](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
             {
-                const AZStd::unordered_map<AZ::RHI::Format, int> FormatToCvFormat = { { AZ::RHI::Format::R8G8B8A8_UNORM, CV_8UC4 },
-                                                                                      { AZ::RHI::Format::R32_FLOAT, CV_32F } };
-
                 if (result.m_state == AZ::RPI::AttachmentReadback::ReadbackState::Success)
                 {
-                    AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-                    if (m_pendingFrames.contains(ts))
-                    {
-                        auto& pendingFrame = m_pendingFrames[ts];
-
-                        // convert to cv::Mat
-                        const AZ::RHI::ImageDescriptor& descriptor = result.m_imageDescriptor;
-                        const auto format = descriptor.m_format;
-
-                        auto formatIt = FormatToCvFormat.find(format);
-                        AZ_Assert(formatIt != FormatToCvFormat.end(), "Unexpected format in result %u", static_cast<uint32_t>(format));
-                        if (formatIt != FormatToCvFormat.end())
-                        {
-                            const int width = descriptor.m_size.m_width;
-                            const int height = descriptor.m_size.m_height;
-                            auto cvFormat = formatIt->second;
-                            cv::Mat frame(height, width, cvFormat, (void*)result.m_dataBuffer->data());
-                            const bool isDepth = frame.channels() == 1;
-                            if (isDepth)
-                            {
-                                pendingFrame.ReportDepthFrameCaptured(viewIndex, frame);
-                            }
-                            else
-                            {
-                                pendingFrame.ReportColorFrameCaptured(viewIndex, frame);
-                            }
-
-                            if (pendingFrame.IsComplete())
-                            {
-                                FrameComplete(pendingFrame);
-                                m_pendingFrames.erase(ts);
-                            }
-                        }
-                    }
+                    ImageCallback(ts, viewIndex, result);
                 }
                 else
                 {
                     AZ_Error("SimpleLidar", false, "Capture %d Failed", viewIndex);
                 }
             };
+
             AZ::Render::FrameCaptureRequestBus::BroadcastResult(
                 captureOutcome,
                 &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,
@@ -391,6 +441,111 @@ namespace SimpleLidarSensor
                 AZ_Error("SimpleLidar", false, "Failed to capture frame: %s", captureOutcome.GetError().m_errorMessage.c_str());
             }
         }
+    }
+
+    void SimpleLidar::PublishPointCloud(const PendingFrames& completedFrame)
+    {
+        // Get ROS2 timestamp and frame ID
+        const auto simTimestamp = ROS2::ROS2ClockInterface::Get()->GetROSTimestamp();
+        const auto frameId = GetNamespacedFrameID();
+
+        const float width = static_cast<float>(completedFrame.m_viewsDataDepth.at(0).cols);
+        const float height = static_cast<float>(completedFrame.m_viewsDataDepth.at(0).rows);
+
+        // Pre-compute ray directions - estimate based on step sizes
+        AZStd::vector<AZ::Vector3> rayDirections;
+        if (m_rayCount)
+        {
+            rayDirections.reserve(m_rayCount.value());
+        }
+        // Generate all ray directions using same loops as original
+        for (float azimuth = 0; azimuth < (2.0 * M_PI); azimuth += (2.0 * M_PI) / 1024)
+        {
+            for (float elevation = AZ::DegToRad(-45); elevation < AZ::DegToRad(45); elevation += AZ::DegToRad(2.0))
+            {
+                AZ::Vector3 direction{ AZ::Cos(elevation) * AZ::Cos(azimuth),
+                                       AZ::Cos(elevation) * AZ::Sin(azimuth),
+                                       AZ::Sin(elevation) };
+                rayDirections.emplace_back(direction.GetNormalized());
+            }
+        }
+        m_rayCount = rayDirections.size();
+
+        // First pass: collect valid points
+        struct ValidPoint
+        {
+            AZ::Vector3 position;
+            cv::Vec4b color;
+        };
+
+        AZStd::vector<ValidPoint> validPoints;
+        validPoints.reserve(rayDirections.size());
+
+        for (const auto& direction : rayDirections)
+        {
+            for (int viewId = 0; viewId < ViewCount; ++viewId)
+            {
+                // Rotate direction into view space
+                const AZ::Vector3 localDirection = m_cameraToLidarCoordinate[viewId].GetInverse().TransformVector(direction);
+
+                // Project into image plane
+                const AZ::Vector3 uvw = m_cameraMatrix * localDirection.GetNormalized();
+                const float u = uvw.GetX() / uvw.GetZ();
+                const float v = uvw.GetY() / uvw.GetZ();
+
+                if (uvw.GetZ() > 0 && u >= 0 && u < width && v >= 0 && v < height)
+                {
+                    const int ui = static_cast<int>(u);
+                    const int vi = static_cast<int>(v);
+                    const cv::Vec4b& color = completedFrame.m_viewsDataColor.at(viewId).at<cv::Vec4b>(vi, ui);
+                    const float depthPlanar = completedFrame.m_viewsDataDepth.at(viewId).at<float>(vi, ui);
+
+                    if (depthPlanar > 0.1f)
+                    {
+                        const float depthRange = PlanarDepthToRange(m_cameraMatrix, u, v, depthPlanar);
+                        const AZ::Vector3 point = direction * depthRange;
+                        validPoints.push_back({point, color});
+                        break; // Found hit for this ray, move to next ray
+                    }
+                }
+            }
+        }
+
+        // Create point cloud message
+        sensor_msgs::msg::PointCloud2 message;
+        sensor_msgs::PointCloud2Modifier modifier(message);
+        modifier.setPointCloud2FieldsByString(2, "xyz", "rgb");
+        modifier.resize(validPoints.size());
+
+        message.header.stamp = simTimestamp;
+        message.header.frame_id = frameId.c_str();
+        message.is_dense = false;
+
+        // Create iterators
+        sensor_msgs::PointCloud2Iterator<float> iter_x(message, "x");
+        sensor_msgs::PointCloud2Iterator<float> iter_y(message, "y");
+        sensor_msgs::PointCloud2Iterator<float> iter_z(message, "z");
+        sensor_msgs::PointCloud2Iterator<uint8_t> iter_r(message, "r");
+        sensor_msgs::PointCloud2Iterator<uint8_t> iter_g(message, "g");
+        sensor_msgs::PointCloud2Iterator<uint8_t> iter_b(message, "b");
+
+        // Fill point cloud data from cached valid points
+        for (const auto& validPoint : validPoints)
+        {
+            *iter_x = validPoint.position.GetX();
+            *iter_y = validPoint.position.GetY();
+            *iter_z = validPoint.position.GetZ();
+            *iter_r = validPoint.color[2]; // R (OpenCV is BGR)
+            *iter_g = validPoint.color[1]; // G
+            *iter_b = validPoint.color[0]; // B
+
+            // Advance all iterators
+            ++iter_x; ++iter_y; ++iter_z;
+            ++iter_r; ++iter_g; ++iter_b;
+        }
+
+        // Publish the message
+        m_pointCloudPublisher->publish(message);
     }
 
 } // namespace SimpleLidarSensor

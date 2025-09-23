@@ -11,13 +11,72 @@
 #include <opencv2/opencv.hpp>
 #include <ROS2/Sensor/ROS2SensorComponentBase.h>
 #include <ROS2/Sensor/Events/TickBasedSource.h>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <rclcpp/rclcpp.hpp>
 namespace SimpleLidarSensor
 {
-    static constexpr unsigned int ViewCount = 6;
+    static constexpr unsigned int ViewCount = 3;
     struct PendingFrames
     {
         AZStd::unordered_map<unsigned int, cv::Mat> m_viewsDataColor;
         AZStd::unordered_map<unsigned int, cv::Mat> m_viewsDataDepth;
+
+        // Rule of 3: Destructor, Copy Constructor, Assignment Operator
+        ~PendingFrames() = default;
+
+        // Copy constructor
+        PendingFrames(const PendingFrames& other)
+        {
+            for (const auto& [id, mat] : other.m_viewsDataColor)
+            {
+                mat.copyTo(m_viewsDataColor[id]);
+            }
+            for (const auto& [id, mat] : other.m_viewsDataDepth)
+            {
+                mat.copyTo(m_viewsDataDepth[id]);
+            }
+        }
+
+        // Assignment operator
+        PendingFrames& operator=(const PendingFrames& other)
+        {
+            if (this != &other)
+            {
+                m_viewsDataColor.clear();
+                m_viewsDataDepth.clear();
+
+                for (const auto& [id, mat] : other.m_viewsDataColor)
+                {
+                    mat.copyTo(m_viewsDataColor[id]);
+                }
+                for (const auto& [id, mat] : other.m_viewsDataDepth)
+                {
+                    mat.copyTo(m_viewsDataDepth[id]);
+                }
+            }
+            return *this;
+        }
+
+        // Move constructor and move assignment (Rule of 5)
+        PendingFrames(PendingFrames&& other) noexcept
+            : m_viewsDataColor(AZStd::move(other.m_viewsDataColor))
+            , m_viewsDataDepth(AZStd::move(other.m_viewsDataDepth))
+        {
+        }
+
+        PendingFrames& operator=(PendingFrames&& other) noexcept
+        {
+            if (this != &other)
+            {
+                m_viewsDataColor = AZStd::move(other.m_viewsDataColor);
+                m_viewsDataDepth = AZStd::move(other.m_viewsDataDepth);
+            }
+            return *this;
+        }
+
+        // Default constructor
+        PendingFrames() = default;
+
         bool IsComplete()
         {
             return m_viewsDataDepth.size() == ViewCount && m_viewsDataColor.size() == ViewCount;
@@ -27,6 +86,7 @@ namespace SimpleLidarSensor
         {
             frame.copyTo(m_viewsDataDepth[frameId]);
         }
+
         void ReportColorFrameCaptured(unsigned int frameId, const cv::Mat& frame)
         {
             frame.copyTo(m_viewsDataColor[frameId]);
@@ -40,6 +100,8 @@ namespace SimpleLidarSensor
         AZ_COMPONENT(SimpleLidar, SimpleLidarComponentTypeId);
         static void Reflect(AZ::ReflectContext* context);
 
+        SimpleLidar();
+
         // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
@@ -51,7 +113,10 @@ namespace SimpleLidarSensor
 
     private:
         void FrameComplete(const PendingFrames& completedFrame);
+        void PublishPointCloud(const PendingFrames& completedFrame);
 
+
+        void ImageCallback(const AZStd::chrono::steady_clock::time_point& requestTimestamp ,unsigned int viewIndex, const AZ::RPI::AttachmentReadback::ReadbackResult& result);
         void OnSensorTick();
         float m_value = 0.0f;
 
@@ -67,5 +132,9 @@ namespace SimpleLidarSensor
         AZStd::mutex m_mutex;
         AZStd::map< AZStd::chrono::steady_clock::time_point, PendingFrames> m_pendingFrames; // cache of frames indexed by time of request
 
+        // ROS2 publisher for point cloud
+        rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_pointCloudPublisher;
+
+        AZStd::optional<size_t> m_rayCount;
     };
 }
