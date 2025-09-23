@@ -23,7 +23,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | **RobotecSplineTools**     | not verified    |
 | **RobotecWatchdogTools**   | not verified    |
 | **ROS2PoseControl**        | not verified    |
-| **ROS2ScriptIntegration**  | verified        |
+| **ROS2ScriptIntegration**  | compatible      |
 | **SensorDebug**            | not verified    |
 | **Smoothing**              | not verified    |
 | **ViewportStreamer**       | not verified    |
