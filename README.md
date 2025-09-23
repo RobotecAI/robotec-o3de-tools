@@ -6,129 +6,27 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 # Compatibility
 
-| Gem name                   | Compatibility   |
-| -------------------------- |-----------------|
-| **CsvSpawner**             | not verified    |
-| **DisableMainView**        | not verified    |
-| **ExposeConsoleToRos**     | not verified    |
-| **GeoJSONSpawner**         | not verified    |
-| **GeoJSONSpawnerROS2**     | not verified    |
-| **ImGuiProvider**          | not verified    |
-| **ImGuizmo**               | not verified    |
-| **LevelModificationTools** | not verified    |
-| **Pointcloud**             | not verified    |
-| **RandomizeUtils**         | not verified    |
-| **RobotecRecordingTools**  | not verified    |
-| **RobotecSpectatorCamera** | not verified    |
-| **RobotecSplineTools**     | not verified    |
-| **RobotecWatchdogTools**   | not verified    |
-| **ROS2PoseControl**        | not verified    |
-| **ROS2ScriptIntegration**  | compatible      |
-| **SensorDebug**            | not verified    |
-| **Smoothing**              | not verified    |
-| **ViewportStreamer**       | not verified    |
-| **WheelAnimTool**          | not verified    |
-
-
-# RobotecRecordingTools
-
-A toolset for joystick-controlled cameras and spline animation tools.
-
-# SplineTools
-
-The tools for expanding the usability of the Spline component in O3DE.
-It allows to:
-
-- Publish spline points as a path with ROS 2
-- Import spline from CSV file
-- Export spline to a CSV file
-
-Having a CSV file formatted as :
-
-```csv
-x,y,z
-0.000000,0.000000,0
-0.698132,0.642788,0
-1.396263,0.984808,0
-2.094395,0.866025,0
-2.792527,0.342020,0
-3.490659,-0.342020,0
-4.188790,-0.866025,0
-4.886922,-0.984808,0
-5.585054,-0.642788,0
-6.283185,-0.000000,0
-```
-
-You can modify the Spline component in Editor.
-Add SplineToolsEditorComponent next to the [Spline component](https://docs.o3de.org/docs/user-guide/components/reference/shape/spline/), locate your CSV file (it needs to exist as a source asset), and click the Load button.
-If you switch `Local Coordinates` to true, the component will interpret coordinates as local to entity origin.
-![](doc/SplineToolsEditorComponent.png)
-
-To publish spline path, add `SplinePublisher` next to the [Spline component](https://docs.o3de.org/docs/user-guide/components/reference/shape/spline/).
-Adjust **update frequency** to set how often the path will be published.
-
-## Using geo-referenced data
-
-The CSV file can contain the following columns: `lat`, `lon`, `alt` where every row contains the WGS-84 coordinate of the spline's node.
-It can be loaded to a georeferenced level as explained in [Georeference section of O3DE documentation]
-(https://development--o3deorg.netlify.app/docs/user-guide/interactivity/robotics/georeference/).
-It is useful for visualizing paths, roads, and other things at the O3DE level.
-
-# ROS2ScriptIntegration
-
-Simple, but extremely useful tool that exposes ROS 2 subscription/publication to Script Canvas and LUA.
-Refer to [readme](https://github.com/RobotecAI/robotec-o3de-tools/tree/main/Gems/ROS2ScriptIntegration#readme).
-
-# RobotecSpectatorCamera
-
-A component that allows to look at an entity from 3rd person perspective and to switch camera mode to the free flying mode (to switch mode press the `C` key). It also allows to enable/disable following the target's rotation and to add a vertical offset to change the `look at` point of the target entity.  
-The Spectator camera component can be configured to centre the cursor when moving the camera (this gives the full range of rotation regardless of the available screen space) or to let the cursor move freely on the screen when moving the camera (this reduces the range of rotation, e.g. in third person mode a full rotation may require a few repeats of the (RMB press ->Rotate camera ->RMB release ->Move cursor to previous start position ->Repeat) cycle). By default this option is set to false (cursor is not centered). This option can be configured via the `setreg` file or by passing `--regset` flag in the command line. Example:
-
-- `.setreg`:
-
-```json
-{
-  "O3DE": {
-    "SpectatorCamera": {
-      "MoveCursorToTheCenter": false
-    }
-  }
-}
-```
-
-- `--regset flag`:
-
-```
-./Editor --regset="/O3DE/SpectatorCamera/MoveCursorToTheCenter=true"
-```
-
-![](doc/RobotecSpectatorCamera.png)
-
-# RobotecWatchdogTools
-
-Minimal dependency Gem that allows the setup runtime checks and prevents starting the Editor/GameLauncher if the requirements are not met
-Refer to [readme](Gems/RobotecWatchdogTools/readme.md)
-
-# Disable the main view
-
-Deprecated, please use `-console-mode` switch available in o3de 2409.
-The description of said feature is in the original [PR](https://github.com/o3de/o3de/pull/18093).
-
-# LevelModificationTools
-
-The level modification tool contains a component called PrefabVariantEditorComponent.
-This component allows the change a variant of loaded prefab during game mode.
-It exposes PrefabVariantRequestsBus to Script Canvas or LUA.
-
-# SensorDebug
-
-A tool that allows to adjust frequency, and activate/deactivate sensor during the game mode.
-
-# Smoothing
-
-Gem contains a smoothing component that will mimic the movement of an attached entity with the tracked entity. It offers multiple smoothing methods. It allows the lock Z axis to point up direction.
-Useful for robots' movement smoothing.  
-![alt text](doc/Smoothing.png)
+| Gem name                                              | Compatibility |
+| ----------------------------------------------------- | ------------- |
+| [**CsvSpawner**](#csvspawner)                         | not verified  |
+| [**ExposeConsoleToRos**](#exposeconsoletoRos)         | not verified  |
+| [**GeoJSONSpawner**](#geojsonspawner)                 | not verified  |
+| [**GeoJSONSpawnerROS2**](#geojsonspawnerros2)         | not verified  |
+| [**ImGuiProvider**](#imguiprovider)                   | not verified  |
+| [**ImGuizmo**](#imguizmo)                             | not verified  |
+| [**LevelModificationTools**](#levelmodificationtools) | not verified  |
+| [**Pointcloud**](#pointcloud)                         | not verified  |
+| [**RandomizeUtils**](#randomizeutils)                 | not verified  |
+| [**RobotecRecordingTools**](#robotecrecordingtools)   | not verified  |
+| [**RobotecSpectatorCamera**](#robotecspectatorcamera) | not verified  |
+| [**RobotecSplineTools**](#robotecsplinetools)         | not verified  |
+| [**RobotecWatchdogTools**](#robotecwatchdogtools)     | not verified  |
+| [**ROS2PoseControl**](#ros2posecontrol)               | not verified  |
+| [**ROS2ScriptIntegration**](#ros2scriptintegration)   | compatible    |
+| [**SensorDebug**](#sensordebug)                       | not verified  |
+| [**Smoothing**](#smoothing)                           | not verified  |
+| [**ViewportStreamer**](#viewportstreamer)             | not verified  |
+| [**WheelAnimTool**](#wheelanimtool)                   | not verified  |
 
 # CsvSpawner
 
@@ -178,23 +76,6 @@ It has two std_msgs/msg/String topics:
 Currently `o3de_console_in` is usable only.
 The gem functionality is available only in Profile/Debug.
 
-# Pointcloud
-
-A Gem that introduces point clouds to O3DE.
-It offers:
-
-- PointcloudFeatureProcessor with public API
-- Pointcloud product asset
-- A public API for configuration (`PointcloudConfigurationBus`)
-
-At this moment it accepts [PLY](<https://en.wikipedia.org/wiki/PLY_(file_format)>) as a source asset.
-
-![](doc/Pointcloud.png)\
-Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
-
-# ROS2PoseControl
-
-The utility gem enabling controlling robots in simulation as puppets with Pose messages or TFs. For a more detailed description, check the [PoseControl user guide](./doc/UserGuide/PoseControl.md).
 
 # GeoJSONSpawner
 
@@ -420,37 +301,6 @@ ros2 topic pub /geojson/delete_all std_msgs/msg/Empty "{}" --once
 ros2 service call /geojson/get_spawned_groups_ids std_srvs/srv/Trigger
 ```
 
-# ImGuizmo
-
-This gem brings gizmo (with some simple API) to be used in game mode.
-It is gemification of existing ImGui extension called [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo).
-This gem comes with only one system component that is active only in game mode.
-To test this gizmo, activate gem and type in O3DE console (in gamelauncher):
-
-```
-imguizmo_acquire
-imguizmo_show 0
-```
-
-There is an API to work with multiple gizmos using handle.
-Refer to script canvas example below:
-![alt text](doc/imguizmo.png)
-
-_Note_ Only one gizmo can be rendered at the time!
-
-# RandomizeUtils
-
-This gem allows to randomize prefab on spawning.
-It has a component called `RandomizePoseComponent` that modifies an entity during activation.
-It allows:
-
-- change translation and rotation and uniform scale of the Transform component,
-- deactivate the entity with given probability
-
-![](doc/RandomizePoseComponent.png)
-
-**Note:** that only given entity is modified (not all descendants).
-
 # ImGuiProvider
 
 This gem adds support for displaying user defined ImGui GUI. Users can define their own gui using `ImGuiProvider::ImGuiProviderNotificationBus`. User's component should be handler of the `ImGuiProvider::ImGuiProviderNotificationBus::Handler` and define method `OnImGuiUpdate`. Mentioned method should contain all code related to displayed GUI. Acquiring ImGui context and its releasing is handled by the Gem and its system component. User's component should connect to `ImGuiProvider::ImGuiProviderNotificationBus` using `ImGuiProvider::ImGuiFeaturePath` aka `AZ::IO::Path`. Each segment of path represents one depth in the toolbar.
@@ -492,6 +342,154 @@ Besides `OnImGuiUpdate` used for updating displayed GUI, notification bus define
 `AZStd::optional<ImGuiFeaturePath> GetActiveGuiId()` - returns optional with ImGuiProvider::ImGuiFeaturePath. Optional is empty if there is no active GUI.
 
 `void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given id as active. Doesn't check if given guiId exists.
+
+# ImGuizmo
+
+This gem brings gizmo (with some simple API) to be used in game mode.
+It is gemification of existing ImGui extension called [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo).
+This gem comes with only one system component that is active only in game mode.
+To test this gizmo, activate gem and type in O3DE console (in gamelauncher):
+
+```
+imguizmo_acquire
+imguizmo_show 0
+```
+
+There is an API to work with multiple gizmos using handle.
+Refer to script canvas example below:
+![alt text](doc/imguizmo.png)
+
+_Note_ Only one gizmo can be rendered at the time!
+
+# LevelModificationTools
+
+The level modification tool contains a component called PrefabVariantEditorComponent.
+This component allows the change a variant of loaded prefab during game mode.
+It exposes PrefabVariantRequestsBus to Script Canvas or LUA.
+
+# Pointcloud
+
+A Gem that introduces point clouds to O3DE.
+It offers:
+
+- PointcloudFeatureProcessor with public API
+- Pointcloud product asset
+- A public API for configuration (`PointcloudConfigurationBus`)
+
+At this moment it accepts [PLY](<https://en.wikipedia.org/wiki/PLY_(file_format)>) as a source asset.
+
+![](doc/Pointcloud.png)\
+Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
+
+# RandomizeUtils
+
+This gem allows to randomize prefab on spawning.
+It has a component called `RandomizePoseComponent` that modifies an entity during activation.
+It allows:
+
+- change translation and rotation and uniform scale of the Transform component,
+- deactivate the entity with given probability
+
+![](doc/RandomizePoseComponent.png)
+
+**Note:** that only given entity is modified (not all descendants).
+
+# RobotecRecordingTools
+
+A toolset for joystick-controlled cameras and spline animation tools.
+
+# RobotecSpectatorCamera
+
+A component that allows to look at an entity from 3rd person perspective and to switch camera mode to the free flying mode (to switch mode press the `C` key). It also allows to enable/disable following the target's rotation and to add a vertical offset to change the `look at` point of the target entity.  
+The Spectator camera component can be configured to centre the cursor when moving the camera (this gives the full range of rotation regardless of the available screen space) or to let the cursor move freely on the screen when moving the camera (this reduces the range of rotation, e.g. in third person mode a full rotation may require a few repeats of the (RMB press ->Rotate camera ->RMB release ->Move cursor to previous start position ->Repeat) cycle). By default this option is set to false (cursor is not centered). This option can be configured via the `setreg` file or by passing `--regset` flag in the command line. Example:
+
+- `.setreg`:
+
+```json
+{
+  "O3DE": {
+    "SpectatorCamera": {
+      "MoveCursorToTheCenter": false
+    }
+  }
+}
+```
+
+- `--regset flag`:
+
+```
+./Editor --regset="/O3DE/SpectatorCamera/MoveCursorToTheCenter=true"
+```
+
+![](doc/RobotecSpectatorCamera.png)
+
+# RobotecSplineTools
+
+The tools for expanding the usability of the Spline component in O3DE.
+It allows to:
+
+- Publish spline points as a path with ROS 2
+- Import spline from CSV file
+- Export spline to a CSV file
+
+Having a CSV file formatted as :
+
+```csv
+x,y,z
+0.000000,0.000000,0
+0.698132,0.642788,0
+1.396263,0.984808,0
+2.094395,0.866025,0
+2.792527,0.342020,0
+3.490659,-0.342020,0
+4.188790,-0.866025,0
+4.886922,-0.984808,0
+5.585054,-0.642788,0
+6.283185,-0.000000,0
+```
+
+You can modify the Spline component in Editor.
+Add SplineToolsEditorComponent next to the [Spline component](https://docs.o3de.org/docs/user-guide/components/reference/shape/spline/), locate your CSV file (it needs to exist as a source asset), and click the Load button.
+If you switch `Local Coordinates` to true, the component will interpret coordinates as local to entity origin.
+![](doc/SplineToolsEditorComponent.png)
+
+To publish spline path, add `SplinePublisher` next to the [Spline component](https://docs.o3de.org/docs/user-guide/components/reference/shape/spline/).
+Adjust **update frequency** to set how often the path will be published.
+
+## Using geo-referenced data
+
+The CSV file can contain the following columns: `lat`, `lon`, `alt` where every row contains the WGS-84 coordinate of the spline's node.
+It can be loaded to a georeferenced level as explained in [Georeference section of O3DE documentation]
+(https://development--o3deorg.netlify.app/docs/user-guide/interactivity/robotics/georeference/).
+It is useful for visualizing paths, roads, and other things at the O3DE level.
+
+# RobotecWatchdogTools
+
+Minimal dependency Gem that allows the setup runtime checks and prevents starting the Editor/GameLauncher if the requirements are not met
+Refer to [readme](Gems/RobotecWatchdogTools/readme.md)
+
+# ROS2PoseControl
+
+The utility gem enabling controlling robots in simulation as puppets with Pose messages or TFs. For a more detailed description, check the [PoseControl user guide](./doc/UserGuide/PoseControl.md).
+
+# ROS2ScriptIntegration
+
+Simple, but extremely useful tool that exposes ROS 2 subscription/publication to Script Canvas and LUA.
+Refer to [readme](https://github.com/RobotecAI/robotec-o3de-tools/tree/main/Gems/ROS2ScriptIntegration#readme).
+
+# SensorDebug
+
+A tool that allows to adjust frequency, and activate/deactivate sensor during the game mode.
+
+# Smoothing
+
+Gem contains a smoothing component that will mimic the movement of an attached entity with the tracked entity. It offers multiple smoothing methods. It allows the lock Z axis to point up direction.
+Useful for robots' movement smoothing.  
+![alt text](doc/Smoothing.png)
+
+# ViewportStreamer
+
+Gem provides a publisher, which streams application's current viewport on ROS2 topic. See [readme](Gems/ViewportStreamer/README.md) for more details.
 
 # WheelAnimTool
 
