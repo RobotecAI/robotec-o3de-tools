@@ -1,10 +1,11 @@
 
 #include "SubscriberSystemComponent.h"
-#include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
-#include <ROS2ScriptIntegration/ROS2ScriptSubscriberBus.h>
-
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <ROS2/Clock/ROS2ClockRequestBus.h>
+#include <ROS2/ROS2Bus.h>
+#include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
+#include <ROS2ScriptIntegration/ROS2ScriptSubscriberBus.h>
 
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
