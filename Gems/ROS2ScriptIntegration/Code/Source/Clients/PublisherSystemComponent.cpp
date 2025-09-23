@@ -1,4 +1,7 @@
 #include "PublisherSystemComponent.h"
+
+#include <ROS2/Clock/ROS2ClockRequestBus.h>
+
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
 #include <ROS2ScriptIntegration/ROS2ScriptSubscriberBus.h>
 
@@ -184,7 +187,7 @@ namespace ROS2ScriptIntegration
         const AZStd::string& topicName, const AZStd::string& frame, const AZ::Transform& transform)
     {
         geometry_msgs::msg::PoseStamped message;
-        message.header.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
+        message.header.stamp = ROS2::ROS2ClockInterface::Get()->GetROSTimestamp();
         message.header.frame_id = std::string(frame.c_str());
         message.pose.position.x = transform.GetTranslation().GetX();
         message.pose.position.y = transform.GetTranslation().GetY();
