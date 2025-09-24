@@ -22,6 +22,7 @@
 #include <ROS2/ROS2NamesBus.h>
 #include <ROS2/Clock/ROS2ClockRequestBus.h>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+#include "BilinearSampling.h"
 namespace SimpleLidarSensor
 {
 
@@ -57,30 +58,29 @@ namespace SimpleLidarSensor
             return width / height;
         };
 
-        AZ::Matrix3x3 MakeCameraIntrinsics(int width, int height, float verticalFieldOfViewDeg)
+        AZ::Matrix3x3 MakeCameraIntrinsics(int width, int height, float horizontalFoV)
         {
             const auto w = static_cast<float>(width);
             const auto h = static_cast<float>(height);
-            const float verticalFieldOfView = AZ::DegToRad(verticalFieldOfViewDeg);
-            const float horizontalFoV = 2.0 * AZStd::atan(AZStd::tan(verticalFieldOfView / 2.0) * GetAspectRatio(width, height));
+            const float verticalFieldOfView = 2.0 * AZStd::atan(AZStd::tan(horizontalFoV / 2.0) * GetAspectRatio(height, width));
             const float focalLengthX = w / (2.0 * AZStd::tan(horizontalFoV / 2.0));
             const float focalLengthY = h / (2.0 * AZStd::tan(verticalFieldOfView / 2.0));
             return AZ::Matrix3x3::CreateFromRows({ focalLengthX, 0.f, w / 2.f }, { 0.f, focalLengthY, h / 2.f }, { 0.f, 0.f, 1.f });
         }
 
         //! Creates clip matrix for Atom
-        AZ::Matrix4x4 MakeClipMatrix(int width, int height, float verticalFieldOfViewDeg, float nearDist, float farDist)
+        AZ::Matrix4x4 MakeClipMatrix(int width, int height, float verticalFieldOfView, float nearDist, float farDist)
         {
             AZ::Matrix4x4 localViewToClipMatrix;
             AZ::MakePerspectiveFovMatrixRH(
-                localViewToClipMatrix, AZ::DegToRad(verticalFieldOfViewDeg), GetAspectRatio(width, height), nearDist, farDist, true);
+                localViewToClipMatrix, verticalFieldOfView, GetAspectRatio(width, height), nearDist, farDist, true);
             return localViewToClipMatrix;
         }
 
         //! Returns a transformation matrix (rotation only) for given view index
         AZ::Transform GetViewTransform(int viewIndex, float horizontalFOV)
         {
-            const float angle = AZ::DegToRad(viewIndex * horizontalFOV);
+            const float angle = viewIndex * horizontalFOV;
             const AZ::Quaternion localRot = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), -angle);
             return AZ::Transform::CreateFromQuaternion(localRot);
         }
@@ -114,7 +114,7 @@ namespace SimpleLidarSensor
     {
         m_cameraMatrix = AZ::Matrix3x3::CreateIdentity();
         // Set up default ROS2 publisher configuration
-        m_sensorConfiguration.m_frequency = 10.f;
+        m_sensorConfiguration.m_frequency = 100.f;
         m_sensorConfiguration.m_publishingEnabled = true;
 
         ROS2::TopicConfiguration pc;
@@ -160,14 +160,24 @@ namespace SimpleLidarSensor
         m_passHierarchies.resize(ViewCount);
         m_scene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
 
-        const int width = 640;
-        const int height = 640;
-        const float VerticalFOV = HorizontalFOV / GetAspectRatio(width, height);
+        const int width = 1024;
+        const int height = 512;
+        //const float VerticalFOV = HorizontalFOV / GetAspectRatio(width, height);
+        const float HorizontalFOV = 2.0*M_PI / ViewCount; // add some margin to avoid seams
+        const float VerticalFOV = 2.0 * AZStd::atan(AZStd::tan(HorizontalFOV / 2.0) * GetAspectRatio(height, width));
+        const float VerticalFOVDegHalf = AZ::RadToDeg(VerticalFOV/2.0f);
+
+        // check if we need to limit the number of rays
+        AZ_Warning("SimpleLidar", AZStd::abs(m_lidarConfiguration.m_minElevationDeg) < VerticalFOVDegHalf, "Some of the configured vertical FoV is outside of camera FoV");
+        AZ_Warning("SimpleLidar", AZStd::abs(m_lidarConfiguration.m_maxElevationDeg) < VerticalFOVDegHalf, "Some of the configured vertical FoV is outside of camera FoV");
+
+
+
 
         const auto nearDist = m_lidarConfiguration.m_minRange * 0.9f; // add some margin to min range
         const auto farDist = m_lidarConfiguration.m_maxRange * 1.1f; // add some margin to max range
         const AZ::Matrix4x4 localViewToClipMatrix = MakeClipMatrix(width, width, HorizontalFOV, nearDist, farDist);
-        m_cameraMatrix = MakeCameraIntrinsics(width, height, VerticalFOV);
+        m_cameraMatrix = MakeCameraIntrinsics(width, height, HorizontalFOV);
 
         for (int i = 0; i < ViewCount; ++i)
         {
@@ -517,7 +527,8 @@ namespace SimpleLidarSensor
                     const int ui = static_cast<int>(u);
                     const int vi = static_cast<int>(v);
                     const cv::Vec4b& color = completedFrame.m_viewsDataColor.at(viewId).at<cv::Vec4b>(vi, ui);
-                    const float depthPlanar = completedFrame.m_viewsDataDepth.at(viewId).at<float>(vi, ui);
+                    //const float depthPlanar = completedFrame.m_viewsDataDepth.at(viewId).at<float>(vi, ui);
+                    const float depthPlanar = sampleBilinear(completedFrame.m_viewsDataDepth.at(viewId), u, v);
 
                     if (depthPlanar > m_lidarConfiguration.m_minRange)
                     {

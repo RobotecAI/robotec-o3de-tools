@@ -17,7 +17,7 @@
 #include <sensor_msgs/msg/image.hpp>
 namespace SimpleLidarSensor
 {
-    static constexpr unsigned int ViewCount = 3; // Number of cameras in the rig
+    static constexpr unsigned int ViewCount = 4; // Number of cameras in the rig
     struct PendingFrames
     {
         AZStd::unordered_map<unsigned int, cv::Mat> m_viewsDataColor;
@@ -121,7 +121,6 @@ namespace SimpleLidarSensor
         void OnSensorTick();
         float m_value = 0.0f;
 
-        static constexpr float HorizontalFOV = 360.0f / ViewCount;
         AZ::Matrix3x3 m_cameraMatrix; //! Classical camera intrinsics matrix, the same for all cameras
         AZStd::vector<AZ::Transform> m_cameraToLidarCoordinate; //! directions for each camera in rig space (Z forward, X right, Y down)
         AZStd::vector<AZStd::vector<AZStd::string>> m_passHierarchies;
