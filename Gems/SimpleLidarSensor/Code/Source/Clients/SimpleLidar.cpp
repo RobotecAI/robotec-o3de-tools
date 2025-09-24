@@ -27,6 +27,31 @@ namespace SimpleLidarSensor
 
     namespace
     {
+
+        // type aliases for point cloud iterators - can be changed to modify point cloud data types,
+        using PointcloudXYZType = float;
+        using PointcloudIntensityType = float;
+        using PointcloudRingType = uint16_t;
+        using PointcloudTimeType = float;
+        using PointcloudRGBType = float; // RGB is stored as float, but iterated as uint8_t
+
+        constexpr uint8_t PointcloudXYZTypeId = 7;         // FLOAT32
+        constexpr uint8_t PointcloudIntensityTypeId = 7;   // FLOAT32
+        constexpr uint8_t PointcloudRingTypeId = 4;        // UINT16
+        constexpr uint8_t PointcloudRGBTypeId = 7;         // FLOAT32 -
+
+        using PointcloudXYZIterator = sensor_msgs::PointCloud2Iterator<PointcloudXYZType>;
+        using PointcloudIntensityIterator = sensor_msgs::PointCloud2Iterator<PointcloudIntensityType>;
+        using PointcloudRingIterator = sensor_msgs::PointCloud2Iterator<PointcloudRingType>;
+        using PointcloudTimeIterator = sensor_msgs::PointCloud2Iterator<PointcloudTimeType>;
+        using PointcloudColorIterator = sensor_msgs::PointCloud2Iterator<uint8_t>;
+
+        using OptionalIntensityIterator = AZStd::optional<PointcloudIntensityIterator>;
+        using OptionalRingIterator = AZStd::optional<PointcloudRingIterator>;
+        using OptionalTimeIterator = AZStd::optional<PointcloudTimeIterator>;
+        using OptionalColorIterator = AZStd::optional<PointcloudColorIterator>;
+
+
         float GetAspectRatio(float width, float height)
         {
             return width / height;
@@ -43,6 +68,7 @@ namespace SimpleLidarSensor
             return AZ::Matrix3x3::CreateFromRows({ focalLengthX, 0.f, w / 2.f }, { 0.f, focalLengthY, h / 2.f }, { 0.f, 0.f, 1.f });
         }
 
+        //! Creates clip matrix for Atom
         AZ::Matrix4x4 MakeClipMatrix(int width, int height, float verticalFieldOfViewDeg, float nearDist, float farDist)
         {
             AZ::Matrix4x4 localViewToClipMatrix;
@@ -50,6 +76,7 @@ namespace SimpleLidarSensor
                 localViewToClipMatrix, AZ::DegToRad(verticalFieldOfViewDeg), GetAspectRatio(width, height), nearDist, farDist, true);
             return localViewToClipMatrix;
         }
+
         //! Returns a transformation matrix (rotation only) for given view index
         AZ::Transform GetViewTransform(int viewIndex, float horizontalFOV)
         {
@@ -58,15 +85,15 @@ namespace SimpleLidarSensor
             return AZ::Transform::CreateFromQuaternion(localRot);
         }
 
-        // Rotate whole camera camera optical (Z forward) to World (X forward)
+        //! Rotate whole camera optical coordinate system (Z forward, Y down) to World (X forward, Z up)
         AZ::Transform GetCameraRigRotation()
         {
-            AZ::Matrix3x3 matrix =
+            const auto matrix =
                 AZ::Matrix3x3::CreateFromRows(AZ::Vector3::CreateAxisZ(), -AZ::Vector3::CreateAxisX(), -AZ::Vector3::CreateAxisY());
-
             return AZ::Transform::CreateFromMatrix3x3(matrix);
         }
 
+        //! Convert planar depth (depth along the camera Z axis) to range (radial distance from the sensor origin)
         float PlanarDepthToRange(const AZ::Matrix3x3& cameraMatrix, float u, float v, float planarDepth)
         {
             const float& fx = cameraMatrix.GetElement(0, 0);
@@ -79,35 +106,47 @@ namespace SimpleLidarSensor
             return range;
         }
 
-        const char* PointCloudType = "sensor_msgs::msg::PointCloud2";
+        const char* PointCloudTypeName = "sensor_msgs::msg::PointCloud2";
+        const char* ImageTypeName = "sensor_msgs::msg::Image";
     } // namespace
 
     SimpleLidar::SimpleLidar()
     {
         m_cameraMatrix = AZ::Matrix3x3::CreateIdentity();
         // Set up default ROS2 publisher configuration
-        ROS2::TopicConfiguration pc;
-        AZStd::string type = PointCloudType;
-        pc.m_type = type;
-        pc.m_topic = "point_cloud";
         m_sensorConfiguration.m_frequency = 10.f;
         m_sensorConfiguration.m_publishingEnabled = true;
-        m_sensorConfiguration.m_publishersConfigurations.insert(AZStd::make_pair(type, pc));
+
+        ROS2::TopicConfiguration pc;
+        pc.m_type = PointCloudTypeName;
+        pc.m_topic = "point_cloud";
+        m_sensorConfiguration.m_publishersConfigurations.insert(AZStd::make_pair(pc.m_type, pc));
+
+        ROS2::TopicConfiguration img;
+        img.m_type = ImageTypeName;
+        img.m_topic = "lidar_debug_image";
+        m_sensorConfiguration.m_publishersConfigurations.insert(AZStd::make_pair(img.m_type, img));
     }
 
     // Reflect for serialization and scripting
     void SimpleLidar::Reflect(AZ::ReflectContext* context)
     {
+        LidarConfiguration::Reflect(context);
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<SimpleLidar, SensorBaseType>()->Version(1)->Field("value", &SimpleLidar::m_value);
+            serialize->Class<SimpleLidar, SensorBaseType>()
+                ->Version(2)
+                ->Field("value", &SimpleLidar::m_value)
+                ->Field("LidarConfiguration", &SimpleLidar::m_lidarConfiguration);
 
             if (auto ec = serialize->GetEditContext())
             {
                 ec->Class<SimpleLidar>("SimpleLidar", "SimpleLidar using graphics pipeline")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"));
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SimpleLidar::m_lidarConfiguration,
+                                 "Lidar Configuration", "Configuration parameters for the LIDAR sensor");
             }
         }
     }
@@ -125,7 +164,9 @@ namespace SimpleLidarSensor
         const int height = 640;
         const float VerticalFOV = HorizontalFOV / GetAspectRatio(width, height);
 
-        const AZ::Matrix4x4 localViewToClipMatrix = MakeClipMatrix(width, width, HorizontalFOV, 0.1f, 100.0f);
+        const auto nearDist = m_lidarConfiguration.m_minRange * 0.9f; // add some margin to min range
+        const auto farDist = m_lidarConfiguration.m_maxRange * 1.1f; // add some margin to max range
+        const AZ::Matrix4x4 localViewToClipMatrix = MakeClipMatrix(width, width, HorizontalFOV, nearDist, farDist);
         m_cameraMatrix = MakeCameraIntrinsics(width, height, VerticalFOV);
 
         for (int i = 0; i < ViewCount; ++i)
@@ -168,14 +209,29 @@ namespace SimpleLidarSensor
             m_cameraToLidarCoordinate.push_back(viewTransform);
         }
 
-        // Set up ROS2 publisher
-        const auto& publisherConfig = m_sensorConfiguration.m_publishersConfigurations[PointCloudType];
-        AZStd::string fullTopic;
-        ROS2::ROS2NamesRequestBus::BroadcastResult(
-            fullTopic, &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName, GetNamespace(), publisherConfig.m_topic);
-
         auto ros2Node = ROS2::ROS2Interface::Get()->GetNode();
-        m_pointCloudPublisher = ros2Node->create_publisher<sensor_msgs::msg::PointCloud2>(fullTopic.data(), publisherConfig.GetQoS());
+        AZ_Assert(ros2Node, "ROS2 node is not initialized");
+
+        {
+            // Set up ROS2 publisher for point cloud
+            const auto& publisherConfig = m_sensorConfiguration.m_publishersConfigurations[PointCloudTypeName];
+            AZStd::string fullTopic;
+            ROS2::ROS2NamesRequestBus::BroadcastResult(
+                fullTopic, &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName, GetNamespace(), publisherConfig.m_topic);
+
+
+            m_pointCloudPublisher = ros2Node->create_publisher<sensor_msgs::msg::PointCloud2>(fullTopic.data(), publisherConfig.GetQoS());
+        }
+
+        if (m_lidarConfiguration.m_publishDebugImages)
+        {
+            // Set up ROS2 publisher for point cloud
+            const auto& publisherConfig = m_sensorConfiguration.m_publishersConfigurations[ImageTypeName];
+            AZStd::string fullTopic;
+            ROS2::ROS2NamesRequestBus::BroadcastResult(
+                fullTopic, &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName, GetNamespace(), publisherConfig.m_topic);
+            m_pointCloudPublisher = ros2Node->create_publisher<sensor_msgs::msg::PointCloud2>(fullTopic.data(), publisherConfig.GetQoS());
+        }
 
         // Start the sensor with configured frequency
         StartSensor(
@@ -367,21 +423,29 @@ namespace SimpleLidarSensor
 
         // Pre-compute ray directions - estimate based on step sizes
         AZStd::vector<AZ::Vector3> rayDirections;
+        AZStd::vector<uint16_t> rayRings;
         if (m_rayCount)
         {
             rayDirections.reserve(m_rayCount.value());
         }
-        // Generate all ray directions using same loops as original
-        for (float azimuth = 0; azimuth < (2.0 * M_PI); azimuth += (2.0 * M_PI) / (8 * 1024))
+        // Generate ray directions using configuration parameters
+        const auto layerElevations = m_lidarConfiguration.GetLayerElevations();
+        const float azimuthStep = m_lidarConfiguration.GetAzimuthStepRad();
+
+
+        for (float azimuth = 0; azimuth < (2.0f * M_PI); azimuth += azimuthStep)
         {
-            for (float elevation = AZ::DegToRad(-30); elevation < AZ::DegToRad(30); elevation += AZ::DegToRad(2.0))
+            for (int ring = 0; ring < layerElevations.size(); ++ring)
             {
+                const auto elevation = layerElevations[ring];
                 AZ::Vector3 direction{ AZ::Cos(elevation) * AZ::Cos(azimuth),
                                        AZ::Cos(elevation) * AZ::Sin(azimuth),
                                        AZ::Sin(elevation) };
                 rayDirections.emplace_back(direction.GetNormalized());
+                rayRings.push_back(ring);
             }
         }
+
         m_rayCount = rayDirections.size();
 
         // First pass: collect valid points
@@ -389,13 +453,16 @@ namespace SimpleLidarSensor
         {
             AZ::Vector3 position;
             cv::Vec4b color;
+            uint16_t ring;
         };
 
         AZStd::vector<ValidPoint> validPoints;
         validPoints.reserve(rayDirections.size());
 
-        for (const auto& direction : rayDirections)
+        for (int rayId = 0; rayId < rayDirections.size(); ++rayId)
         {
+            const auto& direction = rayDirections[rayId];
+            const auto& ring = rayRings[rayId];
             for (int viewId = 0; viewId < ViewCount; ++viewId)
             {
                 // Rotate direction into view space
@@ -413,12 +480,18 @@ namespace SimpleLidarSensor
                     const cv::Vec4b& color = completedFrame.m_viewsDataColor.at(viewId).at<cv::Vec4b>(vi, ui);
                     const float depthPlanar = completedFrame.m_viewsDataDepth.at(viewId).at<float>(vi, ui);
 
-                    if (depthPlanar > 0.1f)
+                    if (depthPlanar > m_lidarConfiguration.m_minRange)
                     {
                         const float depthRange = PlanarDepthToRange(m_cameraMatrix, u, v, depthPlanar);
-                        const AZ::Vector3 point = direction * depthRange;
-                        validPoints.push_back({point, color});
-                        break; // Found hit for this ray, move to next ray
+
+                        // Apply range limits from configuration
+                        if (depthRange >= m_lidarConfiguration.m_minRange && depthRange <= m_lidarConfiguration.m_maxRange)
+                        {
+                            const AZ::Vector3 point = direction * depthRange;
+                            validPoints.push_back({point, color, ring});
+
+                            break; // Found hit for this ray, move to next ray
+                        }
                     }
                 }
             }
@@ -426,21 +499,97 @@ namespace SimpleLidarSensor
 
         // Create point cloud message
         sensor_msgs::msg::PointCloud2 message;
+
+
+        // add fields
+        size_t currentDataOffset =0;
+        message.fields.resize(3); // reserve space for x,y,z
+        message.fields[0].name = "x";
+        message.fields[0].datatype =PointcloudXYZTypeId;
+        message.fields[0].offset = currentDataOffset;
+        message.fields[0].count = 1;
+        currentDataOffset += sizeof(PointcloudXYZType);
+
+        message.fields[1].name = "y";
+        message.fields[1].datatype = PointcloudXYZTypeId;
+        message.fields[1].offset = currentDataOffset;
+        message.fields[1].count = 1;
+        currentDataOffset += sizeof(PointcloudXYZType);
+
+        message.fields[2].name = "z";
+        message.fields[2].datatype = PointcloudXYZTypeId;
+        message.fields[2].count = 1;
+        message.fields[2].offset = currentDataOffset;
+        currentDataOffset += sizeof(PointcloudXYZType);
+
+
+        if (m_lidarConfiguration.m_publishRGB)
+        {
+            message.fields.resize(message.fields.size() + 1);
+            message.fields.back().name = "rgb";
+            message.fields.back().offset = currentDataOffset;
+            message.fields.back().datatype = PointcloudRGBTypeId;
+            message.fields.back().count = 3; // RGB is 3 elements packed in float
+            currentDataOffset += sizeof(PointcloudRGBType);
+        }
+        if (m_lidarConfiguration.m_publishRing)
+        {
+            message.fields.resize(message.fields.size() + 1);
+            message.fields.back().name = m_lidarConfiguration.m_ringFieldName.c_str();
+            message.fields.back().offset = currentDataOffset;
+            message.fields.back().datatype = PointcloudRingTypeId;
+            message.fields.back().count = 1;
+            currentDataOffset += sizeof(PointcloudRingType);
+        }
+
+        if (m_lidarConfiguration.m_intensityFromRGB)
+        {
+            message.fields.resize(message.fields.size() + 1);
+            message.fields.back().name = m_lidarConfiguration.m_intensity.c_str();
+            message.fields.back().offset = currentDataOffset;
+            message.fields.back().datatype = PointcloudIntensityTypeId;
+            message.fields.back().count = 1;
+            currentDataOffset += sizeof(PointcloudIntensityType);
+        }
+
         sensor_msgs::PointCloud2Modifier modifier(message);
-        modifier.setPointCloud2FieldsByString(2, "xyz", "rgb");
-        modifier.resize(validPoints.size());
+
+        message.point_step = currentDataOffset;
+        message.row_step = currentDataOffset;
+        message.width = validPoints.size();
+        message.height = 1;
 
         message.header.stamp = simTimestamp;
         message.header.frame_id = frameId.c_str();
         message.is_dense = false;
+        message.data.resize(validPoints.size() * message.point_step);
 
-        // Create iterators
-        sensor_msgs::PointCloud2Iterator<float> iter_x(message, "x");
-        sensor_msgs::PointCloud2Iterator<float> iter_y(message, "y");
-        sensor_msgs::PointCloud2Iterator<float> iter_z(message, "z");
-        sensor_msgs::PointCloud2Iterator<uint8_t> iter_r(message, "r");
-        sensor_msgs::PointCloud2Iterator<uint8_t> iter_g(message, "g");
-        sensor_msgs::PointCloud2Iterator<uint8_t> iter_b(message, "b");
+        PointcloudXYZIterator iter_x(message, "x");
+        PointcloudXYZIterator iter_y(message, "y");
+        PointcloudXYZIterator iter_z(message, "z");
+        OptionalColorIterator iter_r, iter_g, iter_b;
+        OptionalRingIterator iter_ring;
+        OptionalIntensityIterator iter_intensity;
+
+        if (m_lidarConfiguration.m_publishRGB)
+        {
+
+            iter_r = sensor_msgs::PointCloud2Iterator<uint8_t>(message, "r");
+            iter_g = sensor_msgs::PointCloud2Iterator<uint8_t>(message, "g");
+            iter_b = sensor_msgs::PointCloud2Iterator<uint8_t>(message, "b");
+        }
+
+        if (m_lidarConfiguration.m_publishRing)
+        {
+            const auto fieldName = m_lidarConfiguration.m_ringFieldName;
+            iter_ring = sensor_msgs::PointCloud2Iterator<uint16_t>(message, fieldName.c_str());
+        }
+
+        if (m_lidarConfiguration.m_intensityFromRGB)
+        {
+            const auto fieldName = m_lidarConfiguration.m_intensity;
+            iter_intensity = sensor_msgs::PointCloud2Iterator<float>(message, fieldName.c_str());
+        }
 
         // Fill point cloud data from cached valid points
         for (const auto& validPoint : validPoints)
@@ -448,13 +597,29 @@ namespace SimpleLidarSensor
             *iter_x = validPoint.position.GetX();
             *iter_y = validPoint.position.GetY();
             *iter_z = validPoint.position.GetZ();
-            *iter_r = validPoint.color[2]; // R (OpenCV is BGR)
-            *iter_g = validPoint.color[1]; // G
-            *iter_b = validPoint.color[0]; // B
 
-            // Advance all iterators
+            if (iter_ring)
+            {
+                **iter_ring = validPoint.ring;
+                ++(*iter_ring);
+            }
+
+            if (iter_intensity)
+            {
+                **iter_intensity = 0.299f * validPoint.color[2] + 0.587f * validPoint.color[1] + 0.114f * validPoint.color[0];
+                ++(*iter_intensity);
+            }
+
+            if (iter_r && iter_g && iter_b)
+            {
+                **iter_r = validPoint.color[2]; // R (OpenCV is BGR)
+                **iter_g = validPoint.color[1]; // G
+                **iter_b = validPoint.color[0]; // B
+                ++(*iter_r); ++(*iter_g); ++(*iter_b);
+            }
+
+            // Advance XYZ iterators
             ++iter_x; ++iter_y; ++iter_z;
-            ++iter_r; ++iter_g; ++iter_b;
         }
 
         // Publish the message

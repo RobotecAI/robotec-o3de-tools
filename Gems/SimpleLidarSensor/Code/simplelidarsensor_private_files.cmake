@@ -7,6 +7,8 @@
 set(FILES
     Source/SimpleLidarSensorModuleInterface.cpp
     Source/SimpleLidarSensorModuleInterface.h
+    Source/Clients/LidarConfiguration.cpp
+    Source/Clients/LidarConfiguration.h
     Source/Clients/SimpleLidar.cpp
     Source/Clients/SimpleLidar.h
 )

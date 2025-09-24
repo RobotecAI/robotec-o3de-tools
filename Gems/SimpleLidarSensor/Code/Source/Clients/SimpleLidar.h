@@ -1,18 +1,20 @@
 
 #pragma once
 
-#include <SimpleLidarSensor/SimpleLidarSensorTypeIds.h>
-#include <AzCore/Component/Component.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Component/TickBus.h>
-#include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/Scene.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
-#include <opencv2/opencv.hpp>
-#include <ROS2/Sensor/ROS2SensorComponentBase.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/View.h>
+#include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include "LidarConfiguration.h"
 #include <ROS2/Sensor/Events/TickBasedSource.h>
-#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <ROS2/Sensor/ROS2SensorComponentBase.h>
+#include <SimpleLidarSensor/SimpleLidarSensorTypeIds.h>
+#include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/msg/image.hpp>
 namespace SimpleLidarSensor
 {
     static constexpr unsigned int ViewCount = 3; // Number of cameras in the rig
@@ -112,7 +114,6 @@ namespace SimpleLidarSensor
 
 
     private:
-        void FrameComplete(const PendingFrames& completedFrame);
         void PublishPointCloud(const PendingFrames& completedFrame);
 
 
@@ -134,7 +135,11 @@ namespace SimpleLidarSensor
 
         // ROS2 publisher for point cloud
         rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr m_pointCloudPublisher;
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr m_debugImagePublisher;
 
         AZStd::optional<size_t> m_rayCount;
+
+        // Lidar configuration
+        LidarConfiguration m_lidarConfiguration;
     };
 }
