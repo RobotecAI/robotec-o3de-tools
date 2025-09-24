@@ -186,7 +186,7 @@ namespace SimpleLidarSensor
             pipelineDesc.m_allowModification = false;
             pipelineDesc.m_name = pipelineName;
             pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
-            pipelineDesc.m_rootPassTemplate = "PipelineRenderToTextureROSColor";
+            pipelineDesc.m_rootPassTemplate = "PipelineRenderToTextureLidarColor";
             pipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
             pipeline->RemoveFromRenderTick();
             if (auto renderToTexturePass = azrtti_cast<AZ::RPI::RenderToTexturePass*>(pipeline->GetRootPass().get()))
@@ -230,7 +230,7 @@ namespace SimpleLidarSensor
             AZStd::string fullTopic;
             ROS2::ROS2NamesRequestBus::BroadcastResult(
                 fullTopic, &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName, GetNamespace(), publisherConfig.m_topic);
-            m_pointCloudPublisher = ros2Node->create_publisher<sensor_msgs::msg::PointCloud2>(fullTopic.data(), publisherConfig.GetQoS());
+            m_debugImagePublisher = ros2Node->create_publisher<sensor_msgs::msg::Image>(fullTopic.data(), publisherConfig.GetQoS());
         }
 
         // Start the sensor with configured frequency
@@ -273,65 +273,53 @@ namespace SimpleLidarSensor
             return;
         }
 
-        AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-        const auto it = m_pendingFrames.find(requestTimestamp);
-        if (it == m_pendingFrames.end())
+        PendingFrames completedFrames;
         {
-            return;
-        }
+            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
-        auto& pendingFrame = it->second;
-
-        // convert to cv::Mat
-        const AZ::RHI::ImageDescriptor& descriptor = result.m_imageDescriptor;
-        const auto format = descriptor.m_format;
-
-        auto formatIt = FormatToCvFormat.find(format);
-        AZ_Assert(formatIt != FormatToCvFormat.end(), "Unexpected format in result %u", static_cast<uint32_t>(format));
-        if (formatIt != FormatToCvFormat.end())
-        {
-            const int width = descriptor.m_size.m_width;
-            const int height = descriptor.m_size.m_height;
-            auto cvFormat = formatIt->second;
-            cv::Mat frame(height, width, cvFormat, (void*)result.m_dataBuffer->data());
-            const bool isDepth = frame.channels() == 1;
-            if (isDepth)
+            const auto it = m_pendingFrames.find(requestTimestamp);
+            if (it == m_pendingFrames.end())
             {
-                pendingFrame.ReportDepthFrameCaptured(viewIndex, frame);
-            }
-            else
-            {
-                pendingFrame.ReportColorFrameCaptured(viewIndex, frame);
+                return;
             }
 
+            auto& pendingFrame = it->second;
 
-            if (pendingFrame.IsComplete())
+            // convert to cv::Mat
+            const AZ::RHI::ImageDescriptor& descriptor = result.m_imageDescriptor;
+            const auto format = descriptor.m_format;
+
+            auto formatIt = FormatToCvFormat.find(format);
+            AZ_Assert(formatIt != FormatToCvFormat.end(), "Unexpected format in result %u", static_cast<uint32_t>(format));
+            if (formatIt != FormatToCvFormat.end())
             {
-
-                AZStd::thread task(
-                    [this, requestTimestamp]()
-                    {
-                        PendingFrames completedFrame;
-
-                        // this is run in a separate thread - get the data and remove from pending
-                        {
-                            AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
-                            auto it = m_pendingFrames.find(requestTimestamp);
-                            AZ_Assert(it != m_pendingFrames.end(), "Request is not found");
-                            AZStd::swap(it->second, completedFrame);
-                            m_pendingFrames.erase(requestTimestamp);
-                        }
-
-                        if (m_sensorConfiguration.m_publishingEnabled && m_pointCloudPublisher)
-                        {
-                            PublishPointCloud(completedFrame);
-                        }
-                    });
-                task.detach();
+                const int width = descriptor.m_size.m_width;
+                const int height = descriptor.m_size.m_height;
+                auto cvFormat = formatIt->second;
+                cv::Mat frame(height, width, cvFormat, (void*)result.m_dataBuffer->data());
+                const bool isDepth = frame.channels() == 1;
+                if (isDepth)
+                {
+                    pendingFrame.ReportDepthFrameCaptured(viewIndex, frame);
+                }
+                else
+                {
+                    pendingFrame.ReportColorFrameCaptured(viewIndex, frame);
+                }
 
 
+                if (pendingFrame.IsComplete())
+                {
+                    AZStd::swap(it->second, completedFrames);
+                    m_pendingFrames.erase(requestTimestamp);
+                }
             }
         }
+        if (completedFrames.IsComplete())
+        {
+            PublishPointCloud(completedFrames);
+        }
+
     }
 
     void SimpleLidar::OnSensorTick()
@@ -455,6 +443,57 @@ namespace SimpleLidarSensor
             cv::Vec4b color;
             uint16_t ring;
         };
+
+        // publish debug image if configured
+        if (m_lidarConfiguration.m_publishDebugImages)
+        {
+            std::vector<cv::Mat> images;
+            for (int i = 0; i < ViewCount; ++i)
+            {
+                images.push_back(completedFrame.m_viewsDataColor.at(i));
+            }
+            cv::Mat pointcloudImage;
+            cv::hconcat(images, pointcloudImage);
+
+            // draw rings
+
+            for (int rayId = 0; rayId < rayDirections.size(); ++rayId)
+            {
+                const auto& direction = rayDirections[rayId];
+                for (int viewId = 0; viewId < ViewCount; ++viewId)
+                {
+                    // Rotate direction into view space
+                    const AZ::Vector3 localDirection = m_cameraToLidarCoordinate[viewId].GetInverse().TransformVector(direction);
+
+                    // Project into image plane
+                    const AZ::Vector3 uvw = m_cameraMatrix * localDirection.GetNormalized();
+                    const float u = uvw.GetX() / uvw.GetZ();
+                    const float v = uvw.GetY() / uvw.GetZ();
+
+                    if (uvw.GetZ() > 0 && u >= 0 && u < width && v >= 0 && v < height)
+                    {
+                        const int ui = static_cast<int>(u);
+                        const int vi = static_cast<int>(v);
+                        cv::circle(pointcloudImage, cv::Point2f(ui + viewId * width, vi), 1, cv::Scalar(255, 0, 0, 128), -1);
+                    }
+                }
+            }
+
+            // publish
+            sensor_msgs::msg::Image imageMessage;
+            imageMessage.header.stamp = simTimestamp;
+            imageMessage.header.frame_id = frameId.c_str();
+            imageMessage.height = pointcloudImage.rows;
+            imageMessage.width = pointcloudImage.cols;
+            imageMessage.encoding = "rgba8";
+            imageMessage.is_bigendian = false;
+            imageMessage.step = static_cast<sensor_msgs::msg::Image::_step_type>(pointcloudImage.cols * sizeof(float));
+            imageMessage.data.resize(pointcloudImage.rows * pointcloudImage.cols * sizeof(float));
+            memcpy(imageMessage.data.data(), pointcloudImage.data, imageMessage.step * imageMessage.height);
+            m_debugImagePublisher->publish(imageMessage);
+
+        }
+
 
         AZStd::vector<ValidPoint> validPoints;
         validPoints.reserve(rayDirections.size());

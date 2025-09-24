@@ -5,8 +5,13 @@
 #
 
 set(FILES
+    ../Assets/Passes/PipelineRenderToTextureLidarColor.pass
+    ../Assets/Passes/PipelineLidarColor.pass
+    ../Assets/Passes/LidarPassTemplates.azasset
     Source/SimpleLidarSensorModuleInterface.cpp
     Source/SimpleLidarSensorModuleInterface.h
+    Source/Clients/SimpleLidarSensorSystemComponent.cpp
+    Source/Clients/SimpleLidarSensorSystemComponent.h
     Source/Clients/LidarConfiguration.cpp
     Source/Clients/LidarConfiguration.h
     Source/Clients/SimpleLidar.cpp

@@ -9,9 +9,9 @@
 #include "SimpleLidarSensorModuleInterface.h"
 #include <AzCore/Memory/Memory.h>
 
-#include <SimpleLidarSensor/SimpleLidarSensorTypeIds.h>
 #include "Clients/SimpleLidar.h"
-
+#include "Clients/SimpleLidarSensorSystemComponent.h"
+#include <SimpleLidarSensor/SimpleLidarSensorTypeIds.h>
 
 namespace SimpleLidarSensor
 {
@@ -24,12 +24,14 @@ namespace SimpleLidarSensor
     {
         m_descriptors.insert(m_descriptors.end(), {
             SimpleLidarSensor::SimpleLidar::CreateDescriptor(),
+            SimpleLidarSensor::SimpleLidarSensorSystemComponent::CreateDescriptor(),
             });
     }
 
     AZ::ComponentTypeList SimpleLidarSensorModuleInterface::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
+            azrtti_typeid<SimpleLidarSensorSystemComponent>(),
         };
     }
 } // namespace SimpleLidarSensor

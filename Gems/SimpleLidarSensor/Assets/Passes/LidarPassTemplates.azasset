@@ -1,0 +1,17 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "PipelineLidarColor",
+                "Path": "Passes/PipelineLidarColor.pass"
+            },
+            {
+                "Name": "PipelineRenderToTextureLidarColor",
+                "Path": "Passes/PipelineRenderToTextureLidarColor.pass"
+            }
+        ]
+    }
+}

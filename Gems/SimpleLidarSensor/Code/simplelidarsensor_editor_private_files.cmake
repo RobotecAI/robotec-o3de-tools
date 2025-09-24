@@ -5,4 +5,6 @@
 #
 
 set(FILES
+    Source/Tools/SimpleLidarSensorEditorSystemComponent.cpp
+    Source/Tools/SimpleLidarSensorEditorSystemComponent.h
 )
