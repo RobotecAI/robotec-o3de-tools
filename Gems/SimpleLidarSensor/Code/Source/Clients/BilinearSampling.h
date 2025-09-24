@@ -53,7 +53,7 @@ namespace SimpleLidarSensor
 
         // edge handling: if large difference between neighbours we skip interpolation
         if (std::abs(v00 - v10) > 1.0f || std::abs(v00 - v01) > 1.0f || std::abs(v00 - v11) > 1.0f) {
-            return v00; // return nearest neighbour
+            return v00; // return the nearest neighbour
         }
         // bilinear interpolation
         float a = v00 * (1 - tx) + v10 * tx;
