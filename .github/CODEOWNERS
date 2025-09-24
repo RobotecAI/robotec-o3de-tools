@@ -2,22 +2,22 @@
 # command used to find contributors
 # git log --pretty=format:"%ae" -- /path/to/directory | sort | uniq
 
-Gems/CsvSpawner @jhanca-robotecai @michalpelka @patrykantosz @w-czerski
+Gems/CsvSpawner @patrykantosz @w-czerski
 Gems/ExposeConsoleToRos @michalpelka @w-czerski
 Gems/GeoJSONSpawner @patrykantosz @w-czerski
-Gems/GeoJSONSpawnerROS2 @patrykantosz
+Gems/GeoJSONSpawnerROS2 @patrykantosz @w-czerski
 Gems/ImGuiProvider @norbertprokopiuk @zakmat
-Gems/ImGuizmo @michalpelka
-Gems/LevelModificationTools @arturkamieniecki @jhanca-robotecai @MateuszWasilewski @michalpelka
-Gems/Pointcloud @norbertprokopiuk @jhanca-robotecai @MateuszWasilewski @michalpelka @zakmat @patrykantosz
-Gems/RandomizeUtils @michalpelka
+Gems/ImGuizmo @michalpelka @norbertprokopiuk
+Gems/LevelModificationTools @arturkamieniecki @MateuszWasilewski
+Gems/Pointcloud @norbertprokopiuk @michalpelka
+Gems/RandomizeUtils @michalpelka @jhanca-robotecai
 Gems/RobotecRecordingTools @jhanca-robotecai @MateuszWasilewski
 Gems/RobotecSpectatorCamera @jhanca-robotecai @patrykantosz
-Gems/RobotecSplineTools @jhanca-robotecai @zakmat @michalpelka @pijaro @w-czerski
-Gems/RobotecWatchdogTools @jhanca-robotecai @MateuszWasilewski @zakmat
-Gems/ROS2PoseControl @arturkamieniecki @jhanca-robotecai @MateuszWasilewski @michalpelka @patrykantosz
-Gems/ROS2ScriptIntegration @jhanca-robotecai @MateuszWasilewski @michalpelka
-Gems/SensorDebug @jhanca-robotecai @MateuszWasilewski @michalpelka
-Gems/Smoothing @michalpelka @w-czerski @pijaro
+Gems/RobotecSplineTools @jhanca-robotecai @michalpelka
+Gems/RobotecWatchdogTools @MateuszWasilewski @zakmat
+Gems/ROS2PoseControl @arturkamieniecki @patrykantosz
+Gems/ROS2ScriptIntegration @jhanca-robotecai @michalpelka
+Gems/SensorDebug @MateuszWasilewski @michalpelka
+Gems/Smoothing @michalpelka @pijaro
 Gems/ViewportStreamer @lawendah @patrykantosz
 Gems/WheelAnimTool @michalpelka @jhanca-robotecai
