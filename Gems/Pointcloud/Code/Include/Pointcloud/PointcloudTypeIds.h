@@ -24,6 +24,7 @@ namespace Pointcloud
     // Components TypeIds
     inline constexpr const char* PointcloudComponentTypeId = "{0190c091-83aa-7c6e-a6da-5efea1f23473}";
     inline constexpr const char* PointcloudEditorComponentTypeId = "{018fba15-560f-78cb-afb4-cf4d00cefc17}";
+    inline constexpr const char* PointcloudComponentConfigTypeId = "{3AE848A0-3CD0-439E-BAFE-DB0270CAAE47}";
 
     // Interface TypeIds
     inline constexpr const char* PointcloudRequestsTypeId = "{86CA76D8-2225-4C50-86E4-B1C8EFDEA8EF}";

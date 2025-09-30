@@ -1,3 +1,11 @@
+/*
+* Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 #pragma once
 
 #include "PointcloudAsset.h"
@@ -8,7 +16,7 @@ namespace Pointcloud
     class PointcloudComponentConfig final : public AZ::ComponentConfig
     {
     public:
-        AZ_RTTI(PointcloudComponentConfig, "{3ae848a0-3cd0-439e-bafe-db0270caae47}");
+        AZ_RTTI(PointcloudComponentConfig, );
 
         PointcloudComponentConfig() = default;
         ~PointcloudComponentConfig() = default;
