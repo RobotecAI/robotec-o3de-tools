@@ -7,6 +7,7 @@
 #
 
 set(FILES
-        Include/Pointcloud/PointcloudTypeIds.h
+    Include/Pointcloud/PointcloudTypeIds.h
     Include/Pointcloud/PointcloudFeatureProcessorInterface.h
+    Include/Pointcloud/PointcloudComponentConfig.h
 )
