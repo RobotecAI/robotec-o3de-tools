@@ -14,6 +14,7 @@
 
 namespace Pointcloud
 {
+    //! Configuration for a Pointcloud component.
     class PointcloudComponentConfig final : public AZ::ComponentConfig
     {
     public:
@@ -24,10 +25,17 @@ namespace Pointcloud
 
         static void Reflect(AZ::ReflectContext* context);
 
+        //! Owning entity identifier. This field is set by the PointcloudEditorComponent component during its activation.
         AZ::EntityId m_editorEntityId;
+
+        //! Size of rendered points.
         float m_pointSize = 1.0f;
+
+        //! Runtime handle to the point cloud resource managed by the feature processor.
         PointcloudFeatureProcessorInterface::PointcloudHandle m_pointcloudHandle =
             PointcloudFeatureProcessorInterface::InvalidPointcloudHandle;
+
+        //! Asset reference to the point cloud data to be loaded and rendered.
         AZ::Data::Asset<PointcloudAsset> m_pointcloudAsset = {};
     };
 } // namespace Pointcloud
