@@ -10,13 +10,14 @@
 
 #include "PointcloudAsset.h"
 #include "PointcloudFeatureProcessorInterface.h"
+#include "PointcloudTypeIds.h"
 
 namespace Pointcloud
 {
     class PointcloudComponentConfig final : public AZ::ComponentConfig
     {
     public:
-        AZ_RTTI(PointcloudComponentConfig, );
+        AZ_RTTI(PointcloudComponentConfig, PointcloudComponentConfigTypeId);
 
         PointcloudComponentConfig() = default;
         ~PointcloudComponentConfig() = default;
