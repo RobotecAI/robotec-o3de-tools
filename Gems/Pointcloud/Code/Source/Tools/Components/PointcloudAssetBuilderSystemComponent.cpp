@@ -11,6 +11,7 @@ namespace Pointcloud
 
     void PointcloudAssetBuilderSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        PointcloudAsset::Reflect(context);
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PointcloudAssetBuilderSystemComponent, AZ::Component>()->Version(0)->Attribute(
