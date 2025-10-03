@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "PointcloudTypeIds.h"
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
@@ -20,8 +21,10 @@ namespace Pointcloud
         //! The vertex data for the pointcloud
         struct CloudVertex
         {
+            AZ_TYPE_INFO(CloudVertex, CloudVertexAssetTypeId);
             AZStd::array<float, 3> m_position;
             uint32_t m_color;
+            static void Reflect(AZ::ReflectContext* context);
         };
 
         struct CloudHeader
@@ -37,8 +40,10 @@ namespace Pointcloud
         static constexpr inline const char* Extension = "pointcloud";
         static constexpr inline const char* Group = "Pointcloud";
 
-        AZ_RTTI(PointcloudAsset, "{0190c039-385b-7c8a-9172-31e83c091216}", AZ::Data::AssetData)
+        AZ_RTTI(PointcloudAsset, PointcloudAssetTypeId, AZ::Data::AssetData)
         AZ_CLASS_ALLOCATOR(PointcloudAsset, AZ::SystemAllocator);
+
+        static void Reflect(AZ::ReflectContext* context);
 
         AZStd::vector<CloudVertex> m_data;
     };

@@ -6,10 +6,30 @@
  *
  */
 
+#include <AzCore/Component/ComponentBus.h>
 #include <Pointcloud/PointcloudAsset.h>
 
 namespace Pointcloud
 {
+    void PointcloudAsset::CloudVertex::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<PointcloudAsset::CloudVertex>()
+                ->Version(0)
+                ->Field("m_position", &PointcloudAsset::CloudVertex::m_position)
+                ->Field("m_color", &PointcloudAsset::CloudVertex::m_color);
+        }
+    }
+
+    void PointcloudAsset::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<PointcloudAsset, AZ::Data::AssetData>()->Version(0)->Field("m_data", &PointcloudAsset::m_data);
+        }
+    }
+
     PointcloudAssetHandler::PointcloudAssetHandler()
         : AzFramework::GenericAssetHandler<PointcloudAsset>(
               PointcloudAsset::DisplayName, PointcloudAsset::Group, PointcloudAsset::Extension)

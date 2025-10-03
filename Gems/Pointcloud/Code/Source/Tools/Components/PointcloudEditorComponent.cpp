@@ -34,6 +34,23 @@ namespace Pointcloud
         }
     }
 
+    PointcloudEditorComponent::PointcloudEditorComponent(const PointcloudComponentConfig& configuration)
+        : PointcloudEditorComponentBase(configuration)
+    {
+    }
+
+    bool PointcloudEditorComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
+    {
+        const PointcloudComponentConfig* config = azrtti_cast<const PointcloudComponentConfig*>(baseConfig);
+        if (!config)
+        {
+            AZ_Error("PointcloudEditorComponent", false, "Failed to set new configuration.");
+            return false;
+        }
+        m_controller.SetConfiguration(*config);
+        return true;
+    }
+
     void PointcloudEditorComponent::Activate()
     {
         PointcloudEditorComponentBase::Activate();
