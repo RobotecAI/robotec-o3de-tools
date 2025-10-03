@@ -22,16 +22,16 @@ namespace Pointcloud
     inline constexpr const char* PointcloudEditorModuleTypeId = PointcloudModuleTypeId;
 
     // Components TypeIds
-    inline constexpr const char* PointcloudComponentTypeId = "{0190c091-83aa-7c6e-a6da-5efea1f23473}";
-    inline constexpr const char* PointcloudEditorComponentTypeId = "{018fba15-560f-78cb-afb4-cf4d00cefc17}";
+    inline constexpr const char* PointcloudComponentTypeId = "{0190C091-83AA-7C6E-A6DA-5EFEA1F23473}";
+    inline constexpr const char* PointcloudEditorComponentTypeId = "{018FBA15-560F-78CB-AFB4-CF4D00CEFC17}";
     inline constexpr const char* PointcloudComponentConfigTypeId = "{3AE848A0-3CD0-439E-BAFE-DB0270CAAE47}";
 
     // Assets TypeIds
-    inline constexpr const char* PointcloudAssetTypeId = "{0190c039-385b-7c8a-9172-31e83c091216}";
-    inline constexpr const char* CloudVertexAssetTypeId = "{32eac666-ed12-4233-b033-ba2b38a8582c}";
+    inline constexpr const char* PointcloudAssetTypeId = "{0190C039-385B-7C8A-9172-31E83C091216}";
+    inline constexpr const char* CloudVertexAssetTypeId = "{32EAC666-ED12-4233-B033-BA2B38A8582C}";
 
     // Interface TypeIds
     inline constexpr const char* PointcloudRequestsTypeId = "{86CA76D8-2225-4C50-86E4-B1C8EFDEA8EF}";
     // component buses
-    inline constexpr const char* PointCloudRequestsTypeId = "{5985443b-feab-444f-a633-4b2a8142c560}";
+    inline constexpr const char* PointCloudRequestsTypeId = "{5985443B-FEAB-444F-A633-4B2A8142C560}";
 } // namespace Pointcloud
