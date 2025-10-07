@@ -53,7 +53,10 @@ namespace ROS2ScriptIntegration
                         { "SteeringVelocity", "" },
                         { "Speed", "" },
                         { "Acceleration", "" },
-                        { "Jerk", "" } } });
+                        { "Jerk", "" } } })
+                ->Event (
+                    "PublishJointStateMsg",
+                    &PublisherRequestBus::Events::PublishJointStateMsg);
         }
     }
 } // namespace ROS2ScriptIntegration

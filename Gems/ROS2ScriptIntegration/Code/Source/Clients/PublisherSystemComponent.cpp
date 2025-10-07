@@ -8,6 +8,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <ackermann_msgs/msg/ackermann_drive.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -210,6 +211,27 @@ namespace ROS2ScriptIntegration
         message.jerk = jerk;
         PublishMessage(topicName, message);
     }
+
+    void PublisherSystemComponent::PublishJointStateMsg(
+        const AZStd::string& topicName,
+        const AZStd::vector<AZStd::string>& names,
+        const AZStd::vector<float>& positions,
+        const AZStd::vector<float>& velocities,
+        const AZStd::vector<float>& efforts)
+    {
+        sensor_msgs::msg::JointState message;
+        message.header.stamp = ROS2::ROS2ClockInterface::Get()->GetROSTimestamp();
+        message.name.resize(names.size());
+        for (size_t i = 0; i < names.size(); ++i)
+        {
+            message.name[i] = std::string(names[i].c_str());
+        }
+        message.position = std::vector<double>(positions.begin(), positions.end());
+        message.velocity = std::vector<double>(velocities.begin(), velocities.end());
+        message.effort = std::vector<double>(efforts.begin(), efforts.end());
+        PublishMessage(topicName, message);
+    }
+
 
     template<typename MessageType>
     std::shared_ptr<rclcpp::Publisher<MessageType>> PublisherSystemComponent::GetOrCreatePublisher(const AZStd::string& topicName)
