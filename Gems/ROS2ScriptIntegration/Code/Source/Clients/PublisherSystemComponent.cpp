@@ -8,7 +8,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <sensor_msgs/msg/joint_state.hpp>
 #include <ackermann_msgs/msg/ackermann_drive.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -16,6 +15,7 @@
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
@@ -231,7 +231,6 @@ namespace ROS2ScriptIntegration
         message.effort = std::vector<double>(efforts.begin(), efforts.end());
         PublishMessage(topicName, message);
     }
-
 
     template<typename MessageType>
     std::shared_ptr<rclcpp::Publisher<MessageType>> PublisherSystemComponent::GetOrCreatePublisher(const AZStd::string& topicName)
