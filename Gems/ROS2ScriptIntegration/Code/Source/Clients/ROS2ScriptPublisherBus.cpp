@@ -54,7 +54,14 @@ namespace ROS2ScriptIntegration
                         { "Speed", "" },
                         { "Acceleration", "" },
                         { "Jerk", "" } } })
-                ->Event("PublishJointStateMsg", &PublisherRequestBus::Events::PublishJointStateMsg);
+                ->Event(
+                    "PublishJointStateMsg",
+                    &PublisherRequestBus::Events::PublishJointStateMsg,
+                    { { { "Topic", "" },
+                        { "JointNames", "" },
+                        { "JointPositions", "" },
+                        { "JointVelocities", "" },
+                        { "JointEfforts", "" } } });
         }
     }
 } // namespace ROS2ScriptIntegration
