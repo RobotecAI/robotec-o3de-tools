@@ -12,6 +12,7 @@
 #include <geometry_msgs/msg/transform.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/empty.hpp>
@@ -205,6 +206,26 @@ namespace ROS2ScriptIntegration
         message.speed = speed;
         message.acceleration = acceleration;
         message.jerk = jerk;
+        PublishMessage(topicName, message);
+    }
+
+    void PublisherSystemComponent::PublishJointStateMsg(
+        const AZStd::string& topicName,
+        const AZStd::vector<AZStd::string>& names,
+        const AZStd::vector<float>& positions,
+        const AZStd::vector<float>& velocities,
+        const AZStd::vector<float>& efforts)
+    {
+        sensor_msgs::msg::JointState message;
+        message.header.stamp = ROS2::ROS2ClockInterface::Get()->GetROSTimestamp();
+        message.name.resize(names.size());
+        for (size_t i = 0; i < names.size(); ++i)
+        {
+            message.name[i] = std::string(names[i].c_str());
+        }
+        message.position = std::vector<double>(positions.begin(), positions.end());
+        message.velocity = std::vector<double>(velocities.begin(), velocities.end());
+        message.effort = std::vector<double>(efforts.begin(), efforts.end());
         PublishMessage(topicName, message);
     }
 

@@ -67,6 +67,13 @@ namespace ROS2ScriptIntegration
             const AZStd::string& topicName, float steeringAngle, float steeringVelocity, float speed, float acceleration, float jerk)
             override;
 
+        void PublishJointStateMsg(
+            const AZStd::string& topicName,
+            const AZStd::vector<AZStd::string>& names,
+            const AZStd::vector<float>& positions,
+            const AZStd::vector<float>& velocities,
+            const AZStd::vector<float>& efforts) override;
+
         // AZ::Component overrides ...
         void Init() override;
 

@@ -9,6 +9,7 @@ Currently, the supported message types are limited to the following:
 - a subset of geometry messages
 - a subset of standard messages
 - joystick message
+- joint state message
 
 ## Hello world publisher
 
@@ -80,3 +81,47 @@ function myscript:OnStdMsgString(message)
     Debug.Log("I heard : " .. message)
 end
 ```
+
+### Using messages with arrays (e.g. sensor_msgs/JointState)
+
+- you need to declare `vector_*` types to create C++ array equivalents
+- you need to use `push_back` method to add elements to the array
+- those arrays can be passed to the publisher method
+Example:
+
+```lua
+local LogJoints = 
+{
+    Properties = {}
+}
+
+function LogJoints:OnActivate()
+	self.tickBusHandler = TickBus.Connect(self)
+end
+
+function LogJoints:OnDeactivate()
+	self.tickBusHandler:Disconnect()
+end
+
+function LogJoints:OnTick(deltaTime, timePoint)
+     names = vector_basic_string_char_char_traits_char()
+     names:push_back("egoback_left_wheel_joint")
+     names:push_back("egoback_right_wheel_joint")
+     
+     joints = vector_float()
+     joints:push_back(0)
+     joints:push_back(0)
+     
+     velocities = vector_float()
+     velocities:push_back(0)
+     velocities:push_back(0)
+     
+     efforts = vector_float()
+     efforts:push_back(0)
+     efforts:push_back(0)
+
+     PublisherRequestBus.Broadcast.PublishJointStateMsg("joint_states",names,joints,velocities,efforts)
+end
+
+return LogJoints
+ ```
