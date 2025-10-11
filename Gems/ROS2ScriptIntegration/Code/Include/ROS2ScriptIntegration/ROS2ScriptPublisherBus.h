@@ -40,7 +40,12 @@ namespace ROS2ScriptIntegration
             const AZStd::string& topicName, const AZStd::string& frame, const AZ::Transform& transform) = 0;
         virtual void PublishAckermannDriveMsg(
             const AZStd::string& topicName, float steeringAngle, float steeringVelocity, float speed, float acceleration, float jerk) = 0;
-
+        virtual void PublishJointStateMsg(
+            const AZStd::string& topicName,
+            const AZStd::vector<AZStd::string>& names,
+            const AZStd::vector<float>& positions,
+            const AZStd::vector<float>& velocities,
+            const AZStd::vector<float>& efforts) = 0;
         static void Reflect(AZ::ReflectContext* context);
     };
 
