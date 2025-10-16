@@ -15,6 +15,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -31,6 +32,32 @@
 
 namespace ROS2PoseControl
 {
+    constexpr AZStd::string_view PoseRestorationPolicyKey = "/O3DE/ROS2PoseControl/InitialPoseRestoratonPolicy";
+
+    namespace
+    {
+        InitialPoseRestorationPolicy ConvertStringToPolicy(AZStd::string& policy)
+        {
+            AZStd::transform(
+                policy.begin(),
+                policy.end(),
+                policy.begin(),
+                [](char c)
+                {
+                    return AZStd::tolower(c);
+                });
+            if (policy == "never")
+            {
+                return InitialPoseRestorationPolicy::Never;
+            }
+            else if (policy == "everytime")
+            {
+                return InitialPoseRestorationPolicy::Everytime;
+            }
+            return InitialPoseRestorationPolicy::Once;
+        }
+    } // namespace
+
     ROS2PoseControl::ROS2PoseControl()
     {
         m_configuration.m_poseTopicConfiguration.m_topic = "goal_pose";
@@ -46,10 +73,17 @@ namespace ROS2PoseControl
 
     void ROS2PoseControl::Activate()
     {
+        auto registry = AZ::SettingsRegistry::Get();
+        AZ_Assert(registry, "ROS2PoseControl registry is not available.");
+        AZStd::string policy;
+        if (registry && registry->Get(policy, PoseRestorationPolicyKey))
+        {
+            m_configuration.m_initialPoseRestorationPolicy = ConvertStringToPolicy(policy);
+        }
+
         InitializeROSConnection();
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
         ROS2PoseControlRequestsBus::Handler::BusConnect(GetEntityId());
-
         AZ::TickBus::QueueFunction(
             [this]()
             {
