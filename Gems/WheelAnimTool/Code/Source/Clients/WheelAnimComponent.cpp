@@ -345,8 +345,9 @@ namespace WheelAnimTool
             const float wheelAngle = (wheelSpeed / m_wheelRadius) * deltaTime; // angle in radians
             const AZ::Quaternion wheelRotationIncrement = AZ::Quaternion::CreateFromAxisAngle(m_wheelAxis, wheelAngle);
             const AZ::Quaternion newWheelRotation = wheelTransform.GetRotation() * wheelRotationIncrement;
+            const AZ::Quaternion newWheelRotationNormalized = newWheelRotation.GetNormalized();
 
-            AZ::TransformBus::Event(m_wheelEntities[i], &AZ::TransformInterface::SetWorldRotationQuaternion, newWheelRotation);
+            AZ::TransformBus::Event(m_wheelEntities[i], &AZ::TransformInterface::SetWorldRotationQuaternion, newWheelRotationNormalized);
             if (m_debugDraw)
             {
                 using namespace DebugDraw;
