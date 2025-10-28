@@ -528,9 +528,9 @@ namespace ROS2PoseControl
 
         AZ::Transform modifiedTransform = m_configuration.m_lockZAxis ? RemoveTilt(transform) : transform;
 
-        if (!m_configuration.m_startOffsetTag.empty())
+        if (!m_configuration.m_offsetTag.empty())
         {
-            auto startOffsetTransform = GetOffsetTransform(m_configuration.m_startOffsetTag);
+            auto startOffsetTransform = GetOffsetTransform(m_configuration.m_offsetTag);
             if (startOffsetTransform.has_value())
             {
                 modifiedTransform = startOffsetTransform.value() * modifiedTransform;
@@ -583,6 +583,19 @@ namespace ROS2PoseControl
         request.m_start = location;
         request.m_direction = gravityDirection;
         request.m_distance = maxDistance;
+
+        if (m_configuration.m_useClampTag)
+        {
+            AZStd::string query = m_configuration.m_clampTag;
+            request.m_filterCallback = [&query](const AzPhysics::SimulatedBody* body, [[maybe_unused]] const Physics::Shape* shape)
+            {
+                const auto entityId = body->GetEntityId();
+                LmbrCentral::Tags tags;
+                LmbrCentral::TagComponentRequestBus::EventResult(tags, entityId, &LmbrCentral::TagComponentRequests::GetTags);
+                return (tags.contains(AZ::Crc32(query))) ? AzPhysics::SceneQuery::QueryHitType::Block
+                                                         : AzPhysics::SceneQuery::QueryHitType::None;
+            };
+        }
 
         AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
 
