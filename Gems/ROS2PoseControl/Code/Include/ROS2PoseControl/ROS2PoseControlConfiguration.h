@@ -26,6 +26,10 @@ namespace ROS2PoseControl
 
         AZ::Crc32 isUseTagOffset() const;
 
+        AZ::Crc32 isUseTagClamp() const;
+
+        AZ::Crc32 isUseClamp() const;
+
         enum class TrackingMode
         {
             PoseMessages,
@@ -42,9 +46,11 @@ namespace ROS2PoseControl
 
         bool m_clampToGround = false;
         float m_groundOffset = 0.0f;
+        bool m_useClampTag = false;
+        AZStd::string m_clampTag;
 
-        bool m_useTagOffset = false;
-        AZStd::string m_startOffsetTag;
+        bool m_useOffsetTag = false;
+        AZStd::string m_offsetTag;
 
         bool m_useWGS = false;
     };
