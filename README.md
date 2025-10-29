@@ -27,7 +27,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**Smoothing**](#smoothing)                           | compatible    |
 | [**ViewportStreamer**](#viewportstreamer)             | not verified  |
 | [**WheelAnimTool**](#wheelanimtool)                   | compatible    |
-| [**Billboards**]((#billboards)                        | compatible    |
+| [**Billboards**](#billboards)                         | compatible    |
 
 # CsvSpawner
 
