@@ -8,25 +8,25 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 | Gem name                                              | Compatibility |
 | ----------------------------------------------------- | ------------- |
-| [**CsvSpawner**](#csvspawner)                         | not verified  |
-| [**ExposeConsoleToRos**](#exposeconsoletoRos)         | not verified  |
-| [**GeoJSONSpawner**](#geojsonspawner)                 | not verified  |
-| [**GeoJSONSpawnerROS2**](#geojsonspawnerros2)         | not verified  |
-| [**ImGuiProvider**](#imguiprovider)                   | not verified  |
-| [**ImGuizmo**](#imguizmo)                             | not verified  |
-| [**LevelModificationTools**](#levelmodificationtools) | not verified  |
-| [**Pointcloud**](#pointcloud)                         | not verified  |
-| [**RandomizeUtils**](#randomizeutils)                 | not verified  |
+| [**CsvSpawner**](#csvspawner)                         | compatible    |
+| [**ExposeConsoleToRos**](#exposeconsoletoRos)         | compatible    |
+| [**GeoJSONSpawner**](#geojsonspawner)                 | compatible    |
+| [**GeoJSONSpawnerROS2**](#geojsonspawnerros2)         | compatible    |
+| [**ImGuiProvider**](#imguiprovider)                   | compatible    |
+| [**ImGuizmo**](#imguizmo)                             | compatible    |
+| [**LevelModificationTools**](#levelmodificationtools) | incompatible  |
+| [**Pointcloud**](#pointcloud)                         | compatible    |
+| [**RandomizeUtils**](#randomizeutils)                 | compatible    |
 | [**RobotecRecordingTools**](#robotecrecordingtools)   | not verified  |
 | [**RobotecSpectatorCamera**](#robotecspectatorcamera) | not verified  |
-| [**RobotecSplineTools**](#robotecsplinetools)         | not verified  |
-| [**RobotecWatchdogTools**](#robotecwatchdogtools)     | not verified  |
-| [**ROS2PoseControl**](#ros2posecontrol)               | not verified  |
+| [**RobotecSplineTools**](#robotecsplinetools)         | compatible    |
+| [**RobotecWatchdogTools**](#robotecwatchdogtools)     | compatible    |
+| [**ROS2PoseControl**](#ros2posecontrol)               | compatible    |
 | [**ROS2ScriptIntegration**](#ros2scriptintegration)   | compatible    |
-| [**SensorDebug**](#sensordebug)                       | not verified  |
-| [**Smoothing**](#smoothing)                           | not verified  |
+| [**SensorDebug**](#sensordebug)                       | compatible    |
+| [**Smoothing**](#smoothing)                           | compatible    |
 | [**ViewportStreamer**](#viewportstreamer)             | not verified  |
-| [**WheelAnimTool**](#wheelanimtool)                   | not verified  |
+| [**WheelAnimTool**](#wheelanimtool)                   | compatible    |
 
 # CsvSpawner
 
@@ -505,3 +505,8 @@ The component needs:
 It should be attached to Dynamic rigid body. The component will compute Jacobian matrix (w.r.t wheel locatio, radius and model) of the robot locomotion.
 Jacobian will be used to find wheels rotation speed.
 More in dedicated [readme.md](Gems/WheelAnimTool/readme.md)
+
+# Billboards
+
+Billboard material.
+More in dedicated [readme.md](Gems/Billboards/readme.md)

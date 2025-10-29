@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder Billboards/Assets": {
+                    "watch": "@GEMROOT:Billboards@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder Billboards/Registry": {
+                    "watch": "@GEMROOT:Billboards@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
