@@ -6,27 +6,30 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 # Compatibility
 
-| Gem name                                              | Compatibility |
-| ----------------------------------------------------- | ------------- |
-| [**CsvSpawner**](#csvspawner)                         | compatible    |
-| [**ExposeConsoleToRos**](#exposeconsoletoRos)         | compatible    |
-| [**GeoJSONSpawner**](#geojsonspawner)                 | compatible    |
-| [**GeoJSONSpawnerROS2**](#geojsonspawnerros2)         | compatible    |
-| [**ImGuiProvider**](#imguiprovider)                   | compatible    |
-| [**ImGuizmo**](#imguizmo)                             | compatible    |
-| [**LevelModificationTools**](#levelmodificationtools) | incompatible  |
-| [**Pointcloud**](#pointcloud)                         | compatible    |
-| [**RandomizeUtils**](#randomizeutils)                 | compatible    |
-| [**RobotecRecordingTools**](#robotecrecordingtools)   | not verified  |
-| [**RobotecSpectatorCamera**](#robotecspectatorcamera) | not verified  |
-| [**RobotecSplineTools**](#robotecsplinetools)         | compatible    |
-| [**RobotecWatchdogTools**](#robotecwatchdogtools)     | compatible    |
-| [**ROS2PoseControl**](#ros2posecontrol)               | compatible    |
-| [**ROS2ScriptIntegration**](#ros2scriptintegration)   | compatible    |
-| [**SensorDebug**](#sensordebug)                       | compatible    |
-| [**Smoothing**](#smoothing)                           | compatible    |
-| [**ViewportStreamer**](#viewportstreamer)             | not verified  |
-| [**WheelAnimTool**](#wheelanimtool)                   | compatible    |
+
+| Gem name                                              | Compatibility  |
+| ----------------------------------------------------- |----------------|
+| [**CsvSpawner**](#csvspawner)                         | not verified   |
+| [**ExposeConsoleToRos**](#exposeconsoletoRos)         | not verified   |
+| [**GeoJSONSpawner**](#geojsonspawner)                 | not verified   |
+| [**GeoJSONSpawnerROS2**](#geojsonspawnerros2)         | not verified   |
+| [**ImGuiProvider**](#imguiprovider)                   | not verified   |
+| [**ImGuizmo**](#imguizmo)                             | not verified   |
+| [**LevelModificationTools**](#levelmodificationtools) | not verified   |
+| [**Pointcloud**](#pointcloud)                         | not verified   |
+| [**RandomizeUtils**](#randomizeutils)                 | not verified   |
+| [**RobotecRecordingTools**](#robotecrecordingtools)   | not verified   |
+| [**RobotecSpectatorCamera**](#robotecspectatorcamera) | not verified   |
+| [**RobotecSplineTools**](#robotecsplinetools)         | not verified   |
+| [**RobotecWatchdogTools**](#robotecwatchdogtools)     | not verified   |
+| [**ROS2PoseControl**](#ros2posecontrol)               | not verified   |
+| [**ROS2ScriptIntegration**](#ros2scriptintegration)   | not verified   |
+| [**SensorDebug**](#sensordebug)                       | not verified   |
+| [**Smoothing**](#smoothing)                           | not verified   |
+| [**ViewportStreamer**](#viewportstreamer)             | not verified   |
+| [**WheelAnimTool**](#wheelanimtool)                   | compatible     |
+| [**Billboards**]((#billboards)                        | compatible     |
+
 
 # CsvSpawner
 

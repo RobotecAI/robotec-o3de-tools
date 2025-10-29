@@ -23,20 +23,19 @@ This gem contains a lot of code copied from Atom Gem. Lest break down files and 
 
 # `Assets/BillboardStandardPBR/BillboardOpacityPropertyGroup.json`
 
-Orginal file : `o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json`
+Original file : `o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json`
 Changes:
  - Set `Opacity Mode` by default to `Cutout`
 
 # `Assets/BillboardStandardPBR/BillboardCommonPropertyGroup.json`
 
-Orginal file : `o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/CommonPropertyGroup.json`
+Original file : `o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/CommonPropertyGroup.json`
 Changes:
  - Disable `Cast Shadows`
  - Disable `Receive Shadows`
-
 # `Assets/BillboardStandardPBR/BillboardStandardPBR.materialtype`
 
-Orginal file : `o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/StandardPBR.materialtype`
+Original file : `o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/StandardPBR.materialtype`
 Changes:
 - Add `@gemroot:Atom_Feature_Common@/` to reference JSONs from Atom gem
 - Reference custom `BillboardOpacityPropertyGroup.json` and `BillboardCommonPropertyGroup.json`
@@ -46,11 +45,11 @@ Changes:
 Original file `StandardPBR.azsli`
 Changes:
 ```diff
--    #include "BillboardStandardPBR_VertexEval.azsli"
-+    //#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
++    #include "BillboardBasePBR_VertexEval.azsli"
+-    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
 ```
 
-# `Assets/BillboardStandardPBR/BillboardStandardPBR_VertexEval.azsli`
+# `Assets/BillboardStandardPBR/BillboardBasePBR_VertexEval.azsli`
 
 Original file `StandardPBR_VertexEval.azsli`
 Changes:
@@ -60,13 +59,9 @@ Changes:
 +    output.position = GetFacingUser(objectToWorld, position);
 ```
 
-# `Assets/BillboardStandardPBR/BillboardStandardPBR_DepthVertexEval.azsli`
+# `Assets/BillboardStandardPBR/BillboardStandardPBR_Defines.azsli
 
-Original file `DepthVertexEval.azsli`
+Original file `StandardPBR_Defines.azsli`
 Changes:
-- include `GetFacingUser.azsli`
-```diff
--    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
-+    output.m_position = GetFacingUser(objectToWorld, IN.m_position);
-```
+- add : `#define MATERIAL_USES_VERTEX_POSITIONWS 0`
 
