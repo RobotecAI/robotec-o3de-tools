@@ -1,0 +1,30 @@
+{
+    "gem_name": "Billboards",
+    "version": "1.0.0",
+    "display_name": "Billboards",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.ai",
+    "origin_url": "https://robotec.ai",
+    "type": "Asset",
+    "summary": "A gem that will provide Atom material for billboards",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Billboards"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "None",
+    "documentation_url": "",
+    "dependencies": [
+    ],
+    "repo_uri": "",
+    "compatible_engines": [
+    ],
+    "engine_api_dependencies":[
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "materialType": "../BillboardStandardPBR/BillboardStandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.textureMap": "gl-tree-01.png",
+        "general.enableShadows": true,
+        "opacity.mode": "Cutout"
+    }
+}

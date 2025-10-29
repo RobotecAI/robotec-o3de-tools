@@ -27,6 +27,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**Smoothing**](#smoothing)                           | compatible    |
 | [**ViewportStreamer**](#viewportstreamer)             | not verified  |
 | [**WheelAnimTool**](#wheelanimtool)                   | compatible    |
+| [**Billboards**]((#billboards)                        | compatible    |
 
 # CsvSpawner
 
@@ -505,3 +506,8 @@ The component needs:
 It should be attached to Dynamic rigid body. The component will compute Jacobian matrix (w.r.t wheel locatio, radius and model) of the robot locomotion.
 Jacobian will be used to find wheels rotation speed.
 More in dedicated [readme.md](Gems/WheelAnimTool/readme.md)
+
+# Billboards
+
+Billboard material.
+More in dedicated [readme.md](Gems/Billboards/readme.md)
