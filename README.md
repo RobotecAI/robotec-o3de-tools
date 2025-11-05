@@ -241,9 +241,8 @@ ros2 topic pub /geojson/spawn_with_raw_string std_msgs/msg/String "data: '{
       },
       \"geometry\": {
         \"type\": \"Point\",
-        \"coordinates\": [
+        \"coordinates\":
           [12.194254455922405, 21.58976758326028]
-        ]
       }
     }
   ]
