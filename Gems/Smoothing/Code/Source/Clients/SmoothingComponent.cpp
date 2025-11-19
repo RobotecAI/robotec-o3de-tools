@@ -219,7 +219,7 @@ namespace Smoothing
 
     int SmoothingComponentController::GetTickOrder()
     {
-        return AZ::TICK_DEFAULT;
+        return AZ::TICK_ANIMATION;
     }
 
     void SmoothingComponentController::Init()
