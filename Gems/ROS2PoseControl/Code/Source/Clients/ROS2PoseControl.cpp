@@ -141,7 +141,7 @@ namespace ROS2PoseControl
         }
         else
         {
-            AZ_Warning(
+            AZ_WarningOnce(
                 "ROS2PositionControl",
                 false,
                 "Could not transform %s to %s, error: %s",
