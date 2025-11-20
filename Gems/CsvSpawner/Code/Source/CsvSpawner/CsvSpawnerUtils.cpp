@@ -11,6 +11,8 @@
 
 #include "CsvSpawnerUtils.h"
 
+#include "AzCore/Math/Matrix3x4.h"
+
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -26,6 +28,9 @@
 
 namespace CsvSpawner::CsvSpawnerUtils
 {
+
+    constexpr float MinimalScale = 0.05f; // make threshold quite large to prevent sloce to zero determinants in Atom and PhysX. They make
+                                          // number of conversions, which amplify the effect.
 
     void CsvSpawnableEntityInfo::Reflect(AZ::ReflectContext* context)
     {
@@ -234,6 +239,11 @@ namespace CsvSpawner::CsvSpawnerUtils
             AZ::Transform transform = parentTransform * entityConfig.m_transform *
                 GetRandomTransform(spawnConfig.m_positionStdDev, spawnConfig.m_rotationStdDev, spawnConfig.m_scaleStdDev, gen);
 
+            const float scale = transform.GetUniformScale();
+            if (AZ::IsClose(scale, 0.0f, MinimalScale))
+            {
+                continue; // Skip this entity if scale is zero
+            }
             if (spawnConfig.m_placeOnTerrain)
             {
                 // Get collision group chosen from editor
