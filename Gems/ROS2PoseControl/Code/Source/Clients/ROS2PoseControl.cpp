@@ -267,21 +267,16 @@ namespace ROS2PoseControl
         if (m_tf_buffer->canTransform(targetFrame.c_str(), sourceFrame.c_str(), tf2::TimePointZero, &errorString))
         {
             transformStamped = m_tf_buffer->lookupTransform(targetFrame.c_str(), sourceFrame.c_str(), tf2::TimePointZero);
-            m_tfWarningLogShown = false;
         }
         else
         {
-            if (!m_tfWarningLogShown)
-            {
-                AZ_Warning(
-                    "ROS2PoseControl",
-                    false,
-                    "Could not transform %s to %s, error: %s",
-                    m_configuration.m_targetFrame.c_str(),
-                    m_configuration.m_referenceFrame.c_str(),
-                    errorString.c_str());
-                m_tfWarningLogShown = true;
-            }
+            AZ_WarningOnce(
+                "ROS2PoseControl",
+                false,
+                "Could not transform %s to %s, error: %s",
+                m_configuration.m_targetFrame.c_str(),
+                m_configuration.m_referenceFrame.c_str(),
+                errorString.c_str());
             return AZ::Failure();
         }
 
