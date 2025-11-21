@@ -8,9 +8,9 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
+#include "RobotecGeoJSONSpawnerEditorComponent.h"
 #include "EditorConfigurations/RobotecGeoJSONSpawnerEditorTerrainSettingsConfig.h"
 #include "RobotecGeoJSONSpawnerComponent.h"
-#include "RobotecGeoJSONSpawnerEditorComponent.h"
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>

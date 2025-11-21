@@ -8,8 +8,8 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerUtils.h"
 #include "RobotecGeoJSONSpawnerEditorTerrainSettingsConfig.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerUtils.h"
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
