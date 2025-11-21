@@ -6,27 +6,27 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 # Compatibility
 
-| Gem name                                              | Compatibility |
-| ----------------------------------------------------- | ------------- |
-| [**CsvSpawner**](#csvspawner)                         | not verified  |
-| [**ExposeConsoleToRos**](#exposeconsoletoRos)         | not verified  |
-| [**GeoJSONSpawner**](#geojsonspawner)                 | not verified  |
-| [**GeoJSONSpawnerROS2**](#geojsonspawnerros2)         | not verified  |
-| [**ImGuiProvider**](#imguiprovider)                   | not verified  |
-| [**ImGuizmo**](#imguizmo)                             | not verified  |
-| [**LevelModificationTools**](#levelmodificationtools) | not verified  |
-| [**Pointcloud**](#pointcloud)                         | not verified  |
-| [**RandomizeUtils**](#randomizeutils)                 | not verified  |
-| [**RobotecRecordingTools**](#robotecrecordingtools)   | not verified  |
-| [**RobotecSpectatorCamera**](#robotecspectatorcamera) | not verified  |
-| [**RobotecSplineTools**](#robotecsplinetools)         | not verified  |
-| [**RobotecWatchdogTools**](#robotecwatchdogtools)     | not verified  |
-| [**ROS2PoseControl**](#ros2posecontrol)               | not verified  |
-| [**ROS2ScriptIntegration**](#ros2scriptintegration)   | compatible    |
-| [**SensorDebug**](#sensordebug)                       | not verified  |
-| [**Smoothing**](#smoothing)                           | not verified  |
-| [**ViewportStreamer**](#viewportstreamer)             | not verified  |
-| [**WheelAnimTool**](#wheelanimtool)                   | not verified  |
+| Gem name                                                    | Compatibility |
+| ----------------------------------------------------------- | ------------- |
+| [**CsvSpawner**](#csvspawner)                               | not verified  |
+| [**ExposeConsoleToRos**](#exposeconsoletoRos)               | not verified  |
+| [**ImGuiProvider**](#imguiprovider)                         | not verified  |
+| [**ImGuizmo**](#imguizmo)                                   | not verified  |
+| [**LevelModificationTools**](#levelmodificationtools)       | not verified  |
+| [**Pointcloud**](#pointcloud)                               | not verified  |
+| [**RandomizeUtils**](#randomizeutils)                       | not verified  |
+| [**RobotecGeoJSONSpawner**](#groboteceojsonspawner)         | not verified  |
+| [**RobotecGeoJSONSpawnerROS2**](#robotecgeojsonspawnerros2) | not verified  |
+| [**RobotecRecordingTools**](#robotecrecordingtools)         | not verified  |
+| [**RobotecSpectatorCamera**](#robotecspectatorcamera)       | not verified  |
+| [**RobotecSplineTools**](#robotecsplinetools)               | not verified  |
+| [**RobotecWatchdogTools**](#robotecwatchdogtools)           | not verified  |
+| [**ROS2PoseControl**](#ros2posecontrol)                     | not verified  |
+| [**ROS2ScriptIntegration**](#ros2scriptintegration)         | compatible    |
+| [**SensorDebug**](#sensordebug)                             | not verified  |
+| [**Smoothing**](#smoothing)                                 | not verified  |
+| [**ViewportStreamer**](#viewportstreamer)                   | not verified  |
+| [**WheelAnimTool**](#wheelanimtool)                         | not verified  |
 
 # CsvSpawner
 
@@ -75,230 +75,6 @@ It has two std_msgs/msg/String topics:
 
 Currently `o3de_console_in` is usable only.
 The gem functionality is available only in Profile/Debug.
-
-
-# GeoJSONSpawner
-
-Component that spawns prefabs using coordinates stored in the GeoJSON format (either in a file or in a raw string). It supports WGS84 coordinate system.
-This component supports spawning prefabs using GeoJSON stored in the file or stored in the raw string and passed via the ROS2 interface.
-
-![](doc/GeoJSONSpawner.png)
-
-Configuration:
-
-- Name - the name that is associated with the spawnable. This parameter is passed as `spawnable_name` in the GeoJSON message.
-- Spawnable - prefab (spawnable) associated with the `Name`.
-- Position std. dev - maximum value of the position standard deviation [metres].
-- Rotation std. dev - maximum value of the rotation standard deviation [degrees].
-- Scale std. dev - maximum value of the scale standard deviation.
-- Place on terrain - switch indicating whether the spawner should perform scene query raytrace to place the spawnable on the terrain (or any other collider).
-- Raytrace starting height - WGS84 altitude. If `Place on terrain` is set to false, this value will be used as a fixed Z-axis value for the spawn. Otherwise the raytrace will start at this height (converted from WGS84 altitude to Z-axis value using the `GeoReference Level Editor Component`).
-- Default seed - seed for randomization.
-- Show labels in Editor - switch to enable/disable labels in the Editor for spawned prefabs.
-
-To get all the necessary information, the supported GeoJSON format is extended by a two additional fields (although this format is still correct with a GeoJSON standard) - `spawnable_name` and `id`. The `spawnable_name` is used to match spawn coordinates to a prefab name in a `Spawnable Asset Configuration`. The `id` is used to delete/modify the spawned object.
-Example of supported GeoJSON:
-
-```
-{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "spawnable_name": "ball",
-        "id": 0
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [35.19412345678901, 32.58987654321098]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "spawnable_name": "ball",
-        "id": 1
-      },
-      "geometry": {
-        "type": "MultiPoint",
-        "coordinates": [
-          [12.19423456789012, 21.58976543210987],
-          [12.19454321098765, 21.58923456789012]
-        ]
-      }
-    }
-  ]
-}
-
-```
-
-## API
-
-This Gem has defined notification bus - `GeoJSONSpawnerNotificationBus`.
-
-Available functions:
-
-| Function                      | Trigger Event                 | Description                                                |
-| ----------------------------- | ----------------------------- | ---------------------------------------------------------- |
-| `OnEntitiesSpawnBegin()`      | When spawning starts          | Notifies when batch spawning begins.                       |
-| `OnEntitiesSpawnFinished()`   | When spawning ends            | Provides a list of spawned entities and the status code.   |
-| `OnEntitiesDespawnBegin()`    | When despawning starts        | Notifies when batch despawning begins.                     |
-| `OnEntitiesDespawnFinished()` | When despawning ends          | Provides a list of despawned entities and the status code. |
-| `OnEntitySpawn()`             | When a single entity spawns   | Called per one entity spawn.                               |
-| `OnEntityDespawn()`           | When a single entity despawns | Called per one entity despawn.                             |
-
-> \*Supports **Lua** and **Script Canvas\***
-
-# GeoJSONSpawnerROS2
-
-Gem provides a component that connects GeoJSONSpawner with ROS 2. This component provides 4 topics and 1 service that allows to control GeoJSONSpawner with ROS 2 messages.
-
-![](doc/GeoJSONSpawnerROS2Interface.png)
-
-Topics:
-
-- `geojson/spawn_with_asset_path [std_msgs::msg:String]` - topic that allows to spawn entities using a passed path to asset with GeoJSON.
-- `geojson/spawn_with_raw_string [std_msgs::msg:String]` - topic that allows to spawn entities using a passed raw string with a GeoJSON.
-- `geojson/modify [std_msgs::msg::String]` - topic that allows to modify spawned entities using the id passed with a spawn request. Usage example:
-  Lets suppose that user spawned prefabs using such GeoJSON:
-
-```
-{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "spawnable_name": "ball",
-        "id": 0
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [35.19412345678901, 32.58987654321098]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "spawnable_name": "ball",
-        "id": 1
-      },
-      "geometry": {
-        "type": "MultiPoint",
-        "coordinates": [
-          [12.19423456789012, 21.58976543210987],
-          [12.19454321098765, 21.58923456789012]
-        ]
-      }
-    }
-  ]
-}
-```
-
-Suppose the user wants to move the Feature Object assigned to ID 0. To do this, remove the Feature Object with ID 1 from the original json, then apply the necessary corrections to the coordinates of the Feature Object with ID 0 and send the GeoJSON thus prepared to the topic `geojson/modify`.
-
-```
-{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "spawnable_name": "ball",
-        "id": 0
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [135.19412345678901, 132.58987654321098]
-      }
-    }
-  ]
-}
-
-```
-
-- `geojson/delete_all [std_msgs::msg::Empty]` - topic that despawns all entities spawned with GeoJSONSpawner.
-- `geojson/delete_by_id [std_msgs/msg/Int32MultiArray]` - topic that despawns all entities associated with a given ids.
-
-Service:
-`geojson/get_spawned_groups_ids [std_srvs/srv/Trigger]` - service that returns all spawned ids together with the number of prefabs associated with each id.
-
-## Usage examples:
-
-### Spawn with the raw string
-
-```
-ros2 topic pub /geojson/spawn_with_raw_string std_msgs/msg/String "data: '{
-  \"type\": \"FeatureCollection\",
-  \"features\": [
-    {
-      \"type\": \"Feature\",
-      \"properties\": {
-        \"spawnable_name\": \"ball\",
-        \"id\": 0
-      },
-      \"geometry\": {
-        \"type\": \"Point\",
-        \"coordinates\":
-          [12.194254455922405, 21.58976758326028]
-      }
-    }
-  ]
-}'" --once
-```
-
-### Spawn with asset path
-
-```
-ros2 topic pub /geojson/spawn_with_asset_path std_msgs/msg/String "{data: Assets/GeoJSON/output.json}" --once
-```
-
-### Modify
-
-This request adds 3 more `ball` spawnables to the group with ID 0.
-
-```
-ros2 topic pub /geojson/modify std_msgs/msg/String "data: '{
-  \"type\": \"FeatureCollection\",
-  \"features\": [
-    {
-      \"type\": \"Feature\",
-      \"properties\": {
-        \"spawnable_name\": \"ball\",
-        \"id\": 0
-      },
-      \"geometry\": {
-        \"type\": \"MultiPoint\",
-        \"coordinates\": [
-          [12.194254455922405, 21.58976758326028],
-          [12.194254455922415, 21.58976758326018],
-          [12.194254455922425, 21.58976758326008],
-          [12.194254455922435, 21.58976758326098]
-        ]
-      }
-    }
-  ]
-}'" --once
-```
-
-### Delete by id
-
-```
-ros2 topic pub /geojson/delete_by_id std_msgs/msg/Int32MultiArray "{data: [0]}" --once
-```
-
-### Delete all
-
-```
-ros2 topic pub /geojson/delete_all std_msgs/msg/Empty "{}" --once
-```
-
-### Get spawned groups ids
-
-```
-ros2 service call /geojson/get_spawned_groups_ids std_srvs/srv/Trigger
-```
 
 # ImGuiProvider
 
@@ -392,6 +168,231 @@ It allows:
 ![](doc/RandomizePoseComponent.png)
 
 **Note:** that only given entity is modified (not all descendants).
+
+
+# RobotecGeoJSONSpawner
+
+Component that spawns prefabs using coordinates stored in the GeoJSON format (either in a file or in a raw string). It supports WGS84 coordinate system.
+This component supports spawning prefabs using GeoJSON stored in the file or stored in the raw string and passed via the ROS2 interface.
+
+![](doc/GeoJSONSpawner.png)
+
+Configuration:
+
+- Name - the name that is associated with the spawnable. This parameter is passed as `spawnable_name` in the GeoJSON message.
+- Spawnable - prefab (spawnable) associated with the `Name`.
+- Position std. dev - maximum value of the position standard deviation [metres].
+- Rotation std. dev - maximum value of the rotation standard deviation [degrees].
+- Scale std. dev - maximum value of the scale standard deviation.
+- Place on terrain - switch indicating whether the spawner should perform scene query raytrace to place the spawnable on the terrain (or any other collider).
+- Raytrace starting height - WGS84 altitude. If `Place on terrain` is set to false, this value will be used as a fixed Z-axis value for the spawn. Otherwise the raytrace will start at this height (converted from WGS84 altitude to Z-axis value using the `GeoReference Level Editor Component`).
+- Default seed - seed for randomization.
+- Show labels in Editor - switch to enable/disable labels in the Editor for spawned prefabs.
+
+To get all the necessary information, the supported GeoJSON format is extended by a two additional fields (although this format is still correct with a GeoJSON standard) - `spawnable_name` and `id`. The `spawnable_name` is used to match spawn coordinates to a prefab name in a `Spawnable Asset Configuration`. The `id` is used to delete/modify the spawned object.
+Example of supported GeoJSON:
+
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.19412345678901, 32.58987654321098]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 1
+      },
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [12.19423456789012, 21.58976543210987],
+          [12.19454321098765, 21.58923456789012]
+        ]
+      }
+    }
+  ]
+}
+
+```
+
+## API
+
+This Gem has defined notification bus - `RobotecGeoJSONSpawnerNotificationBus`.
+
+Available functions:
+
+| Function                      | Trigger Event                 | Description                                                |
+| ----------------------------- | ----------------------------- | ---------------------------------------------------------- |
+| `OnEntitiesSpawnBegin()`      | When spawning starts          | Notifies when batch spawning begins.                       |
+| `OnEntitiesSpawnFinished()`   | When spawning ends            | Provides a list of spawned entities and the status code.   |
+| `OnEntitiesDespawnBegin()`    | When despawning starts        | Notifies when batch despawning begins.                     |
+| `OnEntitiesDespawnFinished()` | When despawning ends          | Provides a list of despawned entities and the status code. |
+| `OnEntitySpawn()`             | When a single entity spawns   | Called per one entity spawn.                               |
+| `OnEntityDespawn()`           | When a single entity despawns | Called per one entity despawn.                             |
+
+> \*Supports **Lua** and **Script Canvas\***
+
+# RobotecGeoJSONSpawnerROS2
+
+Gem provides a component that connects RobotecGeoJSONSpawner with ROS 2. This component provides 4 topics and 1 service that allows to control RobotecGeoJSONSpawner with ROS 2 messages.
+
+![](doc/GeoJSONSpawnerROS2Interface.png)
+
+Topics:
+
+- `geojson/spawn_with_asset_path [std_msgs::msg:String]` - topic that allows to spawn entities using a passed path to asset with GeoJSON.
+- `geojson/spawn_with_raw_string [std_msgs::msg:String]` - topic that allows to spawn entities using a passed raw string with a GeoJSON.
+- `geojson/modify [std_msgs::msg::String]` - topic that allows to modify spawned entities using the id passed with a spawn request. Usage example:
+  Lets suppose that user spawned prefabs using such GeoJSON:
+
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [35.19412345678901, 32.58987654321098]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 1
+      },
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [12.19423456789012, 21.58976543210987],
+          [12.19454321098765, 21.58923456789012]
+        ]
+      }
+    }
+  ]
+}
+```
+
+Suppose the user wants to move the Feature Object assigned to ID 0. To do this, remove the Feature Object with ID 1 from the original json, then apply the necessary corrections to the coordinates of the Feature Object with ID 0 and send the GeoJSON thus prepared to the topic `geojson/modify`.
+
+```
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "spawnable_name": "ball",
+        "id": 0
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [135.19412345678901, 132.58987654321098]
+      }
+    }
+  ]
+}
+
+```
+
+- `geojson/delete_all [std_msgs::msg::Empty]` - topic that despawns all entities spawned with RobotecGeoJSONSpawner.
+- `geojson/delete_by_id [std_msgs/msg/Int32MultiArray]` - topic that despawns all entities associated with a given ids.
+
+Service:
+`geojson/get_spawned_groups_ids [std_srvs/srv/Trigger]` - service that returns all spawned ids together with the number of prefabs associated with each id.
+
+## Usage examples:
+
+### Spawn with the raw string
+
+```
+ros2 topic pub /geojson/spawn_with_raw_string std_msgs/msg/String "data: '{
+  \"type\": \"FeatureCollection\",
+  \"features\": [
+    {
+      \"type\": \"Feature\",
+      \"properties\": {
+        \"spawnable_name\": \"ball\",
+        \"id\": 0
+      },
+      \"geometry\": {
+        \"type\": \"Point\",
+        \"coordinates\":
+          [12.194254455922405, 21.58976758326028]
+      }
+    }
+  ]
+}'" --once
+```
+
+### Spawn with asset path
+
+```
+ros2 topic pub /geojson/spawn_with_asset_path std_msgs/msg/String "{data: Assets/GeoJSON/output.json}" --once
+```
+
+### Modify
+
+This request adds 3 more `ball` spawnables to the group with ID 0.
+
+```
+ros2 topic pub /geojson/modify std_msgs/msg/String "data: '{
+  \"type\": \"FeatureCollection\",
+  \"features\": [
+    {
+      \"type\": \"Feature\",
+      \"properties\": {
+        \"spawnable_name\": \"ball\",
+        \"id\": 0
+      },
+      \"geometry\": {
+        \"type\": \"MultiPoint\",
+        \"coordinates\": [
+          [12.194254455922405, 21.58976758326028],
+          [12.194254455922415, 21.58976758326018],
+          [12.194254455922425, 21.58976758326008],
+          [12.194254455922435, 21.58976758326098]
+        ]
+      }
+    }
+  ]
+}'" --once
+```
+
+### Delete by id
+
+```
+ros2 topic pub /geojson/delete_by_id std_msgs/msg/Int32MultiArray "{data: [0]}" --once
+```
+
+### Delete all
+
+```
+ros2 topic pub /geojson/delete_all std_msgs/msg/Empty "{}" --once
+```
+
+### Get spawned groups ids
+
+```
+ros2 service call /geojson/get_spawned_groups_ids std_srvs/srv/Trigger
+```
+
 
 # RobotecRecordingTools
 
