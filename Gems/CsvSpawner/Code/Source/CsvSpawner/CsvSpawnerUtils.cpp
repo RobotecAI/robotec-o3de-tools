@@ -28,7 +28,7 @@
 namespace CsvSpawner::CsvSpawnerUtils
 {
 
-    constexpr float MinimalScale = 0.05f; // make threshold quite large to prevent sloce to zero determinants in Atom and PhysX. They make
+    constexpr float MinimumScale = 0.05f; // make threshold quite large to prevent determinants close to zero in Atom and PhysX. They make
                                           // number of conversions, which amplify the effect.
 
     void CsvSpawnableEntityInfo::Reflect(AZ::ReflectContext* context)
