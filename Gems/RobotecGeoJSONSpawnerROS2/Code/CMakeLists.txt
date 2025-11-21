@@ -22,8 +22,8 @@ ly_add_target(
     NAME ${gem_name}.API INTERFACE
     NAMESPACE Gem
     FILES_CMAKE
-        robotecgeojsonspawnererros2_api_files.cmake
-        ${pal_dir}/robotecgeojsonspawnererros2_api_files.cmake
+        robotecgeojsonspawnerros2_api_files.cmake
+        ${pal_dir}/robotecgeojsonspawnerros2_api_files.cmake
     INCLUDE_DIRECTORIES
         INTERFACE
             Include
@@ -38,8 +38,8 @@ ly_add_target(
     NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        robotecgeojsonspawnererros2_private_files.cmake
-        ${pal_dir}/robotecgeojsonspawnererros2_private_files.cmake
+        robotecgeojsonspawnerros2_private_files.cmake
+        ${pal_dir}/robotecgeojsonspawnerros2_private_files.cmake
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
@@ -60,8 +60,8 @@ ly_add_target(
     NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
-        robotecgeojsonspawnererros2_shared_files.cmake
-        ${pal_dir}/robotecgeojsonspawnererros2_shared_files.cmake
+        robotecgeojsonspawnerros2_shared_files.cmake
+        ${pal_dir}/robotecgeojsonspawnerros2_shared_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -112,8 +112,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${gem_name}.Editor.API INTERFACE
         NAMESPACE Gem
         FILES_CMAKE
-            robotecgeojsonspawnererros2_editor_api_files.cmake
-            ${pal_dir}/robotecgeojsonspawnererros2_editor_api_files.cmake
+            robotecgeojsonspawnerros2_editor_api_files.cmake
+            ${pal_dir}/robotecgeojsonspawnerros2_editor_api_files.cmake
         INCLUDE_DIRECTORIES
             INTERFACE
                 Include
@@ -129,7 +129,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         FILES_CMAKE
-            robotecgeojsonspawnererros2_editor_private_files.cmake
+            robotecgeojsonspawnerros2_editor_private_files.cmake
         TARGET_PROPERTIES
             O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
@@ -149,7 +149,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
-            robotecgeojsonspawnererros2_editor_shared_files.cmake
+            robotecgeojsonspawnerros2_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -204,7 +204,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
-                robotecgeojsonspawnererros2_tests_files.cmake
+                robotecgeojsonspawnerros2_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -233,7 +233,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
                 NAMESPACE Gem
                 FILES_CMAKE
-                    robotecgeojsonspawnererros2_editor_tests_files.cmake
+                    robotecgeojsonspawnerros2_editor_tests_files.cmake
                 INCLUDE_DIRECTORIES
                     PRIVATE
                         Tests
