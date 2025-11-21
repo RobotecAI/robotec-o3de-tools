@@ -8,19 +8,19 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerROS2.h"
+#include "RobotecGeoJSONSpawnerROS2.h"
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <ROS2/Frame/ROS2FrameComponent.h>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
     inline constexpr const char* stringMessageType = "std_msgs::msg::String";
     inline constexpr const char* emptyMessageType = "std_msgs::msg::Empty";
     inline constexpr const char* int32MultiArrayMessageType = "std_msgs::msg::Int32MultiArray";
 
-    GeoJSONSpawnerROS2Configuration::GeoJSONSpawnerROS2Configuration()
+    RobotecGeoJSONSpawnerROS2Configuration::RobotecGeoJSONSpawnerROS2Configuration()
     {
         m_spawnWithRawStringTopicConfiguration.m_topic = "geojson/spawn_with_raw_string";
         m_spawnWithRawStringTopicConfiguration.m_type = stringMessageType;
@@ -38,75 +38,80 @@ namespace GeoJSONSpawnerROS2
         m_deleteAllTopicConfiguration.m_type = emptyMessageType;
     }
 
-    void GeoJSONSpawnerROS2Configuration::Reflect(AZ::ReflectContext* context)
+    void RobotecGeoJSONSpawnerROS2Configuration::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<GeoJSONSpawnerROS2Configuration>()
+            serialize->Class<RobotecGeoJSONSpawnerROS2Configuration>()
                 ->Version(0)
-                ->Field("GetIdsServiceTopicName", &GeoJSONSpawnerROS2Configuration::m_getIdsServiceTopicName)
-                ->Field("SpawnWithRawStringTopicConfiguration", &GeoJSONSpawnerROS2Configuration::m_spawnWithRawStringTopicConfiguration)
-                ->Field("SpawnWithAssetPathTopicConfiguration", &GeoJSONSpawnerROS2Configuration::m_spawnWithAssetPathTopicConfiguration)
-                ->Field("ModifyTopicConfiguration", &GeoJSONSpawnerROS2Configuration::m_modifyTopicConfiguration)
-                ->Field("DeleteAllTopicConfiguration", &GeoJSONSpawnerROS2Configuration::m_deleteAllTopicConfiguration)
-                ->Field("DeleteByIdTopicConfiguration", &GeoJSONSpawnerROS2Configuration::m_deleteByIdTopicConfiguration);
+                ->Field("GetIdsServiceTopicName", &RobotecGeoJSONSpawnerROS2Configuration::m_getIdsServiceTopicName)
+                ->Field(
+                    "SpawnWithRawStringTopicConfiguration", &RobotecGeoJSONSpawnerROS2Configuration::m_spawnWithRawStringTopicConfiguration)
+                ->Field(
+                    "SpawnWithAssetPathTopicConfiguration", &RobotecGeoJSONSpawnerROS2Configuration::m_spawnWithAssetPathTopicConfiguration)
+                ->Field("ModifyTopicConfiguration", &RobotecGeoJSONSpawnerROS2Configuration::m_modifyTopicConfiguration)
+                ->Field("DeleteAllTopicConfiguration", &RobotecGeoJSONSpawnerROS2Configuration::m_deleteAllTopicConfiguration)
+                ->Field("DeleteByIdTopicConfiguration", &RobotecGeoJSONSpawnerROS2Configuration::m_deleteByIdTopicConfiguration);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<GeoJSONSpawnerROS2Configuration>("GeoJSONSpawnerROS2Configuration", "GeoJSONSpawnerROS2Configuration")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "GeoJSONSpawnerROS2Configuration")
+                editContext
+                    ->Class<RobotecGeoJSONSpawnerROS2Configuration>(
+                        "RobotecGeoJSONSpawnerROS2Configuration", "RobotecGeoJSONSpawnerROS2Configuration")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "RobotecGeoJSONSpawnerROS2Configuration")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "Spawners")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerROS2Configuration::m_getIdsServiceTopicName,
+                        &RobotecGeoJSONSpawnerROS2Configuration::m_getIdsServiceTopicName,
                         "Get Ids Service Name",
                         "The name of the get ids service.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerROS2Configuration::m_spawnWithRawStringTopicConfiguration,
+                        &RobotecGeoJSONSpawnerROS2Configuration::m_spawnWithRawStringTopicConfiguration,
                         "Spawn with raw string Topic Configuration",
                         "The spawn with raw string topic configuration.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerROS2Configuration::m_spawnWithAssetPathTopicConfiguration,
+                        &RobotecGeoJSONSpawnerROS2Configuration::m_spawnWithAssetPathTopicConfiguration,
                         "Spawn with asset path Topic Configuration",
                         "The spawn with asset path topic configuration.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerROS2Configuration::m_modifyTopicConfiguration,
+                        &RobotecGeoJSONSpawnerROS2Configuration::m_modifyTopicConfiguration,
                         "Modify Topic Configuration",
                         "The modify topic configuration.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerROS2Configuration::m_deleteAllTopicConfiguration,
+                        &RobotecGeoJSONSpawnerROS2Configuration::m_deleteAllTopicConfiguration,
                         "Delete All Topic Configuration",
                         "The delete all enitities topic configuration.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerROS2Configuration::m_deleteByIdTopicConfiguration,
+                        &RobotecGeoJSONSpawnerROS2Configuration::m_deleteByIdTopicConfiguration,
                         "Delete By Id Topic Configuration",
                         "The delete group of entities by id topic configuration.");
             }
         }
     }
 
-    GeoJSONSpawnerROS2::GeoJSONSpawnerROS2(const GeoJSONSpawnerROS2Configuration& configuration)
+    RobotecGeoJSONSpawnerROS2::RobotecGeoJSONSpawnerROS2(const RobotecGeoJSONSpawnerROS2Configuration& configuration)
         : m_configuration(configuration)
     {
     }
 
-    void GeoJSONSpawnerROS2::Reflect(AZ::ReflectContext* context)
+    void RobotecGeoJSONSpawnerROS2::Reflect(AZ::ReflectContext* context)
     {
-        GeoJSONSpawnerROS2Configuration::Reflect(context);
+        RobotecGeoJSONSpawnerROS2Configuration::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<GeoJSONSpawnerROS2, AZ::Component>()->Version(0)->Field("Configuration", &GeoJSONSpawnerROS2::m_configuration);
+            serialize->Class<RobotecGeoJSONSpawnerROS2, AZ::Component>()->Version(0)->Field(
+                "Configuration", &RobotecGeoJSONSpawnerROS2::m_configuration);
         }
     }
 
-    void GeoJSONSpawnerROS2::Activate()
+    void RobotecGeoJSONSpawnerROS2::Activate()
     {
         auto ros2Frame = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
         AZ_Assert(ros2Frame, "Unable to get pointer to ROS 2 frame component.");
@@ -198,7 +203,7 @@ namespace GeoJSONSpawnerROS2
         }
     }
 
-    void GeoJSONSpawnerROS2::Deactivate()
+    void RobotecGeoJSONSpawnerROS2::Deactivate()
     {
         if (m_spawnWithRawStringSubscription)
         {
@@ -231,52 +236,54 @@ namespace GeoJSONSpawnerROS2
         }
     }
 
-    void GeoJSONSpawnerROS2::ProcessSpawnWithRawStringMessage(const StringMsg& message)
+    void RobotecGeoJSONSpawnerROS2::ProcessSpawnWithRawStringMessage(const StringMsg& message)
     {
-        GeoJSONSpawner::Result result;
-        GeoJSONSpawner::GeoJSONSpawnerRequestBus::BroadcastResult(
-            result, &GeoJSONSpawner::GeoJSONSpawnerRequestBus::Events::SpawnWithRawString, message.data.c_str());
-        AZ_Error("GeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
+        RobotecGeoJSONSpawner::Result result;
+        RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::BroadcastResult(
+            result, &RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::Events::SpawnWithRawString, message.data.c_str());
+        AZ_Error("RobotecGeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
     }
 
-    void GeoJSONSpawnerROS2::ProcessSpawnWithAssetPathMessage(const StringMsg& message)
+    void RobotecGeoJSONSpawnerROS2::ProcessSpawnWithAssetPathMessage(const StringMsg& message)
     {
-        GeoJSONSpawner::Result result;
-        GeoJSONSpawner::GeoJSONSpawnerRequestBus::BroadcastResult(
-            result, &GeoJSONSpawner::GeoJSONSpawnerRequestBus::Events::SpawnWithAssetPath, message.data.c_str());
-        AZ_Error("GeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
+        RobotecGeoJSONSpawner::Result result;
+        RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::BroadcastResult(
+            result, &RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::Events::SpawnWithAssetPath, message.data.c_str());
+        AZ_Error("RobotecGeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
     }
 
-    void GeoJSONSpawnerROS2::ProcessModifyMessage(const StringMsg& message)
+    void RobotecGeoJSONSpawnerROS2::ProcessModifyMessage(const StringMsg& message)
     {
-        GeoJSONSpawner::Result result;
-        GeoJSONSpawner::GeoJSONSpawnerRequestBus::BroadcastResult(
-            result, &GeoJSONSpawner::GeoJSONSpawnerRequestBus::Events::Modify, message.data.c_str());
-        AZ_Error("GeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
+        RobotecGeoJSONSpawner::Result result;
+        RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::BroadcastResult(
+            result, &RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::Events::Modify, message.data.c_str());
+        AZ_Error("RobotecGeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
     }
 
-    void GeoJSONSpawnerROS2::ProcessDeleteAllMessage()
+    void RobotecGeoJSONSpawnerROS2::ProcessDeleteAllMessage()
     {
-        GeoJSONSpawner::Result result;
-        GeoJSONSpawner::GeoJSONSpawnerRequestBus::BroadcastResult(result, &GeoJSONSpawner::GeoJSONSpawnerRequestBus::Events::DeleteAll);
-        AZ_Error("GeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
+        RobotecGeoJSONSpawner::Result result;
+        RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::BroadcastResult(
+            result, &RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::Events::DeleteAll);
+        AZ_Error("RobotecGeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
     }
 
-    void GeoJSONSpawnerROS2::ProcessDeleteByIdMessage(const Int32MultiArrayMsg& message)
+    void RobotecGeoJSONSpawnerROS2::ProcessDeleteByIdMessage(const Int32MultiArrayMsg& message)
     {
-        GeoJSONSpawner::Result result;
+        RobotecGeoJSONSpawner::Result result;
         AZStd::unordered_set<int> idsToDelete;
         AZStd::copy(message.data.begin(), message.data.end(), AZStd::inserter(idsToDelete, idsToDelete.end()));
-        GeoJSONSpawner::GeoJSONSpawnerRequestBus::BroadcastResult(
-            result, &GeoJSONSpawner::GeoJSONSpawnerRequestBus::Events::DeleteById, idsToDelete);
-        AZ_Error("GeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
+        RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::BroadcastResult(
+            result, &RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::Events::DeleteById, idsToDelete);
+        AZ_Error("RobotecGeoJSONSpawnerROS2", result.IsSuccess(), result.GetError().c_str());
     }
 
-    GeoJSONSpawner::GetIdsResult GeoJSONSpawnerROS2::GetIds()
+    RobotecGeoJSONSpawner::GetIdsResult RobotecGeoJSONSpawnerROS2::GetIds()
     {
-        GeoJSONSpawner::GetIdsResult result;
-        GeoJSONSpawner::GeoJSONSpawnerRequestBus::BroadcastResult(result, &GeoJSONSpawner::GeoJSONSpawnerRequestBus::Events::GetIds);
+        RobotecGeoJSONSpawner::GetIdsResult result;
+        RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::BroadcastResult(
+            result, &RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerRequestBus::Events::GetIds);
         return result;
     }
 
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2

@@ -1,4 +1,4 @@
 
 set(FILES
-    Source/Tools/GeoJSONSpawnerROS2EditorModule.cpp
+    Source/Tools/RobotecGeoJSONSpawnerROS2EditorModule.cpp
 )

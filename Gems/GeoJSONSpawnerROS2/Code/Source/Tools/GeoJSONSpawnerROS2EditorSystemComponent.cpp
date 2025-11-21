@@ -8,65 +8,65 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerROS2EditorSystemComponent.h"
+#include "RobotecGeoJSONSpawnerROS2EditorSystemComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <GeoJSONSpawnerROS2/GeoJSONSpawnerROS2TypeIds.h>
+#include <RobotecGeoJSONSpawnerROS2/RobotecGeoJSONSpawnerROS2TypeIds.h>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
     AZ_COMPONENT_IMPL(
-        GeoJSONSpawnerROS2EditorSystemComponent,
-        "GeoJSONSpawnerROS2EditorSystemComponent",
-        GeoJSONSpawnerROS2EditorSystemComponentTypeId,
+        RobotecGeoJSONSpawnerROS2EditorSystemComponent,
+        "RobotecGeoJSONSpawnerROS2EditorSystemComponent",
+        RobotecGeoJSONSpawnerROS2EditorSystemComponentTypeId,
         BaseSystemComponent);
 
-    void GeoJSONSpawnerROS2EditorSystemComponent::Reflect(AZ::ReflectContext* context)
+    void RobotecGeoJSONSpawnerROS2EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GeoJSONSpawnerROS2EditorSystemComponent, GeoJSONSpawnerROS2SystemComponent>()->Version(0);
+            serializeContext->Class<RobotecGeoJSONSpawnerROS2EditorSystemComponent, RobotecGeoJSONSpawnerROS2SystemComponent>()->Version(0);
         }
     }
 
-    GeoJSONSpawnerROS2EditorSystemComponent::GeoJSONSpawnerROS2EditorSystemComponent() = default;
+    RobotecGeoJSONSpawnerROS2EditorSystemComponent::RobotecGeoJSONSpawnerROS2EditorSystemComponent() = default;
 
-    GeoJSONSpawnerROS2EditorSystemComponent::~GeoJSONSpawnerROS2EditorSystemComponent() = default;
+    RobotecGeoJSONSpawnerROS2EditorSystemComponent::~RobotecGeoJSONSpawnerROS2EditorSystemComponent() = default;
 
-    void GeoJSONSpawnerROS2EditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void RobotecGeoJSONSpawnerROS2EditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         BaseSystemComponent::GetProvidedServices(provided);
-        provided.push_back(AZ_CRC_CE("GeoJSONSpawnerROS2EditorService"));
+        provided.push_back(AZ_CRC_CE("RobotecGeoJSONSpawnerROS2EditorService"));
     }
 
-    void GeoJSONSpawnerROS2EditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void RobotecGeoJSONSpawnerROS2EditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         BaseSystemComponent::GetIncompatibleServices(incompatible);
-        incompatible.push_back(AZ_CRC_CE("GeoJSONSpawnerROS2EditorService"));
+        incompatible.push_back(AZ_CRC_CE("RobotecGeoJSONSpawnerROS2EditorService"));
     }
 
-    void GeoJSONSpawnerROS2EditorSystemComponent::GetRequiredServices(
+    void RobotecGeoJSONSpawnerROS2EditorSystemComponent::GetRequiredServices(
         [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         BaseSystemComponent::GetRequiredServices(required);
     }
 
-    void GeoJSONSpawnerROS2EditorSystemComponent::GetDependentServices(
+    void RobotecGeoJSONSpawnerROS2EditorSystemComponent::GetDependentServices(
         [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         BaseSystemComponent::GetDependentServices(dependent);
     }
 
-    void GeoJSONSpawnerROS2EditorSystemComponent::Activate()
+    void RobotecGeoJSONSpawnerROS2EditorSystemComponent::Activate()
     {
-        GeoJSONSpawnerROS2SystemComponent::Activate();
+        RobotecGeoJSONSpawnerROS2SystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
-    void GeoJSONSpawnerROS2EditorSystemComponent::Deactivate()
+    void RobotecGeoJSONSpawnerROS2EditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-        GeoJSONSpawnerROS2SystemComponent::Deactivate();
+        RobotecGeoJSONSpawnerROS2SystemComponent::Deactivate();
     }
 
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2

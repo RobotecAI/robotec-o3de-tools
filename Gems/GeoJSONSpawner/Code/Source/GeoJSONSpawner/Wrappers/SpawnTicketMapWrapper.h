@@ -1,18 +1,18 @@
 #pragma once
 
-#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
-namespace GeoJSONSpawner::GeoJSONWrappers
+namespace RobotecGeoJSONSpawner::GeoJSONWrappers
 {
     class SpawnTicketMapWrapper
     {
     public:
-        AZ_TYPE_INFO(SpawnTicketMapWrapper, GeoJSONSpawnerSpawnTicketMapWrapperTypeId);
+        AZ_TYPE_INFO(SpawnTicketMapWrapper, RobotecGeoJSONSpawnerSpawnTicketMapWrapperTypeId);
         AZ_CLASS_ALLOCATOR(SpawnTicketMapWrapper, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -28,4 +28,4 @@ namespace GeoJSONSpawner::GeoJSONWrappers
     private:
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_map;
     };
-} // namespace GeoJSONSpawner::GeoJSONWrappers
+} // namespace RobotecGeoJSONSpawner::GeoJSONWrappers

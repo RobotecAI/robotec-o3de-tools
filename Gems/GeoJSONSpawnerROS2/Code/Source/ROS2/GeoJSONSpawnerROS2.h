@@ -10,13 +10,13 @@
 
 #pragma once
 
-#include <GeoJSONSpawnerROS2/GeoJSONSpawnerROS2TypeIds.h>
+#include <RobotecGeoJSONSpawnerROS2/RobotecGeoJSONSpawnerROS2TypeIds.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
-#include <GeoJSONSpawner/GeoJSONSpawnerBus.h>
 #include <ROS2/RobotControl/ControlSubscriptionHandler.h>
+#include <RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerBus.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/service.hpp>
 #include <std_msgs/msg/empty.hpp>
@@ -24,13 +24,13 @@
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/trigger.hpp>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
-    struct GeoJSONSpawnerROS2Configuration
+    struct RobotecGeoJSONSpawnerROS2Configuration
     {
-        AZ_TYPE_INFO(GeoJSONSpawnerROS2Configuration, GeoJSONSpawnerROS2ConfigurationTypeId);
-        GeoJSONSpawnerROS2Configuration();
-        ~GeoJSONSpawnerROS2Configuration() = default;
+        AZ_TYPE_INFO(RobotecGeoJSONSpawnerROS2Configuration, RobotecGeoJSONSpawnerROS2ConfigurationTypeId);
+        RobotecGeoJSONSpawnerROS2Configuration();
+        ~RobotecGeoJSONSpawnerROS2Configuration() = default;
         static void Reflect(AZ::ReflectContext* context);
 
         ROS2::TopicConfiguration m_spawnWithRawStringTopicConfiguration;
@@ -41,14 +41,14 @@ namespace GeoJSONSpawnerROS2
         AZStd::string m_getIdsServiceTopicName{ "geojson/get_spawned_groups_ids" };
     };
 
-    class GeoJSONSpawnerROS2 : public AZ::Component
+    class RobotecGeoJSONSpawnerROS2 : public AZ::Component
     {
     public:
-        AZ_COMPONENT(GeoJSONSpawnerROS2, GeoJSONSpawnerROS2TypeId);
+        AZ_COMPONENT(RobotecGeoJSONSpawnerROS2, RobotecGeoJSONSpawnerROS2TypeId);
 
-        GeoJSONSpawnerROS2() = default;
-        GeoJSONSpawnerROS2(const GeoJSONSpawnerROS2Configuration& configuration);
-        ~GeoJSONSpawnerROS2() = default;
+        RobotecGeoJSONSpawnerROS2() = default;
+        RobotecGeoJSONSpawnerROS2(const RobotecGeoJSONSpawnerROS2Configuration& configuration);
+        ~RobotecGeoJSONSpawnerROS2() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -65,9 +65,9 @@ namespace GeoJSONSpawnerROS2
         void ProcessModifyMessage(const StringMsg& message);
         void ProcessDeleteAllMessage();
         void ProcessDeleteByIdMessage(const Int32MultiArrayMsg& message);
-        GeoJSONSpawner::GetIdsResult GetIds();
+        RobotecGeoJSONSpawner::GetIdsResult GetIds();
 
-        GeoJSONSpawnerROS2Configuration m_configuration;
+        RobotecGeoJSONSpawnerROS2Configuration m_configuration;
 
         rclcpp::Subscription<StringMsg>::SharedPtr m_spawnWithRawStringSubscription;
         rclcpp::Subscription<StringMsg>::SharedPtr m_spawnWithAssetPathSubscription;
@@ -78,4 +78,4 @@ namespace GeoJSONSpawnerROS2
         rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr m_getIdsService;
     };
 
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2

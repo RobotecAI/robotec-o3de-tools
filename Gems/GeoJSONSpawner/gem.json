@@ -1,7 +1,7 @@
 {
-  "gem_name": "GeoJSONSpawner",
+  "gem_name": "RobotecGeoJSONSpawner",
   "version": "2.0.0",
-  "display_name": "GeoJSONSpawner",
+  "display_name": "RobotecGeoJSONSpawner",
   "license": "Apache-2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "origin": "Robotec.ai",
@@ -12,7 +12,7 @@
     "Gem"
   ],
   "user_tags": [
-    "GeoJSONSpawner"
+    "RobotecGeoJSONSpawner"
   ],
   "platforms": [
     ""
@@ -26,5 +26,5 @@
   "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
   "compatible_engines": [],
   "engine_api_dependencies": [],
-  "restricted": "GeoJSONSpawner"
+  "restricted": "RobotecGeoJSONSpawner"
 }

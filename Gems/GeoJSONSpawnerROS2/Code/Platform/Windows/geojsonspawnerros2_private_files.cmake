@@ -1,8 +1,8 @@
 
 # Platform specific files for Windows
-# i.e. ../Source/Windows/GeoJSONSpawnerROS2Windows.cpp
-#      ../Source/Windows/GeoJSONSpawnerROS2Windows.h
-#      ../Include/Windows/GeoJSONSpawnerROS2Windows.h
+# i.e. ../Source/Windows/RobotecGeoJSONSpawnerROS2Windows.cpp
+#      ../Source/Windows/RobotecGeoJSONSpawnerROS2Windows.h
+#      ../Include/Windows/RobotecGeoJSONSpawnerROS2Windows.h
 
 set(FILES
 )

@@ -10,14 +10,14 @@
 
 #pragma once
 
-#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h"
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
-namespace GeoJSONSpawner::GeoJSONUtils
+namespace RobotecGeoJSONSpawner::GeoJSONUtils
 {
     using Coordinates = AZStd::vector<AZStd::array<double, 3>>;
     using SpawnableCoordinatesMap = AZStd::unordered_map<AZStd::string, Coordinates>;
@@ -181,7 +181,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
     [[nodiscard]] bool IsTerrainAvailable();
 
     /**
-     * @brief Flags representing the status of GeoJSONSpawner operations Spawn and Despawn.
+     * @brief Flags representing the status of RobotecGeoJSONSpawner operations Spawn and Despawn.
      *
      * Provides various status indicators for entity spawning / despawning.
      * These flags help to track or filter mentioned operations.
@@ -195,8 +195,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
         Invalid = 1 << 3, ///< Something went wrong while spawning / despawning.
 
     };
-    AZ_TYPE_INFO_SPECIALIZE(GeoJSONSpawner::GeoJSONUtils::SpawnDespawnStatus, SpawnDespawnStatusTypeId);
+    AZ_TYPE_INFO_SPECIALIZE(RobotecGeoJSONSpawner::GeoJSONUtils::SpawnDespawnStatus, SpawnDespawnStatusTypeId);
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(SpawnDespawnStatus);
     AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(SpawnDespawnStatus);
 
-} // namespace GeoJSONSpawner::GeoJSONUtils
+} // namespace RobotecGeoJSONSpawner::GeoJSONUtils

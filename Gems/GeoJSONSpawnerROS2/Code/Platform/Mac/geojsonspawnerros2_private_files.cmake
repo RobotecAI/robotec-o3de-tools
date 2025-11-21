@@ -1,8 +1,8 @@
 
 # Platform specific files for Mac
-# i.e. ../Source/Mac/GeoJSONSpawnerROS2Mac.cpp
-#      ../Source/Mac/GeoJSONSpawnerROS2Mac.h
-#      ../Include/Mac/GeoJSONSpawnerROS2Mac.h
+# i.e. ../Source/Mac/RobotecGeoJSONSpawnerROS2Mac.cpp
+#      ../Source/Mac/RobotecGeoJSONSpawnerROS2Mac.h
+#      ../Include/Mac/RobotecGeoJSONSpawnerROS2Mac.h
 
 set(FILES
 )

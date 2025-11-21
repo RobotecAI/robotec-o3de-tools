@@ -10,20 +10,20 @@
 
 #pragma once
 
-#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h"
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
     //! Terrain Settings Configuration for Editor Component.
     //! This config lets user decide what behaviour should be applied when the Terrain is applicable in current Level.
-    class GeoJSONSpawnerEditorTerrainSettingsConfig
+    class RobotecGeoJSONSpawnerEditorTerrainSettingsConfig
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerEditorTerrainSettingsConfig, GeoJSONSpawnerEditorTerrainSettingsConfigTypeId)
+        AZ_RTTI(RobotecGeoJSONSpawnerEditorTerrainSettingsConfig, RobotecGeoJSONSpawnerEditorTerrainSettingsConfigTypeId)
 
-        GeoJSONSpawnerEditorTerrainSettingsConfig() = default;
-        virtual ~GeoJSONSpawnerEditorTerrainSettingsConfig() = default;
+        RobotecGeoJSONSpawnerEditorTerrainSettingsConfig() = default;
+        virtual ~RobotecGeoJSONSpawnerEditorTerrainSettingsConfig() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -56,4 +56,4 @@ namespace GeoJSONSpawner
         [[nodiscard]] bool IsSpawnOnTerrainUpdateEnabled() const;
     };
 
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

@@ -8,7 +8,7 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerComponent.h"
+#include "RobotecGeoJSONSpawnerComponent.h"
 
 #include "Wrappers/SpawnTicketMapWrapper.h"
 
@@ -18,9 +18,9 @@
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    GeoJSONSpawnerComponent::GeoJSONSpawnerComponent(
+    RobotecGeoJSONSpawnerComponent::RobotecGeoJSONSpawnerComponent(
         const AZStd::unordered_map<AZStd::string, GeoJSONUtils::GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations,
         const AZ::IO::Path& geoJsonFilePath,
         AZ::u64 defaultSeed)
@@ -30,7 +30,7 @@ namespace GeoJSONSpawner
     {
     }
 
-    void GeoJSONSpawnerComponent::Activate()
+    void RobotecGeoJSONSpawnerComponent::Activate()
     {
         if (GeoJSONUtils::IsTerrainAvailable())
         {
@@ -41,10 +41,10 @@ namespace GeoJSONSpawner
             OnTerrainDataCreateEnd();
         }
 
-        GeoJSONSpawnerRequestBus::Handler::BusConnect(GetEntityId());
+        RobotecGeoJSONSpawnerRequestBus::Handler::BusConnect(GetEntityId());
     }
 
-    void GeoJSONSpawnerComponent::Deactivate()
+    void RobotecGeoJSONSpawnerComponent::Deactivate()
     {
         if (AZ::TickBus::Handler::BusIsConnected())
         {
@@ -52,10 +52,10 @@ namespace GeoJSONSpawner
         }
 
         OnTerrainDataDestroyBegin();
-        GeoJSONSpawnerRequestBus::Handler::BusDisconnect();
+        RobotecGeoJSONSpawnerRequestBus::Handler::BusDisconnect();
     }
 
-    void GeoJSONSpawnerComponent::Reflect(AZ::ReflectContext* context)
+    void RobotecGeoJSONSpawnerComponent::Reflect(AZ::ReflectContext* context)
     {
         GeoJSONUtils::GeoJSONSpawnableAssetConfiguration::Reflect(context);
         GeoJSONUtils::GeoJSONSpawnableEntityInfo::Reflect(context);
@@ -72,11 +72,11 @@ namespace GeoJSONSpawner
                 ->Value("Warning", GeoJSONUtils::SpawnDespawnStatus::Warning)
                 ->Value("Invalid", GeoJSONUtils::SpawnDespawnStatus::Invalid);
 
-            serializeContext->Class<GeoJSONSpawnerComponent, AZ::Component>()
+            serializeContext->Class<RobotecGeoJSONSpawnerComponent, AZ::Component>()
                 ->Version(0)
-                ->Field("SpawnableAssetConfigurations", &GeoJSONSpawnerComponent::m_spawnableAssetConfigurations)
-                ->Field("GeoJsonFilePath", &GeoJSONSpawnerComponent::m_geoJsonFilePath)
-                ->Field("DefaultSeed", &GeoJSONSpawnerComponent::m_defaultSeed);
+                ->Field("SpawnableAssetConfigurations", &RobotecGeoJSONSpawnerComponent::m_spawnableAssetConfigurations)
+                ->Field("GeoJsonFilePath", &RobotecGeoJSONSpawnerComponent::m_geoJsonFilePath)
+                ->Field("DefaultSeed", &RobotecGeoJSONSpawnerComponent::m_defaultSeed);
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -87,12 +87,12 @@ namespace GeoJSONSpawner
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnDespawnStatus::Warning)>("SpawnStatus_Warning");
             behaviorContext->EnumProperty<static_cast<int>(GeoJSONUtils::SpawnDespawnStatus::Invalid)>("SpawnStatus_Invalid");
 
-            behaviorContext->EBus<GeoJSONSpawner::GeoJSONSpawnerNotificationBus>("GeoJSONSpawnerNotificationBus")
-                ->Handler<GeoJSONSpawner::GeoJSONSpawnerNotificationBusHandler>();
+            behaviorContext->EBus<RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerNotificationBus>("RobotecGeoJSONSpawnerNotificationBus")
+                ->Handler<RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerNotificationBusHandler>();
         }
     }
 
-    void GeoJSONSpawnerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void RobotecGeoJSONSpawnerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         if (m_spawnerState == SpawnerState::Idle && m_spawnerStateQueue.empty())
         {
@@ -104,9 +104,9 @@ namespace GeoJSONSpawner
         {
             if (m_ticketsToDespawn == 0)
             {
-                // Call GeoJSONSpawner EBus notification - Despawn Finished
-                GeoJSONSpawnerNotificationBus::Broadcast(
-                    &GeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_copyDespawnTickets, m_despawnStatus);
+                // Call RobotecGeoJSONSpawner EBus notification - Despawn Finished
+                RobotecGeoJSONSpawnerNotificationBus::Broadcast(
+                    &RobotecGeoJSONSpawnerInterface::OnEntitiesDespawnFinished, m_copyDespawnTickets, m_despawnStatus);
                 m_spawnerState = SpawnerState::Idle;
             }
         }
@@ -120,9 +120,9 @@ namespace GeoJSONSpawner
             }
             if (m_ticketsToSpawn == 0)
             {
-                // Call GeoJSONSpawner EBus notification - Spawn Finished
-                GeoJSONSpawnerNotificationBus::Broadcast(
-                    &GeoJSONSpawnerInterface::OnEntitiesSpawnFinished, m_copySpawnTickets, m_spawnStatus);
+                // Call RobotecGeoJSONSpawner EBus notification - Spawn Finished
+                RobotecGeoJSONSpawnerNotificationBus::Broadcast(
+                    &RobotecGeoJSONSpawnerInterface::OnEntitiesSpawnFinished, m_copySpawnTickets, m_spawnStatus);
                 m_spawnerState = SpawnerState::Idle;
             }
         }
@@ -134,17 +134,17 @@ namespace GeoJSONSpawner
         }
     }
 
-    void GeoJSONSpawnerComponent::SpawnEntities()
+    void RobotecGeoJSONSpawnerComponent::SpawnEntities()
     {
         m_spawnableTickets.clear();
         const auto featureObjectInfo = GeoJSONUtils::ParseJSONFromFile(m_geoJsonFilePath.c_str());
         SpawnEntities(featureObjectInfo);
     }
 
-    void GeoJSONSpawnerComponent::SpawnEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& featureObjectsToSpawn)
+    void RobotecGeoJSONSpawnerComponent::SpawnEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& featureObjectsToSpawn)
     {
-        // Call GeoJSONSpawner EBus notification - Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
+        // Call RobotecGeoJSONSpawner EBus notification - Begin
+        RobotecGeoJSONSpawnerNotificationBus::Broadcast(&RobotecGeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
         ResetSpawnDespawnStatus(m_spawnStatus, m_copySpawnTickets);
 
         m_spawnableEntityInfo =
@@ -173,10 +173,10 @@ namespace GeoJSONSpawner
         m_copySpawnTickets.SetMap(m_spawnableTickets);
     }
 
-    void GeoJSONSpawnerComponent::SpawnCachedEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& cachedObjectsToSpawn)
+    void RobotecGeoJSONSpawnerComponent::SpawnCachedEntities(const AZStd::vector<GeoJSONUtils::FeatureObjectInfo>& cachedObjectsToSpawn)
     {
-        // Call GeoJSONSpawner EBus notification - Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
+        // Call RobotecGeoJSONSpawner EBus notification - Begin
+        RobotecGeoJSONSpawnerNotificationBus::Broadcast(&RobotecGeoJSONSpawnerInterface::OnEntitiesSpawnBegin);
         ResetSpawnDespawnStatus(m_spawnStatus, m_copySpawnTickets);
 
         auto entityInfos = GeoJSONUtils::GetSpawnableEntitiesFromFeatureObjectVector(cachedObjectsToSpawn, m_spawnableAssetConfigurations);
@@ -205,7 +205,7 @@ namespace GeoJSONSpawner
         m_copySpawnTickets.SetMap(m_spawnableTickets);
     }
 
-    Result GeoJSONSpawnerComponent::SpawnWithRawString(const AZStd::string& rawJsonString)
+    Result RobotecGeoJSONSpawnerComponent::SpawnWithRawString(const AZStd::string& rawJsonString)
     {
         if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
@@ -233,7 +233,7 @@ namespace GeoJSONSpawner
         return AZ::Success();
     }
 
-    Result GeoJSONSpawnerComponent::SpawnWithAssetPath(const AZ::IO::Path& assetPath)
+    Result RobotecGeoJSONSpawnerComponent::SpawnWithAssetPath(const AZ::IO::Path& assetPath)
     {
         if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
@@ -259,7 +259,7 @@ namespace GeoJSONSpawner
         return AZ::Success();
     }
 
-    Result GeoJSONSpawnerComponent::Modify(const AZStd::string& rawJsonString)
+    Result RobotecGeoJSONSpawnerComponent::Modify(const AZStd::string& rawJsonString)
     {
         if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
@@ -286,7 +286,7 @@ namespace GeoJSONSpawner
         return AZ::Success();
     }
 
-    Result GeoJSONSpawnerComponent::DeleteById(const AZStd::unordered_set<int>& idsToDelete)
+    Result RobotecGeoJSONSpawnerComponent::DeleteById(const AZStd::unordered_set<int>& idsToDelete)
     {
         if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
@@ -299,7 +299,7 @@ namespace GeoJSONSpawner
         return AZ::Success();
     }
 
-    Result GeoJSONSpawnerComponent::DeleteAll()
+    Result RobotecGeoJSONSpawnerComponent::DeleteAll()
     {
         if (m_spawnerState != SpawnerState::Idle || !m_spawnerStateQueue.empty())
         {
@@ -312,7 +312,7 @@ namespace GeoJSONSpawner
         return AZ::Success();
     }
 
-    GetIdsResult GeoJSONSpawnerComponent::GetIds() const
+    GetIdsResult RobotecGeoJSONSpawnerComponent::GetIds() const
     {
         AZStd::string result{ "" };
         for (const auto& pair : m_spawnableTickets)
@@ -326,7 +326,7 @@ namespace GeoJSONSpawner
         return AZ::Success(result);
     }
 
-    void GeoJSONSpawnerComponent::OnTerrainDataCreateEnd()
+    void RobotecGeoJSONSpawnerComponent::OnTerrainDataCreateEnd()
     {
         if (m_terrainCreatedOnlyOnce)
         {
@@ -343,13 +343,13 @@ namespace GeoJSONSpawner
         m_terrainCreatedOnlyOnce = true;
     }
 
-    void GeoJSONSpawnerComponent::OnTerrainDataDestroyBegin()
+    void RobotecGeoJSONSpawnerComponent::OnTerrainDataDestroyBegin()
     {
         m_terrainCreatedOnlyOnce = false;
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     }
 
-    void GeoJSONSpawnerComponent::FillGroupIdToTicketIdMap()
+    void RobotecGeoJSONSpawnerComponent::FillGroupIdToTicketIdMap()
     {
         // m_spawnableTicketsIds.clear();
         for (const auto& pair : m_spawnableTickets)
@@ -363,7 +363,7 @@ namespace GeoJSONSpawner
         }
     }
 
-    void GeoJSONSpawnerComponent::FillGroupIdToTicketIdMap(const AZStd::unordered_set<int>& groupIds)
+    void RobotecGeoJSONSpawnerComponent::FillGroupIdToTicketIdMap(const AZStd::unordered_set<int>& groupIds)
     {
         m_spawnableTicketsIds.clear();
         for (const auto id : groupIds)
@@ -381,7 +381,7 @@ namespace GeoJSONSpawner
         }
     }
 
-    unsigned int GeoJSONSpawnerComponent::CountTicketsToSpawn(
+    unsigned int RobotecGeoJSONSpawnerComponent::CountTicketsToSpawn(
         const AZStd::unordered_map<int, AZStd::vector<GeoJSONUtils::TicketToSpawnPair>>& ticketsToSpawn) const
     {
         unsigned int count = 0;
@@ -392,7 +392,7 @@ namespace GeoJSONSpawner
         return count;
     }
 
-    void GeoJSONSpawnerComponent::Despawn(AzFramework::EntitySpawnTicket& ticketToDespawn)
+    void RobotecGeoJSONSpawnerComponent::Despawn(AzFramework::EntitySpawnTicket& ticketToDespawn)
     {
         if (!ticketToDespawn.IsValid())
         {
@@ -420,10 +420,10 @@ namespace GeoJSONSpawner
             });
     }
 
-    void GeoJSONSpawnerComponent::DespawnAllEntities()
+    void RobotecGeoJSONSpawnerComponent::DespawnAllEntities()
     {
-        // Call GeoJSONSpawner EBus notification - Despawn Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+        // Call RobotecGeoJSONSpawner EBus notification - Despawn Begin
+        RobotecGeoJSONSpawnerNotificationBus::Broadcast(&RobotecGeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
         ResetSpawnDespawnStatus(m_despawnStatus, m_copyDespawnTickets);
 
         // Copy Spawn Tickets for notification bus
@@ -446,10 +446,10 @@ namespace GeoJSONSpawner
         }
     }
 
-    void GeoJSONSpawnerComponent::DespawnEntitiesById(const GeoJSONUtils::Ids& ids)
+    void RobotecGeoJSONSpawnerComponent::DespawnEntitiesById(const GeoJSONUtils::Ids& ids)
     {
-        // Call GeoJSONSpawner EBus notification - Despawn Begin
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
+        // Call RobotecGeoJSONSpawner EBus notification - Despawn Begin
+        RobotecGeoJSONSpawnerNotificationBus::Broadcast(&RobotecGeoJSONSpawnerInterface::OnEntitiesDespawnBegin);
         ResetSpawnDespawnStatus(m_despawnStatus, m_copyDespawnTickets);
 
         FillGroupIdToTicketIdMap(ids);
@@ -460,7 +460,10 @@ namespace GeoJSONSpawner
             if (it == m_spawnableTickets.end())
             {
                 AZ_Error(
-                    "GeoJSONSpawnerComponent", false, "Cannot delete entities. Entities group with ID: %d does not exist.", idToDespawn);
+                    "RobotecGeoJSONSpawnerComponent",
+                    false,
+                    "Cannot delete entities. Entities group with ID: %d does not exist.",
+                    idToDespawn);
 
                 m_despawnStatus |= GeoJSONUtils::SpawnDespawnStatus::Warning;
                 continue;
@@ -482,11 +485,11 @@ namespace GeoJSONSpawner
         }
     }
 
-    void GeoJSONSpawnerComponent::ResetSpawnDespawnStatus(
+    void RobotecGeoJSONSpawnerComponent::ResetSpawnDespawnStatus(
         GeoJSONUtils::SpawnDespawnStatus& status, GeoJSONWrappers::SpawnTicketMapWrapper& mapCopy)
     {
         status = m_spawnableTickets.empty() ? GeoJSONUtils::SpawnDespawnStatus::Fail : GeoJSONUtils::SpawnDespawnStatus::Success;
         mapCopy.Clear();
     }
 
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

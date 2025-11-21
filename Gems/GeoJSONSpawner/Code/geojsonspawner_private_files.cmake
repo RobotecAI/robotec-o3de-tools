@@ -1,16 +1,16 @@
 
 set(FILES
-    Source/GeoJSONSpawnerModuleInterface.cpp
-    Source/GeoJSONSpawnerModuleInterface.h
-    Source/Clients/GeoJSONSpawnerSystemComponent.cpp
-    Source/Clients/GeoJSONSpawnerSystemComponent.h
-    Source/GeoJSONSpawner/GeoJSONSpawnerComponent.cpp
-    Source/GeoJSONSpawner/GeoJSONSpawnerComponent.h
-    Source/GeoJSONSpawner/Schemas/GeoJSONSchema.h
-    Source/GeoJSONSpawner/GeoJSONSpawnerUtils.cpp
-    Source/GeoJSONSpawner/GeoJSONSpawnerUtils.h
-    Source/GeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.cpp
-    Source/GeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.h
-    Source/GeoJSONSpawner/EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.cpp
-    Source/GeoJSONSpawner/EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h
+    Source/RobotecGeoJSONSpawnerModuleInterface.cpp
+    Source/RobotecGeoJSONSpawnerModuleInterface.h
+    Source/Clients/RobotecGeoJSONSpawnerSystemComponent.cpp
+    Source/Clients/RobotecGeoJSONSpawnerSystemComponent.h
+    Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerComponent.cpp
+    Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerComponent.h
+    Source/RobotecGeoJSONSpawner/Schemas/GeoJSONSchema.h
+    Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerUtils.cpp
+    Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerUtils.h
+    Source/RobotecGeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.cpp
+    Source/RobotecGeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.h
+    Source/RobotecGeoJSONSpawner/EditorConfigurations/RobotecGeoJSONSpawnerEditorTerrainSettingsConfig.cpp
+    Source/RobotecGeoJSONSpawner/EditorConfigurations/RobotecGeoJSONSpawnerEditorTerrainSettingsConfig.h
 )

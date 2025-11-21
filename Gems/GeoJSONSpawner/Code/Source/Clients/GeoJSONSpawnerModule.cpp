@@ -8,18 +8,18 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerSystemComponent.h"
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
-#include <GeoJSONSpawnerModuleInterface.h>
+#include "RobotecGeoJSONSpawnerSystemComponent.h"
+#include <RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h>
+#include <RobotecGeoJSONSpawnerModuleInterface.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    class GeoJSONSpawnerModule : public GeoJSONSpawnerModuleInterface
+    class RobotecGeoJSONSpawnerModule : public RobotecGeoJSONSpawnerModuleInterface
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerModule, GeoJSONSpawnerModuleTypeId, GeoJSONSpawnerModuleInterface);
-        AZ_CLASS_ALLOCATOR(GeoJSONSpawnerModule, AZ::SystemAllocator);
+        AZ_RTTI(RobotecGeoJSONSpawnerModule, RobotecGeoJSONSpawnerModuleTypeId, RobotecGeoJSONSpawnerModuleInterface);
+        AZ_CLASS_ALLOCATOR(RobotecGeoJSONSpawnerModule, AZ::SystemAllocator);
     };
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner
 
-AZ_DECLARE_MODULE_CLASS(Gem_GeoJSONSpawner, GeoJSONSpawner::GeoJSONSpawnerModule)
+AZ_DECLARE_MODULE_CLASS(Gem_RobotecGeoJSONSpawner, RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerModule)

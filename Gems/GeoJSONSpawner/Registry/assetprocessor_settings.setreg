@@ -2,13 +2,13 @@
     "Amazon": {
         "AssetProcessor": {
             "Settings": {
-                "ScanFolder GeoJSONSpawner/Assets": {
-                    "watch": "@GEMROOT:GeoJSONSpawner@/Assets",
+                "ScanFolder RobotecGeoJSONSpawner/Assets": {
+                    "watch": "@GEMROOT:RobotecGeoJSONSpawner@/Assets",
                     "recursive": 1,
                     "order": 101
                 },
-                "ScanFolder GeoJSONSpawner/Registry": {
-                    "watch": "@GEMROOT:GeoJSONSpawner@/Registry",
+                "ScanFolder RobotecGeoJSONSpawner/Registry": {
+                    "watch": "@GEMROOT:RobotecGeoJSONSpawner@/Registry",
                     "recursive": 1,
                     "order": 102
                 }

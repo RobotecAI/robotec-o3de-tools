@@ -10,32 +10,32 @@
 
 #pragma once
 
-#include "EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h"
-#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
-#include "GeoJSONSpawnerUtils.h"
+#include "EditorConfigurations/RobotecGeoJSONSpawnerEditorTerrainSettingsConfig.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h"
+#include "RobotecGeoJSONSpawnerUtils.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    //! Editor component for the GeoJSONSpawner component.
+    //! Editor component for the RobotecGeoJSONSpawner component.
     //! This component is used to spawn using GeoJSON in the editor.
     //! It loads a GeoJSON file that contains WGS84 coordinates to spawn entities.
     //! It also allows the user to set configuration parameters for the GeoJSON to spawn (@see
-    //! GeoJSONSpawnerUtils::GeoJSONSpawnableAssetConfiguration).
-    class GeoJSONSpawnerEditorComponent
+    //! RobotecGeoJSONSpawnerUtils::GeoJSONSpawnableAssetConfiguration).
+    class RobotecGeoJSONSpawnerEditorComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzFramework::ViewportDebugDisplayEventBus::Handler
         , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(GeoJSONSpawnerEditorComponent, GeoJSONSpawnerEditorComponentTypeId);
+        AZ_EDITOR_COMPONENT(RobotecGeoJSONSpawnerEditorComponent, RobotecGeoJSONSpawnerEditorComponentTypeId);
 
-        GeoJSONSpawnerEditorComponent() = default;
-        ~GeoJSONSpawnerEditorComponent() override = default;
+        RobotecGeoJSONSpawnerEditorComponent() = default;
+        ~RobotecGeoJSONSpawnerEditorComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -64,7 +64,8 @@ namespace GeoJSONSpawner
         AZStd::vector<GeoJSONUtils::GeoJSONSpawnableEntityInfo> m_spawnableEntityInfo;
         AZStd::unordered_map<int, AZStd::vector<AzFramework::EntitySpawnTicket>> m_spawnedTicketsGroups;
 
-        GeoJSONSpawnerEditorTerrainSettingsConfig m_terrainSettingsConfig; //!< Terrain Editor Settings Configuration for GeoJSONSpawner
+        RobotecGeoJSONSpawnerEditorTerrainSettingsConfig
+            m_terrainSettingsConfig; //!< Terrain Editor Settings Configuration for RobotecGeoJSONSpawner
     };
 
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

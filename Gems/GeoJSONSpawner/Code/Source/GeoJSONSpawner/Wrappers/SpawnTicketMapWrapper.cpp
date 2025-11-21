@@ -1,13 +1,13 @@
 #include "SpawnTicketMapWrapper.h"
 
-namespace GeoJSONSpawner::GeoJSONWrappers
+namespace RobotecGeoJSONSpawner::GeoJSONWrappers
 {
     void SpawnTicketMapWrapper::Reflect(AZ::ReflectContext* context)
     {
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<SpawnTicketMapWrapper>("SpawnTicketMapWrapper")
-                ->Attribute(AZ::Script::Attributes::Category, "GeoJSONSpawner/Wrappers")
+                ->Attribute(AZ::Script::Attributes::Category, "RobotecGeoJSONSpawner/Wrappers")
                 ->Method("Insert", &SpawnTicketMapWrapper::Insert)
                 ->Method("Clear", &SpawnTicketMapWrapper::Clear)
                 ->Method("GetKeys", &SpawnTicketMapWrapper::GetKeys)
@@ -59,4 +59,4 @@ namespace GeoJSONSpawner::GeoJSONWrappers
     {
         this->m_map = m_map;
     }
-} // namespace GeoJSONSpawner::GeoJSONWrappers
+} // namespace RobotecGeoJSONSpawner::GeoJSONWrappers

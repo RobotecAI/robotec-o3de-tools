@@ -8,31 +8,34 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerROS2ModuleInterface.h"
+#include "RobotecGeoJSONSpawnerROS2ModuleInterface.h"
 #include <AzCore/Memory/Memory.h>
 
-#include <GeoJSONSpawnerROS2/GeoJSONSpawnerROS2TypeIds.h>
+#include <RobotecGeoJSONSpawnerROS2/RobotecGeoJSONSpawnerROS2TypeIds.h>
 
-#include <Clients/GeoJSONSpawnerROS2SystemComponent.h>
-#include <ROS2/GeoJSONSpawnerROS2.h>
+#include <Clients/RobotecGeoJSONSpawnerROS2SystemComponent.h>
+#include <ROS2/RobotecGeoJSONSpawnerROS2.h>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
     AZ_TYPE_INFO_WITH_NAME_IMPL(
-        GeoJSONSpawnerROS2ModuleInterface, "GeoJSONSpawnerROS2ModuleInterface", GeoJSONSpawnerROS2ModuleInterfaceTypeId);
-    AZ_RTTI_NO_TYPE_INFO_IMPL(GeoJSONSpawnerROS2ModuleInterface, AZ::Module);
-    AZ_CLASS_ALLOCATOR_IMPL(GeoJSONSpawnerROS2ModuleInterface, AZ::SystemAllocator);
+        RobotecGeoJSONSpawnerROS2ModuleInterface,
+        "RobotecGeoJSONSpawnerROS2ModuleInterface",
+        RobotecGeoJSONSpawnerROS2ModuleInterfaceTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(RobotecGeoJSONSpawnerROS2ModuleInterface, AZ::Module);
+    AZ_CLASS_ALLOCATOR_IMPL(RobotecGeoJSONSpawnerROS2ModuleInterface, AZ::SystemAllocator);
 
-    GeoJSONSpawnerROS2ModuleInterface::GeoJSONSpawnerROS2ModuleInterface()
+    RobotecGeoJSONSpawnerROS2ModuleInterface::RobotecGeoJSONSpawnerROS2ModuleInterface()
     {
         m_descriptors.insert(
-            m_descriptors.end(), { GeoJSONSpawnerROS2SystemComponent::CreateDescriptor(), GeoJSONSpawnerROS2::CreateDescriptor() });
+            m_descriptors.end(),
+            { RobotecGeoJSONSpawnerROS2SystemComponent::CreateDescriptor(), RobotecGeoJSONSpawnerROS2::CreateDescriptor() });
     }
 
-    AZ::ComponentTypeList GeoJSONSpawnerROS2ModuleInterface::GetRequiredSystemComponents() const
+    AZ::ComponentTypeList RobotecGeoJSONSpawnerROS2ModuleInterface::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
-            azrtti_typeid<GeoJSONSpawnerROS2SystemComponent>(),
+            azrtti_typeid<RobotecGeoJSONSpawnerROS2SystemComponent>(),
         };
     }
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2

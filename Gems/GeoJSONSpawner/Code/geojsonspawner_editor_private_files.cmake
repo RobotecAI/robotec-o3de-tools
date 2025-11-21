@@ -1,7 +1,7 @@
 
 set(FILES
-    Source/Tools/GeoJSONSpawnerEditorSystemComponent.cpp
-    Source/Tools/GeoJSONSpawnerEditorSystemComponent.h
-    Source/GeoJSONSpawner/GeoJSONSpawnerEditorComponent.cpp
-    Source/GeoJSONSpawner/GeoJSONSpawnerEditorComponent.h
+    Source/Tools/RobotecGeoJSONSpawnerEditorSystemComponent.cpp
+    Source/Tools/RobotecGeoJSONSpawnerEditorSystemComponent.h
+    Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerEditorComponent.cpp
+    Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerEditorComponent.h
 )

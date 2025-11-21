@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
-#include "GeoJSONSpawner/GeoJSONSpawnerTypeIds.h"
-#include "GeoJSONSpawnerUtils.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerBus.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h"
+#include "RobotecGeoJSONSpawnerUtils.h"
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -20,7 +20,7 @@
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
     enum class SpawnerState
     {
@@ -30,21 +30,21 @@ namespace GeoJSONSpawner
     };
     //! Game component that spawns entities from a GeoJSON.
     //! This component is used to spawn various spawnables, on the first tick.
-    class GeoJSONSpawnerComponent
+    class RobotecGeoJSONSpawnerComponent
         : public AZ::Component
-        , public GeoJSONSpawnerRequestBus::Handler
+        , public RobotecGeoJSONSpawnerRequestBus::Handler
         , public AZ::TickBus::Handler
         , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(GeoJSONSpawnerComponent, GeoJSONSpawnerComponentTypeId);
+        AZ_COMPONENT(RobotecGeoJSONSpawnerComponent, RobotecGeoJSONSpawnerComponentTypeId);
 
-        GeoJSONSpawnerComponent() = default;
-        explicit GeoJSONSpawnerComponent(
+        RobotecGeoJSONSpawnerComponent() = default;
+        explicit RobotecGeoJSONSpawnerComponent(
             const AZStd::unordered_map<AZStd::string, GeoJSONUtils::GeoJSONSpawnableAssetConfiguration>& spawnableAssetConfigurations,
             const AZ::IO::Path& geoJsonFilePath,
             AZ::u64 defaultSeed);
-        ~GeoJSONSpawnerComponent() = default;
+        ~RobotecGeoJSONSpawnerComponent() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -52,7 +52,7 @@ namespace GeoJSONSpawner
         void Activate() override;
         void Deactivate() override;
 
-        // GeoJSONSpawnerRequestBus::Handler overrides...
+        // RobotecGeoJSONSpawnerRequestBus::Handler overrides...
         Result SpawnWithRawString(const AZStd::string& rawJsonString) override;
         Result SpawnWithAssetPath(const AZ::IO::Path& assetPath) override;
         Result Modify(const AZStd::string& rawJsonString) override;
@@ -109,4 +109,4 @@ namespace GeoJSONSpawner
         GeoJSONUtils::SpawnDespawnStatus m_despawnStatus{ GeoJSONUtils::SpawnDespawnStatus::Success };
         GeoJSONWrappers::SpawnTicketMapWrapper m_copyDespawnTickets;
     };
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

@@ -8,33 +8,34 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawner/GeoJSONSpawnerEditorComponent.h"
-#include "GeoJSONSpawnerEditorSystemComponent.h"
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
-#include <GeoJSONSpawnerModuleInterface.h>
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerEditorComponent.h"
+#include "RobotecGeoJSONSpawnerEditorSystemComponent.h"
+#include <RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h>
+#include <RobotecGeoJSONSpawnerModuleInterface.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    class GeoJSONSpawnerEditorModule : public GeoJSONSpawnerModuleInterface
+    class RobotecGeoJSONSpawnerEditorModule : public RobotecGeoJSONSpawnerModuleInterface
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerEditorModule, GeoJSONSpawnerEditorModuleTypeId, GeoJSONSpawnerModuleInterface);
-        AZ_CLASS_ALLOCATOR(GeoJSONSpawnerEditorModule, AZ::SystemAllocator);
+        AZ_RTTI(RobotecGeoJSONSpawnerEditorModule, RobotecGeoJSONSpawnerEditorModuleTypeId, RobotecGeoJSONSpawnerModuleInterface);
+        AZ_CLASS_ALLOCATOR(RobotecGeoJSONSpawnerEditorModule, AZ::SystemAllocator);
 
-        GeoJSONSpawnerEditorModule()
+        RobotecGeoJSONSpawnerEditorModule()
         {
             m_descriptors.insert(
                 m_descriptors.end(),
-                { GeoJSONSpawnerEditorSystemComponent::CreateDescriptor(), GeoJSONSpawnerEditorComponent::CreateDescriptor() });
+                { RobotecGeoJSONSpawnerEditorSystemComponent::CreateDescriptor(),
+                  RobotecGeoJSONSpawnerEditorComponent::CreateDescriptor() });
         }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<GeoJSONSpawnerEditorSystemComponent>(),
+                azrtti_typeid<RobotecGeoJSONSpawnerEditorSystemComponent>(),
             };
         }
     };
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner
 
-AZ_DECLARE_MODULE_CLASS(Gem_GeoJSONSpawner, GeoJSONSpawner::GeoJSONSpawnerEditorModule)
+AZ_DECLARE_MODULE_CLASS(Gem_RobotecGeoJSONSpawner, RobotecGeoJSONSpawner::RobotecGeoJSONSpawnerEditorModule)

@@ -13,12 +13,12 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
-    class GeoJSONSpawnerROS2SystemComponent : public AZ::Component
+    class RobotecGeoJSONSpawnerROS2SystemComponent : public AZ::Component
     {
     public:
-        AZ_COMPONENT_DECL(GeoJSONSpawnerROS2SystemComponent);
+        AZ_COMPONENT_DECL(RobotecGeoJSONSpawnerROS2SystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -27,8 +27,8 @@ namespace GeoJSONSpawnerROS2
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        GeoJSONSpawnerROS2SystemComponent() = default;
-        ~GeoJSONSpawnerROS2SystemComponent() = default;
+        RobotecGeoJSONSpawnerROS2SystemComponent() = default;
+        ~RobotecGeoJSONSpawnerROS2SystemComponent() = default;
 
     protected:
         ////////////////////////////////////////////////////////////////////////
@@ -39,4 +39,4 @@ namespace GeoJSONSpawnerROS2
         ////////////////////////////////////////////////////////////////////////
     };
 
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2

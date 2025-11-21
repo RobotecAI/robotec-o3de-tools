@@ -8,37 +8,39 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerROS2EditorSystemComponent.h"
-#include <GeoJSONSpawnerROS2/GeoJSONSpawnerROS2TypeIds.h>
-#include <GeoJSONSpawnerROS2ModuleInterface.h>
-#include <ROS2/GeoJSONSpawnerROS2EditorComponent.h>
+#include "RobotecGeoJSONSpawnerROS2EditorSystemComponent.h"
+#include <ROS2/RobotecGeoJSONSpawnerROS2EditorComponent.h>
+#include <RobotecGeoJSONSpawnerROS2/RobotecGeoJSONSpawnerROS2TypeIds.h>
+#include <RobotecGeoJSONSpawnerROS2ModuleInterface.h>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
-    class GeoJSONSpawnerROS2EditorModule : public GeoJSONSpawnerROS2ModuleInterface
+    class RobotecGeoJSONSpawnerROS2EditorModule : public RobotecGeoJSONSpawnerROS2ModuleInterface
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerROS2EditorModule, GeoJSONSpawnerROS2EditorModuleTypeId, GeoJSONSpawnerROS2ModuleInterface);
-        AZ_CLASS_ALLOCATOR(GeoJSONSpawnerROS2EditorModule, AZ::SystemAllocator);
+        AZ_RTTI(
+            RobotecGeoJSONSpawnerROS2EditorModule, RobotecGeoJSONSpawnerROS2EditorModuleTypeId, RobotecGeoJSONSpawnerROS2ModuleInterface);
+        AZ_CLASS_ALLOCATOR(RobotecGeoJSONSpawnerROS2EditorModule, AZ::SystemAllocator);
 
-        GeoJSONSpawnerROS2EditorModule()
+        RobotecGeoJSONSpawnerROS2EditorModule()
         {
             m_descriptors.insert(
                 m_descriptors.end(),
-                { GeoJSONSpawnerROS2EditorSystemComponent::CreateDescriptor(), GeoJSONSpawnerROS2EditorComponent::CreateDescriptor() });
+                { RobotecGeoJSONSpawnerROS2EditorSystemComponent::CreateDescriptor(),
+                  RobotecGeoJSONSpawnerROS2EditorComponent::CreateDescriptor() });
         }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<GeoJSONSpawnerROS2EditorSystemComponent>(),
+                azrtti_typeid<RobotecGeoJSONSpawnerROS2EditorSystemComponent>(),
             };
         }
     };
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2
 
 #if defined(O3DE_GEM_NAME)
-AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), GeoJSONSpawnerROS2::GeoJSONSpawnerROS2EditorModule)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), RobotecGeoJSONSpawnerROS2::RobotecGeoJSONSpawnerROS2EditorModule)
 #else
-AZ_DECLARE_MODULE_CLASS(Gem_GeoJSONSpawnerROS2_Editor, GeoJSONSpawnerROS2::GeoJSONSpawnerROS2EditorModule)
+AZ_DECLARE_MODULE_CLASS(Gem_RobotecGeoJSONSpawnerROS2_Editor, RobotecGeoJSONSpawnerROS2::RobotecGeoJSONSpawnerROS2EditorModule)
 #endif

@@ -1,5 +1,5 @@
 
-o3de_gem_setup("GeoJSONSpawnerROS2")
+o3de_gem_setup("RobotecGeoJSONSpawnerROS2")
 
 ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
 

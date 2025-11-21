@@ -8,57 +8,62 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerEditorTerrainSettingsConfig.h"
-#include "GeoJSONSpawner/GeoJSONSpawnerUtils.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerUtils.h"
+#include "RobotecGeoJSONSpawnerEditorTerrainSettingsConfig.h"
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    void GeoJSONSpawnerEditorTerrainSettingsConfig::Reflect(AZ::ReflectContext* context)
+    void RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::Reflect(AZ::ReflectContext* context)
     {
         auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<GeoJSONSpawnerEditorTerrainSettingsConfig>()
+            serializeContext->Class<RobotecGeoJSONSpawnerEditorTerrainSettingsConfig>()
                 ->Version(0)
-                ->Field("SpawnOnComponentActivated", &GeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated)
-                ->Field("SpawnOnTerrainUpdate", &GeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnTerrainUpdate)
-                ->Field("TerrainDataChangedMask", &GeoJSONSpawnerEditorTerrainSettingsConfig::m_terrainMasksToIgnore);
+                ->Field("SpawnOnComponentActivated", &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated)
+                ->Field("SpawnOnTerrainUpdate", &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnTerrainUpdate)
+                ->Field("TerrainDataChangedMask", &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::m_terrainMasksToIgnore);
         }
 
         auto* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
             editContext
-                ->Class<GeoJSONSpawnerEditorTerrainSettingsConfig>(
-                    "GeoJSONSpawnerEditorTerrainSettingsConfig", "GeoJSONSpawnerEditorTerrainSettingsConfig")
+                ->Class<RobotecGeoJSONSpawnerEditorTerrainSettingsConfig>(
+                    "RobotecGeoJSONSpawnerEditorTerrainSettingsConfig", "RobotecGeoJSONSpawnerEditorTerrainSettingsConfig")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "In Editor Spawn Settings")
                 ->Attribute(AZ::Edit::Attributes::Category, "In Editor Spawn Settings")
                 ->DataElement(
                     AZ::Edit::UIHandlers::Default,
-                    &GeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated,
+                    &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnComponentActivated,
                     "Spawn On Editor Activate",
                     "Spawns entities when editor component is being activated.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorTerrainSettingsConfig::RefreshUI)
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::RefreshUI)
                 ->DataElement(
                     AZ::Edit::UIHandlers::Default,
-                    &GeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnTerrainUpdate,
+                    &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::m_spawnOnTerrainUpdate,
                     "Spawn On Terrain Update",
                     "Should respawn entities on any Terrain config and transform change.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered)
-                ->Attribute(AZ::Edit::Attributes::Visibility, &GeoJSONSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain)
+                ->Attribute(
+                    AZ::Edit::Attributes::ChangeNotify, &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered)
+                ->Attribute(
+                    AZ::Edit::Attributes::Visibility, &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain)
                 ->DataElement(
                     AZ::Edit::UIHandlers::ComboBox,
-                    &GeoJSONSpawnerEditorTerrainSettingsConfig::m_terrainMasksToIgnore,
+                    &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::m_terrainMasksToIgnore,
                     "Terrain Flags To Ignore",
                     "Flags to ignore on the terrain update data performed.")
-                ->Attribute(AZ::Edit::Attributes::ReadOnly, &GeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged)
-                ->Attribute(AZ::Edit::Attributes::Visibility, &GeoJSONSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain)
                 ->Attribute(
-                    AZ::Edit::Attributes::ComboBoxEditable, &GeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled)
+                    AZ::Edit::Attributes::ReadOnly, &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled)
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged)
+                ->Attribute(
+                    AZ::Edit::Attributes::Visibility, &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain)
+                ->Attribute(
+                    AZ::Edit::Attributes::ComboBoxEditable,
+                    &RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled)
                 ->Attribute(
                     AZ::Edit::Attributes::EnumValues,
                     AZStd::vector<AZ::Edit::EnumConstant<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>>{
@@ -122,17 +127,17 @@ namespace GeoJSONSpawner
         }
     }
 
-    AZ::u32 GeoJSONSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain() const
+    AZ::u32 RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::SetPropertyVisibilityByTerrain() const
     {
         return GeoJSONUtils::IsTerrainAvailable() ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    AZ::Crc32 GeoJSONSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered()
+    AZ::Crc32 RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::SpawnOnTerrainUpdateTriggered()
     {
         return RefreshUI();
     }
 
-    AZ::Crc32 GeoJSONSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged()
+    AZ::Crc32 RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::OnTerrainFlagsChanged()
     {
         if (m_terrainMasksToIgnore == AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::All)
         {
@@ -142,18 +147,18 @@ namespace GeoJSONSpawner
         return RefreshUI();
     }
 
-    AZ::Crc32 GeoJSONSpawnerEditorTerrainSettingsConfig::RefreshUI()
+    AZ::Crc32 RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::RefreshUI()
     {
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
-    bool GeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled() const
+    bool RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateDisabled() const
     {
         return !m_spawnOnTerrainUpdate;
     }
 
-    bool GeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled() const
+    bool RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::IsSpawnOnTerrainUpdateEnabled() const
     {
         return m_spawnOnTerrainUpdate;
     }
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

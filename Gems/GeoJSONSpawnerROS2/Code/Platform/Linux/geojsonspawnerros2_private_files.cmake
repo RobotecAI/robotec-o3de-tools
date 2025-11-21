@@ -1,8 +1,8 @@
 
 # Platform specific files for Linux
-# i.e. ../Source/Linux/GeoJSONSpawnerROS2Linux.cpp
-#      ../Source/Linux/GeoJSONSpawnerROS2Linux.h
-#      ../Include/Linux/GeoJSONSpawnerROS2Linux.h
+# i.e. ../Source/Linux/RobotecGeoJSONSpawnerROS2Linux.cpp
+#      ../Source/Linux/RobotecGeoJSONSpawnerROS2Linux.h
+#      ../Include/Linux/RobotecGeoJSONSpawnerROS2Linux.h
 
 set(FILES
 )

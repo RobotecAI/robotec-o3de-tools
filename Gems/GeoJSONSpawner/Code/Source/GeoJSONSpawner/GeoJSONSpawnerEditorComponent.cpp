@@ -8,9 +8,9 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerEditorComponent.h"
-#include "EditorConfigurations/GeoJSONSpawnerEditorTerrainSettingsConfig.h"
-#include "GeoJSONSpawnerComponent.h"
+#include "EditorConfigurations/RobotecGeoJSONSpawnerEditorTerrainSettingsConfig.h"
+#include "RobotecGeoJSONSpawnerComponent.h"
+#include "RobotecGeoJSONSpawnerEditorComponent.h"
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
@@ -19,64 +19,65 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    void GeoJSONSpawnerEditorComponent::Reflect(AZ::ReflectContext* context)
+    void RobotecGeoJSONSpawnerEditorComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            GeoJSONSpawnerEditorTerrainSettingsConfig::Reflect(context);
+            RobotecGeoJSONSpawnerEditorTerrainSettingsConfig::Reflect(context);
 
-            serializeContext->Class<GeoJSONSpawnerEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
+            serializeContext->Class<RobotecGeoJSONSpawnerEditorComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Version(0)
-                ->Field("GeoJSONAssetId", &GeoJSONSpawnerEditorComponent::m_geoJsonAssetId)
-                ->Field("Configuration", &GeoJSONSpawnerEditorComponent::m_spawnableAssetConfigurations)
-                ->Field("DefaultSeed", &GeoJSONSpawnerEditorComponent::m_defaultSeed)
-                ->Field("ShowLabels", &GeoJSONSpawnerEditorComponent::m_showLabels)
-                ->Field("ConfigTerrainSettings", &GeoJSONSpawnerEditorComponent::m_terrainSettingsConfig);
+                ->Field("GeoJSONAssetId", &RobotecGeoJSONSpawnerEditorComponent::m_geoJsonAssetId)
+                ->Field("Configuration", &RobotecGeoJSONSpawnerEditorComponent::m_spawnableAssetConfigurations)
+                ->Field("DefaultSeed", &RobotecGeoJSONSpawnerEditorComponent::m_defaultSeed)
+                ->Field("ShowLabels", &RobotecGeoJSONSpawnerEditorComponent::m_showLabels)
+                ->Field("ConfigTerrainSettings", &RobotecGeoJSONSpawnerEditorComponent::m_terrainSettingsConfig);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GeoJSONSpawnerEditorComponent>("GeoJSONSpawnerEditorComponent", "Gem Spawner Editor Component")
+                editContext
+                    ->Class<RobotecGeoJSONSpawnerEditorComponent>("RobotecGeoJSONSpawnerEditorComponent", "Gem Spawner Editor Component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "GeoJSON Spawner Editor Component")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "Spawners")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerEditorComponent::m_geoJsonAssetId,
+                        &RobotecGeoJSONSpawnerEditorComponent::m_geoJsonAssetId,
                         "GeoJSON Asset Id",
                         "ID of the asset containing GeoJSON that will be spawned.")
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Reload GeoJSON", "Reload GeoJSON")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Spawn")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorComponent::OnSpawnButton)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RobotecGeoJSONSpawnerEditorComponent::OnSpawnButton)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerEditorComponent::m_spawnableAssetConfigurations,
+                        &RobotecGeoJSONSpawnerEditorComponent::m_spawnableAssetConfigurations,
                         "Spawnable Asset Configurations",
                         "Spawnable Asset Configurations.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerEditorComponent::m_defaultSeed,
+                        &RobotecGeoJSONSpawnerEditorComponent::m_defaultSeed,
                         "Default seed",
                         "Default seed used for randomization.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerEditorComponent::m_showLabels,
+                        &RobotecGeoJSONSpawnerEditorComponent::m_showLabels,
                         "Show labels in Editor",
                         "Show labels in Editor.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GeoJSONSpawnerEditorComponent::OnShowLabelsChanged)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RobotecGeoJSONSpawnerEditorComponent::OnShowLabelsChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &GeoJSONSpawnerEditorComponent::m_terrainSettingsConfig,
+                        &RobotecGeoJSONSpawnerEditorComponent::m_terrainSettingsConfig,
                         "Spawn Behaviour Settings",
                         "Settings to configure spawn behaviour in editor.");
             }
         }
     }
 
-    void GeoJSONSpawnerEditorComponent::Activate()
+    void RobotecGeoJSONSpawnerEditorComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
@@ -101,7 +102,7 @@ namespace GeoJSONSpawner
         }
     }
 
-    void GeoJSONSpawnerEditorComponent::Deactivate()
+    void RobotecGeoJSONSpawnerEditorComponent::Deactivate()
     {
         m_spawnedTicketsGroups.clear();
         m_terrainSettingsConfig.m_flagSpawnEntitiesOnStartOnce = false;
@@ -111,11 +112,11 @@ namespace GeoJSONSpawner
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
 
-    void GeoJSONSpawnerEditorComponent::SpawnEntities()
+    void RobotecGeoJSONSpawnerEditorComponent::SpawnEntities()
     {
         if (!m_geoJsonAssetId.IsValid())
         {
-            AZ_Error("GeoJSONSpawnerEditorComponent", false, "JSON asset is not set.");
+            AZ_Error("RobotecGeoJSONSpawnerEditorComponent", false, "JSON asset is not set.");
             return;
         }
 
@@ -133,13 +134,13 @@ namespace GeoJSONSpawner
 
         if (!ok)
         {
-            AZ_Error("GeoJSONSpawnerEditorComponent", false, "Cannot find asset source.");
+            AZ_Error("RobotecGeoJSONSpawnerEditorComponent", false, "Cannot find asset source.");
             return;
         }
 
         const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
 
-        AZ_Printf("GeoJSONSpawnerEditorComponent", "Source of GeoJSON file path: %s", sourcePath.c_str());
+        AZ_Printf("RobotecGeoJSONSpawnerEditorComponent", "Source of GeoJSON file path: %s", sourcePath.c_str());
 
         auto spawnableAssetConfigurationsMap = GeoJSONUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
         const auto featureObjectInfo = GeoJSONUtils::ParseJSONFromFile(sourcePath.c_str());
@@ -158,12 +159,12 @@ namespace GeoJSONSpawner
         m_spawnedTicketsGroups = GeoJSONUtils::SpawnEntities(ticketsToSpawn);
     }
 
-    void GeoJSONSpawnerEditorComponent::OnSpawnButton()
+    void RobotecGeoJSONSpawnerEditorComponent::OnSpawnButton()
     {
         SpawnEntities();
     }
 
-    void GeoJSONSpawnerEditorComponent::OnShowLabelsChanged()
+    void RobotecGeoJSONSpawnerEditorComponent::OnShowLabelsChanged()
     {
         if (m_showLabels)
         {
@@ -175,7 +176,7 @@ namespace GeoJSONSpawner
         }
     }
 
-    void GeoJSONSpawnerEditorComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    void RobotecGeoJSONSpawnerEditorComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         AZ::Data::AssetInfo sourceAssetInfo;
         bool isSourceFound{ false };
@@ -190,24 +191,24 @@ namespace GeoJSONSpawner
 
         if (!isSourceFound)
         {
-            AZ_Error("GeoJSONSpawnerEditorComponent", false, "Cannot find asset source.");
+            AZ_Error("RobotecGeoJSONSpawnerEditorComponent", false, "Cannot find asset source.");
             return;
         }
 
         const AZ::IO::Path sourcePath = AZ::IO::Path(watchFolder) / AZ::IO::Path(sourceAssetInfo.m_relativePath);
 
-        AZ_Printf("GeoJSONSpawnerEditorComponent", "Source of GeoJSON file path: %s", sourcePath.c_str());
+        AZ_Printf("RobotecGeoJSONSpawnerEditorComponent", "Source of GeoJSON file path: %s", sourcePath.c_str());
 
         auto spawnableAssetConfigurationsMap = GeoJSONUtils::GetSpawnableAssetFromVector(m_spawnableAssetConfigurations);
         const auto featureObjectInfo = GeoJSONUtils::ParseJSONFromFile(sourcePath.c_str());
         auto spawnableEntitiesInfo =
             GeoJSONUtils::GetSpawnableEntitiesFromFeatureObjectVector(featureObjectInfo, spawnableAssetConfigurationsMap);
-        gameEntity->CreateComponent<GeoJSONSpawnerComponent>(
+        gameEntity->CreateComponent<RobotecGeoJSONSpawnerComponent>(
             spawnableAssetConfigurationsMap, sourceAssetInfo.m_relativePath.c_str(), m_defaultSeed);
         m_spawnedTicketsGroups.clear();
     }
 
-    void GeoJSONSpawnerEditorComponent::OnTerrainDataChanged(
+    void RobotecGeoJSONSpawnerEditorComponent::OnTerrainDataChanged(
         [[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         // Ignore on update with selected flags
@@ -228,7 +229,7 @@ namespace GeoJSONSpawner
         }
     }
 
-    void GeoJSONSpawnerEditorComponent::DisplayViewport(
+    void RobotecGeoJSONSpawnerEditorComponent::DisplayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ::Transform transform = GetEntity()->GetTransform()->GetWorldTM();
@@ -256,4 +257,4 @@ namespace GeoJSONSpawner
         debugDisplay.SetState(stateBefore);
     }
 
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

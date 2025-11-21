@@ -1,6 +1,6 @@
 #pragma once
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
     inline constexpr const char* GeoJSONSchema = R"({
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -136,4 +136,4 @@ namespace GeoJSONSpawner
   },
   "required": ["type", "features"]
 })";
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

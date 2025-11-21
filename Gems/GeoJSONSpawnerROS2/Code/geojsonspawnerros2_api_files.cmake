@@ -1,4 +1,4 @@
 
 set(FILES
-    Include/GeoJSONSpawnerROS2/GeoJSONSpawnerROS2TypeIds.h
+    Include/RobotecGeoJSONSpawnerROS2/RobotecGeoJSONSpawnerROS2TypeIds.h
 )

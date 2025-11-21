@@ -8,8 +8,8 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerUtils.h"
-#include "GeoJSONSpawner/GeoJSONSpawnerBus.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerBus.h"
+#include "RobotecGeoJSONSpawnerUtils.h"
 #include "Schemas/GeoJSONSchema.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
@@ -26,7 +26,7 @@
 #include <random>
 #include <rapidjson/schema.h>
 
-namespace GeoJSONSpawner::GeoJSONUtils
+namespace RobotecGeoJSONSpawner::GeoJSONUtils
 {
     void FeatureObjectInfo::Reflect(AZ::ReflectContext* context)
     {
@@ -68,8 +68,9 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GeoJSONSpawnableAssetConfiguration>("GeoJSONSpawnerConfiguration", "GeoJSON Spawner Configuration")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "GeoJSONSpawnerConfiguration")
+                editContext
+                    ->Class<GeoJSONSpawnableAssetConfiguration>("RobotecGeoJSONSpawnerConfiguration", "GeoJSON Spawner Configuration")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "RobotecGeoJSONSpawnerConfiguration")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::Category, "Spawners")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -185,7 +186,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         {
             if (!spawnableAssetConfigurations.contains(entityToSpawn.m_name))
             {
-                AZ_Error("GeoJSONSpawnerUtils", false, "Spawnable with name [%s] not found.", entityToSpawn.m_name.c_str());
+                AZ_Error("RobotecGeoJSONSpawnerUtils", false, "Spawnable with name [%s] not found.", entityToSpawn.m_name.c_str());
                 continue;
             }
 
@@ -275,8 +276,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
                 spawner->SpawnAllEntities(ticketToSpawn.first, ticketToSpawn.second);
                 groupIdToTicketsMap.at(groupIdToSpawn.first).emplace_back(AZStd::move(ticketToSpawn.first));
 
-                // Call GeoJSONSpawner EBus notification - Spawn
-                GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntitySpawn, ticketToSpawn.first);
+                // Call RobotecGeoJSONSpawner EBus notification - Spawn
+                RobotecGeoJSONSpawnerNotificationBus::Broadcast(&RobotecGeoJSONSpawnerInterface::OnEntitySpawn, ticketToSpawn.first);
             }
         }
 
@@ -294,8 +295,8 @@ namespace GeoJSONSpawner::GeoJSONUtils
         };
         spawner->DespawnAllEntities(ticket, optionalArgs);
 
-        // Call GeoJSONSpawner EBus notification - Despawn
-        GeoJSONSpawnerNotificationBus::Broadcast(&GeoJSONSpawnerInterface::OnEntityDespawn, ticket);
+        // Call RobotecGeoJSONSpawner EBus notification - Despawn
+        RobotecGeoJSONSpawnerNotificationBus::Broadcast(&RobotecGeoJSONSpawnerInterface::OnEntityDespawn, ticket);
     }
 
     AZStd::unordered_map<AZStd::string, GeoJSONSpawnableAssetConfiguration> GetSpawnableAssetFromVector(
@@ -316,7 +317,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
     {
         if (!Georeferencing::GeoreferenceRequestsBus::HasHandlers())
         {
-            AZ_Error("GeoJSONSpawnerUtils", false, "Cannot convert WGS84 coordinates - Level is not geographically positioned.");
+            AZ_Error("RobotecGeoJSONSpawnerUtils", false, "Cannot convert WGS84 coordinates - Level is not geographically positioned.");
             return {};
         }
 
@@ -325,7 +326,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         {
             if (!spawnableAssetConfigurations.contains(featureObjectInfo.m_name))
             {
-                AZ_Error("GeoJSONSpawnerUtils", false, "Spawnable with name [%s] not found.", featureObjectInfo.m_name.c_str());
+                AZ_Error("RobotecGeoJSONSpawnerUtils", false, "Spawnable with name [%s] not found.", featureObjectInfo.m_name.c_str());
                 continue;
             }
             const auto& spawnableAssetConfig = spawnableAssetConfigurations.at(featureObjectInfo.m_name);
@@ -359,7 +360,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         rapidjson::Document schemaDocument;
         if (schemaDocument.Parse(GeoJSONSchema).HasParseError())
         {
-            AZ_Error("GeoJSONSpawner", false, "Unable to parse schema.");
+            AZ_Error("RobotecGeoJSONSpawner", false, "Unable to parse schema.");
             return false;
         }
 
@@ -371,7 +372,11 @@ namespace GeoJSONSpawner::GeoJSONUtils
             rapidjson::StringBuffer buffer;
             validator.GetInvalidSchemaPointer().StringifyUriFragment(buffer);
             AZ_Error(
-                "GeoJSONSpawner", false, "Invalid code: %s. Invalid key: %s.", buffer.GetString(), validator.GetInvalidSchemaKeyword());
+                "RobotecGeoJSONSpawner",
+                false,
+                "Invalid code: %s. Invalid key: %s.",
+                buffer.GetString(),
+                validator.GetInvalidSchemaKeyword());
             return false;
         }
 
@@ -445,7 +450,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         }
         else if (geometryType == GeometryType::Unknown)
         {
-            AZ_Error("GeoJSONSpawner", false, "Unknown geometry type.");
+            AZ_Error("RobotecGeoJSONSpawner", false, "Unknown geometry type.");
         }
 
         return spawnableCoordinates;
@@ -456,7 +461,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         AZStd::unordered_set<int> ids;
         if (!ValidateGeoJSON(geoJsonDocument))
         {
-            AZ_Error("GeoJSONSpawner", false, "Failed to validate JSON string.");
+            AZ_Error("RobotecGeoJSONSpawner", false, "Failed to validate JSON string.");
             return ids;
         }
 
@@ -476,7 +481,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
         if (!loadResult.IsSuccess())
         {
-            AZ_Error("GeoJSONSpawnerUtils", false, "%s", loadResult.GetError().c_str());
+            AZ_Error("RobotecGeoJSONSpawnerUtils", false, "%s", loadResult.GetError().c_str());
             return {};
         }
 
@@ -489,7 +494,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
         if (!ValidateGeoJSON(geoJsonDocument))
         {
-            AZ_Error("GeoJSONSpawner", false, "Failed to validate JSON string.");
+            AZ_Error("RobotecGeoJSONSpawner", false, "Failed to validate JSON string.");
             return spawnableInfoContainer;
         }
 
@@ -514,7 +519,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         if (!fileIO || !fileIO->Exists(filePath.c_str()))
         {
-            AZ_Error("GeoJSONSpawnerUtils", false, "Cannot find file %s", filePath.c_str());
+            AZ_Error("RobotecGeoJSONSpawnerUtils", false, "Cannot find file %s", filePath.c_str());
             return {};
         }
 
@@ -522,7 +527,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
         if (!loadResult.IsSuccess())
         {
-            AZ_Error("GeoJSONSpawnerUtils", false, "%s", loadResult.GetError().c_str());
+            AZ_Error("RobotecGeoJSONSpawnerUtils", false, "%s", loadResult.GetError().c_str());
             return {};
         }
 
@@ -535,7 +540,7 @@ namespace GeoJSONSpawner::GeoJSONUtils
 
         if (!loadResult.IsSuccess())
         {
-            AZ_Error("GeoJSONSpawnerUtils", false, "%s", loadResult.GetError().c_str());
+            AZ_Error("RobotecGeoJSONSpawnerUtils", false, "%s", loadResult.GetError().c_str());
             return {};
         }
 
@@ -581,4 +586,4 @@ namespace GeoJSONSpawner::GeoJSONUtils
         return AzFramework::Terrain::TerrainDataRequestBus::HasHandlers();
     }
 
-} // namespace GeoJSONSpawner::GeoJSONUtils
+} // namespace RobotecGeoJSONSpawner::GeoJSONUtils

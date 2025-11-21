@@ -8,51 +8,53 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerSystemComponent.h"
+#include "RobotecGeoJSONSpawnerSystemComponent.h"
 
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
+#include <RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    AZ_COMPONENT_IMPL(GeoJSONSpawnerSystemComponent, "GeoJSONSpawnerSystemComponent", GeoJSONSpawnerSystemComponentTypeId);
+    AZ_COMPONENT_IMPL(
+        RobotecGeoJSONSpawnerSystemComponent, "RobotecGeoJSONSpawnerSystemComponent", RobotecGeoJSONSpawnerSystemComponentTypeId);
 
-    void GeoJSONSpawnerSystemComponent::Reflect(AZ::ReflectContext* context)
+    void RobotecGeoJSONSpawnerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GeoJSONSpawnerSystemComponent, AZ::Component>()->Version(0);
+            serializeContext->Class<RobotecGeoJSONSpawnerSystemComponent, AZ::Component>()->Version(0);
         }
     }
 
-    void GeoJSONSpawnerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void RobotecGeoJSONSpawnerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("GeoJSONSpawnerService"));
+        provided.push_back(AZ_CRC_CE("RobotecGeoJSONSpawnerService"));
     }
 
-    void GeoJSONSpawnerSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void RobotecGeoJSONSpawnerSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("GeoJSONSpawnerService"));
+        incompatible.push_back(AZ_CRC_CE("RobotecGeoJSONSpawnerService"));
     }
 
-    void GeoJSONSpawnerSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-    }
-
-    void GeoJSONSpawnerSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void RobotecGeoJSONSpawnerSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
     }
 
-    void GeoJSONSpawnerSystemComponent::Init()
+    void RobotecGeoJSONSpawnerSystemComponent::GetDependentServices(
+        [[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
 
-    void GeoJSONSpawnerSystemComponent::Activate()
+    void RobotecGeoJSONSpawnerSystemComponent::Init()
     {
     }
 
-    void GeoJSONSpawnerSystemComponent::Deactivate()
+    void RobotecGeoJSONSpawnerSystemComponent::Activate()
     {
     }
-} // namespace GeoJSONSpawner
+
+    void RobotecGeoJSONSpawnerSystemComponent::Deactivate()
+    {
+    }
+} // namespace RobotecGeoJSONSpawner

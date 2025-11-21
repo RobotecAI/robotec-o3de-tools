@@ -13,17 +13,17 @@
 #include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
-    class GeoJSONSpawnerROS2ModuleInterface : public AZ::Module
+    class RobotecGeoJSONSpawnerROS2ModuleInterface : public AZ::Module
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(GeoJSONSpawnerROS2ModuleInterface)
+        AZ_TYPE_INFO_WITH_NAME_DECL(RobotecGeoJSONSpawnerROS2ModuleInterface)
         AZ_RTTI_NO_TYPE_INFO_DECL()
         AZ_CLASS_ALLOCATOR_DECL
 
-        GeoJSONSpawnerROS2ModuleInterface();
+        RobotecGeoJSONSpawnerROS2ModuleInterface();
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2

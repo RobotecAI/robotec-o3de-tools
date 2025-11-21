@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include "GeoJSONSpawner/GeoJSONSpawnerUtils.h"
-#include "GeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.h"
-#include "GeoJSONSpawnerTypeIds.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerUtils.h"
+#include "RobotecGeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.h"
+#include "RobotecGeoJSONSpawnerTypeIds.h"
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
@@ -21,17 +21,17 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/string.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
     using Result = AZ::Outcome<void, AZStd::string>;
     using GetIdsResult = AZ::Outcome<AZStd::string, AZStd::string>;
 
-    //! Interface for the GeoJSONSpawner
+    //! Interface for the RobotecGeoJSONSpawner
     //! Used for spawning, despawning and modifying prefabs described in the GeoJSON file
-    class GeoJSONSpawnerRequests : public AZ::ComponentBus
+    class RobotecGeoJSONSpawnerRequests : public AZ::ComponentBus
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerRequests, GeoJSONSpawnerRequestsTypeId);
+        AZ_RTTI(RobotecGeoJSONSpawnerRequests, RobotecGeoJSONSpawnerRequestsTypeId);
         using BusIdType = AZ::EntityId;
         using MutexType = AZStd::mutex;
 
@@ -51,7 +51,7 @@ namespace GeoJSONSpawner
         //! If any of the given ID does not exist then modify action will be canceled
         virtual Result Modify(const AZStd::string& rawJsonString) = 0;
 
-        //! Delete all prefabs spawned with GeoJSONSpawner
+        //! Delete all prefabs spawned with RobotecGeoJSONSpawner
         virtual Result DeleteAll() = 0;
 
         //! Delete prefabs based on the information in provided GeoJSON
@@ -63,19 +63,19 @@ namespace GeoJSONSpawner
         virtual GetIdsResult GetIds() const = 0;
     };
 
-    using GeoJSONSpawnerRequestBus = AZ::EBus<GeoJSONSpawnerRequests>;
+    using RobotecGeoJSONSpawnerRequestBus = AZ::EBus<RobotecGeoJSONSpawnerRequests>;
 
     /**
      * @brief Interface for handling entity spawn events in GeoJSON Spawner.
      *
-     * GeoJSONSpawnerInterface is an Event Bus (EBus) interface that notifies multiple listeners
+     * RobotecGeoJSONSpawnerInterface is an Event Bus (EBus) interface that notifies multiple listeners
      * when entity spawning and despawning begins or finishes.
      */
-    class GeoJSONSpawnerInterface : public AZ::EBusTraits
+    class RobotecGeoJSONSpawnerInterface : public AZ::EBusTraits
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerInterface, GeoJSONSpawnerInterfaceTypeId);
-        virtual ~GeoJSONSpawnerInterface() = default;
+        AZ_RTTI(RobotecGeoJSONSpawnerInterface, RobotecGeoJSONSpawnerInterfaceTypeId);
+        virtual ~RobotecGeoJSONSpawnerInterface() = default;
 
         /**
          * @brief Called when entity spawning begins.
@@ -135,16 +135,16 @@ namespace GeoJSONSpawner
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
     };
     // Create an EBus using the notification interface
-    using GeoJSONSpawnerNotificationBus = AZ::EBus<GeoJSONSpawnerInterface>;
+    using RobotecGeoJSONSpawnerNotificationBus = AZ::EBus<RobotecGeoJSONSpawnerInterface>;
 
-    class GeoJSONSpawnerNotificationBusHandler
-        : public GeoJSONSpawnerNotificationBus::Handler
+    class RobotecGeoJSONSpawnerNotificationBusHandler
+        : public RobotecGeoJSONSpawnerNotificationBus::Handler
         , public AZ::BehaviorEBusHandler
     {
     public:
         AZ_EBUS_BEHAVIOR_BINDER(
-            GeoJSONSpawnerNotificationBusHandler,
-            GeoJSONSpawnerNotificationBusHandlerTypeId,
+            RobotecGeoJSONSpawnerNotificationBusHandler,
+            RobotecGeoJSONSpawnerNotificationBusHandlerTypeId,
             AZ::SystemAllocator,
             OnEntitiesSpawnBegin,
             OnEntitiesSpawnFinished,
@@ -185,4 +185,4 @@ namespace GeoJSONSpawner
             Call(FN_OnEntityDespawn, despawnedEntityTicket);
         }
     };
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

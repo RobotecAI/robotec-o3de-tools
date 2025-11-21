@@ -8,18 +8,18 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerROS2SystemComponent.h"
-#include <GeoJSONSpawnerROS2/GeoJSONSpawnerROS2TypeIds.h>
-#include <GeoJSONSpawnerROS2ModuleInterface.h>
+#include "RobotecGeoJSONSpawnerROS2SystemComponent.h"
+#include <RobotecGeoJSONSpawnerROS2/RobotecGeoJSONSpawnerROS2TypeIds.h>
+#include <RobotecGeoJSONSpawnerROS2ModuleInterface.h>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
-    class GeoJSONSpawnerROS2Module : public GeoJSONSpawnerROS2ModuleInterface
+    class RobotecGeoJSONSpawnerROS2Module : public RobotecGeoJSONSpawnerROS2ModuleInterface
     {
     public:
-        AZ_RTTI(GeoJSONSpawnerROS2Module, GeoJSONSpawnerROS2ModuleTypeId, GeoJSONSpawnerROS2ModuleInterface);
-        AZ_CLASS_ALLOCATOR(GeoJSONSpawnerROS2Module, AZ::SystemAllocator);
+        AZ_RTTI(RobotecGeoJSONSpawnerROS2Module, RobotecGeoJSONSpawnerROS2ModuleTypeId, RobotecGeoJSONSpawnerROS2ModuleInterface);
+        AZ_CLASS_ALLOCATOR(RobotecGeoJSONSpawnerROS2Module, AZ::SystemAllocator);
     };
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2
 
-AZ_DECLARE_MODULE_CLASS(Gem_GeoJSONSpawnerROS2, GeoJSONSpawnerROS2::GeoJSONSpawnerROS2Module)
+AZ_DECLARE_MODULE_CLASS(Gem_RobotecGeoJSONSpawnerROS2, RobotecGeoJSONSpawnerROS2::RobotecGeoJSONSpawnerROS2Module)

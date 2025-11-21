@@ -12,12 +12,12 @@
 
 #include <AzCore/Component/Component.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    class GeoJSONSpawnerSystemComponent : public AZ::Component
+    class RobotecGeoJSONSpawnerSystemComponent : public AZ::Component
     {
     public:
-        AZ_COMPONENT_DECL(GeoJSONSpawnerSystemComponent);
+        AZ_COMPONENT_DECL(RobotecGeoJSONSpawnerSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -26,8 +26,8 @@ namespace GeoJSONSpawner
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        GeoJSONSpawnerSystemComponent() = default;
-        ~GeoJSONSpawnerSystemComponent() = default;
+        RobotecGeoJSONSpawnerSystemComponent() = default;
+        ~RobotecGeoJSONSpawnerSystemComponent() = default;
 
     protected:
         ////////////////////////////////////////////////////////////////////////
@@ -38,4 +38,4 @@ namespace GeoJSONSpawner
         ////////////////////////////////////////////////////////////////////////
     };
 
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

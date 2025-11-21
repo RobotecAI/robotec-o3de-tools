@@ -1,4 +1,4 @@
 
 set(FILES
-    Source/Clients/GeoJSONSpawnerROS2Module.cpp
+    Source/Clients/RobotecGeoJSONSpawnerROS2Module.cpp
 )

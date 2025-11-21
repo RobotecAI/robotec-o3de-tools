@@ -12,24 +12,24 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <Clients/GeoJSONSpawnerROS2SystemComponent.h>
+#include <Clients/RobotecGeoJSONSpawnerROS2SystemComponent.h>
 
-namespace GeoJSONSpawnerROS2
+namespace RobotecGeoJSONSpawnerROS2
 {
-    /// System component for GeoJSONSpawnerROS2 editor
-    class GeoJSONSpawnerROS2EditorSystemComponent
-        : public GeoJSONSpawnerROS2SystemComponent
+    /// System component for RobotecGeoJSONSpawnerROS2 editor
+    class RobotecGeoJSONSpawnerROS2EditorSystemComponent
+        : public RobotecGeoJSONSpawnerROS2SystemComponent
         , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
-        using BaseSystemComponent = GeoJSONSpawnerROS2SystemComponent;
+        using BaseSystemComponent = RobotecGeoJSONSpawnerROS2SystemComponent;
 
     public:
-        AZ_COMPONENT_DECL(GeoJSONSpawnerROS2EditorSystemComponent);
+        AZ_COMPONENT_DECL(RobotecGeoJSONSpawnerROS2EditorSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        GeoJSONSpawnerROS2EditorSystemComponent();
-        ~GeoJSONSpawnerROS2EditorSystemComponent();
+        RobotecGeoJSONSpawnerROS2EditorSystemComponent();
+        ~RobotecGeoJSONSpawnerROS2EditorSystemComponent();
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -41,4 +41,4 @@ namespace GeoJSONSpawnerROS2
         void Activate() override;
         void Deactivate() override;
     };
-} // namespace GeoJSONSpawnerROS2
+} // namespace RobotecGeoJSONSpawnerROS2

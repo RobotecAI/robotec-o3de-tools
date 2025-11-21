@@ -8,33 +8,35 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "GeoJSONSpawnerModuleInterface.h"
+#include "RobotecGeoJSONSpawnerModuleInterface.h"
 
-#include "GeoJSONSpawner/GeoJSONSpawnerComponent.h"
 #include "ROS2/ROS2Bus.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerComponent.h"
 
 #include <AzCore/Memory/Memory.h>
 
-#include <GeoJSONSpawner/GeoJSONSpawnerTypeIds.h>
+#include <RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerTypeIds.h>
 
-#include <Clients/GeoJSONSpawnerSystemComponent.h>
+#include <Clients/RobotecGeoJSONSpawnerSystemComponent.h>
 
-namespace GeoJSONSpawner
+namespace RobotecGeoJSONSpawner
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(GeoJSONSpawnerModuleInterface, "GeoJSONSpawnerModuleInterface", GeoJSONSpawnerModuleInterfaceTypeId);
-    AZ_RTTI_NO_TYPE_INFO_IMPL(GeoJSONSpawnerModuleInterface, AZ::Module);
-    AZ_CLASS_ALLOCATOR_IMPL(GeoJSONSpawnerModuleInterface, AZ::SystemAllocator);
+    AZ_TYPE_INFO_WITH_NAME_IMPL(
+        RobotecGeoJSONSpawnerModuleInterface, "RobotecGeoJSONSpawnerModuleInterface", RobotecGeoJSONSpawnerModuleInterfaceTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(RobotecGeoJSONSpawnerModuleInterface, AZ::Module);
+    AZ_CLASS_ALLOCATOR_IMPL(RobotecGeoJSONSpawnerModuleInterface, AZ::SystemAllocator);
 
-    GeoJSONSpawnerModuleInterface::GeoJSONSpawnerModuleInterface()
+    RobotecGeoJSONSpawnerModuleInterface::RobotecGeoJSONSpawnerModuleInterface()
     {
         m_descriptors.insert(
-            m_descriptors.end(), { GeoJSONSpawnerSystemComponent::CreateDescriptor(), GeoJSONSpawnerComponent::CreateDescriptor() });
+            m_descriptors.end(),
+            { RobotecGeoJSONSpawnerSystemComponent::CreateDescriptor(), RobotecGeoJSONSpawnerComponent::CreateDescriptor() });
     }
 
-    AZ::ComponentTypeList GeoJSONSpawnerModuleInterface::GetRequiredSystemComponents() const
+    AZ::ComponentTypeList RobotecGeoJSONSpawnerModuleInterface::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
-            azrtti_typeid<GeoJSONSpawnerSystemComponent>(),
+            azrtti_typeid<RobotecGeoJSONSpawnerSystemComponent>(),
         };
     }
-} // namespace GeoJSONSpawner
+} // namespace RobotecGeoJSONSpawner

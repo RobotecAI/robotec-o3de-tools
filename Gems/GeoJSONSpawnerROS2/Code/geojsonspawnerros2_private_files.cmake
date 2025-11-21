@@ -1,9 +1,9 @@
 
 set(FILES
-    Source/GeoJSONSpawnerROS2ModuleInterface.cpp
-    Source/GeoJSONSpawnerROS2ModuleInterface.h
-    Source/Clients/GeoJSONSpawnerROS2SystemComponent.cpp
-    Source/Clients/GeoJSONSpawnerROS2SystemComponent.h
-    Source/ROS2/GeoJSONSpawnerROS2.cpp
-    Source/ROS2/GeoJSONSpawnerROS2.h
+    Source/RobotecGeoJSONSpawnerROS2ModuleInterface.cpp
+    Source/RobotecGeoJSONSpawnerROS2ModuleInterface.h
+    Source/Clients/RobotecGeoJSONSpawnerROS2SystemComponent.cpp
+    Source/Clients/RobotecGeoJSONSpawnerROS2SystemComponent.h
+    Source/ROS2/RobotecGeoJSONSpawnerROS2.cpp
+    Source/ROS2/RobotecGeoJSONSpawnerROS2.h
 )
