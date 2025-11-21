@@ -8,9 +8,9 @@
  * permission, please contact the copyright holders and delete this file.
  */
 
-#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerBus.h"
 #include "RobotecGeoJSONSpawnerUtils.h"
-#include "Schemas/GeoJSONSchema.h"
+#include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerBus.h"
+#include "Schemas/RobotecGeoJSONSchema.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>

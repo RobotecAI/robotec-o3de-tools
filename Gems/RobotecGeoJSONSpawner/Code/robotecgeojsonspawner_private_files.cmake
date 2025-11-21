@@ -6,7 +6,7 @@ set(FILES
     Source/Clients/RobotecGeoJSONSpawnerSystemComponent.h
     Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerComponent.cpp
     Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerComponent.h
-    Source/RobotecGeoJSONSpawner/Schemas/GeoJSONSchema.h
+    Source/RobotecGeoJSONSpawner/Schemas/RobotecGeoJSONSchema.h
     Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerUtils.cpp
     Source/RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerUtils.h
     Source/RobotecGeoJSONSpawner/Wrappers/SpawnTicketMapWrapper.cpp
