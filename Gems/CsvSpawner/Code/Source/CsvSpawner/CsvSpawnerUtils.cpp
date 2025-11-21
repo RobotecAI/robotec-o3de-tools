@@ -11,9 +11,8 @@
 
 #include "CsvSpawnerUtils.h"
 
-#include "AzCore/Math/Matrix3x4.h"
-
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -240,7 +239,7 @@ namespace CsvSpawner::CsvSpawnerUtils
                 GetRandomTransform(spawnConfig.m_positionStdDev, spawnConfig.m_rotationStdDev, spawnConfig.m_scaleStdDev, gen);
 
             const float scale = transform.GetUniformScale();
-            if (AZ::IsClose(scale, 0.0f, MinimalScale))
+            if (AZ::IsClose(scale, 0.0f, MinimumScale))
             {
                 continue; // Skip this entity if scale is zero
             }
