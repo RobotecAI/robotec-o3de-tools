@@ -24,5 +24,6 @@ Please confirm the following before marking this PR as ready for review:
 
 - [ ] Code changes are well-documented
 - [ ] Tests have been added or updated
+- [ ] Code owners file and CI config were updated if new Gem was added
 - [ ] The code is formatted according to the project's style guide
 - [ ] The version number has been updated according to the contributing guidelines
