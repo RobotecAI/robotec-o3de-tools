@@ -6,28 +6,28 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 # Compatibility
 
-| Gem name                                              | Compatibility |
-| ----------------------------------------------------- | ------------- |
-| [**CsvSpawner**](#csvspawner)                         | compatible    |
-| [**ExposeConsoleToRos**](#exposeconsoletoRos)         | compatible    |
-| [**GeoJSONSpawner**](#geojsonspawner)                 | compatible    |
-| [**GeoJSONSpawnerROS2**](#geojsonspawnerros2)         | compatible    |
-| [**ImGuiProvider**](#imguiprovider)                   | compatible    |
-| [**ImGuizmo**](#imguizmo)                             | compatible    |
-| [**LevelModificationTools**](#levelmodificationtools) | incompatible  |
-| [**Pointcloud**](#pointcloud)                         | compatible    |
-| [**RandomizeUtils**](#randomizeutils)                 | compatible    |
-| [**RobotecRecordingTools**](#robotecrecordingtools)   | not verified  |
-| [**RobotecSpectatorCamera**](#robotecspectatorcamera) | not verified  |
-| [**RobotecSplineTools**](#robotecsplinetools)         | compatible    |
-| [**RobotecWatchdogTools**](#robotecwatchdogtools)     | compatible    |
-| [**ROS2PoseControl**](#ros2posecontrol)               | compatible    |
-| [**ROS2ScriptIntegration**](#ros2scriptintegration)   | compatible    |
-| [**SensorDebug**](#sensordebug)                       | compatible    |
-| [**Smoothing**](#smoothing)                           | compatible    |
-| [**ViewportStreamer**](#viewportstreamer)             | not verified  |
-| [**WheelAnimTool**](#wheelanimtool)                   | compatible    |
-| [**Billboards**](#billboards)                         | compatible    |
+| Gem name                                                    | Compatibility |
+| ----------------------------------------------------------- | ------------- |
+| [**CsvSpawner**](#csvspawner)                               | compatible    |
+| [**ExposeConsoleToRos**](#exposeconsoletoRos)               | compatible    |
+| [**RobotecGeoJSONSpawner**](#robotecgeojsonspawner)         | compatible    |
+| [**RobotecGeoJSONSpawnerROS2**](#robotecgeojsonspawnerros2) | compatible    |
+| [**ImGuiProvider**](#imguiprovider)                         | compatible    |
+| [**ImGuizmo**](#imguizmo)                                   | compatible    |
+| [**LevelModificationTools**](#levelmodificationtools)       | incompatible  |
+| [**Pointcloud**](#pointcloud)                               | compatible    |
+| [**RandomizeUtils**](#randomizeutils)                       | compatible    |
+| [**RobotecRecordingTools**](#robotecrecordingtools)         | not verified  |
+| [**RobotecSpectatorCamera**](#robotecspectatorcamera)       | not verified  |
+| [**RobotecSplineTools**](#robotecsplinetools)               | compatible    |
+| [**RobotecWatchdogTools**](#robotecwatchdogtools)           | compatible    |
+| [**ROS2PoseControl**](#ros2posecontrol)                     | compatible    |
+| [**ROS2ScriptIntegration**](#ros2scriptintegration)         | compatible    |
+| [**SensorDebug**](#sensordebug)                             | compatible    |
+| [**Smoothing**](#smoothing)                                 | compatible    |
+| [**ViewportStreamer**](#viewportstreamer)                   | not verified  |
+| [**WheelAnimTool**](#wheelanimtool)                         | compatible    |
+| [**Billboards**](#billboards)                               | compatible    |
 
 # CsvSpawner
 
@@ -78,12 +78,12 @@ Currently `o3de_console_in` is usable only.
 The gem functionality is available only in Profile/Debug.
 
 
-# GeoJSONSpawner
+# RobotecGeoJSONSpawner
 
 Component that spawns prefabs using coordinates stored in the GeoJSON format (either in a file or in a raw string). It supports WGS84 coordinate system.
 This component supports spawning prefabs using GeoJSON stored in the file or stored in the raw string and passed via the ROS2 interface.
 
-![](doc/GeoJSONSpawner.png)
+![](doc/RobotecGeoJSONSpawner.png)
 
 Configuration:
 
@@ -136,7 +136,7 @@ Example of supported GeoJSON:
 
 ## API
 
-This Gem has defined notification bus - `GeoJSONSpawnerNotificationBus`.
+This Gem has defined notification bus - `RobotecGeoJSONSpawnerNotificationBus`.
 
 Available functions:
 
@@ -151,11 +151,11 @@ Available functions:
 
 > \*Supports **Lua** and **Script Canvas\***
 
-# GeoJSONSpawnerROS2
+# RobotecGeoJSONSpawnerROS2
 
-Gem provides a component that connects GeoJSONSpawner with ROS 2. This component provides 4 topics and 1 service that allows to control GeoJSONSpawner with ROS 2 messages.
+Gem provides a component that connects RobotecGeoJSONSpawner with ROS 2. This component provides 4 topics and 1 service that allows to control RobotecGeoJSONSpawner with ROS 2 messages.
 
-![](doc/GeoJSONSpawnerROS2Interface.png)
+![](doc/RobotecGeoJSONSpawnerROS2Interface.png)
 
 Topics:
 
@@ -219,7 +219,7 @@ Suppose the user wants to move the Feature Object assigned to ID 0. To do this, 
 
 ```
 
-- `geojson/delete_all [std_msgs::msg::Empty]` - topic that despawns all entities spawned with GeoJSONSpawner.
+- `geojson/delete_all [std_msgs::msg::Empty]` - topic that despawns all entities spawned with RobotecGeoJSONSpawner.
 - `geojson/delete_by_id [std_msgs/msg/Int32MultiArray]` - topic that despawns all entities associated with a given ids.
 
 Service:
