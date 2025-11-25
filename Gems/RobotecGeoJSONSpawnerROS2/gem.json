@@ -1,0 +1,31 @@
+{
+    "gem_name": "RobotecGeoJSONSpawnerROS2",
+    "version": "1.0.0",
+    "display_name": "RobotecGeoJSONSpawnerROS2",
+    "license": "Apache-2.0",
+    "license_url": "https://opensource.org/licenses/Apache-2.0",
+    "origin": "Robotec.ai",
+    "origin_url": "https://www.robotec.ai",
+    "type": "Code",
+    "summary": "This component is responsible for handling ROS 2 requests and forwarding them to the RobotecGeoJSONSpawner gem.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "RobotecGeoJSONSpawnerROS2"
+    ],
+    "platforms": [
+        ""
+    ],
+    "icon_path": "preview.png",
+    "requirements": "Requires ROS2 Gem and RobotecGeoJSONSpawner Gem",
+    "documentation_url": "",
+    "dependencies": [
+        "RobotecGeoJSONSpawner",
+        "ROS2"
+    ],
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
+    "compatible_engines": [],
+    "engine_api_dependencies": [],
+    "restricted": "RobotecGeoJSONSpawnerROS2"
+}
