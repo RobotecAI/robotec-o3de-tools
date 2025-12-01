@@ -30,6 +30,24 @@ struct VSOutput
     [[vk::builtin("PointSize")]] float PointSize : PSIZE;
 };
 
+float LinearizeDepth(const float depth)
+{
+    return ViewSrg::GetFarZTimesNearZ() / (ViewSrg::GetFarZ() - depth * ViewSrg::GetFarZMinusNearZ());
+}
+
+float GetPointSize(float4 position)
+{
+    // Arbitrary scale factor to adjust point size falloff with depth.
+    // Value of 10.0 results in points with m_pointSize of 1.0 appearing as if they are 1cm in diameter.
+    const float depthScale = 10.0;
+
+    float depth = position.z / position.w;
+    float linearDepth = LinearizeDepth(depth) / depthScale;
+    float pointSize = PerDrawSrg::m_pointSize / linearDepth;
+
+    return pointSize;
+}
+
 VSOutput MainVS(VSInput IN)
 {
     VSOutput OUT;
@@ -37,7 +55,7 @@ VSOutput MainVS(VSInput IN)
     const float4 pos2 = mul(PerDrawSrg::m_modelMatrix, pos);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, pos2);
     OUT.m_color = IN.m_color;
-    OUT.PointSize = PerDrawSrg::m_pointSize;
+    OUT.PointSize = GetPointSize(OUT.m_position);
     return OUT;
 };
 
