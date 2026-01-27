@@ -532,6 +532,9 @@ namespace ROS2PoseControl
             }
         }
 
+        const auto descendant = GetEntityId();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Event(descendant, &AzPhysics::SimulatedBodyComponentRequests::DisablePhysics);
+
         if (m_configuration.m_clampToGround)
         {
             constexpr float maxDistance = 40.0f;
@@ -552,6 +555,9 @@ namespace ROS2PoseControl
             // Re-enable physics after the transform is applied.
             EnablePhysics();
         }
+
+        Physics::RigidBodyRequestBus::Event(descendant, &Physics::RigidBodyRequests::SetAngularVelocity, AZ::Vector3::CreateZero());
+        Physics::RigidBodyRequestBus::Event(descendant, &Physics::RigidBodyRequests::SetLinearVelocity, AZ::Vector3::CreateZero());
     }
 
     AZStd::optional<AZ::Vector3> ROS2PoseControl::QueryGround(
