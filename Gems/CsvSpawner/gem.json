@@ -1,6 +1,6 @@
 {
   "gem_name": "CsvSpawner",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "display_name": "CsvSpawner",
   "license": "Apache-2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
@@ -18,10 +18,9 @@
     ""
   ],
   "icon_path": "preview.png",
-  "requirements": "Requires ROS2 Gem",
+  "requirements": "Requires LevelGeoreferencing Gem",
   "documentation_url": "",
   "dependencies": [
-    "ROS2",
     "LevelGeoreferencing"
   ],
   "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",

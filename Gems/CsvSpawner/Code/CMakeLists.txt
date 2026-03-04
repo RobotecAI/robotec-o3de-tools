@@ -51,7 +51,6 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::ROS2.Static
 )
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
@@ -69,7 +68,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::${gem_name}.API
-            Gem::ROS2.Static
         PRIVATE
             Gem::${gem_name}.Private.Object
 )
@@ -126,7 +124,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty
         BUILD_DEPENDENCIES
             PUBLIC
-                Gem::ROS2.Editor.Static
                 Gem::LevelGeoreferencing.API
                 AZ::AzToolsFramework
                 ${gem_name}.Private.Object
