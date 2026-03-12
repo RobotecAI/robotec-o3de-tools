@@ -162,7 +162,7 @@ namespace RobotecSpectatorCamera
             }
         }
 
-        if ((m_isRightMouseButtonPressed || m_configuration.m_cameraMode == CameraMode::FreeFlying) &&
+        if (m_configuration.m_cameraMode == CameraMode::ThirdPerson && m_isRightMouseButtonPressed &&
             (channelId == AzFramework::InputDeviceMouse::Movement::X || channelId == AzFramework::InputDeviceMouse::Movement::Y))
         {
             if (m_ignoreNextMovement)
@@ -177,7 +177,7 @@ namespace RobotecSpectatorCamera
 
             if (m_centerTheCursor)
             {
-                const auto center = AZ::Vector2(0.5f, 0.5f);
+                const AZ::Vector2 center(0.5f, 0.5f);
 
                 // Recenter the cursor to avoid edge constraints
                 AzFramework::InputSystemCursorRequestBus::Event(
@@ -189,6 +189,29 @@ namespace RobotecSpectatorCamera
             else
             {
                 m_lastMousePosition = currentMousePosition;
+            }
+
+            RotateCameraOnMouse(mouseDelta);
+        }
+
+        if (m_configuration.m_cameraMode == CameraMode::FreeFlying &&
+            (channelId == AzFramework::InputDeviceMouse::Movement::X || channelId == AzFramework::InputDeviceMouse::Movement::Y))
+        {
+            // Scale is needed because the mouseDelta for ThirdPerson mode uses a normalized cursor position, resulting in small differences
+            // between events. However, the FreeFlying mode uses the value directly from the input channel, which appears to be in pixels.
+            // Therefore, the calculated mouse delta is much bigger. Without this parameter, the camera rotation speed in FreeFlying mode is
+            // so high that the spectator camera becomes almost useless. The value of the scale was chosen arbitrarily.
+            constexpr float mouseDeltaScale = 0.002f;
+
+            AZ::Vector2 mouseDelta = AZ::Vector2::CreateZero();
+
+            if (channelId == AzFramework::InputDeviceMouse::Movement::X)
+            {
+                mouseDelta.SetX(inputChannel.GetValue() * mouseDeltaScale);
+            }
+            else
+            {
+                mouseDelta.SetY(inputChannel.GetValue() * mouseDeltaScale);
             }
 
             RotateCameraOnMouse(mouseDelta);
