@@ -10,7 +10,6 @@
 
 #include "RobotecGeoJSONSpawnerModuleInterface.h"
 
-#include "ROS2/ROS2Bus.h"
 #include "RobotecGeoJSONSpawner/RobotecGeoJSONSpawnerComponent.h"
 
 #include <AzCore/Memory/Memory.h>
