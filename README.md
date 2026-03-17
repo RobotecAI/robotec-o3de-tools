@@ -8,26 +8,25 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 
 | Gem name                                                    | Compatibility |
 | ----------------------------------------------------------- | ------------- |
-| [**CsvSpawner**](#csvspawner)                               | compatible    |
-| [**ExposeConsoleToRos**](#exposeconsoletoRos)               | compatible    |
-| [**RobotecGeoJSONSpawner**](#robotecgeojsonspawner)         | compatible    |
-| [**RobotecGeoJSONSpawnerROS2**](#robotecgeojsonspawnerros2) | compatible    |
-| [**ImGuiProvider**](#imguiprovider)                         | compatible    |
-| [**ImGuizmo**](#imguizmo)                                   | compatible    |
-| [**LevelModificationTools**](#levelmodificationtools)       | incompatible  |
-| [**Pointcloud**](#pointcloud)                               | compatible    |
-| [**RandomizeUtils**](#randomizeutils)                       | compatible    |
+| [**CsvSpawner**](#csvspawner)                               | not verified  |
+| [**ExposeConsoleToRos**](#exposeconsoletoRos)               | not verified  |
+| [**ImGuiProvider**](#imguiprovider)                         | not verified  |
+| [**ImGuizmo**](#imguizmo)                                   | not verified  |
+| [**LevelModificationTools**](#levelmodificationtools)       | not verified  |
+| [**Pointcloud**](#pointcloud)                               | not verified  |
+| [**RandomizeUtils**](#randomizeutils)                       | not verified  |
+| [**RobotecGeoJSONSpawner**](#groboteceojsonspawner)         | not verified  |
+| [**RobotecGeoJSONSpawnerROS2**](#robotecgeojsonspawnerros2) | not verified  |
 | [**RobotecRecordingTools**](#robotecrecordingtools)         | not verified  |
 | [**RobotecSpectatorCamera**](#robotecspectatorcamera)       | not verified  |
-| [**RobotecSplineTools**](#robotecsplinetools)               | compatible    |
-| [**RobotecWatchdogTools**](#robotecwatchdogtools)           | compatible    |
-| [**ROS2PoseControl**](#ros2posecontrol)                     | compatible    |
-| [**ROS2ScriptIntegration**](#ros2scriptintegration)         | compatible    |
-| [**SensorDebug**](#sensordebug)                             | compatible    |
-| [**Smoothing**](#smoothing)                                 | compatible    |
+| [**RobotecSplineTools**](#robotecsplinetools)               | not verified  |
+| [**RobotecWatchdogTools**](#robotecwatchdogtools)           | not verified  |
+| [**ROS2PoseControl**](#ros2posecontrol)                     | not verified  |
+| [**ROS2ScriptIntegration**](#ros2scriptintegration)         | not verified  |
+| [**SensorDebug**](#sensordebug)                             | not verified  |
+| [**Smoothing**](#smoothing)                                 | not verified  |
 | [**ViewportStreamer**](#viewportstreamer)                   | not verified  |
-| [**WheelAnimTool**](#wheelanimtool)                         | compatible    |
-| [**Billboards**](#billboards)                               | compatible    |
+| [**WheelAnimTool**](#wheelanimtool)                         | not verified  |
 
 # CsvSpawner
 
@@ -77,13 +76,106 @@ It has two std_msgs/msg/String topics:
 Currently `o3de_console_in` is usable only.
 The gem functionality is available only in Profile/Debug.
 
+# ImGuiProvider
+
+This gem adds support for displaying user defined ImGui GUI. Users can define their own gui using `ImGuiProvider::ImGuiProviderNotificationBus`. User's component should be handler of the `ImGuiProvider::ImGuiProviderNotificationBus::Handler` and define method `OnImGuiUpdate`. Mentioned method should contain all code related to displayed GUI. Acquiring ImGui context and its releasing is handled by the Gem and its system component. User's component should connect to `ImGuiProvider::ImGuiProviderNotificationBus` using `ImGuiProvider::ImGuiFeaturePath` aka `AZ::IO::Path`. Each segment of path represents one depth in the toolbar.
+
+Below example on how to register new feature during component activation:
+
+Visibility of the GUI menu bar can be overridden at the app start using `-cl_hide_menu_bar=1`.
+Setting the flag effectively disables the GUI.
+
+```cpp
+void ExampleComponent::Activate()
+{
+    /*
+    some implementation
+    */
+    auto pathToFeature = ImGuiProvider::ImGuiFeaturePath{ "Tools/ExampleFeature" };
+    ImGuiProvider::ImGuiProviderNotificationBus::Handler::BusConnect(pathToFeature);
+    /*
+    some implementation
+    */
+}
+```
+
+Gem monitors number of active handler, so ImGui features are available as long as the lifetime of component which registered it.
+
+Gem handles correct displaying of debug menu available using `home` button. If Gem detects debug menu, registered GUIs disappear. After disabling debug menu, previous state of registered features is restored.
+If Gem detects custom GUI feature registered in Editor, viewport icons are moved to prevent covering the registered features.
+
+## API
+
+Gem defines `ImGuiProvider::ImGuiProviderNotificationBus` and `ImGuiProvider::ImGuiProviderRequestBus`.
+
+**Notification bus methods**
+
+Besides `OnImGuiUpdate` used for updating displayed GUI, notification bus defines methods: `OnImGuiSelected` and `OnImGuiUnselected`. Methods are triggered during registered GUI state change, respectively hidden -> visible and visible -> hidden.
+
+**Request bus methods**
+
+`AZStd::optional<ImGuiFeaturePath> GetActiveGuiId()` - returns optional with ImGuiProvider::ImGuiFeaturePath. Optional is empty if there is no active GUI.
+
+`void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given id as active. Doesn't check if given guiId exists.
+
+# ImGuizmo
+
+This gem brings gizmo (with some simple API) to be used in game mode.
+It is gemification of existing ImGui extension called [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo).
+This gem comes with only one system component that is active only in game mode.
+To test this gizmo, activate gem and type in O3DE console (in gamelauncher):
+
+```
+imguizmo_acquire
+imguizmo_show 0
+```
+
+There is an API to work with multiple gizmos using handle.
+Refer to script canvas example below:
+![alt text](doc/imguizmo.png)
+
+_Note_ Only one gizmo can be rendered at the time!
+
+# LevelModificationTools
+
+The level modification tool contains a component called PrefabVariantEditorComponent.
+This component allows the change a variant of loaded prefab during game mode.
+It exposes PrefabVariantRequestsBus to Script Canvas or LUA.
+
+# Pointcloud
+
+A Gem that introduces point clouds to O3DE.
+It offers:
+
+- PointcloudFeatureProcessor with public API
+- Pointcloud product asset
+- A public API for configuration (`PointcloudConfigurationBus`)
+
+At this moment it accepts [PLY](<https://en.wikipedia.org/wiki/PLY_(file_format)>) as a source asset.
+
+![](doc/Pointcloud.png)\
+Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
+
+# RandomizeUtils
+
+This gem allows to randomize prefab on spawning.
+It has a component called `RandomizePoseComponent` that modifies an entity during activation.
+It allows:
+
+- change translation and rotation and uniform scale of the Transform component,
+- deactivate the entity with given probability
+
+![](doc/RandomizePoseComponent.png)
+
+**Note:** that only given entity is modified (not all descendants).
+
 
 # RobotecGeoJSONSpawner
 
 Component that spawns prefabs using coordinates stored in the GeoJSON format (either in a file or in a raw string). It supports WGS84 coordinate system.
 This component supports spawning prefabs using GeoJSON stored in the file or stored in the raw string and passed via the ROS2 interface.
 
-![](doc/RobotecGeoJSONSpawner.png)
+![](doc/GeoJSONSpawner.png)
 
 Configuration:
 
@@ -155,7 +247,7 @@ Available functions:
 
 Gem provides a component that connects RobotecGeoJSONSpawner with ROS 2. This component provides 4 topics and 1 service that allows to control RobotecGeoJSONSpawner with ROS 2 messages.
 
-![](doc/RobotecGeoJSONSpawnerROS2Interface.png)
+![](doc/GeoJSONSpawnerROS2Interface.png)
 
 Topics:
 
@@ -301,98 +393,6 @@ ros2 topic pub /geojson/delete_all std_msgs/msg/Empty "{}" --once
 ros2 service call /geojson/get_spawned_groups_ids std_srvs/srv/Trigger
 ```
 
-# ImGuiProvider
-
-This gem adds support for displaying user defined ImGui GUI. Users can define their own gui using `ImGuiProvider::ImGuiProviderNotificationBus`. User's component should be handler of the `ImGuiProvider::ImGuiProviderNotificationBus::Handler` and define method `OnImGuiUpdate`. Mentioned method should contain all code related to displayed GUI. Acquiring ImGui context and its releasing is handled by the Gem and its system component. User's component should connect to `ImGuiProvider::ImGuiProviderNotificationBus` using `ImGuiProvider::ImGuiFeaturePath` aka `AZ::IO::Path`. Each segment of path represents one depth in the toolbar.
-
-Below example on how to register new feature during component activation:
-
-Visibility of the GUI menu bar can be overridden at the app start using `-cl_hide_menu_bar=1`.
-Setting the flag effectively disables the GUI.
-
-```cpp
-void ExampleComponent::Activate()
-{
-    /*
-    some implementation
-    */
-    auto pathToFeature = ImGuiProvider::ImGuiFeaturePath{ "Tools/ExampleFeature" };
-    ImGuiProvider::ImGuiProviderNotificationBus::Handler::BusConnect(pathToFeature);
-    /*
-    some implementation
-    */
-}
-```
-
-Gem monitors number of active handler, so ImGui features are available as long as the lifetime of component which registered it.
-
-Gem handles correct displaying of debug menu available using `home` button. If Gem detects debug menu, registered GUIs disappear. After disabling debug menu, previous state of registered features is restored.
-If Gem detects custom GUI feature registered in Editor, viewport icons are moved to prevent covering the registered features.
-
-## API
-
-Gem defines `ImGuiProvider::ImGuiProviderNotificationBus` and `ImGuiProvider::ImGuiProviderRequestBus`.
-
-**Notification bus methods**
-
-Besides `OnImGuiUpdate` used for updating displayed GUI, notification bus defines methods: `OnImGuiSelected` and `OnImGuiUnselected`. Methods are triggered during registered GUI state change, respectively hidden -> visible and visible -> hidden.
-
-**Request bus methods**
-
-`AZStd::optional<ImGuiFeaturePath> GetActiveGuiId()` - returns optional with ImGuiProvider::ImGuiFeaturePath. Optional is empty if there is no active GUI.
-
-`void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given id as active. Doesn't check if given guiId exists.
-
-# ImGuizmo
-
-This gem brings gizmo (with some simple API) to be used in game mode.
-It is gemification of existing ImGui extension called [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo).
-This gem comes with only one system component that is active only in game mode.
-To test this gizmo, activate gem and type in O3DE console (in gamelauncher):
-
-```
-imguizmo_acquire
-imguizmo_show 0
-```
-
-There is an API to work with multiple gizmos using handle.
-Refer to script canvas example below:
-![alt text](doc/imguizmo.png)
-
-_Note_ Only one gizmo can be rendered at the time!
-
-# LevelModificationTools
-
-The level modification tool contains a component called PrefabVariantEditorComponent.
-This component allows the change a variant of loaded prefab during game mode.
-It exposes PrefabVariantRequestsBus to Script Canvas or LUA.
-
-# Pointcloud
-
-A Gem that introduces point clouds to O3DE.
-It offers:
-
-- PointcloudFeatureProcessor with public API
-- Pointcloud product asset
-- A public API for configuration (`PointcloudConfigurationBus`)
-
-At this moment it accepts [PLY](<https://en.wikipedia.org/wiki/PLY_(file_format)>) as a source asset.
-
-![](doc/Pointcloud.png)\
-Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
-
-# RandomizeUtils
-
-This gem allows to randomize prefab on spawning.
-It has a component called `RandomizePoseComponent` that modifies an entity during activation.
-It allows:
-
-- change translation and rotation and uniform scale of the Transform component,
-- deactivate the entity with given probability
-
-![](doc/RandomizePoseComponent.png)
-
-**Note:** that only given entity is modified (not all descendants).
 
 # RobotecRecordingTools
 
@@ -505,8 +505,3 @@ The component needs:
 It should be attached to Dynamic rigid body. The component will compute Jacobian matrix (w.r.t wheel locatio, radius and model) of the robot locomotion.
 Jacobian will be used to find wheels rotation speed.
 More in dedicated [readme.md](Gems/WheelAnimTool/readme.md)
-
-# Billboards
-
-Billboard material.
-More in dedicated [readme.md](Gems/Billboards/readme.md)
