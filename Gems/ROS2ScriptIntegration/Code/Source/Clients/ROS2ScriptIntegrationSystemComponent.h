@@ -5,10 +5,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/std/parallel/shared_mutex.h>
 #include <ROS2/ROS2Bus.h>
-
-#include <ROS2/Utilities/ROS2Conversions.h>
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationBus.h>
 #include <ROS2ScriptIntegration/ROS2ScriptPublisherBus.h>
 #include <ROS2ScriptIntegration/ROS2ScriptSubscriberBus.h>

@@ -7,6 +7,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <ROS2/Clock/ROS2ClockRequestBus.h>
 
 #include <ackermann_msgs/msg/ackermann_drive.hpp>
 #include <geometry_msgs/msg/point32.hpp>
