@@ -1,5 +1,4 @@
 
-#include "ROS2ScriptIntegrationSystemComponent.h"
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
 #include <ROS2ScriptIntegrationModuleInterface.h>
 

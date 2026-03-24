@@ -22,7 +22,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**RobotecSplineTools**](#robotecsplinetools)               | not verified  |
 | [**RobotecWatchdogTools**](#robotecwatchdogtools)           | not verified  |
 | [**ROS2PoseControl**](#ros2posecontrol)                     | not verified  |
-| [**ROS2ScriptIntegration**](#ros2scriptintegration)         | not verified  |
+| [**ROS2ScriptIntegration**](#ros2scriptintegration)         | compatible    |
 | [**SensorDebug**](#sensordebug)                             | not verified  |
 | [**Smoothing**](#smoothing)                                 | not verified  |
 | [**ViewportStreamer**](#viewportstreamer)                   | not verified  |

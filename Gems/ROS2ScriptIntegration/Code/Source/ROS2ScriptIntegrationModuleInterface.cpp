@@ -5,7 +5,6 @@
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
 
 #include <Clients/PublisherSystemComponent.h>
-#include <Clients/ROS2ScriptIntegrationSystemComponent.h>
 #include <Clients/SubscriberSystemComponent.h>
 
 namespace ROS2ScriptIntegration
@@ -26,7 +25,6 @@ namespace ROS2ScriptIntegration
         m_descriptors.insert(
             m_descriptors.end(),
             {
-                ROS2ScriptIntegrationSystemComponent::CreateDescriptor(),
                 PublisherSystemComponent::CreateDescriptor(),
                 SubscriberSystemComponent::CreateDescriptor(),
             });
@@ -35,7 +33,6 @@ namespace ROS2ScriptIntegration
     AZ::ComponentTypeList ROS2ScriptIntegrationModuleInterface::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
-            azrtti_typeid<ROS2ScriptIntegrationSystemComponent>(),
             azrtti_typeid<PublisherSystemComponent>(),
             azrtti_typeid<SubscriberSystemComponent>(),
         };

@@ -1,6 +1,5 @@
 
 #include "PublisherEditorSystemComponent.h"
-#include "ROS2ScriptIntegrationEditorSystemComponent.h"
 #include "SubscriberEditorSystemComponent.h"
 #include <ROS2ScriptIntegration/ROS2ScriptIntegrationTypeIds.h>
 #include <ROS2ScriptIntegrationModuleInterface.h>
@@ -23,7 +22,6 @@ namespace ROS2ScriptIntegration
             m_descriptors.insert(
                 m_descriptors.end(),
                 {
-                    ROS2ScriptIntegrationEditorSystemComponent::CreateDescriptor(),
                     PublisherEditorSystemComponent::CreateDescriptor(),
                     SubscriberEditorSystemComponent::CreateDescriptor(),
                 });
@@ -36,7 +34,6 @@ namespace ROS2ScriptIntegration
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<ROS2ScriptIntegrationEditorSystemComponent>(),
                 azrtti_typeid<PublisherEditorSystemComponent>(),
                 azrtti_typeid<SubscriberEditorSystemComponent>(),
             };
