@@ -19,49 +19,47 @@ endif ()
 
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
-        NAME ${gem_name}.API INTERFACE
-        NAMESPACE Gem
-        FILES_CMAKE
+    NAME ${gem_name}.API INTERFACE
+    NAMESPACE Gem
+    FILES_CMAKE
         ros2posecontrol_api_files.cmake
         ${pal_dir}/ros2posecontrol_api_files.cmake
-        INCLUDE_DIRECTORIES
+    INCLUDE_DIRECTORIES
         INTERFACE
-        3rdParty
-        Include
-        BUILD_DEPENDENCIES
+            3rdParty
+            Include
+    BUILD_DEPENDENCIES
         INTERFACE
-        AZ::AzCore
+            AZ::AzCore
 )
 
 
 # The ${gem_name}.Private.Object target is an internal target
 # It should not be used outside of this Gems CMakeLists.txt
 ly_add_target(
-        NAME ${gem_name}.Private.Object STATIC
-        NAMESPACE Gem
-        FILES_CMAKE
+    NAME ${gem_name}.Private.Object STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
         ros2posecontrol_private_files.cmake
         ${pal_dir}/ros2posecontrol_private_files.cmake
-        TARGET_PROPERTIES
+    TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
-        INCLUDE_DIRECTORIES
+    INCLUDE_DIRECTORIES
         PUBLIC
-        Include
+            Include
         PRIVATE
-        Include
-        Source
+            Source
         BUILD_DEPENDENCIES
-        PUBLIC
-        AZ::AzCore
-        AZ::AzFramework
-        Gem::ImGui.Static
-        Gem::ROS2.Static
-        Gem::ROS2.API
-        Gem::LevelGeoreferencing.API
+            PUBLIC
+                AZ::AzCore
+                AZ::AzFramework
+                Gem::ImGui.Static
+                Gem::PhysX5.Static
+                Gem::ROS2.API
+                Gem::LevelGeoreferencing.API
 )
 
-target_depends_on_ros2_packages(${gem_name}.Private.Object geometry_msgs)
-target_depends_on_ros2_packages(${gem_name}.Private.Object tf2)
+target_depends_on_ros2_packages(${gem_name}.Private.Object geometry_msgs tf2_ros)
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
 ly_add_target(
@@ -78,7 +76,7 @@ ly_add_target(
         BUILD_DEPENDENCIES
         PUBLIC
         Gem::${gem_name}.API
-        Gem::ROS2.Static
+        Gem::ROS2.API
         Gem::AtomLyIntegration_CommonFeatures.Static
         PRIVATE
         Gem::${gem_name}.Private.Object
@@ -104,57 +102,57 @@ o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     # The ${gem_name}.Editor.API target can be used by other gems that want to interact with the ${gem_name}.Editor module
     ly_add_target(
-            NAME ${gem_name}.Editor.API INTERFACE
-            NAMESPACE Gem
-            FILES_CMAKE
+        NAME ${gem_name}.Editor.API INTERFACE
+        NAMESPACE Gem
+        FILES_CMAKE
             ros2posecontrol_editor_api_files.cmake
             ${pal_dir}/ros2posecontrol_editor_api_files.cmake
-            INCLUDE_DIRECTORIES
+        INCLUDE_DIRECTORIES
             INTERFACE
-            Include
+                Include
             BUILD_DEPENDENCIES
-            INTERFACE
-            AZ::AzToolsFramework
+                INTERFACE
+                    AZ::AzToolsFramework
     )
 
     # The ${gem_name}.Editor.Private.Object target is an internal target
     # which is only to be used by this gems CMakeLists.txt and any subdirectories
     # Other gems should not use this target
     ly_add_target(
-            NAME ${gem_name}.Editor.Private.Object STATIC
-            NAMESPACE Gem
-            FILES_CMAKE
+        NAME ${gem_name}.Editor.Private.Object STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
             ros2posecontrol_editor_private_files.cmake
             TARGET_PROPERTIES
-            O3DE_PRIVATE_TARGET TRUE
-            INCLUDE_DIRECTORIES
+        O3DE_PRIVATE_TARGET TRUE
+        INCLUDE_DIRECTORIES
             PRIVATE
-            Include
+                Include
             Source
-            3rdParty
-            BUILD_DEPENDENCIES
+                3rdParty
+        BUILD_DEPENDENCIES
             PUBLIC
-            Gem::ROS2.Editor.Static
-            AZ::AzToolsFramework
-            ${gem_name}.Private.Object
+                Gem::ROS2.Editor.API
+                AZ::AzToolsFramework
+                ${gem_name}.Private.Object
     )
 
     ly_add_target(
-            NAME ${gem_name}.Editor GEM_MODULE
-            NAMESPACE Gem
-            AUTOMOC
-            FILES_CMAKE
+        NAME ${gem_name}.Editor GEM_MODULE
+        NAMESPACE Gem
+        AUTOMOC
+        FILES_CMAKE
             ros2posecontrol_editor_shared_files.cmake
-            INCLUDE_DIRECTORIES
+        INCLUDE_DIRECTORIES
             PRIVATE
-            Source
+                Source
             PUBLIC
-            Include
-            BUILD_DEPENDENCIES
+                Include
+        BUILD_DEPENDENCIES
             PUBLIC
-            Gem::${gem_name}.Editor.API
+                Gem::${gem_name}.Editor.API
             PRIVATE
-            Gem::${gem_name}.Editor.Private.Object
+                Gem::${gem_name}.Editor.Private.Object
     )
 
     # By default, we will specify that the above target ${gem_name} would be used by
@@ -181,20 +179,20 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if (PAL_TRAIT_ROS2POSECONTROL_TEST_SUPPORTED)
         # We support ${gem_name}.Tests on this platform, add dependency on the Private Object target
         ly_add_target(
-                NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-                NAMESPACE Gem
-                FILES_CMAKE
+            NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
                 ros2posecontrol_tests_files.cmake
-                INCLUDE_DIRECTORIES
+            INCLUDE_DIRECTORIES
                 PRIVATE
-                Tests
-                Source
-                Include
-                BUILD_DEPENDENCIES
+                    Tests
+                    Source
+                    Include
+            BUILD_DEPENDENCIES
                 PRIVATE
-                AZ::AzTest
-                AZ::AzFramework
-                Gem::${gem_name}.Private.Object
+                    AZ::AzTest
+                    AZ::AzFramework
+                    Gem::${gem_name}.Private.Object
         )
 
         # Add ${gem_name}.Tests to googletest
@@ -210,19 +208,19 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             # We support ${gem_name}.Editor.Tests on this platform, add ${gem_name}.Editor.Tests target which depends on
             # private ${gem_name}.Editor.Private.Object target
             ly_add_target(
-                    NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-                    NAMESPACE Gem
-                    FILES_CMAKE
+                NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+                NAMESPACE Gem
+                FILES_CMAKE
                     ros2posecontrol_editor_tests_files.cmake
-                    INCLUDE_DIRECTORIES
+                INCLUDE_DIRECTORIES
                     PRIVATE
-                    Tests
-                    Source
-                    Include
-                    BUILD_DEPENDENCIES
+                        Tests
+                        Source
+                        Include
+                BUILD_DEPENDENCIES
                     PRIVATE
-                    AZ::AzTest
-                    Gem::${gem_name}.Editor.Private.Object
+                        AZ::AzTest
+                        Gem::${gem_name}.Editor.Private.Object
             )
 
             # Add ${gem_name}.Editor.Tests to googletest
