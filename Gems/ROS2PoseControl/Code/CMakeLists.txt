@@ -53,6 +53,7 @@ ly_add_target(
             PUBLIC
                 AZ::AzCore
                 AZ::AzFramework
+                Gem::LmbrCentral.API
                 Gem::ImGui.Static
                 Gem::PhysX5.Static
                 Gem::ROS2.API

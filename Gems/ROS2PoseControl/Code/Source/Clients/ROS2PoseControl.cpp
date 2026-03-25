@@ -116,24 +116,24 @@ namespace ROS2PoseControl
         else if (m_configuration.m_tracking_mode == TrackingMode::PoseMessages)
         {
             // Get odom frame Id
-            const auto* ros2_frame_component = m_entity->FindComponent<ROS2::ROS2FrameComponent>();
-            if (!ros2_frame_component)
+            const auto* ros2FrameComponent = m_entity->FindComponent<ROS2::ROS2FrameComponent>();
+            if (!ros2FrameComponent)
             {
                 AZ_Error("ROS2PoseControl", false, "ROS2PoseControl requires a ROS2FrameComponent to be present on the entity.");
                 return;
             }
-            m_odomFrameId = ros2_frame_component->GetGlobalFrameID();
+            m_odomFrameId = ros2FrameComponent->GetGlobalFrameID();
 
             // Initialize the pose subscription
-            AZStd::string namespaced_topic_name;
+            AZStd::string namespacedTopicName;
             ROS2::ROS2NamesRequestBus::BroadcastResult(
-                namespaced_topic_name,
+                namespacedTopicName,
                 &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName,
-                ros2_frame_component->GetNamespace(),
+                ros2FrameComponent->GetNamespace(),
                 m_configuration.m_poseTopicConfiguration.m_topic);
 
             m_poseSubscription = ros2Node->create_subscription<geometry_msgs::msg::PoseStamped>(
-                namespaced_topic_name.data(),
+                namespacedTopicName.data(),
                 m_configuration.m_poseTopicConfiguration.GetQoS(),
                 [this](geometry_msgs::msg::PoseStamped::SharedPtr msg)
                 {
