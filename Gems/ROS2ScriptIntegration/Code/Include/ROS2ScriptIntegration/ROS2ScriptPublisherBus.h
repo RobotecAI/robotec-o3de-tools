@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ROS2ScriptIntegrationTypeIds.h"
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -22,7 +24,7 @@ namespace ROS2ScriptIntegration
     class PublisherRequests : public AZ::EBusTraits
     {
     public:
-        AZ_RTTI(PublisherRequests, "{b8356874-f7ba-4436-8d98-a342d7c720d9}");
+        AZ_RTTI(PublisherRequests, ROS2ScriptPublisherRequestsTypeId);
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         virtual void PublishStdMsgString(const AZStd::string& topicName, const AZStd::string& value) = 0;

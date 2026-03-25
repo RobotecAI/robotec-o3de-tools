@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ROS2ScriptIntegrationTypeIds.h"
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -27,7 +29,7 @@ namespace ROS2ScriptIntegration
     class SubscriberRequests : public AZ::EBusTraits
     {
     public:
-        AZ_RTTI(SubscriberRequests, "{71935101-17de-4636-97f8-dea68938706d}");
+        AZ_RTTI(SubscriberRequests, ROS2ScriptSubscriberRequestsTypeId);
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
@@ -51,7 +53,7 @@ namespace ROS2ScriptIntegration
     class SubscriberNotifications : public AZ::EBusTraits
     {
     public:
-        AZ_RTTI(SubscriberNotifications, "{a64ebbc0-3c6e-44f5-8a58-ea921afa1c15}");
+        AZ_RTTI(SubscriberNotifications, ROS2ScriptSubscriberNotificationsTypeId);
         using BusIdType = AZStd::string;
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
