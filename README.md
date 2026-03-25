@@ -22,7 +22,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**RobotecSplineTools**](#robotecsplinetools)               | not verified  |
 | [**RobotecWatchdogTools**](#robotecwatchdogtools)           | not verified  |
 | [**ROS2PoseControl**](#ros2posecontrol)                     | not verified  |
-| [**ROS2ScriptIntegration**](#ros2scriptintegration)         | not verified  |
+| [**ROS2ScriptIntegration**](#ros2scriptintegration)         | compatible    |
 | [**SensorDebug**](#sensordebug)                             | not verified  |
 | [**Smoothing**](#smoothing)                                 | not verified  |
 | [**ViewportStreamer**](#viewportstreamer)                   | not verified  |
@@ -53,13 +53,13 @@ CSV file format for coordinates in WGS84 system:
 
 ```csv
 alt	lat	lon	name
-0	12.5896238486642	30.1930592634115	ball
-0	12.5896467730289	30.1931152819367	ball
-0	12.5896704915715	30.193170552104	    ball
-0	12.5896945425591	30.1932257788658	ball
-0	12.5897180240288	30.1932813604207	ball
-0	12.5897414039641	30.1933370085065	ball
-0	12.5897646831551	30.1933927129084	ball
+0	12.5896238486642  30.1930592634115  ball
+0	12.5896467730289  30.1931152819367  ball
+0	12.5896704915715  30.193170552104	  ball
+0	12.5896945425591  30.1932257788658  ball
+0	12.5897180240288  30.1932813604207  ball
+0	12.5897414039641  30.1933370085065  ball
+0	12.5897646831551  30.1933927129084  ball
 
 ```
 
@@ -73,12 +73,12 @@ It has two std_msgs/msg/String topics:
 \o3de_console_in
 ```
 
-Currently `o3de_console_in` is usable only.
+Currently, `o3de_console_in` is usable only.
 The gem functionality is available only in Profile/Debug.
 
 # ImGuiProvider
 
-This gem adds support for displaying user defined ImGui GUI. Users can define their own gui using `ImGuiProvider::ImGuiProviderNotificationBus`. User's component should be handler of the `ImGuiProvider::ImGuiProviderNotificationBus::Handler` and define method `OnImGuiUpdate`. Mentioned method should contain all code related to displayed GUI. Acquiring ImGui context and its releasing is handled by the Gem and its system component. User's component should connect to `ImGuiProvider::ImGuiProviderNotificationBus` using `ImGuiProvider::ImGuiFeaturePath` aka `AZ::IO::Path`. Each segment of path represents one depth in the toolbar.
+This gem adds support for displaying user defined ImGui GUI. Users can define their own GUI using `ImGuiProvider::ImGuiProviderNotificationBus`. User's component should be handler of the `ImGuiProvider::ImGuiProviderNotificationBus::Handler` and define method `OnImGuiUpdate`. Mentioned method should contain all code related to displayed GUI. Acquiring ImGui context, and it's releasing is handled by the Gem and its system component. User's component should connect to `ImGuiProvider::ImGuiProviderNotificationBus` using `ImGuiProvider::ImGuiFeaturePath` aka `AZ::IO::Path`. Each segment of path represents one depth in the toolbar.
 
 Below example on how to register new feature during component activation:
 
@@ -116,7 +116,7 @@ Besides `OnImGuiUpdate` used for updating displayed GUI, notification bus define
 
 `AZStd::optional<ImGuiFeaturePath> GetActiveGuiId()` - returns optional with ImGuiProvider::ImGuiFeaturePath. Optional is empty if there is no active GUI.
 
-`void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given id as active. Doesn't check if given guiId exists.
+`void SetActiveGUI(ImGuiFeaturePath guiId)` - sets GUI with given ID as active. Doesn't check if given guiId exists.
 
 # ImGuizmo
 
@@ -138,17 +138,17 @@ _Note_ Only one gizmo can be rendered at the time!
 
 # LevelModificationTools
 
-The level modification tool contains a component called PrefabVariantEditorComponent.
+The level modification tool contains a component called `PrefabVariantEditorComponent`.
 This component allows the change a variant of loaded prefab during game mode.
-It exposes PrefabVariantRequestsBus to Script Canvas or LUA.
+It exposes `PrefabVariantRequestsBus` to Script Canvas or LUA.
 
 # Pointcloud
 
 A Gem that introduces point clouds to O3DE.
 It offers:
 
-- PointcloudFeatureProcessor with public API
-- Pointcloud product asset
+- `PointcloudFeatureProcessor` with public API
+- `Pointcloud` product asset
 - A public API for configuration (`PointcloudConfigurationBus`)
 
 At this moment it accepts [PLY](<https://en.wikipedia.org/wiki/PLY_(file_format)>) as a source asset.
@@ -158,7 +158,7 @@ Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
 
 # RandomizeUtils
 
-This gem allows to randomize prefab on spawning.
+This gem allows randomizing prefab on spawning.
 It has a component called `RandomizePoseComponent` that modifies an entity during activation.
 It allows:
 
@@ -181,15 +181,15 @@ Configuration:
 
 - Name - the name that is associated with the spawnable. This parameter is passed as `spawnable_name` in the GeoJSON message.
 - Spawnable - prefab (spawnable) associated with the `Name`.
-- Position std. dev - maximum value of the position standard deviation [metres].
+- Position std. dev - maximum value of the position standard deviation [meters].
 - Rotation std. dev - maximum value of the rotation standard deviation [degrees].
 - Scale std. dev - maximum value of the scale standard deviation.
 - Place on terrain - switch indicating whether the spawner should perform scene query raytrace to place the spawnable on the terrain (or any other collider).
-- Raytrace starting height - WGS84 altitude. If `Place on terrain` is set to false, this value will be used as a fixed Z-axis value for the spawn. Otherwise the raytrace will start at this height (converted from WGS84 altitude to Z-axis value using the `GeoReference Level Editor Component`).
+- Raytrace starting height - WGS84 altitude. If `Place on terrain` is set to false, this value will be used as a fixed Z-axis value for the spawn. Otherwise, the raytrace will start at this height (converted from WGS84 altitude to Z-axis value using the `GeoReference Level Editor Component`).
 - Default seed - seed for randomization.
 - Show labels in Editor - switch to enable/disable labels in the Editor for spawned prefabs.
 
-To get all the necessary information, the supported GeoJSON format is extended by a two additional fields (although this format is still correct with a GeoJSON standard) - `spawnable_name` and `id`. The `spawnable_name` is used to match spawn coordinates to a prefab name in a `Spawnable Asset Configuration`. The `id` is used to delete/modify the spawned object.
+To get all the necessary information, the supported GeoJSON format is extended by two additional fields (although this format is still correct with a GeoJSON standard) - `spawnable_name` and `id`. The `spawnable_name` is used to match spawn coordinates to a prefab name in a `Spawnable Asset Configuration`. The `id` is used to delete/modify the spawned object.
 Example of supported GeoJSON:
 
 ```
@@ -245,7 +245,7 @@ Available functions:
 
 # RobotecGeoJSONSpawnerROS2
 
-Gem provides a component that connects RobotecGeoJSONSpawner with ROS 2. This component provides 4 topics and 1 service that allows to control RobotecGeoJSONSpawner with ROS 2 messages.
+Gem provides a component that connects `RobotecGeoJSONSpawner` with ROS 2. This component provides 4 topics and 1 service that allows to control `RobotecGeoJSONSpawner` with ROS 2 messages.
 
 ![](doc/GeoJSONSpawnerROS2Interface.png)
 
@@ -254,7 +254,7 @@ Topics:
 - `geojson/spawn_with_asset_path [std_msgs::msg:String]` - topic that allows to spawn entities using a passed path to asset with GeoJSON.
 - `geojson/spawn_with_raw_string [std_msgs::msg:String]` - topic that allows to spawn entities using a passed raw string with a GeoJSON.
 - `geojson/modify [std_msgs::msg::String]` - topic that allows to modify spawned entities using the id passed with a spawn request. Usage example:
-  Lets suppose that user spawned prefabs using such GeoJSON:
+  Let's suppose that user spawned prefabs using such GeoJSON:
 
 ```
 {
@@ -289,7 +289,7 @@ Topics:
 }
 ```
 
-Suppose the user wants to move the Feature Object assigned to ID 0. To do this, remove the Feature Object with ID 1 from the original json, then apply the necessary corrections to the coordinates of the Feature Object with ID 0 and send the GeoJSON thus prepared to the topic `geojson/modify`.
+Suppose the user wants to move the Feature Object assigned to ID 0. To do this, remove the Feature Object with ID 1 from the original JSON, then apply the necessary corrections to the coordinates of the Feature Object with ID 0 and send the GeoJSON thus prepared to the topic `geojson/modify`.
 
 ```
 {
@@ -311,11 +311,11 @@ Suppose the user wants to move the Feature Object assigned to ID 0. To do this, 
 
 ```
 
-- `geojson/delete_all [std_msgs::msg::Empty]` - topic that despawns all entities spawned with RobotecGeoJSONSpawner.
-- `geojson/delete_by_id [std_msgs/msg/Int32MultiArray]` - topic that despawns all entities associated with a given ids.
+- `geojson/delete_all [std_msgs::msg::Empty]` - topic that despawns all entities spawned with `RobotecGeoJSONSpawner`.
+- `geojson/delete_by_id [std_msgs/msg/Int32MultiArray]` - topic that despawns all entities associated with a given ID.
 
 Service:
-`geojson/get_spawned_groups_ids [std_srvs/srv/Trigger]` - service that returns all spawned ids together with the number of prefabs associated with each id.
+`geojson/get_spawned_groups_ids [std_srvs/srv/Trigger]` - service that returns all spawned IDs together with the number of prefabs associated with each ID.
 
 ## Usage examples:
 
@@ -375,7 +375,7 @@ ros2 topic pub /geojson/modify std_msgs/msg/String "data: '{
 }'" --once
 ```
 
-### Delete by id
+### Delete by ID
 
 ```
 ros2 topic pub /geojson/delete_by_id std_msgs/msg/Int32MultiArray "{data: [0]}" --once
@@ -387,7 +387,7 @@ ros2 topic pub /geojson/delete_by_id std_msgs/msg/Int32MultiArray "{data: [0]}" 
 ros2 topic pub /geojson/delete_all std_msgs/msg/Empty "{}" --once
 ```
 
-### Get spawned groups ids
+### Get spawned groups IDs
 
 ```
 ros2 service call /geojson/get_spawned_groups_ids std_srvs/srv/Trigger
@@ -400,8 +400,8 @@ A toolset for joystick-controlled cameras and spline animation tools.
 
 # RobotecSpectatorCamera
 
-A component that allows to look at an entity from 3rd person perspective and to switch camera mode to the free flying mode (to switch mode press the `C` key). It also allows to enable/disable following the target's rotation and to add a vertical offset to change the `look at` point of the target entity.  
-The Spectator camera component can be configured to centre the cursor when moving the camera (this gives the full range of rotation regardless of the available screen space) or to let the cursor move freely on the screen when moving the camera (this reduces the range of rotation, e.g. in third person mode a full rotation may require a few repeats of the (RMB press ->Rotate camera ->RMB release ->Move cursor to previous start position ->Repeat) cycle). By default this option is set to false (cursor is not centered). This option can be configured via the `setreg` file or by passing `--regset` flag in the command line. Example:
+A component that allows to look at an entity from 3rd person perspective and to switch camera mode to the free flying mode (to switch mode press the `C` key). It also allows enabling/disabling following the target's rotation and to add a vertical offset to change the `look at` point of the target entity.  
+The Spectator camera component can be configured to center the cursor when moving the camera (this gives the full range of rotation regardless of the available screen space) or to let the cursor move freely on the screen when moving the camera (this reduces the range of rotation, e.g. in third person mode a full rotation may require a few repeats of the (RMB press ->Rotate camera ->RMB release ->Move cursor to previous start position ->Repeat) cycle). By default, this option is set to false (cursor is not centered). This option can be configured via the `setreg` file or by passing `--regset` flag in the command line. Example:
 
 - `.setreg`:
 
@@ -475,7 +475,7 @@ The utility gem enabling controlling robots in simulation as puppets with Pose m
 # ROS2ScriptIntegration
 
 Simple, but extremely useful tool that exposes ROS 2 subscription/publication to Script Canvas and LUA.
-Refer to [readme](https://github.com/RobotecAI/robotec-o3de-tools/tree/main/Gems/ROS2ScriptIntegration#readme).
+Refer to [readme](Gems/ROS2ScriptIntegration/README.md).
 
 # SensorDebug
 
@@ -502,6 +502,6 @@ The component needs:
 - wheel radius in meters
 - wheel axis to animate.
 
-It should be attached to Dynamic rigid body. The component will compute Jacobian matrix (w.r.t wheel locatio, radius and model) of the robot locomotion.
+It should be attached to Dynamic rigid body. The component will compute Jacobian matrix (w.r.t wheel location, radius and model) of the robot locomotion.
 Jacobian will be used to find wheels rotation speed.
 More in dedicated [readme.md](Gems/WheelAnimTool/readme.md)
