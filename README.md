@@ -21,7 +21,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**RobotecSpectatorCamera**](#robotecspectatorcamera)       | not verified  |
 | [**RobotecSplineTools**](#robotecsplinetools)               | not verified  |
 | [**RobotecWatchdogTools**](#robotecwatchdogtools)           | not verified  |
-| [**ROS2PoseControl**](#ros2posecontrol)                     | not verified  |
+| [**ROS2PoseControl**](#ros2posecontrol)                     | compatible    |
 | [**ROS2ScriptIntegration**](#ros2scriptintegration)         | compatible    |
 | [**SensorDebug**](#sensordebug)                             | not verified  |
 | [**Smoothing**](#smoothing)                                 | not verified  |

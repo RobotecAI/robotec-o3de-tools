@@ -20,13 +20,11 @@
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
-#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <Georeferencing/GeoreferenceBus.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <ROS2/Frame/ROS2FrameComponent.h>
 #include <ROS2/Utilities/ROS2Conversions.h>
-#include <ROS2/Utilities/ROS2Names.h>
-#include <RigidBodyComponent.h>
+#include <Source/RigidBodyComponent.h>
 #include <imgui/imgui.h>
 #include <tf2_ros/transform_listener.h>
 
@@ -118,20 +116,24 @@ namespace ROS2PoseControl
         else if (m_configuration.m_tracking_mode == TrackingMode::PoseMessages)
         {
             // Get odom frame Id
-            const auto* ros2_frame_component = m_entity->FindComponent<ROS2::ROS2FrameComponent>();
-            if (!ros2_frame_component)
+            const auto* ros2FrameComponent = m_entity->FindComponent<ROS2::ROS2FrameComponent>();
+            if (!ros2FrameComponent)
             {
                 AZ_Error("ROS2PoseControl", false, "ROS2PoseControl requires a ROS2FrameComponent to be present on the entity.");
                 return;
             }
-            m_odomFrameId = ros2_frame_component->GetGlobalFrameName();
+            m_odomFrameId = ros2FrameComponent->GetGlobalFrameID();
 
             // Initialize the pose subscription
-            auto namespaced_topic_name =
-                ROS2::ROS2Names::GetNamespacedName(ros2_frame_component->GetNamespace(), m_configuration.m_poseTopicConfiguration.m_topic);
+            AZStd::string namespacedTopicName;
+            ROS2::ROS2NamesRequestBus::BroadcastResult(
+                namespacedTopicName,
+                &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName,
+                ros2FrameComponent->GetNamespace(),
+                m_configuration.m_poseTopicConfiguration.m_topic);
 
             m_poseSubscription = ros2Node->create_subscription<geometry_msgs::msg::PoseStamped>(
-                namespaced_topic_name.data(),
+                namespacedTopicName.data(),
                 m_configuration.m_poseTopicConfiguration.GetQoS(),
                 [this](geometry_msgs::msg::PoseStamped::SharedPtr msg)
                 {
