@@ -47,6 +47,8 @@ ly_add_target(
             Include
             Source
     BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::Atom_Feature_Common.Public
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
