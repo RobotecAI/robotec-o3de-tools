@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <ROS2/Clock/ROS2ClockRequestBus.h>
 #include <ROS2/Communication/QoS.h>
 #include <ROS2/ROS2Bus.h>
 #include <ViewportStreamer/ViewportStreamerTypeIds.h>
@@ -171,7 +172,7 @@ namespace ViewportStreamer
                 auto passHierarchy = GetPassHierarchyFromRenderPipeline(pipeline);
 
                 std_msgs::msg::Header messageHeader;
-                messageHeader.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
+                messageHeader.stamp = ROS2::ROS2ClockInterface::Get()->GetROSTimestamp();
                 messageHeader.frame_id = m_frameName.c_str();
 
                 RequestMessagePublication(passHierarchy, messageHeader);
