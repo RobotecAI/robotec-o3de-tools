@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Math/Transform.h>
@@ -62,7 +63,7 @@ namespace Pointcloud
             PointcloudHandle m_index = 0;
             AZ::Data::Asset<AZ::RPI::BufferAsset> m_cloudVertexBufferAsset;
             AZ::Data::Instance<AZ::RPI::Buffer> m_cloudVertexBuffer = nullptr;
-            AZ::RHI::GeometryView m_geometryView;
+            AZ::RHI::GeometryView m_geometryView{ AZ::RHI::MultiDevice::DeviceMask{ AZ::RHI::MultiDevice::DefaultDevice } };
             AZStd::array<AZ::RHI::StreamBufferView, 1> m_meshStreamBufferViews;
             AZStd::vector<PointcloudAsset::CloudVertex> m_pointData;
             uint32_t m_vertices = 0;

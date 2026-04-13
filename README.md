@@ -13,7 +13,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**ImGuiProvider**](#imguiprovider)                         | not verified  |
 | [**ImGuizmo**](#imguizmo)                                   | not verified  |
 | [**LevelModificationTools**](#levelmodificationtools)       | not verified  |
-| [**Pointcloud**](#pointcloud)                               | not verified  |
+| [**Pointcloud**](#pointcloud)                               | compatible    |
 | [**RandomizeUtils**](#randomizeutils)                       | not verified  |
 | [**RobotecGeoJSONSpawner**](#groboteceojsonspawner)         | not verified  |
 | [**RobotecGeoJSONSpawnerROS2**](#robotecgeojsonspawnerros2) | not verified  |

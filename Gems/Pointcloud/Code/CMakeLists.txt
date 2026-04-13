@@ -61,6 +61,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RPI.Public
+            Gem::Atom_RHI.Public
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common
 )
