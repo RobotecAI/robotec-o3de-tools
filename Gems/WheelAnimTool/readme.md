@@ -8,6 +8,7 @@ The WheelAnimTool is an O3DE gem that provides realistic wheel animation for rob
 
 - **Multiple Drive Types**: Supports mecanum and differential drive systems
 - **Physics Integration**: Automatically calculates wheel speeds based on rigid body velocity
+- **Mirrored Mesh Support**: Automatically compensates for wheel meshes that reuse the same asset on both sides via a transform flip
 - **Visual Debugging**: Real-time visualization of wheel speeds and robot motion
 - **Configurable Parameters**: Adjustable wheel radius, roller directions, and animation types
 - **Jacobian-based Kinematics**: Uses mathematical models for accurate wheel speed calculations

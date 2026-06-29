@@ -177,6 +177,7 @@ namespace WheelAnimTool
     {
         AZ::TickBus::Handler::BusDisconnect();
         m_jacobian = Eigen::MatrixXd();
+        m_wheelAxisSign.clear();
     }
 
     //! \brief Create a row of the Jacobian matrix for a mecanum wheel.
@@ -258,17 +259,6 @@ namespace WheelAnimTool
             meanWheelPosition += EigenO3DE::ToEigen(wheelPosLoc);
             wheelPositions.row(i) = EigenO3DE::ToEigen(wheelPosLoc);
         }
-
-        for (int i = 0; i < numWheels; ++i)
-        {
-            const AZ::EntityId wheelEntity = m_wheelEntities[i];
-            AZ::Vector3 wheelPos = AZ::Vector3::CreateZero();
-            AZ::TransformBus::EventResult(wheelPos, wheelEntity, &AZ::TransformInterface::GetWorldTranslation);
-            // transform wheel position to local space
-            const AZ::Vector3 wheelPosLoc = worldTransformInv.TransformPoint(wheelPos);
-            meanWheelPosition += EigenO3DE::ToEigen(wheelPosLoc);
-            wheelPositions.row(i) = EigenO3DE::ToEigen(wheelPosLoc);
-        }
         meanWheelPosition /= numWheels;
 
         // calculate location w.r.t the mean wheel position
@@ -281,9 +271,20 @@ namespace WheelAnimTool
         {
             // update jacobian matrix size
             m_jacobian = Eigen::MatrixXd(numWheels, 3); // we transform 3D speed to 1D speed of wheel
+            m_wheelAxisSign.resize(numWheels);
+            const AZ::Vector3 robotAxisInWorld = worldTransform.TransformVector(m_wheelAxis);
             for (int i = 0; i < numWheels; ++i)
             {
                 const Eigen::Vector3d wheelPosition = wheelPositions.row(i);
+
+                // Detect mirrored wheel meshes (e.g. 180 deg X flip reusing the same mesh for both sides).
+                // If the wheel's spin axis opposes the robot body's spin axis, the rotation angle must be
+                // negated so that a positive wheel speed always produces a visually forward roll.
+                AZ::Transform wheelTM = AZ::Transform::CreateIdentity();
+                AZ::TransformBus::EventResult(wheelTM, m_wheelEntities[i], &AZ::TransformInterface::GetWorldTM);
+                const AZ::Vector3 wheelAxisInWorld = wheelTM.TransformVector(m_wheelAxis);
+                m_wheelAxisSign[i] = (robotAxisInWorld.Dot(wheelAxisInWorld) >= 0.f) ? 1.f : -1.f;
+
                 if (m_animationType == AnimationType::Mecanum)
                 {
                     const Eigen::Vector2d rollerDirection = EigenO3DE::ToEigen(m_rollerDirections[i]);
@@ -342,7 +343,7 @@ namespace WheelAnimTool
             AZ::Transform wheelTransform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(wheelTransform, m_wheelEntities[i], &AZ::TransformInterface::GetWorldTM);
 
-            const float wheelAngle = (wheelSpeed / m_wheelRadius) * deltaTime; // angle in radians
+            const float wheelAngle = m_wheelAxisSign[i] * (wheelSpeed / m_wheelRadius) * deltaTime; // angle in radians
             const AZ::Quaternion wheelRotationIncrement = AZ::Quaternion::CreateFromAxisAngle(m_wheelAxis, wheelAngle);
             const AZ::Quaternion newWheelRotation = wheelTransform.GetRotation() * wheelRotationIncrement;
             const AZ::Quaternion newWheelRotationNormalized = newWheelRotation.GetNormalized();

@@ -56,6 +56,7 @@ namespace WheelAnimTool
 
         bool InitJacobian(); //< Initialize the Jacobian matrix based on wheel directions and animation type
         Eigen::MatrixXd m_jacobian; // Jacobian matrix of size (numWheels, 3) for 3D to 1D speed transform
+        AZStd::vector<float> m_wheelAxisSign; // +1 or -1 per wheel: compensates for mirrored mesh transforms
         AZ::RPI::AuxGeomDrawPtr m_drawQueue;
     };
 } // namespace WheelAnimTool
