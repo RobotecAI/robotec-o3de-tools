@@ -15,10 +15,7 @@ The WheelAnimTool is an O3DE gem that provides realistic wheel animation for rob
 
 ## Prerequisites
 
-It requires O3DE Engine and the Eigen library for matrix operations.
-```shell
-sudo apt install libeigen3-dev
-```
+Requires O3DE Engine. No additional libraries are needed — all math operations use `AZ::MatrixMxN` and `AZ::VectorN` from `AzCore`, which is a standard O3DE dependency.
 
 ## Installation
 
@@ -103,22 +100,22 @@ Traditional two-wheel drive system where:
 ### Key Algorithms
 
 #### Jacobian Matrix Calculation
-The component uses a Jacobian matrix to transform 3D robot velocity to 1D wheel speeds:
+The component uses an `AZ::MatrixMxN` Jacobian to transform 3D robot velocity to per-wheel speeds. Each row encodes one wheel's kinematic contribution:
 
 ```cpp
-// For mecanum wheels
-jacobianRow << rollerDirection.x(), rollerDirection.y(), (wheelPosition.x() + abs(2.0*wheelPosition.y()));
-
-// For differential drive
-jacobianRow << 1.0, 0.0, wheelPosition.y();
+// For mecanum wheels: [roller_dir_x, roller_dir_y, ±(Lx+Ly)/2]
+// For differential drive: [1, 0, ±Lx/2]
 ```
+
+where `Lx` is the track width and `Ly` is the wheelbase, both derived from wheel positions relative to the geometric center.
 
 #### Wheel Speed Calculation
 ```cpp
-Eigen::VectorXd wheelSpeeds = m_jacobian * robotState;
+AZ::VectorN wheelSpeeds(numWheels);
+AZ::VectorMatrixMultiply(m_jacobian, robotState, wheelSpeeds);
 ```
 
-Where `robotState` contains `[linear_x, linear_y, angular_z]` velocities.
+Where `robotState` is an `AZ::VectorN(3)` containing `[linear_x, linear_y, angular_z]` velocities.
 
 ## Debug Visualization
 
@@ -131,15 +128,13 @@ When debug drawing is enabled, the component displays:
 
 ## Dependencies
 
-- **O3DE Framework**: Core engine functionality
-- **Eigen Library**: Mathematical operations and matrix calculations
+- **O3DE Framework**: Core engine functionality (`AzCore`, `AzFramework`)
 - **AzFramework Physics**: Rigid body integration
 - **Atom Renderer**: Debug visualization
 
 ## Technical Requirements
 
 - O3DE Engine compatible version
-- Eigen mathematical library
 - Entity must have a rigid body component for physics integration
 - Wheel entities must be properly configured as child entities
 

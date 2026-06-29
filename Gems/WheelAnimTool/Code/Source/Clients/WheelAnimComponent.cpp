@@ -18,25 +18,9 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <Eigen/Dense>
+#include <AzCore/Math/VectorN.h>
 namespace WheelAnimTool
 {
-    namespace EigenO3DE
-    {
-        Eigen::Vector2d ToEigen(const AZ::Vector2& vec)
-        {
-            return Eigen::Vector2d(vec.GetX(), vec.GetY());
-        }
-        Eigen::Vector3d ToEigen(const AZ::Vector3& vec)
-        {
-            return Eigen::Vector3d(vec.GetX(), vec.GetY(), vec.GetZ());
-        }
-
-        AZ::Vector3 ToO3DE(const Eigen::Vector3d& vec)
-        {
-            return AZ::Vector3(vec.x(), vec.y(), vec.z());
-        }
-    } // namespace EigenO3DE
 
     namespace DebugDraw
     {
@@ -176,17 +160,17 @@ namespace WheelAnimTool
     void WheelAnimComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        m_jacobian = Eigen::MatrixXd();
+        m_jacobian = AZ::MatrixMxN();
         m_wheelAxisSign.clear();
     }
 
     //! \brief Create a row of the Jacobian matrix for a mecanum wheel.
     //! \param rollerDirection The direction of the rollers on the wheel, normalized.
     //! \param wheelPosition The position of the wheel in 3D space.
-    Eigen::Vector3d CreateMecanumJacobianRow(Eigen::Vector2d rollerDirection, const Eigen::Vector3d& wheelPosition)
+    AZ::Vector3 CreateMecanumJacobianRow(AZ::Vector2 rollerDirection, const AZ::Vector3& wheelPosition)
     {
         // Normalize roller direction
-        rollerDirection.normalize();
+        rollerDirection.NormalizeSafe();
 
         // I've tried to recreate the jacobian row based on the roller direction and wheel position.
         // The model is based on equation 29 from paper :
@@ -203,17 +187,14 @@ namespace WheelAnimTool
         //  - \omega is the angular velocity of the robot, r is the wheel radius,
         //  - L_x is robot track and L_y is robot wheelbase.
 
-        const float Lx = abs(wheelPosition.x()) * 2.f; // Assuming wheelPosition.x() is the half of track width
-        const float Ly = abs(wheelPosition.y()) * 2.f; // Assuming wheelPosition.y() is the half of wheelbase
-        const float sign = (wheelPosition.y() > 0.f) ? -1.f : 1.f; // Sign based if robot wheel is on the left or right side
+        const float Lx = abs(wheelPosition.GetX()) * 2.f; // Assuming wheelPosition.x() is the half of track width
+        const float Ly = abs(wheelPosition.GetY()) * 2.f; // Assuming wheelPosition.y() is the half of wheelbase
+        const float sign = (wheelPosition.GetY() > 0.f) ? -1.f : 1.f; // Sign based if robot wheel is on the left or right side
 
-        // Create jacobian row
-        Eigen::Vector3d jacobianRow;
-        jacobianRow << rollerDirection.x(), rollerDirection.y(), sign * (Lx + Ly) / 2.f;
-        return jacobianRow;
+        return AZ::Vector3(rollerDirection.GetX(), rollerDirection.GetY(), sign * (Lx + Ly) / 2.f);
     }
 
-    Eigen::Vector3d CreateDifferentialJacobianRow(const Eigen::Vector3d& wheelPosition)
+    AZ::Vector3 CreateDifferentialJacobianRow(const AZ::Vector3& wheelPosition)
     {
         // For differential drive, the model for wheel speed is simpler:
         // \omega_1 = \frac{1}{r} (v_x + \frac{L_x}{2} * \omega)
@@ -224,12 +205,10 @@ namespace WheelAnimTool
         //  - \omega is the angular velocity of the robot, r is the wheel radius,
         //  - L_x is robot track.
 
-        const float Lx = abs(wheelPosition.x()) * 2.f; // Assuming wheelPosition.x() is the half of track width
-        const float sign = (wheelPosition.y() > 0.f) ? -1.f : 1.f; // Sign based if robot wheel is on the left or right side
+        const float Lx = abs(wheelPosition.GetX()) * 2.f; // Assuming wheelPosition.x() is the half of track width
+        const float sign = (wheelPosition.GetY() > 0.f) ? -1.f : 1.f; // Sign based if robot wheel is on the left or right side
 
-        Eigen::Vector3d jacobianRow;
-        jacobianRow << 1.0, 0.0, sign * (Lx / 2.f); // we assume the robot X axis is forward, Y axis is left, and Z axis is up
-        return jacobianRow;
+        return AZ::Vector3(1.0f, 0.0f, sign * (Lx / 2.f)); // we assume the robot X axis is forward, Y axis is left, and Z axis is up
     }
 
     bool WheelAnimComponent::InitJacobian()
@@ -243,8 +222,8 @@ namespace WheelAnimTool
             return false;
         }
         // compute geometrical center of the wheels
-        Eigen::Vector3d meanWheelPosition = Eigen::Vector3d::Zero();
-        Eigen::Matrix<double, Eigen::Dynamic, 3> wheelPositions(numWheels, 3);
+        AZ::Vector3 meanWheelPosition = AZ::Vector3::CreateZero();
+        AZStd::vector<AZ::Vector3> wheelPositions(numWheels);
 
         AZ_Assert(GetEntity()->GetTransform(), "No transform interface");
         const AZ::Transform worldTransform = GetEntity()->GetTransform()->GetWorldTM();
@@ -256,26 +235,26 @@ namespace WheelAnimTool
             AZ::TransformBus::EventResult(wheelPos, wheelEntity, &AZ::TransformInterface::GetWorldTranslation);
             // transform wheel position to local space
             const AZ::Vector3 wheelPosLoc = worldTransformInv.TransformPoint(wheelPos);
-            meanWheelPosition += EigenO3DE::ToEigen(wheelPosLoc);
-            wheelPositions.row(i) = EigenO3DE::ToEigen(wheelPosLoc);
+            meanWheelPosition += wheelPosLoc;
+            wheelPositions[i] = wheelPosLoc;
         }
-        meanWheelPosition /= numWheels;
+        meanWheelPosition /= static_cast<float>(numWheels);
 
         // calculate location w.r.t the mean wheel position
         for (int i = 0; i < numWheels; ++i)
         {
-            wheelPositions.row(i) -= meanWheelPosition;
+            wheelPositions[i] -= meanWheelPosition;
         }
 
-        if (m_jacobian.rows() != numWheels)
+        if (m_jacobian.GetRowCount() != numWheels)
         {
             // update jacobian matrix size
-            m_jacobian = Eigen::MatrixXd(numWheels, 3); // we transform 3D speed to 1D speed of wheel
+            m_jacobian = AZ::MatrixMxN(numWheels, 3); // we transform 3D speed to 1D speed of wheel
             m_wheelAxisSign.resize(numWheels);
             const AZ::Vector3 robotAxisInWorld = worldTransform.TransformVector(m_wheelAxis);
             for (int i = 0; i < numWheels; ++i)
             {
-                const Eigen::Vector3d wheelPosition = wheelPositions.row(i);
+                const AZ::Vector3& wheelPosition = wheelPositions[i];
 
                 // Detect mirrored wheel meshes (e.g. 180 deg X flip reusing the same mesh for both sides).
                 // If the wheel's spin axis opposes the robot body's spin axis, the rotation angle must be
@@ -285,19 +264,25 @@ namespace WheelAnimTool
                 const AZ::Vector3 wheelAxisInWorld = wheelTM.TransformVector(m_wheelAxis);
                 m_wheelAxisSign[i] = (robotAxisInWorld.Dot(wheelAxisInWorld) >= 0.f) ? 1.f : -1.f;
 
+                auto setRow = [&](const AZ::Vector3& row)
+                {
+                    m_jacobian.SetElement(i, 0, row.GetX());
+                    m_jacobian.SetElement(i, 1, row.GetY());
+                    m_jacobian.SetElement(i, 2, row.GetZ());
+                };
+
                 if (m_animationType == AnimationType::Mecanum)
                 {
-                    const Eigen::Vector2d rollerDirection = EigenO3DE::ToEigen(m_rollerDirections[i]);
-                    m_jacobian.row(i) = CreateMecanumJacobianRow(rollerDirection, wheelPosition);
+                    setRow(CreateMecanumJacobianRow(m_rollerDirections[i], wheelPosition));
                 }
                 else if (m_animationType == AnimationType::Differential)
                 {
-                    m_jacobian.row(i) = CreateDifferentialJacobianRow(wheelPosition);
+                    setRow(CreateDifferentialJacobianRow(wheelPosition));
                 }
                 else
                 {
                     AZ_Error("WheelAnimComponent", false, "Unknown animation type");
-                    m_jacobian.row(i) = Eigen::Vector3d::Zero();
+                    setRow(AZ::Vector3::CreateZero());
                 }
             }
         }
@@ -306,7 +291,7 @@ namespace WheelAnimTool
 
     void WheelAnimComponent::OnTick(float deltaTime, AZ::ScriptTimePoint time)
     {
-        if (m_jacobian.size() == 0)
+        if (m_jacobian.GetRowCount() == 0)
         {
             if (!InitJacobian())
             {
@@ -332,13 +317,16 @@ namespace WheelAnimTool
             DrawVector(m_drawQueue, GetEntity()->GetTransform()->GetWorldTM(), AZ::Colors::Green, angularVelocityLoc);
         }
 
-        Eigen::Vector3d robotState;
-        robotState << linearVelocityLoc.GetX(), linearVelocityLoc.GetY(), angularVelocityLoc.GetZ();
-        Eigen::VectorXd wheelSpeeds = m_jacobian * robotState;
+        AZ::VectorN robotState(3);
+        robotState.SetElement(0, linearVelocityLoc.GetX());
+        robotState.SetElement(1, linearVelocityLoc.GetY());
+        robotState.SetElement(2, angularVelocityLoc.GetZ());
+        AZ::VectorN wheelSpeeds(m_jacobian.GetRowCount());
+        AZ::VectorMatrixMultiply(m_jacobian, robotState, wheelSpeeds);
 
-        for (int i = 0; i < wheelSpeeds.size(); ++i)
+        for (int i = 0; i < static_cast<int>(wheelSpeeds.GetDimensionality()); ++i)
         {
-            const float wheelSpeed = static_cast<float>(wheelSpeeds(i));
+            const float wheelSpeed = wheelSpeeds.GetElement(i);
 
             AZ::Transform wheelTransform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(wheelTransform, m_wheelEntities[i], &AZ::TransformInterface::GetWorldTM);

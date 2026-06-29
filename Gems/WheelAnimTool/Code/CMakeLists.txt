@@ -31,7 +31,6 @@ if(NOT PAL_TRAIT_WHEELANIMTOOL_SUPPORTED)
     return()
 endif()
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
@@ -69,7 +68,6 @@ ly_add_target(
             Gem::Atom_RPI.Public
 
 )
-target_link_libraries(${gem_name}.Private.Object PRIVATE Eigen3::Eigen)
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
 ly_add_target(
