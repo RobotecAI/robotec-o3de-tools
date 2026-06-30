@@ -18,7 +18,7 @@
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <Eigen/Dense>
+#include <AzCore/Math/MatrixMxN.h>
 namespace WheelAnimTool
 {
     enum class AnimationType
@@ -55,7 +55,8 @@ namespace WheelAnimTool
         float m_wheelRadius = 0.1f; // Radius of the wheel for drawing purposes
 
         bool InitJacobian(); //< Initialize the Jacobian matrix based on wheel directions and animation type
-        Eigen::MatrixXd m_jacobian; // Jacobian matrix of size (numWheels, 3) for 3D to 1D speed transform
+        AZ::MatrixMxN m_jacobian; // Jacobian matrix of size (numWheels, 3) for 3D to 1D speed transform
+        AZStd::vector<float> m_wheelAxisSign; // +1 or -1 per wheel: compensates for mirrored mesh transforms
         AZ::RPI::AuxGeomDrawPtr m_drawQueue;
     };
 } // namespace WheelAnimTool
