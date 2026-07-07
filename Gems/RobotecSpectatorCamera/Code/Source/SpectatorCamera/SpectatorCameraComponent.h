@@ -73,7 +73,13 @@ namespace RobotecSpectatorCamera
         void ZoomOrbit(float radiusDelta);
         void ToggleCameraMode();
 
+        static bool IsNearWindowEdge(const AZ::Vector2& positionNormalized);
+
         static constexpr float scrollValueDivider = 1200.0f;
+        // Re-centering: warp back to center only inside this margin of the window edge; a pending
+        // warp is recognized by the cursor landing within the tolerance of center.
+        static constexpr float recenterEdgeMargin = 0.1f;
+        static constexpr float warpLandingTolerance = 0.01f;
         static constexpr float pitchDegLimit = 87.0f;
         // Per-input-event keyboard orbit steps: yaw/pitch in radians, zoom in meters.
         static constexpr float orbitKeyboardYawStep = 0.02f;
@@ -85,6 +91,7 @@ namespace RobotecSpectatorCamera
         float m_yaw{ 0.0f };
         bool m_isRightMouseButtonPressed{ false };
         bool m_ignoreNextMovement{ false };
+        bool m_warpPending{ false };
         bool m_centerTheCursor{ false };
         AZ::Vector2 m_initialMousePosition{ AZ::Vector2::CreateZero() };
         AZ::Vector2 m_lastMousePosition{ AZ::Vector2::CreateZero() };

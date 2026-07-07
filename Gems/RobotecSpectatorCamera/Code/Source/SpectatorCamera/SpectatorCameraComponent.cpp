@@ -117,6 +117,7 @@ namespace RobotecSpectatorCamera
             if (inputChannel.IsStateBegan())
             {
                 m_isRightMouseButtonPressed = true;
+                m_warpPending = false;
 
                 // Capture the initial mouse position and cursor state
                 m_initialMousePosition = GetCurrentMousePosition();
@@ -160,23 +161,29 @@ namespace RobotecSpectatorCamera
                 return; // Do not process this movement
             }
 
-            AZ::Vector2 currentMousePosition = GetCurrentMousePosition();
-            AZ::Vector2 mouseDelta = currentMousePosition - m_lastMousePosition;
+            const AZ::Vector2 currentMousePosition = GetCurrentMousePosition();
 
-            if (m_centerTheCursor)
+            if (m_warpPending && currentMousePosition.GetDistance(AZ::Vector2(0.5f, 0.5f)) <= warpLandingTolerance)
             {
-                const auto center = AZ::Vector2(0.5f, 0.5f);
-
-                // Recenter the cursor to avoid edge constraints
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized, center);
-
-                // Then update m_lastMousePosition accordingly
-                m_lastMousePosition = center;
-            }
-            else
-            {
+                // The re-center warp landed: swallow its jump and resync the reference.
+                m_warpPending = false;
                 m_lastMousePosition = currentMousePosition;
+                return;
+            }
+
+            const AZ::Vector2 mouseDelta = currentMousePosition - m_lastMousePosition;
+            m_lastMousePosition = currentMousePosition;
+
+            // Deltas are measured strictly between observed positions; the warp is issued only near the
+            // window edge and its own jump is swallowed above, so pointers that apply the warp late
+            // (remote desktop virtualization) cannot inflate the deltas.
+            if (m_centerTheCursor && !m_warpPending && IsNearWindowEdge(currentMousePosition))
+            {
+                AzFramework::InputSystemCursorRequestBus::Event(
+                    AzFramework::InputDeviceMouse::Id,
+                    &AzFramework::InputSystemCursorRequests::SetSystemCursorPositionNormalized,
+                    AZ::Vector2(0.5f, 0.5f));
+                m_warpPending = true;
             }
 
             RotateCameraOnMouse(mouseDelta);
@@ -322,6 +329,12 @@ namespace RobotecSpectatorCamera
     {
         return configuration.m_cameraMode == CameraMode::ThirdPerson ? configuration.m_requireRmbThirdPerson
                                                                      : configuration.m_requireRmbFreeFlying;
+    }
+
+    bool SpectatorCameraComponent::IsNearWindowEdge(const AZ::Vector2& positionNormalized)
+    {
+        return positionNormalized.GetX() < recenterEdgeMargin || positionNormalized.GetX() > 1.0f - recenterEdgeMargin ||
+            positionNormalized.GetY() < recenterEdgeMargin || positionNormalized.GetY() > 1.0f - recenterEdgeMargin;
     }
 
     bool SpectatorCameraComponent::ShouldRotateOnMouse(const SpectatorCameraConfiguration& configuration, bool isRightMouseButtonPressed)
