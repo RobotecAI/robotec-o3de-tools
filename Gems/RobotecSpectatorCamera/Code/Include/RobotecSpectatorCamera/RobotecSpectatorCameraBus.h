@@ -59,6 +59,31 @@ namespace RobotecSpectatorCamera
         //! This offset is used to change (in Z-Axis) the point around which the cam orbits
         //! @param verticalOffset new vertical offset
         virtual void SetVerticalOffset(const float verticalOffset) = 0;
+
+        //! Get the third-person orbit radius (distance from the look-at target)
+        //! @return orbit radius
+        virtual float GetOrbitRadius() const = 0;
+
+        //! Set the third-person orbit radius (distance from the look-at target)
+        //! The value is clamped to the supported orbit radius range
+        //! @param orbitRadius new orbit radius
+        virtual void SetOrbitRadius(const float orbitRadius) = 0;
+
+        //! Get whether mouse look in third-person mode requires the right mouse button to be held
+        //! @return true if the right mouse button is required to look in third-person mode
+        virtual bool GetRequireRmbThirdPerson() const = 0;
+
+        //! Set whether mouse look in third-person mode requires the right mouse button to be held
+        //! @param requireRmb new value of the third-person require-RMB flag
+        virtual void SetRequireRmbThirdPerson(const bool requireRmb) = 0;
+
+        //! Get whether mouse look in free-flying mode requires the right mouse button to be held
+        //! @return true if the right mouse button is required to look in free-flying mode
+        virtual bool GetRequireRmbFreeFlying() const = 0;
+
+        //! Set whether mouse look in free-flying mode requires the right mouse button to be held
+        //! @param requireRmb new value of the free-flying require-RMB flag
+        virtual void SetRequireRmbFreeFlying(const bool requireRmb) = 0;
     };
 
     using RobotecSpectatorCameraRequestBus = AZ::EBus<RobotecSpectatorCameraRequests>;

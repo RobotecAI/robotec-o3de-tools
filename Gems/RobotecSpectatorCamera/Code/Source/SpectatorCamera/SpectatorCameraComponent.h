@@ -44,20 +44,43 @@ namespace RobotecSpectatorCamera
         void SetFollowTargetRotation(const bool followTargetRotation) override;
         float GetVerticalOffset() const override;
         void SetVerticalOffset(const float verticalOffset) override;
+        float GetOrbitRadius() const override;
+        void SetOrbitRadius(const float orbitRadius) override;
+        bool GetRequireRmbThirdPerson() const override;
+        void SetRequireRmbThirdPerson(const bool requireRmb) override;
+        bool GetRequireRmbFreeFlying() const override;
+        void SetRequireRmbFreeFlying(const bool requireRmb) override;
+
+        static bool ShouldRotateOnMouse(const SpectatorCameraConfiguration& configuration, bool isRightMouseButtonPressed);
+
+        //! Camera offset relative to the look-at point for the given orbit angles and radius.
+        static AZ::Vector3 OrbitOffsetFromAngles(float yaw, float pitch, float radius);
+
+        //! Inverse of OrbitOffsetFromAngles (direction only); pitch is clamped to the orbit limit.
+        static void OrbitAnglesFromOffset(const AZ::Vector3& offset, float& yaw, float& pitch);
 
     private:
+        static bool RequiresRightMouseButton(const SpectatorCameraConfiguration& configuration);
+
+        //! Seed yaw/pitch so third-person starts along the authored camera -> look-at ray.
+        void SeedOrbitAnglesFromAuthoredTransform();
+
         void MouseEvent(const AzFramework::InputChannel& inputChannel);
         void KeyboardEvent(const AzFramework::InputChannel& inputChannel);
 
         AZ::Vector2 GetCurrentMousePosition() const;
         void RotateCameraOnMouse(const AZ::Vector2& mouseDelta);
+        void ZoomOrbit(float radiusDelta);
         void ToggleCameraMode();
 
         static constexpr float scrollValueDivider = 1200.0f;
         static constexpr float pitchDegLimit = 87.0f;
+        // Per-input-event keyboard orbit steps: yaw/pitch in radians, zoom in meters.
+        static constexpr float orbitKeyboardYawStep = 0.02f;
+        static constexpr float orbitKeyboardPitchStep = 0.02f;
+        static constexpr float orbitKeyboardZoomStep = 0.1f;
 
         SpectatorCameraConfiguration m_configuration;
-        float m_orbitRadius{ 10.0f };
         float m_pitch{ 0.5f };
         float m_yaw{ 0.0f };
         bool m_isRightMouseButtonPressed{ false };
