@@ -31,7 +31,11 @@ namespace RobotecSpectatorCamera
         float m_mouseSensitivity{ 1.0f };
         float m_cameraSpeed{ CameraSpeedMin };
         float m_verticalOffset{ 0.0f };
+        float m_orbitRadius{ 10.0f };
         bool m_followTargetRotation{ true };
+        bool m_requireRmbThirdPerson{ true };
+        bool m_requireRmbFreeFlying{ false };
+        bool m_seedOrbitFromPlacement{ false };
         CameraMode m_cameraMode{ CameraMode::ThirdPerson };
     };
 } // namespace RobotecSpectatorCamera

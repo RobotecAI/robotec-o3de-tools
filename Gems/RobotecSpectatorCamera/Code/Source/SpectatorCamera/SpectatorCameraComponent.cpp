@@ -37,6 +37,11 @@ namespace RobotecSpectatorCamera
 
         AZ::TransformBus::EventResult(m_currentTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
+        if (m_configuration.m_seedOrbitFromPlacement)
+        {
+            SeedOrbitAnglesFromAuthoredTransform();
+        }
+
         auto* registry = AZ::SettingsRegistry::Get();
         AZ_Assert(registry, "No Registry available");
         if (registry)
@@ -56,35 +61,20 @@ namespace RobotecSpectatorCamera
     {
         if (m_configuration.m_cameraMode == CameraMode::ThirdPerson)
         {
-            // initial position of the camera, 'behind' the target
-            AZ::Vector3 cameraLocalPosition{ -m_orbitRadius, 0.0f, 0.0f };
-            // calculation of the rotations using the m_yaw and m_pitch values (which correspond to the mouse movement)
-            const AZ::Quaternion yawMouseRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(1.0f), -m_yaw);
-            const AZ::Quaternion pitchMouseRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(1.0f), m_pitch);
-            const AZ::Quaternion finalRotation = yawMouseRotation * pitchMouseRotation;
-            // local camera position after the mouse rotations
-            cameraLocalPosition = finalRotation.TransformVector(cameraLocalPosition);
+            const AZ::Vector3 cameraLocalPosition = OrbitOffsetFromAngles(m_yaw, m_pitch, m_configuration.m_orbitRadius);
+
             AZ::Transform targetWorldTM = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(targetWorldTM, m_configuration.m_lookAtTarget, &AZ::TransformBus::Events::GetWorldTM);
-            AZ::Vector3 currentTranslation = targetWorldTM.GetTranslation();
-            // change the target's translation to apply the vertical offset
-            const float verticalValueWithOffset = currentTranslation.GetZ() + m_configuration.m_verticalOffset;
-            currentTranslation.SetZ(verticalValueWithOffset);
-            targetWorldTM.SetTranslation(currentTranslation);
-            if (m_configuration.m_followTargetRotation)
-            {
-                // calculation of the final transform that follows the target's rotation - without mouse input the camera always looks at
-                // the same target point
-                m_currentTransform =
-                    AZ::Transform::CreateLookAt((targetWorldTM.TransformPoint(cameraLocalPosition)), targetWorldTM.GetTranslation());
-            }
-            else
-            {
-                // calculation of the final transform that doesn't follow the target's rotation - without mouse input the camera position is
-                // const, but the target can change its position in relation to the camera
-                m_currentTransform =
-                    AZ::Transform::CreateLookAt((targetWorldTM.GetTranslation() + cameraLocalPosition), targetWorldTM.GetTranslation());
-            }
+
+            AZ::Vector3 lookAtPoint = targetWorldTM.GetTranslation();
+            lookAtPoint.SetZ(lookAtPoint.GetZ() + m_configuration.m_verticalOffset);
+
+            // Rotate the offset with GetRotation(), never TransformPoint, so the target's scale
+            // cannot contaminate the orbit radius.
+            const AZ::Vector3 cameraWorldPosition = m_configuration.m_followTargetRotation
+                ? lookAtPoint + targetWorldTM.GetRotation().TransformVector(cameraLocalPosition)
+                : lookAtPoint + cameraLocalPosition;
+            m_currentTransform = AZ::Transform::CreateLookAt(cameraWorldPosition, lookAtPoint);
         }
         AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, m_currentTransform);
     }
@@ -112,13 +102,11 @@ namespace RobotecSpectatorCamera
 
         if (channelId == AzFramework::InputDeviceMouse::Movement::Z && m_configuration.m_cameraMode == CameraMode::ThirdPerson)
         {
-            m_orbitRadius = AZStd::clamp(
-                m_orbitRadius - (inputChannel.GetValue() / scrollValueDivider),
-                SpectatorCameraConfiguration::OrbitRadiusMin,
-                SpectatorCameraConfiguration::OrbitRadiusMax);
+            // Scrolling up (positive value) zooms in, i.e. reduces the orbit radius.
+            ZoomOrbit(-(inputChannel.GetValue() / scrollValueDivider));
         }
 
-        if (channelId == AzFramework::InputDeviceMouse::Button::Right && m_configuration.m_cameraMode == CameraMode::ThirdPerson)
+        if (channelId == AzFramework::InputDeviceMouse::Button::Right && RequiresRightMouseButton(m_configuration))
         {
             AzFramework::SystemCursorState currentCursorState;
             AzFramework::InputSystemCursorRequestBus::EventResult(
@@ -162,7 +150,7 @@ namespace RobotecSpectatorCamera
             }
         }
 
-        if ((m_isRightMouseButtonPressed || m_configuration.m_cameraMode == CameraMode::FreeFlying) &&
+        if (ShouldRotateOnMouse(m_configuration, m_isRightMouseButtonPressed) &&
             (channelId == AzFramework::InputDeviceMouse::Movement::X || channelId == AzFramework::InputDeviceMouse::Movement::Y))
         {
             if (m_ignoreNextMovement)
@@ -203,6 +191,41 @@ namespace RobotecSpectatorCamera
             if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericC)
             {
                 ToggleCameraMode();
+            }
+        }
+
+        if (m_configuration.m_cameraMode == CameraMode::ThirdPerson)
+        {
+            // A/D yaw, W/S zoom, Q/E altitude on the orbit sphere.
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericA)
+            {
+                m_yaw += orbitKeyboardYawStep;
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericD)
+            {
+                m_yaw -= orbitKeyboardYawStep;
+            }
+            // Bound yaw to avoid float drift (mirrors the mouse path).
+            if (AZStd::abs(m_yaw) >= AZ::DegToRad(360.0f))
+            {
+                m_yaw = 0.0f;
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericW)
+            {
+                ZoomOrbit(-orbitKeyboardZoomStep);
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericS)
+            {
+                ZoomOrbit(orbitKeyboardZoomStep);
+            }
+            const float pitchLimit = AZ::DegToRad(pitchDegLimit);
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericE)
+            {
+                m_pitch = AZStd::clamp(m_pitch + orbitKeyboardPitchStep, -pitchLimit, pitchLimit);
+            }
+            if (channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericQ)
+            {
+                m_pitch = AZStd::clamp(m_pitch - orbitKeyboardPitchStep, -pitchLimit, pitchLimit);
             }
         }
 
@@ -295,6 +318,68 @@ namespace RobotecSpectatorCamera
         }
     }
 
+    bool SpectatorCameraComponent::RequiresRightMouseButton(const SpectatorCameraConfiguration& configuration)
+    {
+        return configuration.m_cameraMode == CameraMode::ThirdPerson ? configuration.m_requireRmbThirdPerson
+                                                                     : configuration.m_requireRmbFreeFlying;
+    }
+
+    bool SpectatorCameraComponent::ShouldRotateOnMouse(const SpectatorCameraConfiguration& configuration, bool isRightMouseButtonPressed)
+    {
+        return !RequiresRightMouseButton(configuration) || isRightMouseButtonPressed;
+    }
+
+    void SpectatorCameraComponent::ZoomOrbit(float radiusDelta)
+    {
+        m_configuration.m_orbitRadius = AZStd::clamp(
+            m_configuration.m_orbitRadius + radiusDelta,
+            SpectatorCameraConfiguration::OrbitRadiusMin,
+            SpectatorCameraConfiguration::OrbitRadiusMax);
+    }
+
+    AZ::Vector3 SpectatorCameraComponent::OrbitOffsetFromAngles(float yaw, float pitch, float radius)
+    {
+        const AZ::Quaternion yawRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(1.0f), -yaw);
+        const AZ::Quaternion pitchRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(1.0f), pitch);
+        return (yawRotation * pitchRotation).TransformVector(AZ::Vector3{ -radius, 0.0f, 0.0f });
+    }
+
+    void SpectatorCameraComponent::OrbitAnglesFromOffset(const AZ::Vector3& offset, float& yaw, float& pitch)
+    {
+        const float horizontalLength = AZ::Vector2(offset.GetX(), offset.GetY()).GetLength();
+        if (offset.GetLength() < AZ::Constants::Tolerance)
+        {
+            return; // degenerate: camera coincides with the look-at point, keep the current angles
+        }
+        // Inverse of OrbitOffsetFromAngles: offset = (-r cosP cosY, r cosP sinY, r sinP) with P = pitch, Y = yaw.
+        const float pitchLimit = AZ::DegToRad(pitchDegLimit);
+        pitch = AZStd::clamp(AZ::Atan2(offset.GetZ(), horizontalLength), -pitchLimit, pitchLimit);
+        yaw = AZ::Atan2(offset.GetY(), -offset.GetX());
+    }
+
+    void SpectatorCameraComponent::SeedOrbitAnglesFromAuthoredTransform()
+    {
+        if (!m_configuration.m_lookAtTarget.IsValid())
+        {
+            return; // no target -> keep the default orbit angles
+        }
+
+        AZ::Transform targetWorldTM = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(targetWorldTM, m_configuration.m_lookAtTarget, &AZ::TransformBus::Events::GetWorldTM);
+
+        AZ::Vector3 lookAtPoint = targetWorldTM.GetTranslation();
+        lookAtPoint.SetZ(lookAtPoint.GetZ() + m_configuration.m_verticalOffset);
+
+        AZ::Vector3 offset = m_currentTransform.GetTranslation() - lookAtPoint;
+
+        // OnTick applies the offset in the target's rotated frame when following, so decompose in that frame.
+        if (m_configuration.m_followTargetRotation)
+        {
+            offset = targetWorldTM.GetRotation().GetConjugate().TransformVector(offset);
+        }
+        OrbitAnglesFromOffset(offset, m_yaw, m_pitch);
+    }
+
     void SpectatorCameraComponent::ToggleCameraMode()
     {
         // RMB should be handled only in the ThirdPerson mode. This line fixes problem with such combination:
@@ -356,5 +441,36 @@ namespace RobotecSpectatorCamera
     void SpectatorCameraComponent::SetVerticalOffset(const float verticalOffset)
     {
         m_configuration.m_verticalOffset = verticalOffset;
+    }
+
+    float SpectatorCameraComponent::GetOrbitRadius() const
+    {
+        return m_configuration.m_orbitRadius;
+    }
+
+    void SpectatorCameraComponent::SetOrbitRadius(const float orbitRadius)
+    {
+        m_configuration.m_orbitRadius =
+            AZStd::clamp(orbitRadius, SpectatorCameraConfiguration::OrbitRadiusMin, SpectatorCameraConfiguration::OrbitRadiusMax);
+    }
+
+    bool SpectatorCameraComponent::GetRequireRmbThirdPerson() const
+    {
+        return m_configuration.m_requireRmbThirdPerson;
+    }
+
+    void SpectatorCameraComponent::SetRequireRmbThirdPerson(const bool requireRmb)
+    {
+        m_configuration.m_requireRmbThirdPerson = requireRmb;
+    }
+
+    bool SpectatorCameraComponent::GetRequireRmbFreeFlying() const
+    {
+        return m_configuration.m_requireRmbFreeFlying;
+    }
+
+    void SpectatorCameraComponent::SetRequireRmbFreeFlying(const bool requireRmb)
+    {
+        m_configuration.m_requireRmbFreeFlying = requireRmb;
     }
 } // namespace RobotecSpectatorCamera
