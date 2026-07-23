@@ -95,7 +95,7 @@ namespace ImGuiProvider
             {
                 current = current->GetChildPtr(level.String()); // Move to the child node
             }
-            parentNodes.push_back(AZStd::make_pair(current, level));
+            parentNodes.emplace_back(AZStd::make_pair(current, level));
         }
         return parentNodes;
     }
