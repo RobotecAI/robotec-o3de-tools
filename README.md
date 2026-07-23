@@ -11,7 +11,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**CsvSpawner**](#csvspawner)                               | not verified  |
 | [**ExposeConsoleToRos**](#exposeconsoletoRos)               | not verified  |
 | [**ImGuiProvider**](#imguiprovider)                         | compatible    |
-| [**ImGuizmo**](#imguizmo)                                   | not verified  |
+| [**ImGuizmo**](#imguizmo)                                   | compatible    |
 | [**LevelModificationTools**](#levelmodificationtools)       | not verified  |
 | [**Pointcloud**](#pointcloud)                               | compatible    |
 | [**RandomizeUtils**](#randomizeutils)                       | not verified  |
