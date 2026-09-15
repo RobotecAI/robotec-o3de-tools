@@ -17,7 +17,7 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**RandomizeUtils**](#randomizeutils)                       | not verified  |
 | [**RobotecGeoJSONSpawner**](#groboteceojsonspawner)         | not verified  |
 | [**RobotecGeoJSONSpawnerROS2**](#robotecgeojsonspawnerros2) | not verified  |
-| [**RobotecRecordingTools**](#robotecrecordingtools)         | not verified  |
+| [**RobotecRecordingTools**](#robotecrecordingtools)         | compatible    |
 | [**RobotecSpectatorCamera**](#robotecspectatorcamera)       | compatible    |
 | [**RobotecSplineTools**](#robotecsplinetools)               | not verified  |
 | [**RobotecWatchdogTools**](#robotecwatchdogtools)           | not verified  |
