@@ -26,7 +26,7 @@
 #include <ROS2/Utilities/ROS2Conversions.h>
 #include <Source/RigidBodyComponent.h>
 #include <imgui/imgui.h>
-#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_listener.hpp>
 
 namespace ROS2PoseControl
 {
@@ -135,7 +135,7 @@ namespace ROS2PoseControl
             m_poseSubscription = ros2Node->create_subscription<geometry_msgs::msg::PoseStamped>(
                 namespacedTopicName.data(),
                 m_configuration.m_poseTopicConfiguration.GetQoS(),
-                [this](geometry_msgs::msg::PoseStamped::SharedPtr msg)
+                [this](geometry_msgs::msg::PoseStamped::ConstSharedPtr msg)
                 {
                     OnPoseMessageReceived(msg);
                 }
@@ -287,7 +287,7 @@ namespace ROS2PoseControl
         return AZ::Success(AZ::Transform::CreateFromQuaternionAndTranslation(rotation, translation));
     }
 
-    AZ::Outcome<AZ::Transform, void> ROS2PoseControl::GetTransformFromPoseStamped(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+    AZ::Outcome<AZ::Transform, void> ROS2PoseControl::GetTransformFromPoseStamped(const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg)
     {
         if (!msg)
         {
@@ -314,7 +314,7 @@ namespace ROS2PoseControl
         return AZ::Success(transform);
     }
 
-    void ROS2PoseControl::OnPoseMessageReceived(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+    void ROS2PoseControl::OnPoseMessageReceived(const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg)
     {
         if (m_configuration.m_tracking_mode != TrackingMode::PoseMessages)
         {
