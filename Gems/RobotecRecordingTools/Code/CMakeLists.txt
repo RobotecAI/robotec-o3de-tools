@@ -51,6 +51,7 @@ ly_add_target(
             Gem::ImGui.imguilib
             Gem::AtomLyIntegration_CommonFeatures.Public
             Gem::ROS2.Static
+            Gem::LmbrCentral.API
             AZ::AzCore
             AZ::AzFramework
 )
