@@ -236,7 +236,7 @@ namespace ROS2ScriptIntegration
             auto subscriber = ros2Node->create_subscription<MessageType>(
                 std::string(topicName.c_str()),
                 10,
-                [callback](typename MessageType::SharedPtr msg)
+                [callback](typename MessageType::ConstSharedPtr msg)
                 {
                     callback(*msg);
                 });
