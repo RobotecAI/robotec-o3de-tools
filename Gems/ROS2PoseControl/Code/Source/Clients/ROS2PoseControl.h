@@ -24,8 +24,8 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <rclcpp/publisher.hpp>
 #include <rclcpp/subscription.hpp>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
 
 namespace ROS2PoseControl
 {
@@ -77,7 +77,8 @@ namespace ROS2PoseControl
         //! transform is assumed to be in the global frame.
         //! @param msg The PoseStamped message.
         //! @return The world transform translated using the global frame and the pose stamped.
-        [[nodiscard]] AZ::Outcome<AZ::Transform, void> GetTransformFromPoseStamped(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+        [[nodiscard]] AZ::Outcome<AZ::Transform, void> GetTransformFromPoseStamped(
+            const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
 
         //! Removes the tilt from a transform by projecting the transform's forward vector onto the gravity direction and creating a new
         //! basis from the projected forward vector and the gravity direction.
@@ -94,7 +95,7 @@ namespace ROS2PoseControl
 
         //! Applies the given transform to the entity. Run when a transform is received from a PoseStamped message.
         //! @param transform The transform to apply.
-        void OnPoseMessageReceived(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+        void OnPoseMessageReceived(const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
 
         //! Applies the given transform to the entity. Will check if removing tilt, applying an offset, and clamping to the ground are
         //! enabled in the configuration and add those modifications to the input transform.
