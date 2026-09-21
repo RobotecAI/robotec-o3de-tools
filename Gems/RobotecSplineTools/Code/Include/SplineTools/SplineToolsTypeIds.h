@@ -24,4 +24,9 @@ namespace SplineTools
 
     inline constexpr const char* SplinePublisherComponentTypeId = "{29C02686-04F6-416D-8F47-D2456A3E114C}";
     inline constexpr const char* SplinePublisherConfigTypeId = "{DC7AC312-0F47-4EF2-A1B7-02E8716CF4EE}";
+
+    inline constexpr const char* SplineFollowerComponentTypeId = "{CE8D539A-73F6-4480-8FD2-ACB09E0832E6}";
+    inline constexpr const char* SplineFollowerConfigTypeId = "{73970681-D668-42A9-B840-3CF5B82DAD43}";
+    inline constexpr const char* SplineFollowerRequestsTypeId = "{CF2B0608-39C4-43B3-8093-4F8FBAC0D515}";
+    inline constexpr const char* SplineFollowerNotificationsTypeId = "{8D891CCC-4B36-4E6E-A70B-9DC3538FFF7B}";
 } // namespace SplineTools

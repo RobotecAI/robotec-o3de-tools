@@ -57,7 +57,7 @@ ly_add_target(
             Gem::LevelGeoreferencing.API
 )
 
-target_depends_on_ros2_packages(${gem_name}.Private.Object rclcpp  nav_msgs)
+target_depends_on_ros2_packages(${gem_name}.Private.Object rclcpp  nav_msgs geometry_msgs)
 
 # Here add ${gem_name} target, it depends on the Private Object library and Public API interface
 ly_add_target(
@@ -133,7 +133,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 ${gem_name}.Private.Object
                 Gem::AtomLyIntegration_CommonFeatures.Static
-                Gem::ROS2.Editor.Static
+                Gem::ROS2.Static
     )
 
     ly_add_target(

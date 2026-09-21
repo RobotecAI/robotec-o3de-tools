@@ -168,7 +168,7 @@ namespace ROS2::Demo
 
         //
         // construct ideal pose as SE(3) - in spline space
-        const AZ::Matrix3x3 rot = AZ::Matrix3x3::CreateFromColumns(tangent, normal, tangent.Cross(normal));
+        const AZ::Matrix3x3 rot = AZ::Matrix3x3::CreateFromColumns(-normal, tangent, tangent.Cross(normal));
         const AZ::Transform goalTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(rot, position);
         const auto transformOnSpline = splineTransform * goalTransform * m_localTransform;
 

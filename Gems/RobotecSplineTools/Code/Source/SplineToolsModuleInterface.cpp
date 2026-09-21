@@ -5,6 +5,7 @@
 
 #include <SplineTools/SplineToolsTypeIds.h>
 
+#include <Clients/SplineFollower.h>
 #include <Clients/SplinePublisher.h>
 #include <Clients/SplineSubscriber.h>
 #include <Clients/SplineToolsSystemComponent.h>
@@ -27,7 +28,8 @@ namespace SplineTools
             { SplineToolsSystemComponent::CreateDescriptor(),
               VisualizeSplineComponent::CreateDescriptor(),
               SplineSubscriber::CreateDescriptor(),
-              SplinePublisher::CreateDescriptor() });
+              SplinePublisher::CreateDescriptor(),
+              SplineFollower::CreateDescriptor() });
     }
 
     AZ::ComponentTypeList SplineToolsModuleInterface::GetRequiredSystemComponents() const

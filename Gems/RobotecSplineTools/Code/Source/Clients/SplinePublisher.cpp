@@ -1,7 +1,7 @@
 #include "SplinePublisher.h"
 
+#include <ROS2/Clock/ROS2ClockRequestBus.h>
 #include <ROS2/ROS2Bus.h>
-#include <ROS2/Utilities/ROS2Names.h>
 #include <utility>
 
 namespace SplineTools
@@ -125,8 +125,8 @@ namespace SplineTools
         AZ_Assert(m_ros2FramePtr, "ROS 2 frame component is not available!");
 
         nav_msgs::msg::Path pathMessage;
-        pathMessage.header.frame_id = m_ros2FramePtr->GetFrameID().data();
-        pathMessage.header.stamp = ROS2::ROS2Interface::Get()->GetROSTimestamp();
+        pathMessage.header.frame_id = m_ros2FramePtr->GetNamespacedFrameID().c_str();
+        ROS2::ROS2ClockRequestBus::BroadcastResult(pathMessage.header.stamp, &ROS2::ROS2ClockRequests::GetROSTimestamp);
 
         // Get Spline
         AZStd::shared_ptr<AZ::Spline> spline;

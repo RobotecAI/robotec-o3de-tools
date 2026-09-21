@@ -1,5 +1,7 @@
 
 set(FILES
+        Source/Clients/SplineFollower.cpp
+        Source/Clients/SplineFollower.h
         Source/Clients/SplinePublisher.cpp
         Source/Clients/SplinePublisher.h
         Source/Clients/SplineSubscriber.cpp
