@@ -23,6 +23,9 @@ namespace Pointcloud
         void ShutDown() override
         {
         }
+
+    private:
+        bool m_skipPlyWithoutColor = false;
     };
 
 } // namespace Pointcloud
