@@ -153,6 +153,20 @@ It offers:
 
 At this moment it accepts [PLY](<https://en.wikipedia.org/wiki/PLY_(file_format)>) as a source asset.
 
+By default, every `.ply` file is processed into a point cloud asset; points without color data are white. To process only `.ply` files whose `vertex` element has `x`, `y`, `z`, `red`, `green` and `blue` properties (e.g. when other builders handle `.ply` files too), enable the `SkipPlyWithoutColor` option in a `.setreg` file:
+
+```json
+{
+  "O3DE": {
+    "Pointcloud": {
+      "Builder": {
+        "SkipPlyWithoutColor": true
+      }
+    }
+  }
+}
+```
+
 ![](doc/Pointcloud.png)\
 Pointcloud asset was obtained from [potree](https://github.com/potree/potree).
 
