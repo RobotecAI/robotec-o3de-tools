@@ -1,0 +1,1 @@
+The "CSV for C++" library is Open Source, MIT-licensed contribution by Vincent La, available at https://github.com/vincentlaucsb/csv-parser. It is fetched at CMake configure time via FetchContent (see Findcsv-parser.cmake).

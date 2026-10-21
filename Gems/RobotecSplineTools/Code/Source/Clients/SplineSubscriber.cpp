@@ -49,7 +49,7 @@ namespace SplineTools
         m_subscription = node->create_subscription<nav_msgs::msg::Path>(
             m_config.m_topic.m_topic.data(),
             m_config.m_topic.GetQoS(),
-            [this](const nav_msgs::msg::Path::SharedPtr msg)
+            [this](nav_msgs::msg::Path::ConstSharedPtr msg)
             {
                 OnSplineReceived(*msg);
             });

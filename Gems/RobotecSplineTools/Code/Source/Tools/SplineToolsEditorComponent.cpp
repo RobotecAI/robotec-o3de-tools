@@ -8,7 +8,7 @@
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <csv/csv.hpp>
+#include <csv.hpp>
 
 namespace SplineTools
 {
