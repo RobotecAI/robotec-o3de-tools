@@ -12,19 +12,19 @@ Note that this is not a "Canonical" part of O3DE - those gems are third-party co
 | [**ExposeConsoleToRos**](#exposeconsoletoRos)               | not verified  |
 | [**ImGuiProvider**](#imguiprovider)                         | compatible    |
 | [**ImGuizmo**](#imguizmo)                                   | compatible    |
-| [**LevelModificationTools**](#levelmodificationtools)       | not verified  |
+| [**LevelModificationTools**](#levelmodificationtools)       | compatible    |
 | [**Pointcloud**](#pointcloud)                               | compatible    |
 | [**RandomizeUtils**](#randomizeutils)                       | not verified  |
 | [**RobotecGeoJSONSpawner**](#groboteceojsonspawner)         | not verified  |
 | [**RobotecGeoJSONSpawnerROS2**](#robotecgeojsonspawnerros2) | not verified  |
 | [**RobotecRecordingTools**](#robotecrecordingtools)         | compatible    |
 | [**RobotecSpectatorCamera**](#robotecspectatorcamera)       | compatible    |
-| [**RobotecSplineTools**](#robotecsplinetools)               | not verified  |
+| [**RobotecSplineTools**](#robotecsplinetools)               | compatible    |
 | [**RobotecWatchdogTools**](#robotecwatchdogtools)           | not verified  |
 | [**ROS2PoseControl**](#ros2posecontrol)                     | compatible    |
 | [**ROS2ScriptIntegration**](#ros2scriptintegration)         | compatible    |
 | [**SensorDebug**](#sensordebug)                             | not verified  |
-| [**Smoothing**](#smoothing)                                 | not verified  |
+| [**Smoothing**](#smoothing)                                 | compatible    |
 | [**ViewportStreamer**](#viewportstreamer)                   | compatible    |
 | [**WheelAnimTool**](#wheelanimtool)                         | not verified  |
 
@@ -443,8 +443,10 @@ The tools for expanding the usability of the Spline component in O3DE.
 It allows to:
 
 - Publish spline points as a path with ROS 2
+- Set spline points from a path received with ROS 2
 - Import spline from CSV file
 - Export spline to a CSV file
+- Visualize spline in game mode
 
 Having a CSV file formatted as :
 
@@ -469,6 +471,11 @@ If you switch `Local Coordinates` to true, the component will interpret coordina
 
 To publish spline path, add `SplinePublisher` next to the [Spline component](https://docs.o3de.org/docs/user-guide/components/reference/shape/spline/).
 Adjust **update frequency** to set how often the path will be published.
+
+To set the spline from a received `nav_msgs/msg/Path`, add `SplineSubscriber` next to the Spline component.
+The message `frame_id` selects how positions are interpreted: empty (relative to the entity with **Start Offset Tag**), `local`, or `wgs84` (requires **Allow WGS84**).
+
+To see the spline in game mode, add `VisualizeSplineComponent` next to the Spline component.
 
 ## Using geo-referenced data
 
