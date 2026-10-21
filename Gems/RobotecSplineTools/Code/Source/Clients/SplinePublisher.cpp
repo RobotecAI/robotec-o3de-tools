@@ -2,6 +2,7 @@
 
 #include <ROS2/Clock/ROS2ClockRequestBus.h>
 #include <ROS2/ROS2Bus.h>
+#include <ROS2/ROS2NamesBus.h>
 #include <utility>
 
 namespace SplineTools
@@ -83,18 +84,17 @@ namespace SplineTools
             return;
         }
 
-        // Format Ros Topic
-        if (!m_ros2FramePtr->GetNamespace().empty())
-        {
-            m_config.m_TopicConfig.m_topic =
-                AZStd::string::format("%s/%s", m_ros2FramePtr->GetNamespace().c_str(), m_config.m_TopicConfig.m_topic.c_str());
-        }
+        AZStd::string namespacedTopicName;
+        ROS2::ROS2NamesRequestBus::BroadcastResult(
+            namespacedTopicName,
+            &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName,
+            m_ros2FramePtr->GetNamespace(),
+            m_config.m_TopicConfig.m_topic);
 
         // Create the ROS2 Publisher
         if (const auto ros2Node = ROS2::ROS2Interface::Get()->GetNode())
         {
-            m_publisher =
-                ros2Node->create_publisher<nav_msgs::msg::Path>(m_config.m_TopicConfig.m_topic.c_str(), m_config.m_TopicConfig.GetQoS());
+            m_publisher = ros2Node->create_publisher<nav_msgs::msg::Path>(namespacedTopicName.c_str(), m_config.m_TopicConfig.GetQoS());
 
             AZ::TickBus::Handler::BusConnect();
         }
