@@ -50,9 +50,9 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::AtomLyIntegration_CommonFeatures.Static
+            Gem::LmbrCentral.API
             Gem::ROS2.Static
             Gem::LevelGeoreferencing.API
 )
@@ -125,7 +125,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             O3DE_PRIVATE_TARGET TRUE
         INCLUDE_DIRECTORIES
             PRIVATE
-                3rdParty
                 Include
                 Source
         BUILD_DEPENDENCIES
@@ -133,7 +132,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 ${gem_name}.Private.Object
                 Gem::AtomLyIntegration_CommonFeatures.Static
-                Gem::ROS2.Editor.Static
+                Gem::ROS2.Editor.API
+            PRIVATE
+                3rdParty::csv-parser
     )
 
     ly_add_target(

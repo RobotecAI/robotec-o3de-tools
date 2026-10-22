@@ -6,6 +6,8 @@
 #include <Georeferencing/GeoreferenceBus.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
+#include <ROS2/Frame/ROS2FrameComponent.h>
+#include <ROS2/ROS2NamesBus.h>
 
 namespace SplineTools
 {
@@ -14,6 +16,7 @@ namespace SplineTools
     {
         required.push_back(AZ_CRC_CE("TransformService"));
         required.push_back(AZ_CRC_CE("SplineService"));
+        required.push_back(AZ_CRC_CE("ROS2Frame"));
     }
 
     void SplineSubscriber::Reflect(AZ::ReflectContext* context)
@@ -44,12 +47,26 @@ namespace SplineTools
         {
             LmbrCentral::SplineComponentRequestBus::Event(GetEntityId(), &LmbrCentral::SplineComponentRequestBus::Events::ClearVertices);
         }
+        const auto* ros2FrameComponent = GetEntity()->FindComponent<ROS2::ROS2FrameComponent>();
+        if (!ros2FrameComponent)
+        {
+            AZ_Error("SplineSubscriber", false, "SplineSubscriber requires a ROS2FrameComponent to be present on the entity.");
+            return;
+        }
+
+        AZStd::string namespacedTopicName;
+        ROS2::ROS2NamesRequestBus::BroadcastResult(
+            namespacedTopicName,
+            &ROS2::ROS2NamesRequestBus::Events::GetNamespacedName,
+            ros2FrameComponent->GetNamespace(),
+            m_config.m_topic.m_topic);
+
         auto node = ROS2::ROS2Interface::Get()->GetNode();
         AZ_Assert(node, "ROS 2 Node is not available");
         m_subscription = node->create_subscription<nav_msgs::msg::Path>(
-            m_config.m_topic.m_topic.data(),
+            namespacedTopicName.data(),
             m_config.m_topic.GetQoS(),
-            [this](const nav_msgs::msg::Path::SharedPtr msg)
+            [this](nav_msgs::msg::Path::ConstSharedPtr msg)
             {
                 OnSplineReceived(*msg);
             });
