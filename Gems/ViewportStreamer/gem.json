@@ -5,7 +5,7 @@
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
     "origin": "Robotec.ai",
-    "origin_url": "https://www.robotec.ai",
+    "origin_url": "https://robotec.ai",
     "type": "Code",
     "summary": "Application viewport streaming on ROS2 topic",
     "canonical_tags": [

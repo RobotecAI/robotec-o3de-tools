@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "license_url": "https://opensource.org/licenses/Apache-2.0",
   "origin": "Robotec.ai",
-  "origin_url": "https://www.robotec.ai",
+  "origin_url": "https://robotec.ai",
   "type": "Code",
   "summary": "Component that spawns prefabs using coordinates stored in the GeoJSON format. It supports only WGS84 coordinate system.",
   "canonical_tags": [
@@ -18,10 +18,11 @@
     ""
   ],
   "icon_path": "preview.png",
-  "requirements": "Requires LevelGeoreferencing Gem",
+  "requirements": "Requires ROS2 and LevelGeoreferencing Gems",
   "documentation_url": "",
   "dependencies": [
-    "LevelGeoreferencing"
+    "LevelGeoreferencing",
+    "ROS2"
   ],
   "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
   "compatible_engines": [],

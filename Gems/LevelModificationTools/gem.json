@@ -4,8 +4,8 @@
     "display_name": "LevelModificationTools",
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
-    "origin": "Robotec AI",
-    "origin_url": "https://www.robotec.ai",
+    "origin": "Robotec.ai",
+    "origin_url": "https://robotec.ai",
     "type": "Code",
     "summary": "Handy interface to replace / modify entities in runtime.",
     "canonical_tags": [

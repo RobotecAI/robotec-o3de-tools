@@ -17,12 +17,13 @@
     "platforms": [
         ""
     ],
+    "restricted": "Billboards",
     "icon_path": "preview.png",
     "requirements": "None",
     "documentation_url": "",
     "dependencies": [
     ],
-    "repo_uri": "",
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
     "compatible_engines": [
     ],
     "engine_api_dependencies":[

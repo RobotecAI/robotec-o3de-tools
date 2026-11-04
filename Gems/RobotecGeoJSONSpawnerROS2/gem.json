@@ -5,7 +5,7 @@
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
     "origin": "Robotec.ai",
-    "origin_url": "https://www.robotec.ai",
+    "origin_url": "https://robotec.ai",
     "type": "Code",
     "summary": "This component is responsible for handling ROS 2 requests and forwarding them to the RobotecGeoJSONSpawner gem.",
     "canonical_tags": [
