@@ -4,8 +4,8 @@
     "display_name": "WheelAnimTool",
     "license": "Apache-2.0",
     "license_url": "https://opensource.org/licenses/Apache-2.0",
-    "origin": "Robotec.AI",
-    "origin_url": "tbd",
+    "origin": "Robotec.ai",
+    "origin_url": "https://robotec.ai",
     "type": "Code",
     "summary": "Simple gem that will animate wheel movement",
     "canonical_tags": [
@@ -21,7 +21,7 @@
     "requirements": "",
     "documentation_url": "",
     "dependencies": [],
-    "repo_uri": "",
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
     "compatible_engines": [],
     "engine_api_dependencies": [],
     "restricted": "WheelAnimTool"

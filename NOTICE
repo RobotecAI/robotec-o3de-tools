@@ -1,0 +1,10 @@
+Robotec O3DE Tools
+Copyright 2023-2026 Robotec.ai sp. z o.o.
+
+This product includes third-party software:
+- ImGuizmo (Gems/ImGuizmo/Code/3rdParty/ImGuizmo and Gems/ImGuizmo/Code/Include/ImGuizmo/ImGuizmoModes.h), MIT License; the copyright and licence text are kept in Gems/ImGuizmo/Code/3rdParty/ImGuizmo/LICENSE and in the file headers.
+- csv-parser (Gems/CsvSpawner/Code/3rdParty/csv/csv.hpp), MIT License; the file embeds further components under MIT, BSL-1.0 and CC0-1.0, with their notices kept inside it. Gems/RobotecSplineTools fetches csv-parser 5.3.0 (MIT License) at configure time; it is not stored in this repository.
+- happly (Gems/Pointcloud/Code/Source/3rdParty/happly.h), MIT License; the copyright and licence text are kept in the file header.
+- Sample texture gl-tree-01.png (Gems/Billboards/Assets/SampleMaterial), CC0-1.0.
+
+Files carrying the Open 3D Engine template header ("Copyright (c) Contributors to the Open 3D Engine Project") are provided under Apache-2.0 OR MIT, as stated in those headers.

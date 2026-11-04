@@ -1,23 +1,23 @@
 {
     "repo_name": "Robotec O3DE Tools",
     "origin": "robotec-o3de-tools",
-    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools/tree/main",
+    "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
     "summary": "A repository to hold various gems, and tools for the O3DE engine and O3DE-Extras.",
     "additional_info": "Extras gems and tools for O3DE.",
-    "last_updated": "2023-12-20",
+    "last_updated": "2026-11-04",
     "$schemaVersion": "1.0.0",
     "gems_data": [
         {
             "gem_name": "RobotecRecordingTools",
-            "version": "1.0.0",
+            "version": "2.0.0",
             "platforms": [
                 "Linux"
             ],
             "license": "Apache-2.0",
             "display_name": "Robotec Recording Tools",
             "license_url": "https://opensource.org/licenses/Apache-2.0",
-            "origin": "RobotecAI",
-            "origin_url": "TODO",
+            "origin": "Robotec.ai",
+            "origin_url": "https://robotec.ai",
             "type": "Code",
             "summary": "A set of tools to record data for the O3DE engine.",
             "canonical_tags": [
@@ -28,9 +28,11 @@
             ],
             "icon_path": "preview.png",
             "requirements": "Requires ROS 2 installation (supported distributions: Humble). Source your workspace before building the Gem",
-            "documentation_url": "TODO",
-            "dependencies": [],
-            "repo_uri": "",
+            "documentation_url": "",
+            "dependencies": [
+                "ROS2"
+            ],
+            "repo_uri": "https://github.com/RobotecAI/robotec-o3de-tools",
             "compatible_engines": [],
             "engine_api_dependencies": [],
             "restricted": "RobotecRecordingTools"
